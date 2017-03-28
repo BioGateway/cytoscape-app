@@ -5,6 +5,8 @@ import java.util.Properties;
 import org.cytoscape.biogwplugin.BiogwPlugin;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CyAction;
+import org.cytoscape.biogwplugin.internal.query.BGRelationSearchCMF;
+import org.cytoscape.biogwplugin.internal.query.BGRelationsQuery;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
@@ -31,12 +33,21 @@ public class CyActivator extends AbstractCyActivator {
 
         Properties properties = new Properties();
 		registerService(context, biogwPlugin, BiogwPlugin.class, properties);
-		System.out.println("HELLO, CYTOSCAPE! I'M ALIVE! WHOOO... yeah...");
 
         CreateQueryAction createQueryAction = new CreateQueryAction("Create query", "always", serviceManager);
         registerService(context, createQueryAction, CyAction.class, new Properties());
-
+        registerContextMenuItems(context, serviceManager);
 	}
+
+
+	private void registerContextMenuItems(BundleContext bundleContext, BGServiceManager serviceManager) {
+        //BGRelationPostSearchCMF postSearchCMF = new BGRelationPostSearchCMF(serviceManager);
+        //BGRelationPreSearchCMF preSearchCMF = new BGRelationPreSearchCMF(serviceManager);
+        BGRelationSearchCMF postSearchCMF = new BGRelationSearchCMF(serviceManager, BGRelationsQuery.Direction.POST, "Fetch relations from this node");
+        BGRelationSearchCMF preSearchCMF = new BGRelationSearchCMF(serviceManager, BGRelationsQuery.Direction.PRE, "Fetch relations to this node");
+        registerAllServices(bundleContext, postSearchCMF, ezProps("preferredMenu", "Apps"));
+        registerAllServices(bundleContext, preSearchCMF, ezProps("preferredMenu", "Apps"));
+    }
 
 
 	private BGServiceManager createServiceManager(BundleContext bundleContext) {

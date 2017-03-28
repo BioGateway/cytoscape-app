@@ -1,7 +1,12 @@
 package org.cytoscape.biogwplugin.internal.query;
 
+import org.cytoscape.biogwplugin.internal.BGServiceManager;
+import org.cytoscape.biogwplugin.internal.parser.BGParser;
 import org.cytoscape.work.TaskMonitor;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 
 /**
@@ -9,11 +14,12 @@ import java.util.ArrayList;
  */
 public class BGRelationsQuery extends BGQuery {
 
-    public enum BGRelationDirection {
+    public enum Direction {
         PRE, POST
     }
-    public BGRelationDirection direction;
+    public Direction direction;
     public String nodeURI;
+    public BGServiceManager serviceManager;
 
     static private String POST_RELATIONS_SPARQL = "BASE   <http://www.semantic-systems-biology.org/>  \n" +
             "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n" +
@@ -35,25 +41,41 @@ public class BGRelationsQuery extends BGQuery {
 
     private ArrayList<BGRelation> returnData = new ArrayList<>();
 
-    public BGRelationsQuery(String urlString, String nodeURI, BGRelationDirection direction) {
+    public BGRelationsQuery(String urlString, String nodeURI, Direction direction, BGServiceManager serviceManager) {
         super(urlString, "");
-        if (direction == BGRelationDirection.POST) {
+        if (direction == Direction.POST) {
             queryString = POST_RELATIONS_SPARQL.replaceAll("@identifierURI", nodeURI);
         } else {
             queryString = POST_RELATIONS_SPARQL.replaceAll("@identifierURI", nodeURI);
         }
         this.direction = direction;
         this.nodeURI = nodeURI;
+        this.serviceManager = serviceManager;
     }
 
     @Override
     public void run() {
+        URL queryUrl = createBiopaxURL(this.urlString, this.queryString, RETURN_TYPE_TSV, BIOPAX_DEFAULT_OPTIONS);
+        try {
+            // Simpler way to get a String from an InputStream.
+            InputStream stream = queryUrl.openStream();
+            //returnData = BGParser.parseNodes(stream, serviceManager.getCache());
+            returnData = BGParser.parseRelations(stream, this, serviceManager.getCache());
 
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        this.runCallbacks();
     }
 
 
     @Override
     public void run(TaskMonitor taskMonitor) throws Exception {
         this.run();
+    }
+
+    public ArrayList<BGRelation> getReturnData() {
+        return returnData;
     }
 }

@@ -1,15 +1,13 @@
 package org.cytoscape.biogwplugin.internal.query;
 
-import org.cytoscape.model.CyNode;
-
 public class BGRelation {
-	BGNode fromNode;
-	BGNode toNode;
-	String relation;
+	public BGNode fromNode;
+	public BGNode toNode;
+	public String URI;
 
-	public BGRelation(BGNode fromNode, BGNode toNode, String relation) {
+	public BGRelation(BGNode fromNode, BGNode toNode, String URI) {
 		this.fromNode = fromNode;
 		this.toNode = toNode;
-		this.relation = relation;
+		this.URI = URI;
 	}
 }

@@ -1,7 +1,6 @@
 package org.cytoscape.biogwplugin.internal.query;
 
 import org.cytoscape.biogwplugin.internal.BGServiceManager;
-import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
@@ -19,7 +18,7 @@ public class BGQueryFactory extends AbstractTaskFactory {
     private String serverUrl;
     private String queryString;
     private BGServiceManager serviceManager;
-    private BGRelationsQuery.BGRelationDirection direction;
+    private BGRelationsQuery.Direction direction;
     private QueryType type;
     private ArrayList<Runnable> callbacks;
 
@@ -30,7 +29,7 @@ public class BGQueryFactory extends AbstractTaskFactory {
         this.type = type;
     }
 
-    public BGQueryFactory(String serverUrl, String queryString, BGRelationsQuery.BGRelationDirection direction, BGServiceManager serviceManager, QueryType type) {
+    public BGQueryFactory(String serverUrl, String queryString, BGRelationsQuery.Direction direction, BGServiceManager serviceManager, QueryType type) {
         this.serverUrl = serverUrl;
         this.queryString = queryString;
         this.direction = direction;
@@ -50,7 +49,7 @@ public class BGQueryFactory extends AbstractTaskFactory {
             case RELATION_SEARCH:
                 // TODO: Warning, this will crash if the wrong constructor is used!
                 assert direction != null;
-                query = new BGRelationsQuery(serverUrl, queryString, direction);
+                query = new BGRelationsQuery(serverUrl, queryString, direction, serviceManager);
                 break;
             default:
                 break;
@@ -68,7 +67,7 @@ public class BGQueryFactory extends AbstractTaskFactory {
         this.type = type;
     }
 
-    public void setDirection(BGRelationsQuery.BGRelationDirection direction) {
+    public void setDirection(BGRelationsQuery.Direction direction) {
         this.direction = direction;
     }
 

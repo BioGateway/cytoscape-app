@@ -24,9 +24,7 @@ public class BGNodeSearchQuery extends BGQuery {
 		URL queryUrl = createBiopaxURL(this.urlString, this.queryString, RETURN_TYPE_TSV, BIOPAX_DEFAULT_OPTIONS);
 		try {
 			// Simpler way to get a String from an InputStream.
-
 			InputStream stream = queryUrl.openStream();
-
 			returnData = BGParser.parseNodes(stream, serviceManager.getCache());
 
 		} catch (IOException e) {

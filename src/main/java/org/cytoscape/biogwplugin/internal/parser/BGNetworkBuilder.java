@@ -2,10 +2,8 @@ package org.cytoscape.biogwplugin.internal.parser;
 
 import org.cytoscape.biogwplugin.internal.BGServiceManager;
 import org.cytoscape.biogwplugin.internal.query.BGNode;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTable;
+import org.cytoscape.biogwplugin.internal.query.BGRelation;
+import org.cytoscape.model.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -50,7 +48,42 @@ public class BGNetworkBuilder {
         }
     }
 
+    public static void addBGRelationsToNetwork(CyNetwork network, ArrayList<BGRelation> relations, BGServiceManager serviceManager) {
+        Set<BGNode> toNodes = new HashSet<>();
+        Set<BGNode> fromNodes = new HashSet<>();
+        CyTable nodeTable = network.getDefaultNodeTable();
+        CyTable edgeTable = network.getDefaultEdgeTable();
+        if (edgeTable.getColumn("identifier uri") == null) edgeTable.createColumn("identifier uri", String.class, false);
 
+        // Fetch all nodes involved in the relations:
+        for (BGRelation relation : relations) {
+            fromNodes.add(relation.fromNode);
+            toNodes.add(relation.toNode);
+        }
+
+        // TODO: Add the missing nodes to the network. For now we assume it's being done elsewhere.
+
+        for (BGRelation relation : relations) {
+            CyNode fromNode = getNodeForUri(relation.fromNode.URI, network, nodeTable);
+            CyNode toNode = getNodeForUri(relation.toNode.URI, network, nodeTable);
+
+            // TODO: Create unique edge identifiers to assure that duplicate edges are not added. See old KT-App code for details.
+            CyEdge edge = network.addEdge(fromNode, toNode, true);
+            edgeTable.getRow(edge.getSUID()).set("identifier uri", relation.URI);
+        }
+    }
+
+    private static CyNode getNodeForUri(String nodeUri, CyNetwork network, CyTable table) {
+
+        Collection<CyNode> nodes = getNodesWithValue(network, table, "identifier uri", nodeUri);
+        // Node uri should be unique, so there should be no more than one match.
+        if (nodes.size() == 1) {
+            return nodes.iterator().next(); // Just return the first one, it's just one anyway.
+        }
+        return null;
+    }
+
+    // TODO: A similar method is already defined in the BGCache class. Consolidate them?
     private static Set<CyNode> getNodesWithValue(final CyNetwork net, final CyTable table, final String colname, final Object value) {
         final Collection<CyRow> matchingRows = table.getMatchingRows(colname, value);
         final Set<CyNode> nodes = new HashSet<CyNode>();

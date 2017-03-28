@@ -21,6 +21,10 @@ import org.osgi.framework.BundleContext;
  */
 public class BGServiceManager {
 
+    // This seems like a good place to store static properties.
+    public final static String SERVER_PATH = "http://www.semantic-systems-biology.org/biogateway/endpoint";
+
+
     private CyApplicationManager applicationManager;
     private CyNetworkViewManager viewManager;
     private CyNetworkViewFactory viewFactory;
@@ -40,7 +44,7 @@ public class BGServiceManager {
     private BGCache cache;
 
     public BGServiceManager() {
-        cache = new BGCache();
+        cache = new BGCache(this);
     }
 
     public CyApplicationManager getApplicationManager() {

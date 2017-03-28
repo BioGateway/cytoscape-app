@@ -55,10 +55,15 @@ public class BGParser {
                 // TODO: Replace this with an exception, an assert is overly drastic.
                 assert lineComponents.length == 4;
 
-                if (query.direction == BGRelationsQuery.BGRelationDirection.POST) {
+                if (query.direction == BGRelationsQuery.Direction.POST) {
                     // TODO: Assert that this node exists. It should, but can't be certain.
                     BGNode fromNode = cache.getNodeWithURI(query.nodeURI);
-                    assert fromNode != null;
+                    if (fromNode == null) {
+                        System.out.println("WARNING! FROM NODE NOT FOUND IN CACHE! THIS SHOULD NOT BE POSSIBLE!");
+                        System.out.println("Node URI: "+query.nodeURI);
+                        System.out.println("Cache dump:");
+                        cache.debug_printCache();
+                    }
 
                     String relationType = removeIllegalCharacters(lineComponents[1]);
                     String toNodeUri = removeIllegalCharacters(lineComponents[2]);
@@ -76,8 +81,12 @@ public class BGParser {
 
                 } else {
                     BGNode toNode = cache.getNodeWithURI(query.nodeURI);
-                    assert toNode != null;
-
+                    if (toNode == null) {
+                        System.out.println("WARNING! TO NODE NOT FOUND IN CACHE! THIS SHOULD NOT BE POSSIBLE!");
+                        System.out.println("Node URI: "+query.nodeURI);
+                        System.out.println("Cache dump:");
+                        cache.debug_printCache();
+                    }
                     // TODO: Code repetition. Refactor?
                     String relationType = removeIllegalCharacters(lineComponents[1]);
                     String fromNodeUri = removeIllegalCharacters(lineComponents[2]);
