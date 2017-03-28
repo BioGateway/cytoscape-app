@@ -46,7 +46,7 @@ public class BGRelationsQuery extends BGQuery {
         if (direction == Direction.POST) {
             queryString = POST_RELATIONS_SPARQL.replaceAll("@identifierURI", nodeURI);
         } else {
-            queryString = POST_RELATIONS_SPARQL.replaceAll("@identifierURI", nodeURI);
+            queryString = PRE_RELATIONS_SPARQL.replaceAll("@identifierURI", nodeURI);
         }
         this.direction = direction;
         this.nodeURI = nodeURI;

@@ -46,7 +46,14 @@ public class BGRelationSearchCMF implements CyNodeViewContextMenuFactory, Action
         // Create a completion block for the query, where the results are added to the current network.
         Runnable callback = () -> {
             for (BGRelation relation : query.getReturnData()) {
-                newNodes.add(relation.toNode);
+                switch (this.direction) {
+                    case PRE:
+                        newNodes.add(relation.fromNode);
+                        break;
+                    case POST:
+                        newNodes.add(relation.toNode);
+                        break;
+                }
             }
             BGNetworkBuilder.addBGNodesToNetwork(network, newNodes, serviceManager);
             BGNetworkBuilder.addBGRelationsToNetwork(network, query.getReturnData(), serviceManager);
