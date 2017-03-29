@@ -5,6 +5,7 @@ import java.util.Properties;
 import org.cytoscape.biogwplugin.BiogwPlugin;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CyAction;
+import org.cytoscape.biogwplugin.internal.query.BGMultiRelationSearchCMF;
 import org.cytoscape.biogwplugin.internal.query.BGRelationSearchCMF;
 import org.cytoscape.biogwplugin.internal.query.BGRelationsQuery;
 import org.cytoscape.event.CyEventHelper;
@@ -46,8 +47,13 @@ public class CyActivator extends AbstractCyActivator {
         //BGRelationPreSearchCMF preSearchCMF = new BGRelationPreSearchCMF(serviceManager);
         BGRelationSearchCMF postSearchCMF = new BGRelationSearchCMF(serviceManager, BGRelationsQuery.Direction.POST, "Fetch relations from this node");
         BGRelationSearchCMF preSearchCMF = new BGRelationSearchCMF(serviceManager, BGRelationsQuery.Direction.PRE, "Fetch relations to this node");
+        BGMultiRelationSearchCMF multiPostSearchCMF = new BGMultiRelationSearchCMF(serviceManager, BGRelationsQuery.Direction.POST, "Get relations from selected nodes");
+        BGMultiRelationSearchCMF multiPreSearchCMF = new BGMultiRelationSearchCMF(serviceManager, BGRelationsQuery.Direction.PRE, "Get relations to selected nodes");
+
         registerAllServices(bundleContext, postSearchCMF, ezProps("preferredMenu", "Apps"));
         registerAllServices(bundleContext, preSearchCMF, ezProps("preferredMenu", "Apps"));
+        registerAllServices(bundleContext, multiPostSearchCMF, ezProps("preferredMenu", "Apps"));
+        registerAllServices(bundleContext, multiPreSearchCMF, ezProps("preferredMenu", "Apps"));
     }
 
 
