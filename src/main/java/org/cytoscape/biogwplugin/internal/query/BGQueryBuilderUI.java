@@ -269,6 +269,7 @@ public class BGQueryBuilderUI implements ActionListener, ChangeListener {
         }
         if (!serviceManager.getNetworkManager().networkExists(network.getSUID())) {
             serviceManager.getNetworkManager().addNetwork(network);
+            BGNetworkBuilder.createNetworkView(network, serviceManager);
         }
     }
 

@@ -4,11 +4,12 @@ import org.cytoscape.biogwplugin.internal.BGServiceManager;
 import org.cytoscape.biogwplugin.internal.query.BGNode;
 import org.cytoscape.biogwplugin.internal.query.BGRelation;
 import org.cytoscape.model.*;
+import org.cytoscape.task.NetworkViewTaskFactory;
+import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.TaskIterator;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by sholmas on 24/03/2017.
@@ -31,6 +32,7 @@ public class BGNetworkBuilder {
                 // Need to figure out how to add one node to several networks. Maybe a 1-to-1 doesn't work?
             }
         }
+
         return network;
     }
 
@@ -99,5 +101,22 @@ public class BGNetworkBuilder {
             nodes.add(node);
         }
         return nodes;
+    }
+
+    public static void destroyAndRecreateNetworkView(CyNetwork network, BGServiceManager serviceManager) {
+        // Destroy all views.
+        for (CyNetworkView view : serviceManager.getViewManager().getNetworkViews(network)) {
+            serviceManager.getViewManager().destroyNetworkView(view);
+        }
+        CreateNetworkViewTaskFactory createNetworkViewTaskFactory = serviceManager.getCreateNetworkViewTaskFactory();
+        TaskIterator taskIterator = createNetworkViewTaskFactory.createTaskIterator(Collections.singleton(network));
+        serviceManager.getTaskManager().execute(taskIterator);
+
+    }
+
+    public static void createNetworkView(CyNetwork network, BGServiceManager serviceManager) {
+        CreateNetworkViewTaskFactory viewTaskFactory = serviceManager.getCreateNetworkViewTaskFactory();
+        TaskIterator taskIterator = viewTaskFactory.createTaskIterator(Collections.singleton(network));
+        serviceManager.getTaskManager().execute(taskIterator);
     }
 }

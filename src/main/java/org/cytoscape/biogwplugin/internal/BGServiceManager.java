@@ -8,6 +8,8 @@ import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -28,6 +30,7 @@ public class BGServiceManager {
     private CyApplicationManager applicationManager;
     private CyNetworkViewManager viewManager;
     private CyNetworkViewFactory viewFactory;
+    private CreateNetworkViewTaskFactory createNetworkViewTaskFactory;
     private CyNetworkFactory networkFactory;
     private CyNetworkManager networkManager;
     private CyEventHelper eventHelper;
@@ -40,6 +43,7 @@ public class BGServiceManager {
     private CyTableFactory tableFactory;
     private CyTableManager tableManager;
     private CloseableHttpClient httpClient;
+
 
     private BGCache cache;
 
@@ -156,5 +160,13 @@ public class BGServiceManager {
 
     public void setCache(BGCache cache) {
         this.cache = cache;
+    }
+
+    public CreateNetworkViewTaskFactory getCreateNetworkViewTaskFactory() {
+        return createNetworkViewTaskFactory;
+    }
+
+    public void setCreateNetworkViewTaskFactory(CreateNetworkViewTaskFactory createNetworkViewTaskFactory) {
+        this.createNetworkViewTaskFactory = createNetworkViewTaskFactory;
     }
 }

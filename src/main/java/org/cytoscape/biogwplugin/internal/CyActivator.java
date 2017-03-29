@@ -13,6 +13,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -52,8 +53,10 @@ public class CyActivator extends AbstractCyActivator {
 
 	private BGServiceManager createServiceManager(BundleContext bundleContext) {
         CyNetworkManager networkManager = getService(bundleContext, CyNetworkManager.class);
+
         BGServiceManager bgServiceManager = new BGServiceManager();
-	    bgServiceManager.setApplicationManager(getService(bundleContext, CyApplicationManager.class));
+
+        bgServiceManager.setApplicationManager(getService(bundleContext, CyApplicationManager.class));
         bgServiceManager.setViewManager(getService(bundleContext, CyNetworkViewManager.class));
         bgServiceManager.setNetworkManager(networkManager);
         bgServiceManager.setNetworkFactory(getService(bundleContext, CyNetworkFactory.class));
@@ -65,6 +68,7 @@ public class CyActivator extends AbstractCyActivator {
         bgServiceManager.setLayoutAlgorithmManager(getService(bundleContext, CyLayoutAlgorithmManager.class));
         bgServiceManager.setTableFactory(getService(bundleContext, CyTableFactory.class));
         bgServiceManager.setTableManager(getService(bundleContext, CyTableManager.class));
+        bgServiceManager.setCreateNetworkViewTaskFactory(getService(bundleContext, CreateNetworkViewTaskFactory.class));
 
         return bgServiceManager;
     }
