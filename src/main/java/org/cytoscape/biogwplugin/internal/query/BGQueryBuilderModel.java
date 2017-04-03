@@ -55,8 +55,10 @@ public class BGQueryBuilderModel {
 		return queryString;
 	}
 	
-	public QueryTemplate parseXMLFile(InputStream stream) {
-		
+	public static HashMap<String, QueryTemplate> parseXMLFile(InputStream stream) {
+
+		HashMap<String, QueryTemplate> queryTemplateHashMap = new HashMap<>();
+
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 		try {
 			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
@@ -144,14 +146,14 @@ public class BGQueryBuilderModel {
 							query.addParameter(qParameter);
 					}
 					}
-					queries.put(queryName, query);
+					queryTemplateHashMap.put(queryName, query);
 				}
 			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return null;
+		return queryTemplateHashMap;
 	}
 	
 	public void runQuery(BGNodeSearchQuery query, boolean sanitize) {

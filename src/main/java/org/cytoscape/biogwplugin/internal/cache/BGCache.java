@@ -3,12 +3,18 @@ package org.cytoscape.biogwplugin.internal.cache;
 import org.cytoscape.biogwplugin.internal.BGServiceManager;
 import org.cytoscape.biogwplugin.internal.query.BGFetchRelationTypesQuery;
 import org.cytoscape.biogwplugin.internal.query.BGNode;
+import org.cytoscape.biogwplugin.internal.query.BGQueryBuilderModel;
+import org.cytoscape.biogwplugin.internal.query.QueryTemplate;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.work.TaskIterator;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.*;
 
 /**
@@ -19,6 +25,7 @@ public class BGCache {
     private HashMap<String, BGNode> nodeCache = new HashMap<>();
     private HashMap<String, String> relationTypes = new HashMap<>();
     private BGServiceManager serviceManager;
+    private HashMap<String, QueryTemplate> queryTemplateHashMap;
 
     public BGCache(BGServiceManager serviceManager) {
         this.serviceManager = serviceManager;
@@ -34,6 +41,29 @@ public class BGCache {
         };
         relationTypesQuery.addCallback(callback);
         relationTypesQuery.run();
+
+        loadXMLFileFromServer();
+
+    }
+
+    private void loadXMLFileFromServer() {
+        try {
+            URL queryFileUrl = new URL("https://dl.dropboxusercontent.com/u/32368359/BiogatewayQueries.xml");
+            URLConnection connection = queryFileUrl.openConnection();
+            InputStream is = connection.getInputStream();
+            queryTemplateHashMap = BGQueryBuilderModel.parseXMLFile(is);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public HashMap<String, QueryTemplate> getQueryTemplateHashMap() {
+        if (queryTemplateHashMap != null) {
+            return queryTemplateHashMap;
+        } else {
+            loadXMLFileFromServer();
+            return queryTemplateHashMap;
+        }
     }
 
     public BGNode getNodeWithURI(String uri) {

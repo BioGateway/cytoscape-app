@@ -89,20 +89,10 @@ public class BGQueryBuilderUI implements ActionListener, ChangeListener {
         //frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
-        this.loadXMLFileFromServer();
-    }
-
-    private void loadXMLFileFromServer() {
-        try {
-            URL queryFileUrl = new URL("https://dl.dropboxusercontent.com/u/32368359/BiogatewayQueries.xml");
-            URLConnection connection = queryFileUrl.openConnection();
-            InputStream is = connection.getInputStream();
-            model.parseXMLFile(is);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        this.model.queries = serviceManager.getCache().getQueryTemplateHashMap();
         updateUIAfterXMLLoad();
     }
+
 
     private void createUIComponents() {
         // TODO: place custom component creation code here
@@ -237,7 +227,17 @@ public class BGQueryBuilderUI implements ActionListener, ChangeListener {
                     String[] row = {node.commonName, node.URI};
                     model.addRow(row);
                 }
+
                 tabPanel.setSelectedIndex(2);
+                java.awt.EventQueue.invokeLater(()-> {
+                    mainFrame.toFront();
+                    mainFrame.setAlwaysOnTop(true);
+                    mainFrame.setAlwaysOnTop(false);
+                    mainFrame.requestFocus();
+                });
+
+
+
             };
             query.addCallback(callback);
 
