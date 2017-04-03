@@ -23,14 +23,9 @@ public class BGNetworkBuilder {
 
 
         for (BGNode node : nodes) {
-            if (node.cyNode == null) {
-                CyNode newNode = network.addNode();
-                node.cyNode = newNode;
-                nodeTable.getRow(newNode.getSUID()).set("identifier uri", node.URI);
-                nodeTable.getRow(newNode.getSUID()).set("name", node.commonName);
-            } else {
-                // Need to figure out how to add one node to several networks. Maybe a 1-to-1 doesn't work?
-            }
+            CyNode newNode = network.addNode();
+            nodeTable.getRow(newNode.getSUID()).set("identifier uri", node.URI);
+            nodeTable.getRow(newNode.getSUID()).set("name", node.commonName);
         }
 
         return network;
@@ -40,12 +35,9 @@ public class BGNetworkBuilder {
         for (BGNode node : nodes) {
             Set<CyNode> matchingNodes = getNodesWithValue(network, network.getDefaultNodeTable(), "identifier uri", node.URI);
             if (matchingNodes.isEmpty()) {
-                if (node.cyNode == null) {
-                    CyNode newNode = network.addNode();
-                    node.cyNode = newNode;
-                }
-                network.getDefaultNodeTable().getRow(node.cyNode.getSUID()).set("identifier uri", node.URI);
-                network.getDefaultNodeTable().getRow(node.cyNode.getSUID()).set("name", node.commonName);
+                CyNode newNode = network.addNode();
+                network.getDefaultNodeTable().getRow(newNode.getSUID()).set("identifier uri", node.URI);
+                network.getDefaultNodeTable().getRow(newNode.getSUID()).set("name", node.commonName);
             }
         }
     }
@@ -72,6 +64,7 @@ public class BGNetworkBuilder {
             // TODO: Create unique edge identifiers to assure that duplicate edges are not added. See old KT-App code for details.
             CyEdge edge = network.addEdge(fromNode, toNode, true);
             edgeTable.getRow(edge.getSUID()).set("identifier uri", relation.URI);
+            edgeTable.getRow(edge.getSUID()).set("name", serviceManager.getCache().getNameForRelationType(relation.URI));
         }
     }
 

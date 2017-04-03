@@ -21,7 +21,7 @@ public class BGRelationsQuery extends BGQuery {
     public String nodeURI;
     public BGServiceManager serviceManager;
 
-    static private String POST_RELATIONS_SPARQL = "BASE   <http://www.semantic-systems-biology.org/>  \n" +
+    static protected String POST_RELATIONS_SPARQL = "BASE   <http://www.semantic-systems-biology.org/>  \n" +
             "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n" +
             "PREFIX term_id: <http://identifiers.org/uniprot/Q8L4H0> \n" +
             "SELECT ?term_name ?out_rel ?head_id ?object_name  \n" +
@@ -30,7 +30,7 @@ public class BGRelationsQuery extends BGQuery {
             "\t\tterm_id:       ?out_rel   ?head_id .  \n" +
             "\t\t?head_id       skos:prefLabel      ?object_name .  }}}";
 
-    static private String PRE_RELATIONS_SPARQL = "BASE   <http://www.semantic-systems-biology.org/>  \n" +
+    static protected String PRE_RELATIONS_SPARQL = "BASE   <http://www.semantic-systems-biology.org/>  \n" +
             "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n" +
             "PREFIX term_id: <http://identifiers.org/uniprot/Q8L4H0> \n" +
             "SELECT ?term_name ?in_rel ?tail_id ?subject_name  \n" +

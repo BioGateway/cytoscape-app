@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class BGParser {
 	
@@ -108,7 +109,31 @@ public class BGParser {
         }
 	    return relations;
     }
-	
+
+    public static HashMap<String, String> parseRelationTypes(InputStream is) {
+	    HashMap<String, String> relationTypes = new HashMap<>();
+	    BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+
+        try {
+            String line = reader.readLine();
+            while ((line = reader.readLine()) != null) {
+                String[] lineComponents = line.split("\t");
+                if (lineComponents.length != 2) {
+                    throw new Exception("Illegal data format: Expected two columns, but found "+lineComponents.length+".");
+                }
+                relationTypes.put(removeIllegalCharacters(lineComponents[0]), removeIllegalCharacters(lineComponents[1]));
+            }
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return relationTypes;
+    }
+
 	static String removeIllegalCharacters(String input) {
 		String returnString = input.replace("\"", "");
 		// TODO: Replace other illegal characters as well.

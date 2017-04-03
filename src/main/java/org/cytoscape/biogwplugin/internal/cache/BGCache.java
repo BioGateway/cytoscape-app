@@ -1,11 +1,13 @@
 package org.cytoscape.biogwplugin.internal.cache;
 
 import org.cytoscape.biogwplugin.internal.BGServiceManager;
+import org.cytoscape.biogwplugin.internal.query.BGFetchRelationTypesQuery;
 import org.cytoscape.biogwplugin.internal.query.BGNode;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.work.TaskIterator;
 
 import java.util.*;
 
@@ -15,10 +17,23 @@ import java.util.*;
 public class BGCache {
 
     private HashMap<String, BGNode> nodeCache = new HashMap<>();
+    private HashMap<String, String> relationTypes = new HashMap<>();
     private BGServiceManager serviceManager;
 
     public BGCache(BGServiceManager serviceManager) {
         this.serviceManager = serviceManager;
+
+        // Load initial data
+
+        // Load the XML file
+
+        // Load a list of Relation Types
+        BGFetchRelationTypesQuery relationTypesQuery = new BGFetchRelationTypesQuery(serviceManager.SERVER_PATH);
+        Runnable callback = () -> {
+            this.relationTypes = relationTypesQuery.returnData;
+        };
+        relationTypesQuery.addCallback(callback);
+        relationTypesQuery.run();
     }
 
     public BGNode getNodeWithURI(String uri) {
@@ -94,5 +109,12 @@ public class BGCache {
             nodes.add(node);
         }
         return nodes;
+    }
+
+    public HashMap<String, String> getRelationTypes() {
+        return relationTypes;
+    }
+    public String getNameForRelationType(String relationTypeURI) {
+        return relationTypes.get(relationTypeURI);
     }
 }

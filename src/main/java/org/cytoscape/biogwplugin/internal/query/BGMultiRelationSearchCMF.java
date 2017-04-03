@@ -54,5 +54,8 @@ public class BGMultiRelationSearchCMF implements CyNetworkViewContextMenuFactory
             nodesUri += " | "+nodeUri;
         }
         System.out.println("Nodes URI: "+nodesUri);
+
+
+
     }
 }
