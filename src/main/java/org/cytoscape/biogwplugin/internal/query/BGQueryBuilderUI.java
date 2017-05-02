@@ -222,12 +222,17 @@ public class BGQueryBuilderUI implements ActionListener, ChangeListener {
 
             BGNodeSearchQuery query = new BGNodeSearchQuery(SERVER_PATH, queryString, serviceManager);
             Runnable callback = () -> {
-                for (BGNode node : query.returnData) {
-                    DefaultTableModel model = (DefaultTableModel) resultTable.getModel();
-                    String[] row = {node.commonName, node.URI};
-                    model.addRow(row);
+                DefaultTableModel tableModel = (DefaultTableModel) resultTable.getModel();
+
+                // Clear all rows before adding new data. Delete from the back to the front.
+                for (int i = tableModel.getRowCount() - 1; i > -1; i--) {
+                    tableModel.removeRow(i);
                 }
 
+                for (BGNode node : query.returnData) {
+                    String[] row = {node.commonName, node.URI};
+                    tableModel.addRow(row);
+                }
                 tabPanel.setSelectedIndex(2);
                 java.awt.EventQueue.invokeLater(()-> {
                     mainFrame.toFront();
@@ -235,9 +240,6 @@ public class BGQueryBuilderUI implements ActionListener, ChangeListener {
                     mainFrame.setAlwaysOnTop(false);
                     mainFrame.requestFocus();
                 });
-
-
-
             };
             query.addCallback(callback);
 
