@@ -53,7 +53,7 @@ public class BGMultiRelationSearchCMF implements CyNetworkViewContextMenuFactory
             String nodeUri = network.getDefaultNodeTable().getRow(node.getSUID()).get("identifier uri", String.class);
             nodesUri += " | "+nodeUri;
         }
-        System.out.println("Nodes URI: "+nodesUri);
+        System.out.println("Nodes OPTIONAL_URI: "+nodesUri);
 
 
 

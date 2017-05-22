@@ -116,7 +116,7 @@ public class BGCache {
             bgNode.commonName = commonName;
             return bgNode;
         } else if (nodes.size() > 1) {
-            System.out.println("BGCache Warning: CyNetwork inconsistency: Found multiple nodes with same URI in the same network!");
+            System.out.println("BGCache Warning: CyNetwork inconsistency: Found multiple nodes with same OPTIONAL_URI in the same network!");
             return null;
         } else {
             System.out.println("BGCache Warning: Did not find missing node in CyNetwork table either.");

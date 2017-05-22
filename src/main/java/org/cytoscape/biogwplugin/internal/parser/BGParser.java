@@ -61,7 +61,7 @@ public class BGParser {
                     BGNode fromNode = cache.getNodeWithURI(query.nodeURI);
                     if (fromNode == null) {
                         System.out.println("WARNING! FROM NODE NOT FOUND IN CACHE! THIS SHOULD NOT BE POSSIBLE!");
-                        System.out.println("Node URI: "+query.nodeURI);
+                        System.out.println("Node OPTIONAL_URI: "+query.nodeURI);
                         System.out.println("Cache dump:");
                         cache.debug_printCache();
                     }
@@ -84,7 +84,7 @@ public class BGParser {
                     BGNode toNode = cache.getNodeWithURI(query.nodeURI);
                     if (toNode == null) {
                         System.out.println("WARNING! TO NODE NOT FOUND IN CACHE! THIS SHOULD NOT BE POSSIBLE!");
-                        System.out.println("Node URI: "+query.nodeURI);
+                        System.out.println("Node OPTIONAL_URI: "+query.nodeURI);
                         System.out.println("Cache dump:");
                         cache.debug_printCache();
                     }

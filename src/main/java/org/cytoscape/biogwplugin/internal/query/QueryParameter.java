@@ -5,7 +5,7 @@ import java.util.HashMap;
 public class QueryParameter {
 	
 	public enum ParameterType {
-		TEXT, CHECKBOX, COMBOBOX, UNIPROT_ID, ONTOLOGY
+		TEXT, CHECKBOX, COMBOBOX, UNIPROT_ID, ONTOLOGY, OPTIONAL_URI
 	}
 	
 //	public class Option {

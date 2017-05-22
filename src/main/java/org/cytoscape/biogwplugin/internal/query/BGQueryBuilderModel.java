@@ -122,6 +122,9 @@ public class BGQueryBuilderModel {
 							case "ontology":
 								pType = QueryParameter.ParameterType.ONTOLOGY;
 								break;
+								case "optionalUri":
+									pType = QueryParameter.ParameterType.OPTIONAL_URI;
+									break;
 							default:
 								pType = QueryParameter.ParameterType.TEXT;
 								break;

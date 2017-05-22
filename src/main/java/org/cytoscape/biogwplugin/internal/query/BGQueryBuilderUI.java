@@ -7,6 +7,7 @@ import org.cytoscape.biogwplugin.internal.util.Utility;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.TaskIterator;
 
+import javax.rmi.CORBA.Util;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -16,8 +17,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -97,7 +96,7 @@ public class BGQueryBuilderUI implements ActionListener, ChangeListener {
     private void createUIComponents() {
         // TODO: place custom component creation code here
         DefaultTableModel resultTableModel = new DefaultTableModel();
-        resultTableModel.setColumnIdentifiers(new String[]{"Common name", "URI"});
+        resultTableModel.setColumnIdentifiers(new String[]{"Common name", "OPTIONAL_URI"});
         resultTable.setModel(resultTableModel);
 
         querySelectionBox.setModel(new SortedComboBoxModel<String>());
@@ -135,6 +134,7 @@ public class BGQueryBuilderUI implements ActionListener, ChangeListener {
             JComponent component;
             switch (parameter.type) {
                 case TEXT:
+                case OPTIONAL_URI:
                 case ONTOLOGY:
                 case UNIPROT_ID:
                     JTextField field = new JTextField();
@@ -188,6 +188,10 @@ public class BGQueryBuilderUI implements ActionListener, ChangeListener {
                         ontology = ONTOLOGY_PREFIX + ontology;
                     }
                     parameter.value = Utility.sanitizeParameter(ontology);
+                    break;
+                case OPTIONAL_URI:
+                    String uri = ((JTextField) component).getText();
+                    parameter.value =uri;
                 default:
                     break;
             }
@@ -323,10 +327,27 @@ public class BGQueryBuilderUI implements ActionListener, ChangeListener {
         for (QueryParameter parameter : currentQuery.parameters) {
             JComponent component = parameterComponents.get(parameter.id);
             if (component instanceof JTextField) {
-                JTextField field = (JTextField) component;
-                field.setText(Utility.sanitizeParameter(field.getText()));
-                if (field.getText().length() == 0) {
-                    return false;
+                if (parameter.type == QueryParameter.ParameterType.OPTIONAL_URI) {
+                    JTextField field = (JTextField) component;
+                    String uri = field.getText();
+                    if (Utility.sanitizeParameter(uri).length() == 0) {
+                        // Empty string.
+                        field.setText("?"+parameter.id);
+                    } else if (uri.startsWith("?")) {
+                        field.setText(Utility.sanitizeParameter(uri));
+                    } else {
+                            // Validate the URI.
+                            boolean validated = Utility.validateURI(uri); // UGLY HACK! Should be asynchronous:
+                            if (!validated) {
+                                return false;
+                            }
+                        }
+                } else {
+                    JTextField field = (JTextField) component;
+                    field.setText(Utility.sanitizeParameter(field.getText()));
+                    if (field.getText().length() == 0) {
+                        return false;
+                    }
                 }
             }
         }
