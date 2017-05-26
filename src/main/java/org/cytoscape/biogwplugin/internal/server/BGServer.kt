@@ -71,7 +71,7 @@ class BGServer(private val serviceManager: BGServiceManager) {
     }
 
     private fun  getNodeFromServer(uri: String, completion: (BGNode?) -> Unit) {
-        val query = BGNodeFetchQuery(serviceManager.serverPath, uri)
+        val query = BGNodeFetchQuery(serviceManager.serverPath, uri, serviceManager.server.parser)
         val stream = query.encodeUrl()?.openStream()
         if (stream != null) {
             parser.parseNodes(stream) {

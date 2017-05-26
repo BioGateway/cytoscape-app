@@ -1,6 +1,8 @@
 package org.cytoscape.biogwplugin.internal.query
 import org.cytoscape.biogwplugin.internal.parser.BGParser
 import org.cytoscape.biogwplugin.internal.parser.BGQueryType
+import org.cytoscape.work.AbstractTask
+import org.cytoscape.work.TaskMonitor
 import java.io.InputStream
 import java.net.URL
 import java.net.URLEncoder
@@ -13,7 +15,7 @@ enum class BGRelationDirection {
     TO, FROM
 }
 
-abstract class BGQuery(val serverPath: String, val type: BGQueryType) {
+abstract class BGQuery(val serverPath: String, val type: BGQueryType, val parser: BGParser): AbstractTask(), Runnable {
     var completionBlocks: ArrayList<(BGReturnData?) -> Unit> = ArrayList()
     var returnData: BGReturnData? = null
     abstract var queryString: String
@@ -37,9 +39,12 @@ abstract class BGQuery(val serverPath: String, val type: BGQueryType) {
     }
 }
 
-class BGNodeSearchQuery(serverPath: String, override var queryString: String): BGQuery(serverPath, BGQueryType.NODE_QUERY) {
+class BGNodeSearchQuery(serverPath: String, override var queryString: String, parser: BGParser): BGQuery(serverPath, BGQueryType.NODE_QUERY, parser) {
+    override fun run(taskMonitor: TaskMonitor?) {
+        run()
+    }
 
-    fun execute(parser: BGParser) {
+    override fun run() {
         val stream = encodeUrl()?.openStream()
         if (stream != null) {
             parser.parseNodes(stream) {
@@ -51,7 +56,20 @@ class BGNodeSearchQuery(serverPath: String, override var queryString: String): B
 }
 
 
-class BGNodeFetchQuery(serverPath: String, val nodeUri: String): BGQuery(serverPath, BGQueryType.NODE_QUERY) {
+class BGNodeFetchQuery(serverPath: String, val nodeUri: String, parser: BGParser): BGQuery(serverPath, BGQueryType.NODE_QUERY, parser) {
+    override fun run(taskMonitor: TaskMonitor?) {
+        run()
+    }
+
+    override fun run() {
+        val stream = encodeUrl()?.openStream()
+        if (stream != null) {
+            parser.parseNodes(stream) {
+                returnData = it as? BGReturnData ?: throw Exception("Invalid return data!")
+                runCompletions()
+            }
+        }
+    }
 
     override var queryString = "BASE   <http://www.semantic-systems-biology.org/> \n" +
             "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>  \n" +

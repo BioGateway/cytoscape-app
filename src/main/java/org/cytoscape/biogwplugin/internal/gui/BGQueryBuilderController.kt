@@ -113,7 +113,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
             val queryString = createQueryString(currentQuery!!)
             view.sparqlTextArea.text = queryString ?: throw Exception("Query String cannot be empty!")
 
-            val query = BGNodeSearchQuery(SERVER_PATH, queryString)
+            val query = BGNodeSearchQuery(SERVER_PATH, queryString, serviceManager.server.parser)
 
             query.addCompletion {
                 val data = it as? BGReturnNodeData ?: throw Exception("Expected Node Data in return!")
@@ -134,41 +134,15 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                 // Try the darnest to make the window appear on top!
                 EventQueue.invokeLater {
                     view.mainFrame.toFront()
-                    view.mainFrame.requestFocus()
-                }
-            }
-
-            query.execute(serviceManager.server.parser)
-
-
-            /*
-            val query = BGNodeSearchQuery(SERVER_PATH, queryString, serviceManager)
-            val callback = {
-                val tableModel = view.resultTable.model as DefaultTableModel
-
-                // Clear all rows before adding new data. Delete from the back to the front.
-                for (i in tableModel.rowCount - 1 downTo -1 + 1) {
-                    tableModel.removeRow(i)
-                }
-
-                for (node in query.returnData) {
-                    val row = arrayOf(node.commonName, node.URI)
-                    tableModel.addRow(row)
-                }
-                view.tabPanel.selectedIndex = 2
-                EventQueue.invokeLater {
-                    view.mainFrame.toFront()
                     view.mainFrame.isAlwaysOnTop = true
                     view.mainFrame.isAlwaysOnTop = false
                     view.mainFrame.requestFocus()
                 }
             }
-            // TODO: FIX CALLBACK!
-            //query.addCallback()
 
             val iterator = TaskIterator(query)
             serviceManager.taskManager.execute(iterator)
-            */
+
         } else {
             JOptionPane.showMessageDialog(view.mainFrame, "All text fields must be filled out!")
         }
