@@ -1,7 +1,7 @@
 package org.cytoscape.biogwplugin.internal;
 
 import org.cytoscape.application.swing.AbstractCyAction;
-import org.cytoscape.biogwplugin.internal.query.BGQueryBuilderUI;
+import org.cytoscape.biogwplugin.internal.gui.BGQueryBuilderController;
 
 import java.awt.event.ActionEvent;
 
@@ -22,6 +22,6 @@ public class CreateQueryAction extends AbstractCyAction {
     public void actionPerformed(ActionEvent e) {
         System.out.println("Action Pressed");
 
-        BGQueryBuilderUI queryBuilderUI = new BGQueryBuilderUI(serviceManager);
+        BGQueryBuilderController queryBuilderController = new BGQueryBuilderController(serviceManager);
     }
 }

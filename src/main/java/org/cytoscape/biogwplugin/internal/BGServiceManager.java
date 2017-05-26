@@ -2,13 +2,13 @@ package org.cytoscape.biogwplugin.internal;
 
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.biogwplugin.internal.cache.BGCache;
+import org.cytoscape.biogwplugin.internal.old.cache.BGCache;
+import org.cytoscape.biogwplugin.internal.server.BGServer;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
-import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
@@ -16,7 +16,6 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.swing.DialogTaskManager;
-import org.osgi.framework.BundleContext;
 
 /**
  * Created by sholmas on 23/03/2017.
@@ -46,9 +45,11 @@ public class BGServiceManager {
 
 
     private BGCache cache;
+    private BGServer server;
 
     public BGServiceManager() {
         cache = new BGCache(this);
+        server = new BGServer(this);
     }
 
     public CyApplicationManager getApplicationManager() {
@@ -168,5 +169,17 @@ public class BGServiceManager {
 
     public void setCreateNetworkViewTaskFactory(CreateNetworkViewTaskFactory createNetworkViewTaskFactory) {
         this.createNetworkViewTaskFactory = createNetworkViewTaskFactory;
+    }
+
+    public String getServerPath() {
+        return SERVER_PATH;
+    }
+
+    public BGServer getServer() {
+        return server;
+    }
+
+    public void setServer(BGServer server) {
+        this.server = server;
     }
 }
