@@ -1,8 +1,7 @@
 package org.cytoscape.biogwplugin.internal.gui
 
 import org.cytoscape.biogwplugin.internal.BGServiceManager
-import org.cytoscape.biogwplugin.internal.query.QueryParameter
-import org.cytoscape.biogwplugin.internal.query.QueryTemplate
+import org.cytoscape.biogwplugin.internal.query.*
 import org.cytoscape.biogwplugin.internal.util.Utility
 import org.cytoscape.biogwplugin.internal.util.sanitizeParameter
 import org.cytoscape.model.CyNetwork
@@ -112,7 +111,35 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         if (validatePropertyFields()) {
             readParameterComponents()
             val queryString = createQueryString(currentQuery!!)
-            view.sparqlTextArea.text = queryString
+            view.sparqlTextArea.text = queryString ?: throw Exception("Query String cannot be empty!")
+
+            val query = BGNodeSearchQuery(SERVER_PATH, queryString)
+
+            query.addCompletion {
+                val data = it as? BGReturnNodeData ?: throw Exception("Expected Node Data in return!")
+
+                // TODO: Update the tablemodel to have the same number of columns as the result data.
+                val tableModel = view.resultTable.model as DefaultTableModel
+                tableModel.setColumnIdentifiers(data.columnNames)
+
+                for (i in tableModel.rowCount -1 downTo 0) {
+                    tableModel.removeRow(i)
+                }
+                for ((uri, node) in data.nodeData) {
+                    val row = arrayOf(uri, node.name, node.description)
+                    tableModel.addRow(row)
+                }
+                view.tabPanel.selectedIndex = 2 // Open the result tab.
+
+                // Try the darnest to make the window appear on top!
+                EventQueue.invokeLater {
+                    view.mainFrame.toFront()
+                    view.mainFrame.requestFocus()
+                }
+            }
+
+            query.execute(serviceManager.server.parser)
+
 
             /*
             val query = BGNodeSearchQuery(SERVER_PATH, queryString, serviceManager)
@@ -148,7 +175,31 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
     }
 
     private fun createQueryString(currentQuery: QueryTemplate): String? {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        var queryString = currentQuery.sparqlString
+
+        // First do all checkboxes, then everything else.
+        // This is because the checkboxes might add code containing variables that needs to be changed.
+        for (parameter in currentQuery.parameters) {
+            if (parameter.type == QueryParameter.ParameterType.CHECKBOX) {
+                var value = when (parameter.value) {
+                    "true" -> parameter.options["true"]
+                    "false" -> parameter.options["false"]
+                    else -> ""
+                }
+                val searchString = "@"+parameter.id
+                if (value != null) {
+                    queryString = queryString.replace(searchString.toRegex(), value)
+                }
+            }
+            for (parameter in currentQuery.parameters) {
+                if (parameter.type != QueryParameter.ParameterType.CHECKBOX) {
+                    val value = parameter.value ?: throw NullPointerException("Parameter value cannot be null!")
+                    val searchString = "@"+parameter.id
+                    queryString = queryString.replace(searchString.toRegex(), value)
+                }
+            }
+        }
+        return queryString
     }
 
     private fun importSelectedResults(network: CyNetwork?) {

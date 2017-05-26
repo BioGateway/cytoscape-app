@@ -8,13 +8,20 @@ import org.cytoscape.biogwplugin.internal.parser.BGQueryType
  * Created by sholmas on 26/05/2017.
  */
 
-abstract class BGReturnData(queryType: BGQueryType) {
+abstract class BGReturnData {
+    val columnNames: Array<String>
+
+    constructor(queryType: BGQueryType, columnNames: Array<String>) {
+        if (columnNames.size != queryType.paremeterCount) throw Exception("Parameter count must match column name count!")
+        this.columnNames = columnNames
+    }
+
     fun removeIllegalCharacters(input: String): String {
         return input.replace("\"", "")
     }
 }
 
-class BGReturnNodeData(val queryType: BGQueryType): BGReturnData(queryType) {
+class BGReturnNodeData(val queryType: BGQueryType, columnNames: Array<String>): BGReturnData(queryType, columnNames) {
 
     val nodeData = HashMap<String, BGNode>()
 
@@ -39,6 +46,6 @@ class BGReturnNodeData(val queryType: BGQueryType): BGReturnData(queryType) {
         nodeData.put(node.uri, node)
     }
 }
-class BGReturnRelationsData(type: BGQueryType) : BGReturnData(type) {
+class BGReturnRelationsData(type: BGQueryType, columnNames: Array<String>) : BGReturnData(type, columnNames) {
     val relationsData = ArrayList<BGRelation>()
 }

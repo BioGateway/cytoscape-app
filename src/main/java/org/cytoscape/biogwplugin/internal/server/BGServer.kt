@@ -4,7 +4,7 @@ import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.model.BGRelationType
 import org.cytoscape.biogwplugin.internal.model.BGNode
 import org.cytoscape.biogwplugin.internal.parser.BGParser
-import org.cytoscape.biogwplugin.internal.query.BGNodeQuery
+import org.cytoscape.biogwplugin.internal.query.BGNodeFetchQuery
 import org.cytoscape.biogwplugin.internal.query.QueryParameter
 import org.cytoscape.biogwplugin.internal.query.QueryTemplate
 import org.cytoscape.model.CyNetwork
@@ -71,7 +71,7 @@ class BGServer(private val serviceManager: BGServiceManager) {
     }
 
     private fun  getNodeFromServer(uri: String, completion: (BGNode?) -> Unit) {
-        val query = BGNodeQuery(serviceManager.serverPath, uri)
+        val query = BGNodeFetchQuery(serviceManager.serverPath, uri)
         val stream = query.encodeUrl()?.openStream()
         if (stream != null) {
             parser.parseNodes(stream) {

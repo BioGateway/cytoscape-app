@@ -63,7 +63,7 @@ public class BGCreateQueryView implements ChangeListener {
         parameterPanel.setLayout(new MigLayout("wrap 2"));
 
         runQueryButton.addActionListener(listener);
-        runQueryButton.setActionCommand(Companion.getACTION_CHANGED_QUERY());
+        runQueryButton.setActionCommand(Companion.getACTION_RUN_QUERY());
         querySelectionBox.addActionListener(listener);
         querySelectionBox.setActionCommand(Companion.getACTION_CHANGED_QUERY());
         importToNewButton.addActionListener(listener);

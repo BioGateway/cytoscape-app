@@ -27,12 +27,10 @@ class BGParser() {
 
     fun parseNodes(stream: InputStream, completion: (BGReturnNodeData?) -> Unit) {
         // TODO: Add exception handling.
-
-        val foundNodes = ArrayList<BGNode>()
         val reader = BufferedReader(InputStreamReader(stream))
 
-        val columnNames = reader.readLine()
-        val returnData = BGReturnNodeData(BGQueryType.NODE_QUERY)
+        val columnNames = reader.readLine().split("\t").dropLastWhile({it.isEmpty()}).toTypedArray()
+        val returnData = BGReturnNodeData(BGQueryType.NODE_QUERY, columnNames)
 
         reader.forEachLine {
             val lineColumns = it.split("\t").dropLastWhile({it.isEmpty()}).toTypedArray()
