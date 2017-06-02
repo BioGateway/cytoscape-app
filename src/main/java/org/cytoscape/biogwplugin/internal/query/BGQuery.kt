@@ -3,7 +3,6 @@ import org.cytoscape.biogwplugin.internal.parser.BGParser
 import org.cytoscape.biogwplugin.internal.parser.BGQueryType
 import org.cytoscape.work.AbstractTask
 import org.cytoscape.work.TaskMonitor
-import java.io.InputStream
 import java.net.URL
 import java.net.URLEncoder
 
@@ -47,7 +46,7 @@ class BGNodeSearchQuery(serverPath: String, override var queryString: String, pa
     override fun run() {
         val stream = encodeUrl()?.openStream()
         if (stream != null) {
-            parser.parseNodes(stream) {
+            parser.parseNodesToTextArray(stream) {
                 returnData = it as? BGReturnNodeData ?: throw Exception("Invalid return data!")
                 runCompletions()
             }
@@ -64,7 +63,7 @@ class BGNodeFetchQuery(serverPath: String, val nodeUri: String, parser: BGParser
     override fun run() {
         val stream = encodeUrl()?.openStream()
         if (stream != null) {
-            parser.parseNodes(stream) {
+            parser.parseNodesToTextArray(stream) {
                 returnData = it as? BGReturnData ?: throw Exception("Invalid return data!")
                 runCompletions()
             }

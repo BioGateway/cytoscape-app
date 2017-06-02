@@ -55,9 +55,9 @@ public class BGRelationSearchCMF implements CyNodeViewContextMenuFactory, Action
                         break;
                 }
             }
-            BGNetworkBuilder.addBGNodesToNetwork(network, newNodes, serviceManager);
-            BGNetworkBuilder.addBGRelationsToNetwork(network, query.getReturnData(), serviceManager);
-            BGNetworkBuilder.destroyAndRecreateNetworkView(network, serviceManager);
+            BGNetworkBuilder.INSTANCE.addBGNodesToNetwork(network, newNodes, serviceManager);
+            BGNetworkBuilder.INSTANCE.addBGRelationsToNetwork(network, query.getReturnData(), serviceManager);
+            BGNetworkBuilder.INSTANCE.destroyAndRecreateNetworkView(network, serviceManager);
         };
         //query.addCallback(callback);
 

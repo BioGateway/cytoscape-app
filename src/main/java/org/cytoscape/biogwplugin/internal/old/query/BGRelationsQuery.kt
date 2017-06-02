@@ -32,7 +32,7 @@ class BGRelationsQuery(urlString: String, var nodeURI: String, var direction: BG
         try {
             // Simpler way to get a String from an InputStream.
             val stream = queryUrl!!.openStream()
-            //returnData = BGParser.parseNodes(stream, serviceManager.getCache());
+            //returnData = BGParser.parseNodesToTextArray(stream, serviceManager.getCache());
             returnData = BGParser.parseRelations(stream, this, serviceManager.cache)
 
         } catch (e: IOException) {

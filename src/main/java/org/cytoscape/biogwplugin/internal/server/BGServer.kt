@@ -3,6 +3,7 @@ package org.cytoscape.biogwplugin.internal.server
 import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.model.BGRelationType
 import org.cytoscape.biogwplugin.internal.model.BGNode
+import org.cytoscape.biogwplugin.internal.parser.BGNetworkBuilder
 import org.cytoscape.biogwplugin.internal.parser.BGParser
 import org.cytoscape.biogwplugin.internal.query.BGNodeFetchQuery
 import org.cytoscape.biogwplugin.internal.query.QueryParameter
@@ -32,7 +33,7 @@ class BGServer(private val serviceManager: BGServiceManager) {
         // Note that this cache is independent of the CyNodes and CyNetworks.
         var nodeCache = HashMap<String, BGNode>()
 
-        var relationTypes = ArrayList<BGRelationType>()
+        var relationTypes = HashMap<String, BGRelationType>()
         var queryTemplates = HashMap<String, QueryTemplate>()
 
         fun addNode(node: BGNode) {
@@ -44,11 +45,24 @@ class BGServer(private val serviceManager: BGServiceManager) {
     }
 
     val cache = BGCache()
-    val parser = BGParser()
+    val parser = BGParser(serviceManager)
+    val networkBuilder = BGNetworkBuilder(serviceManager)
 
     init {
         loadXMLFileFromServer()
     }
+
+
+    fun getNodeFromCache(uri: String): BGNode {
+        var node = cache.nodeCache.get(uri)
+
+        if (node == null) {
+            node = BGNode(uri)
+            cache.nodeCache.put(uri, node)
+        }
+        return node
+    }
+
 
     fun getNode(uri: String, completion: (BGNode?) -> Unit) {
         var node = cache.nodeCache.get(uri)
@@ -74,7 +88,7 @@ class BGServer(private val serviceManager: BGServiceManager) {
         val query = BGNodeFetchQuery(serviceManager.serverPath, uri, serviceManager.server.parser)
         val stream = query.encodeUrl()?.openStream()
         if (stream != null) {
-            parser.parseNodes(stream) {
+            parser.parseNodesToTextArray(stream) {
                 val data = it ?: throw Exception("Invalid return data!")
                 val node = data.nodeData.get(uri)
                 completion(node)
@@ -84,7 +98,7 @@ class BGServer(private val serviceManager: BGServiceManager) {
 
     fun getNodeFromCyNetwork(uri: String, network: CyNetwork): BGNode? {
         val nodeTable = network.defaultNodeTable
-        val nodes = getCyNodesWithValue(network, nodeTable, "identifier uri", uri)
+        val nodes = networkBuilder.getCyNodesWithValue(network, nodeTable, "identifier uri", uri)
 
         if (nodes.size == 1) {
             val cyNode = nodes.iterator().next() // Get the first (next) node.
@@ -96,18 +110,7 @@ class BGServer(private val serviceManager: BGServiceManager) {
         return null
     }
 
-    private fun getCyNodesWithValue(network: CyNetwork, nodeTable: CyTable, columnName: String, value: Any): Set<CyNode> {
-        var nodes = HashSet<CyNode>()
-        val matchingRows = nodeTable.getMatchingRows(columnName, value)
 
-        val primaryKeyColumnName = nodeTable.primaryKey.name
-        for (row in matchingRows) {
-            val nodeId = row.get(primaryKeyColumnName, Long::class.java) ?: continue
-            val node = network.getNode(nodeId) ?: continue
-            nodes.add(node)
-        }
-        return nodes
-    }
 
 
     private fun loadXMLFileFromServer() {
@@ -132,7 +135,7 @@ class BGServer(private val serviceManager: BGServiceManager) {
             val relationTypesNode = (doc.getElementsByTagName("relationTypes").item(0) as? Element) ?: throw Exception("relationTypes element not found in XML file!")
             val rList = relationTypesNode.getElementsByTagName("relationType") ?: throw Exception()
 
-            var relationTypes = ArrayList<BGRelationType>()
+            var relationTypes = HashMap<String, BGRelationType>()
 
             for (index in 0..rList.length -1) {
                 val element = rList.item(index) as? Element
@@ -140,7 +143,7 @@ class BGServer(private val serviceManager: BGServiceManager) {
                 val uri = element?.textContent
 
                 if (name != null && uri != null) {
-                    relationTypes.add(BGRelationType(uri, name))
+                    relationTypes.put(uri, BGRelationType(uri, name))
                 }
             }
             cache.relationTypes = relationTypes
