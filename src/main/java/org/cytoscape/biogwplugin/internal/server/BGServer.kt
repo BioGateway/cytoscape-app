@@ -204,6 +204,12 @@ class BGServer(private val serviceManager: BGServiceManager) {
                             val pTypeString = parameter.getAttribute("type")
                             val pName = parameter.getElementsByTagName("name").item(0).textContent
 
+                            val pEnabledDependency = parameter.getElementsByTagName("enabled-dependency")
+
+                            val enabledDependency = pEnabledDependency.item(0) as? Element
+
+
+
                             val pType = when (pTypeString) {
                                 "text" -> QueryParameter.ParameterType.TEXT
                                 "checkbox" -> QueryParameter.ParameterType.CHECKBOX
@@ -223,6 +229,24 @@ class BGServer(private val serviceManager: BGServiceManager) {
                                     val oValue = oElement.textContent
                                     qParameter.addOption(oName, oValue)
                                 } }
+
+                            if (enabledDependency != null) {
+                                val dependingId = enabledDependency.getAttribute("parameterId")
+                                val isEnabled = when (enabledDependency.getAttribute("isEnabled")) {
+                                    "true" -> true
+                                    "false" -> false
+                                    else -> {
+                                        println("XML Config parse error: enabled-dependency's isEnabled attribute can only be true or false!")
+                                        null
+                                    }
+                                }
+                                val parameterValue = enabledDependency.getAttribute("forParameterValue")
+                                if (dependingId != null && parameterValue != null && isEnabled != null) {
+                                    qParameter.dependency = QueryParameter.EnabledDependency(dependingId, isEnabled, parameterValue)
+
+                                }
+                            }
+
                             query.addParameter(qParameter)
                         } }
                     queryTemplateHashMap.put(queryName, query)

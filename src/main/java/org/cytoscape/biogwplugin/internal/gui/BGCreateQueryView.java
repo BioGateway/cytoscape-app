@@ -9,6 +9,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
 
@@ -38,7 +39,6 @@ public class BGCreateQueryView implements ChangeListener {
     private JComboBox querySelectionBox;
     private JButton importToNewButton;
     private JButton importToSelectedNetworkButton;
-
 
     public BGCreateQueryView(ActionListener listener) {
         this.listener = listener;
@@ -101,6 +101,31 @@ public class BGCreateQueryView implements ChangeListener {
                     component = null;
                     break;
             }
+
+            QueryParameter.EnabledDependency dependency = parameter.getDependency();
+
+            if (dependency != null) {
+                JComponent dependingComponent = parameterComponents.get(dependency.getDependingParameter());
+                if (dependingComponent != null && dependingComponent instanceof JCheckBox) {
+                    JCheckBox checkBox = (JCheckBox) dependingComponent;
+                    checkBox.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            if (checkBox.isSelected()) {
+                                component.setEnabled(dependency.isEnabled());
+                            } else {
+                                component.setEnabled(!dependency.isEnabled());
+                            }
+                        }
+                    });
+                    if (checkBox.isSelected()) {
+                        component.setEnabled(dependency.isEnabled());
+                    } else {
+                        component.setEnabled(!dependency.isEnabled());
+                    }
+                }
+            }
+
             parameterComponents.put(parameter.getId(), component);
             parameterPanel.add(label);
             parameterPanel.add(component);

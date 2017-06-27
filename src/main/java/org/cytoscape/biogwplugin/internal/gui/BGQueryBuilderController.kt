@@ -102,21 +102,11 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
     }
 
     private fun openXMLFile() {
-        try {
-            val inputStream = FileInputStream(openFileChooser()!!)
-            parseXMLFile(inputStream)
-        } catch (e: FileNotFoundException) {
-            e.printStackTrace()
-        }
-
-    }
-
-    private fun parseXMLFile(inputStream: FileInputStream) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     private fun createQuery() {
-
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     private fun runQuery() {
@@ -211,19 +201,20 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                     "false" -> parameter.options["false"]
                     else -> ""
                 }
-                val searchString = "@"+parameter.id
+                val searchString = "@" + parameter.id
                 if (value != null) {
                     queryString = queryString.replace(searchString, value)
                 }
             }
-            for (parameter in currentQuery.parameters) {
+        }
+        for (parameter in currentQuery.parameters) {
                 if (parameter.type != QueryParameter.ParameterType.CHECKBOX) {
                     val value = parameter.value ?: throw NullPointerException("Parameter value cannot be null!")
                     val searchString = "@"+parameter.id
                     queryString = queryString.replace(searchString.toRegex(), value)
                 }
             }
-        }
+
         return queryString
     }
 
