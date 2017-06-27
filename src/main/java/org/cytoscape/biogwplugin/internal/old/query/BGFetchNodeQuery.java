@@ -2,6 +2,7 @@ package org.cytoscape.biogwplugin.internal.old.query;
 
 import org.cytoscape.biogwplugin.internal.BGServiceManager;
 import org.cytoscape.biogwplugin.internal.old.parser.BGParser;
+import org.cytoscape.biogwplugin.internal.query.ResultType;
 import org.cytoscape.work.TaskMonitor;
 
 import java.io.IOException;

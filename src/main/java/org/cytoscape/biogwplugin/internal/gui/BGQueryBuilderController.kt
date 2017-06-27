@@ -1,6 +1,10 @@
 package org.cytoscape.biogwplugin.internal.gui
 
 import org.cytoscape.biogwplugin.internal.BGServiceManager
+import org.cytoscape.biogwplugin.internal.model.BGNode
+import org.cytoscape.biogwplugin.internal.model.BGRelation
+import org.cytoscape.biogwplugin.internal.model.BGRelationType
+import org.cytoscape.biogwplugin.internal.parser.BGReturnType
 import org.cytoscape.biogwplugin.internal.query.*
 import org.cytoscape.biogwplugin.internal.util.Utility
 import org.cytoscape.biogwplugin.internal.util.sanitizeParameter
@@ -19,6 +23,7 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileNotFoundException
 import java.util.ArrayList
+import javax.management.relation.Relation
 
 /**
  * Created by sholmas on 23/05/2017.
@@ -28,7 +33,10 @@ import java.util.ArrayList
 class BGQueryBuilderController(private val serviceManager: BGServiceManager) : ActionListener, ChangeListener {
     private val view: BGCreateQueryView
 
+    //private var relationList = ArrayList<BGRelation>()
+
     private var currentQuery: QueryTemplate? = null
+    private var currentReturnData: BGReturnData? = null
     private var  queries = HashMap<String, QueryTemplate>()
 
     init {
@@ -74,7 +82,11 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                 }
                 QueryParameter.ParameterType.OPTIONAL_URI -> {
                     val uri = (component as JTextField).text
-                    parameter.value = uri
+                    if (uri.startsWith("?")) {
+                        parameter.value = uri
+                    } else {
+                        parameter.value = "<"+uri+">" // Virtuoso requires brackets if it's a real URL.
+                    }
                 }
                 else -> {
                 }
@@ -108,26 +120,67 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
     }
 
     private fun runQuery() {
-        if (validatePropertyFields()) {
+        val errorText = validatePropertyFields()
+        if (errorText != null) {
+            JOptionPane.showMessageDialog(view.mainFrame, errorText)
+        } else {
             readParameterComponents()
             val queryString = createQueryString(currentQuery!!)
             view.sparqlTextArea.text = queryString ?: throw Exception("Query String cannot be empty!")
 
-            val query = BGNodeSearchQuery(SERVER_PATH, queryString, serviceManager.server.parser)
+            //TODO: Make this independent from node search!
+            val query: BGQuery?
+            val queryType = currentQuery!!.returnType
+
+
+            query = when(queryType){
+                BGReturnType.NODE_LIST, BGReturnType.NODE_LIST_DESCRIPTION -> {
+                    BGNodeSearchQuery(serviceManager, queryString, queryType, serviceManager.server.parser)
+                }
+                BGReturnType.RELATION_TRIPLE, BGReturnType.RELATION_TRIPLE_NAMED -> {
+                    BGRelationsQuery(serviceManager, queryString, serviceManager.server.parser, queryType)
+                }
+            }
+
+
+            //query = BGGenericQuery(SERVER_PATH, queryString, serviceManager.server.parser, queryType)
 
             query.addCompletion {
-                val data = it as? BGReturnNodeData ?: throw Exception("Expected Node Data in return!")
 
-                // TODO: Update the tablemodel to have the same number of columns as the result data.
+                val data = when(queryType) {
+                    BGReturnType.NODE_LIST, BGReturnType.NODE_LIST_DESCRIPTION -> {
+                        it as? BGReturnNodeData ?: throw Exception("Expected Node Data in return!")
+                    }
+                    BGReturnType.RELATION_TRIPLE, BGReturnType.RELATION_TRIPLE_NAMED -> {
+                        it as? BGReturnRelationsData ?: throw Exception("Expected Relation Data in return!")
+                    }
+                }
+                currentReturnData = data
+
                 val tableModel = view.resultTable.model as DefaultTableModel
                 tableModel.setColumnIdentifiers(data.columnNames)
 
                 for (i in tableModel.rowCount -1 downTo 0) {
                     tableModel.removeRow(i)
                 }
-                for ((uri, node) in data.nodeData) {
-                    val row = arrayOf(uri, node.name, node.description)
-                    tableModel.addRow(row)
+
+                if (data is BGReturnNodeData) {
+                    for ((uri, node) in data.nodeData) {
+                        val row = arrayOf(uri, node.name, node.description)
+                        tableModel.addRow(row)
+                    }
+                }
+                if (data is BGReturnRelationsData) {
+
+                    for (relation in data.relationsData) {
+
+                        var row = relation.stringArray()
+                        val fromNodeName = relation.fromNode.name ?: relation.fromNode.uri
+                        val relationName = relation.relationType.description
+                        val toNodeName = relation.toNode.name ?: relation.toNode.uri
+                        row = arrayOf(fromNodeName, relationName, toNodeName)
+                        tableModel.addRow(row)
+                    }
                 }
                 view.tabPanel.selectedIndex = 2 // Open the result tab.
 
@@ -143,8 +196,6 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
             val iterator = TaskIterator(query)
             serviceManager.taskManager.execute(iterator)
 
-        } else {
-            JOptionPane.showMessageDialog(view.mainFrame, "All text fields must be filled out!")
         }
     }
 
@@ -162,7 +213,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                 }
                 val searchString = "@"+parameter.id
                 if (value != null) {
-                    queryString = queryString.replace(searchString.toRegex(), value)
+                    queryString = queryString.replace(searchString, value)
                 }
             }
             for (parameter in currentQuery.parameters) {
@@ -176,23 +227,72 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         return queryString
     }
 
-    private fun importSelectedResults(network: CyNetwork?) {
+    private fun importSelectedResults(network: CyNetwork?, returnType: BGReturnType) {
         var network = network
-
+        val server = serviceManager.server
         // 1. Get the selected lines from the table.
-        val selectedURIs = ArrayList<String>()
+        val nodes = HashMap<String, BGNode>()
+        val relations = ArrayList<BGRelation>()
         val model = view.resultTable.model as DefaultTableModel
         for (row in view.resultTable.selectedRows) {
-            val uri = model.getValueAt(row, 1) as String
-            selectedURIs.add(uri)
+
+            when(returnType) {
+                BGReturnType.NODE_LIST -> {
+                    val uri = model.getValueAt(row, 0) as String
+                    val name = model.getValueAt(row, 1) as String
+                    val node = server.getNodeFromCache(BGNode(uri, name))
+                    nodes.put(uri, node)
+                }
+                BGReturnType.NODE_LIST_DESCRIPTION -> {
+                    val uri = model.getValueAt(row, 0) as String
+                    val name = model.getValueAt(row, 1) as String
+                    val description = model.getValueAt(row, 2) as String
+                    val node = server.getNodeFromCache(BGNode(uri, name, description))
+                    nodes.put(uri, node)
+                }
+                BGReturnType.RELATION_TRIPLE -> {
+                    /*
+                    // TODO: We seem to lose the relation data after importing it, because the only thing we do is populating this table.
+                    val fromNodeUri = model.getValueAt(row, 0) as String
+                    val relationUri = model.getValueAt(row, 1) as String
+                    val toNodeUri = model.getValueAt(row, 2) as String
+                    val fromNode = server.getNodeFromCache(BGNode(fromNodeUri))
+                    val toNode = server.getNodeFromCache(BGNode(toNodeUri))
+                    var relationType = server.cache.relationTypes.get(relationUri)
+
+                    if (relationType == null) {
+                        relationType = BGRelationType(relationUri, relationUri)
+                    }
+                    */
+                    //val relation = BGRelation(fromNode, relationType, toNode)
+
+                    val returnData = currentReturnData as? BGReturnRelationsData
+                    returnData?.let {
+                        val relation = returnData.relationsData[row]
+                        nodes.put(relation.fromNode.uri, relation.fromNode)
+                        nodes.put(relation.toNode.uri, relation.toNode)
+                        relations.add(relation)
+                    }
+                }
+                BGReturnType.RELATION_TRIPLE_NAMED -> {
+
+                }
+            }
+
         }
-
         // 2. The nodes have already been fetched. There should be a cache storing them somewhere.
-
+        if (network == null) {
+            network = serviceManager.server.networkBuilder.createNetworkFromBGNodes(nodes.values)
+        } else {
+            serviceManager.server.networkBuilder.addBGNodesToNetwork(nodes.values, network)
+        }
+        server.networkBuilder.addRelationsToNetwork(network, relations)
+        serviceManager.networkManager.addNetwork(network)
+        serviceManager.server.networkBuilder.destroyAndRecreateNetworkView(network, serviceManager)
     }
 
 
-    private fun validatePropertyFields(): Boolean {
+    private fun validatePropertyFields(): String? {
         for (parameter in currentQuery!!.parameters) {
             val component = view.getParameterComponents()[parameter.id]
             if (component is JTextField) {
@@ -206,21 +306,22 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                         field.text = uri.sanitizeParameter()
                     } else {
                         // Validate the URI.
-                        val validated = Utility.instance.validateURI(uri) // UGLY HACK! Should be asynchronous:
+                        val validated = Utility.validateURI(uri) // UGLY HACK! Should be asynchronous:
                         if (!validated) {
-                            return false
+                            return "Unknown URI!"
                         }
+
                     }
                 } else {
                     val field = component
-                    field.text = Utility.instance.sanitizeParameter(field.text)
+                    field.text = Utility.sanitizeParameter(field.text)
                     if (field.text.isEmpty()) {
-                        return false
+                        return "All required text fields must be filled out!"
                     }
                 }
             }
         }
-        return true
+        return null
     }
 
     private fun openFileChooser(): File? {
@@ -256,9 +357,9 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
             ACTION_CHANGED_QUERY -> updateSelectedQuery()
             ACTION_IMPORT_TO_SELECTED -> {
                 val network = serviceManager.applicationManager.currentNetwork
-                importSelectedResults(network)
+                importSelectedResults(network, currentQuery!!.returnType)
             }
-            ACTION_IMPORT_TO_NEW -> importSelectedResults(null)
+            ACTION_IMPORT_TO_NEW -> importSelectedResults(null, currentQuery!!.returnType)
             else -> {
             }
         }

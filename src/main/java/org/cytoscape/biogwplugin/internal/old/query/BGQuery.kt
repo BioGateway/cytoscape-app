@@ -1,5 +1,7 @@
 package org.cytoscape.biogwplugin.internal.old.query
 
+import org.cytoscape.biogwplugin.internal.query.BGQueryResult
+import org.cytoscape.biogwplugin.internal.query.ResultType
 import org.cytoscape.work.AbstractTask
 
 import java.io.UnsupportedEncodingException

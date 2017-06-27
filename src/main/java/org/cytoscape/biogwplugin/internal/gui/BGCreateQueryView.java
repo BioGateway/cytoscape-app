@@ -126,7 +126,6 @@ public class BGCreateQueryView implements ChangeListener {
     }
 
 
-
     public HashMap<String, JComponent> getParameterComponents() {
         return parameterComponents;
     }

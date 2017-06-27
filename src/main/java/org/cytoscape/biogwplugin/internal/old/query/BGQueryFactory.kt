@@ -1,6 +1,7 @@
 package org.cytoscape.biogwplugin.internal.old.query
 
 import org.cytoscape.biogwplugin.internal.BGServiceManager
+import org.cytoscape.biogwplugin.internal.query.BGQueryResult
 import org.cytoscape.work.AbstractTaskFactory
 import org.cytoscape.work.TaskIterator
 

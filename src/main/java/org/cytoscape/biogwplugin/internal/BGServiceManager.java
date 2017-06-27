@@ -1,6 +1,7 @@
 package org.cytoscape.biogwplugin.internal;
 
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.biogwplugin.internal.old.cache.BGCache;
 import org.cytoscape.biogwplugin.internal.server.BGServer;
@@ -46,6 +47,7 @@ public class BGServiceManager {
 
     private BGCache cache;
     private BGServer server;
+    public CloseableHttpClient httpclient = HttpClients.createDefault();
 
     public BGServiceManager() {
         cache = new BGCache(this);

@@ -1,4 +1,7 @@
-package org.cytoscape.biogwplugin.internal.old.query
+package org.cytoscape.biogwplugin.internal.query
+
+import org.cytoscape.biogwplugin.internal.old.query.BGQuery
+import org.cytoscape.biogwplugin.internal.old.query.BGRelation
 
 /**
  * Created by sholmas on 23/05/2017.

@@ -3,19 +3,14 @@ package org.cytoscape.biogwplugin.internal.server
 import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.model.BGRelationType
 import org.cytoscape.biogwplugin.internal.model.BGNode
-import org.cytoscape.biogwplugin.internal.parser.BGNetworkBuilder
-import org.cytoscape.biogwplugin.internal.parser.BGParser
+import org.cytoscape.biogwplugin.internal.parser.*
 import org.cytoscape.biogwplugin.internal.query.BGNodeFetchQuery
 import org.cytoscape.biogwplugin.internal.query.QueryParameter
 import org.cytoscape.biogwplugin.internal.query.QueryTemplate
 import org.cytoscape.model.CyNetwork
-import org.cytoscape.model.CyNode
-import org.cytoscape.model.CyTable
 import org.w3c.dom.Element
 import org.w3c.dom.Node
-import java.io.IOException
-import java.io.InputStream
-import java.io.UnsupportedEncodingException
+import java.io.*
 import java.net.MalformedURLException
 import java.net.URL
 import java.net.URLEncoder
@@ -52,19 +47,40 @@ class BGServer(private val serviceManager: BGServiceManager) {
         loadXMLFileFromServer()
     }
 
-
-    fun getNodeFromCache(uri: String): BGNode {
-        var node = cache.nodeCache.get(uri)
+    fun getNodeFromCache(newNode: BGNode): BGNode {
+        // Check if the node already exists in the cache.
+        var node = cache.nodeCache[newNode.uri]
 
         if (node == null) {
-            node = BGNode(uri)
-            cache.nodeCache.put(uri, node)
+            // If it doesn't exist, add the new node.
+            node = newNode
+            cache.nodeCache.put(node.uri, node)
+
+            if ((newNode.description == null) or (newNode.name == null)) {
+                // Query the server for more info about this node.
+                if (node.uri.startsWith("http")) {
+                getNodeFromServer(node.uri) {
+                    if (it != null) {
+                        newNode.name = it.name
+                        newNode.description = it.description
+                        for (cyNode in newNode.cyNodes) {
+                            it.name?.let {
+                                cyNode.setName(it, cyNode.networkPointer)
+                            }
+                            it.description?.let {
+                                cyNode.setDescription(it, cyNode.networkPointer)
+                            }
+                        }
+                    }
+                    }
+                }
+            }
         }
         return node
     }
 
 
-    fun getNode(uri: String, completion: (BGNode?) -> Unit) {
+    fun getNodeFromUri(uri: String, completion: (BGNode?) -> Unit) {
         var node = cache.nodeCache.get(uri)
         if (node != null) {
             completion(node)
@@ -85,10 +101,17 @@ class BGServer(private val serviceManager: BGServiceManager) {
     }
 
     private fun  getNodeFromServer(uri: String, completion: (BGNode?) -> Unit) {
-        val query = BGNodeFetchQuery(serviceManager.serverPath, uri, serviceManager.server.parser)
+
+        if (!uri.startsWith("http://")) {
+            completion(null)
+            return
+        }
+
+        val query = BGNodeFetchQuery(serviceManager, uri, serviceManager.server.parser, BGReturnType.NODE_LIST_DESCRIPTION)
         val stream = query.encodeUrl()?.openStream()
         if (stream != null) {
-            parser.parseNodesToTextArray(stream) {
+            val reader = BufferedReader(InputStreamReader(stream))
+            parser.parseNodesToTextArray(reader, BGReturnType.NODE_LIST_DESCRIPTION) {
                 val data = it ?: throw Exception("Invalid return data!")
                 val node = data.nodeData.get(uri)
                 completion(node)
@@ -105,8 +128,6 @@ class BGServer(private val serviceManager: BGServiceManager) {
             val nodeName = nodeTable.getRow(cyNode.suid).get("name", String::class.java)
 
         }
-
-
         return null
     }
 
@@ -158,9 +179,21 @@ class BGServer(private val serviceManager: BGServiceManager) {
                 if (nNode.nodeType == Node.ELEMENT_NODE) {
                     val qElement = nNode as Element
                     val queryName = qElement.getAttribute("name")
+                    val returnTypeString = qElement.getAttribute("returnType")
                     val queryDescription = qElement.getElementsByTagName("description").item(0).textContent
                     val sparqlString = qElement.getElementsByTagName("sparql").item(0).textContent.replace("\t", "") // Remove tabs from the XML file. (They might be added "for show").
-                    val query = QueryTemplate(queryName, queryDescription, sparqlString)
+
+                    val returnType = when (returnTypeString) {
+                        "nodeList" -> BGReturnType.NODE_LIST
+                        "nodeListDescription" -> BGReturnType.NODE_LIST_DESCRIPTION
+                        "relationTriple" -> BGReturnType.RELATION_TRIPLE
+
+                        else -> {
+                            throw Exception("Unknown return type!")
+                        }
+                    }
+
+                    val query = QueryTemplate(queryName, queryDescription, sparqlString, returnType)
                     val parameterList = qElement.getElementsByTagName("parameter")
 
                     for (pIndex in 0..parameterList.length - 1) {
