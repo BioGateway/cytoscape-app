@@ -39,6 +39,7 @@ public class BGCreateQueryView implements ChangeListener {
     private JComboBox querySelectionBox;
     private JButton importToNewButton;
     private JButton importToSelectedNetworkButton;
+    private JPanel descriptionPanel;
 
     public BGCreateQueryView(ActionListener listener) {
         this.listener = listener;
@@ -75,7 +76,13 @@ public class BGCreateQueryView implements ChangeListener {
     public void generateParameterFields(QueryTemplate query) {
         // Clear old data:
         parameterPanel.removeAll();
+        descriptionPanel.removeAll();
+
         parameterComponents = new HashMap<>();
+
+        JLabel description = new JLabel(query.getDescription());
+        description.setFont(description.getFont().deriveFont(Font.ITALIC));
+        descriptionPanel.add(description);
 
         for (QueryParameter parameter : query.getParameters()) {
 
@@ -315,9 +322,15 @@ public class BGCreateQueryView implements ChangeListener {
         runQueryButton = new JButton();
         runQueryButton.setText("Run Query");
         buttonPanel.add(runQueryButton);
+        final JPanel panel1 = new JPanel();
+        panel1.setLayout(new BorderLayout(0, 0));
+        queryPanel.add(panel1, BorderLayout.CENTER);
+        descriptionPanel = new JPanel();
+        descriptionPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
+        panel1.add(descriptionPanel, BorderLayout.NORTH);
         parameterPanel = new JPanel();
         parameterPanel.setLayout(new GridBagLayout());
-        queryPanel.add(parameterPanel, BorderLayout.CENTER);
+        panel1.add(parameterPanel, BorderLayout.CENTER);
         sparqlPanel = new JPanel();
         sparqlPanel.setLayout(new BorderLayout(0, 0));
         tabPanel.addTab("SparQL", sparqlPanel);
@@ -328,29 +341,29 @@ public class BGCreateQueryView implements ChangeListener {
         resultPanel = new JPanel();
         resultPanel.setLayout(new BorderLayout(0, 0));
         tabPanel.addTab("Query Result", resultPanel);
-        final JPanel panel1 = new JPanel();
-        panel1.setLayout(new BorderLayout(0, 0));
-        resultPanel.add(panel1, BorderLayout.CENTER);
+        final JPanel panel2 = new JPanel();
+        panel2.setLayout(new BorderLayout(0, 0));
+        resultPanel.add(panel2, BorderLayout.CENTER);
         final JScrollPane scrollPane2 = new JScrollPane();
-        panel1.add(scrollPane2, BorderLayout.CENTER);
+        panel2.add(scrollPane2, BorderLayout.CENTER);
         resultTable = new JTable();
         resultTable.setAutoCreateRowSorter(true);
         resultTable.setFillsViewportHeight(true);
         scrollPane2.setViewportView(resultTable);
-        final JPanel panel2 = new JPanel();
-        panel2.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        panel1.add(panel2, BorderLayout.SOUTH);
-        importToNewButton = new JButton();
-        importToNewButton.setText("Import to new Network");
-        panel2.add(importToNewButton);
-        importToSelectedNetworkButton = new JButton();
-        importToSelectedNetworkButton.setText("Import to selected Network");
-        panel2.add(importToSelectedNetworkButton);
         final JPanel panel3 = new JPanel();
         panel3.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        mainPanel.add(panel3, BorderLayout.NORTH);
+        panel2.add(panel3, BorderLayout.SOUTH);
+        importToNewButton = new JButton();
+        importToNewButton.setText("Import to new Network");
+        panel3.add(importToNewButton);
+        importToSelectedNetworkButton = new JButton();
+        importToSelectedNetworkButton.setText("Import to selected Network");
+        panel3.add(importToSelectedNetworkButton);
+        final JPanel panel4 = new JPanel();
+        panel4.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        mainPanel.add(panel4, BorderLayout.NORTH);
         querySelectionBox = new JComboBox();
-        panel3.add(querySelectionBox);
+        panel4.add(querySelectionBox);
     }
 
     /**
