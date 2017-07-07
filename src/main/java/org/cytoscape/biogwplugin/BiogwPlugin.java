@@ -25,5 +25,4 @@ public interface BiogwPlugin {
 	 * @param n The network to be analyzed.
 	 * @return A collection of "analyzed" nodes.
 	 */
-	Collection<CyNode> analyzeNodes(CyNetwork n);
 }

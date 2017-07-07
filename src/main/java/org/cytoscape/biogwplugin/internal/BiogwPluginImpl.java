@@ -42,14 +42,4 @@ public class BiogwPluginImpl implements BiogwPlugin {
 	 */
 
 
-	public Collection<CyNode> analyzeNodes(CyNetwork n) {
-		// Check preconditions for your method. 
-		if ( n == null )
-			throw new NullPointerException("network is null.");
-
-		// Our "analysis" involves returning the first half of
-		// the nodes found in the network - hopefully you will
-		// do something more substantial!
-		return n.getNodeList().subList( 0, n.getNodeCount()/2 );
-	}
 }

@@ -4,9 +4,9 @@ import org.apache.http.client.methods.HttpGet
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.util.EntityUtils
 import org.cytoscape.biogwplugin.internal.BGServiceManager
+import org.cytoscape.biogwplugin.internal.model.BGNode
 import org.cytoscape.biogwplugin.internal.parser.BGParser
 import org.cytoscape.biogwplugin.internal.parser.BGReturnType
-import org.cytoscape.biogwplugin.internal.server.BGServer
 import org.cytoscape.work.AbstractTask
 import org.cytoscape.work.TaskMonitor
 import java.io.BufferedReader
@@ -123,6 +123,24 @@ class BGGenericQuery(serviceManager: BGServiceManager, override var queryString:
         } */
     }
 }
+
+
+
+class BGFindRelationsForNodeQuery(serviceManager: BGServiceManager, val node: BGNode, val direction: BGRelationDirection): BGQuery(serviceManager, BGReturnType.RELATION_TRIPLE, serviceManager.server.parser) {
+    override fun run(taskMonitor: TaskMonitor?) {
+        run()
+    }
+
+    override fun run() {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override var queryString: String
+        get() = ""
+        set(value) {}
+}
+
+
 class BGRelationsQuery(serviceManager: BGServiceManager, override var queryString: String, parser: BGParser, var returnType: BGReturnType): BGQuery(serviceManager, returnType, parser) {
     override fun run(taskMonitor: TaskMonitor?) {
         run()

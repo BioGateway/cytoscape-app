@@ -5,9 +5,8 @@ import java.util.Properties;
 import org.cytoscape.biogwplugin.BiogwPlugin;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CyAction;
-import org.cytoscape.biogwplugin.internal.old.query.BGMultiRelationSearchCMF;
-import org.cytoscape.biogwplugin.internal.old.query.BGRelationSearchCMF;
-import org.cytoscape.biogwplugin.internal.old.query.BGRelationsQuery;
+import org.cytoscape.biogwplugin.internal.gui.BGRelationSearchCMF;
+import org.cytoscape.biogwplugin.internal.model.BGRelation;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
@@ -28,7 +27,9 @@ public class CyActivator extends AbstractCyActivator {
 	@Override
 	public void start(BundleContext context) throws Exception {
 
-        BGServiceManager serviceManager = createServiceManager(context);
+	    BGServiceManager serviceManager = createServiceManager(context);
+        // After this point, we should be assured that the XML config file is loaded. Otherwise, there is a network problem.
+
 
         BiogwPlugin biogwPlugin = new BiogwPluginImpl(serviceManager);
 
@@ -43,8 +44,15 @@ public class CyActivator extends AbstractCyActivator {
 
 
 	private void registerContextMenuItems(BundleContext bundleContext, BGServiceManager serviceManager) {
+
         //BGRelationPostSearchCMF postSearchCMF = new BGRelationPostSearchCMF(serviceManager);
         //BGRelationPreSearchCMF preSearchCMF = new BGRelationPreSearchCMF(serviceManager);
+
+        BGRelationSearchCMF relationSearchCMF = new BGRelationSearchCMF("Fetch Relations", serviceManager);
+        registerAllServices(bundleContext, relationSearchCMF, ezProps("preferredMenu", "BioGateway"));
+
+
+        /*
         BGRelationSearchCMF postSearchCMF = new BGRelationSearchCMF(serviceManager, BGRelationsQuery.Direction.POST, "Fetch relations from this node");
         BGRelationSearchCMF preSearchCMF = new BGRelationSearchCMF(serviceManager, BGRelationsQuery.Direction.PRE, "Fetch relations to this node");
         BGMultiRelationSearchCMF multiPostSearchCMF = new BGMultiRelationSearchCMF(serviceManager, BGRelationsQuery.Direction.POST, "Get relations from selected nodes");
@@ -53,14 +61,16 @@ public class CyActivator extends AbstractCyActivator {
         registerAllServices(bundleContext, postSearchCMF, ezProps("preferredMenu", "Apps"));
         registerAllServices(bundleContext, preSearchCMF, ezProps("preferredMenu", "Apps"));
         registerAllServices(bundleContext, multiPostSearchCMF, ezProps("preferredMenu", "Apps"));
-        registerAllServices(bundleContext, multiPreSearchCMF, ezProps("preferredMenu", "Apps"));
+        registerAllServices(bundleContext, multiPreSearchCMF, ezProps("preferredMenu", "Apps"));*/
     }
 
 
 	private BGServiceManager createServiceManager(BundleContext bundleContext) {
         CyNetworkManager networkManager = getService(bundleContext, CyNetworkManager.class);
 
-        BGServiceManager bgServiceManager = new BGServiceManager();
+        // This will also create a BGServer object, which creates a BGCache object and loads the XML file from the server.
+        // The XML file is loaded SYNCHRONOUSLY, because we actually want to wait for it to load before loading the plugin.
+        BGServiceManager bgServiceManager = new BGServiceManager(this, bundleContext);
 
         bgServiceManager.setApplicationManager(getService(bundleContext, CyApplicationManager.class));
         bgServiceManager.setViewManager(getService(bundleContext, CyNetworkViewManager.class));

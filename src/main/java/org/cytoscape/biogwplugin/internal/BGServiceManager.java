@@ -3,7 +3,6 @@ package org.cytoscape.biogwplugin.internal;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.biogwplugin.internal.old.cache.BGCache;
 import org.cytoscape.biogwplugin.internal.server.BGServer;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetworkFactory;
@@ -17,6 +16,7 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.swing.DialogTaskManager;
+import org.osgi.framework.BundleContext;
 
 /**
  * Created by sholmas on 23/03/2017.
@@ -25,6 +25,8 @@ public class BGServiceManager {
 
     // This seems like a good place to store static properties.
     public final static String SERVER_PATH = "http://www.semantic-systems-biology.org/biogateway/endpoint";
+    private final BundleContext bundleContext;
+    private final CyActivator activator;
 
 
     private CyApplicationManager applicationManager;
@@ -45,13 +47,15 @@ public class BGServiceManager {
     private CloseableHttpClient httpClient;
 
 
-    private BGCache cache;
+    private BGServer.BGCache cache;
     private BGServer server;
     public CloseableHttpClient httpclient = HttpClients.createDefault();
 
-    public BGServiceManager() {
-        cache = new BGCache(this);
+    public BGServiceManager(CyActivator cyActivator, BundleContext bundleContext) {
         server = new BGServer(this);
+        cache = server.getCache();
+        this.bundleContext = bundleContext;
+        this.activator = cyActivator;
     }
 
     public CyApplicationManager getApplicationManager() {
@@ -157,11 +161,11 @@ public class BGServiceManager {
         this.httpClient = httpClient;
     }
 
-    public BGCache getCache() {
+    public BGServer.BGCache getCache() {
         return cache;
     }
 
-    public void setCache(BGCache cache) {
+    public void setCache(BGServer.BGCache cache) {
         this.cache = cache;
     }
 
@@ -183,5 +187,17 @@ public class BGServiceManager {
 
     public void setServer(BGServer server) {
         this.server = server;
+    }
+
+    public BundleContext getBundleContext() {
+        return bundleContext;
+    }
+
+    public CyActivator getActivator() {
+        return activator;
+    }
+
+    public CloseableHttpClient getHttpclient() {
+        return httpclient;
     }
 }
