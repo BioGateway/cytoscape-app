@@ -24,6 +24,9 @@ class BGRelation(val fromNode: BGNode, val relationType: BGRelationType, val toN
         return arrayOf(fromNode.uri, relationType.uri, toNode.uri)
     }
 
+    val edgeIdentifier: String
+        get() = fromNode.uri+"_"+relationType.uri+"_"+toNode.uri
+
     override fun toString(): String {
         val fromNodeName = fromNode.description ?: fromNode.uri
         val toNodeName = toNode.description ?: toNode.uri

@@ -42,10 +42,10 @@ fun CyNode.getDescription(network: CyNetwork): String {
 class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
 
     fun createNetworkFromBGNodes(nodes: Collection<BGNode>): CyNetwork {
-            val networkFactory = serviceManager.networkFactory
-            var network = networkFactory.createNetwork()
-            addBGNodesToNetwork(nodes, network)
-            return network
+        val networkFactory = serviceManager.networkFactory
+        var network = networkFactory.createNetwork()
+        addBGNodesToNetwork(nodes, network)
+        return network
     }
 
     fun addBGNodesToNetwork(nodes: Collection<BGNode>, network: CyNetwork) {
@@ -62,6 +62,9 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
 
         if (nodeTable.getColumn(Constants.BG_FIELD_IDENTIFIER_URI) == null) nodeTable.createColumn(Constants.BG_FIELD_IDENTIFIER_URI, String::class.java, false)
         if (edgeTable.getColumn(Constants.BG_FIELD_IDENTIFIER_URI) == null) edgeTable.createColumn(Constants.BG_FIELD_IDENTIFIER_URI, String::class.java, false)
+        if (edgeTable.getColumn(Constants.BG_FIELD_EDGE_ID) == null) edgeTable.createColumn(Constants.BG_FIELD_EDGE_ID, String::class.java, false)
+
+
 
         // Find the unique nodes in the set of relations. Duplicates get overwritten.
         val uniqueNodes = HashMap<String, BGNode>()
@@ -85,15 +88,22 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
         for (relation in relations) {
             val fromNode = cyNodes.get(relation.fromNode.uri) ?: throw Exception("CyNode not found!")
             val toNode = cyNodes.get(relation.toNode.uri) ?: throw Exception("CyNode not found!")
-            val edge = addEdgeToNetwork(fromNode, toNode, network, edgeTable, relation.relationType)
+
+            val matchingRows = edgeTable.getMatchingRows(Constants.BG_FIELD_EDGE_ID, relation.edgeIdentifier)
+            if (matchingRows.size == 0) {
+                val edge = addEdgeToNetwork(fromNode, toNode, network, edgeTable, relation.relationType, relation.edgeIdentifier)
+            } else if (matchingRows.size > 1) {
+                println("WARNING: Duplicate edges!")
+            }
         }
     }
 
 
-    fun addEdgeToNetwork(from: CyNode, to: CyNode, network: CyNetwork, edgeTable: CyTable, relationType: BGRelationType): CyEdge {
+    fun addEdgeToNetwork(from: CyNode, to: CyNode, network: CyNetwork, edgeTable: CyTable, relationType: BGRelationType, edgeId: String): CyEdge {
         val edge = network.addEdge(from, to, true)
         edgeTable.getRow(edge.suid).set(Constants.BG_FIELD_IDENTIFIER_URI, relationType.uri)
         edgeTable.getRow(edge.suid).set(Constants.BG_FIELD_NAME, relationType.description)
+        edgeTable.getRow(edge.suid).set(Constants.BG_FIELD_EDGE_ID, edgeId)
         return edge
     }
 
@@ -117,6 +127,15 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
         }
     }
 
+    fun getEdgeWithEdgeId(edgeId: String, network: CyNetwork, table: CyTable): CyEdge? {
+        val edges = getCyEdgesWithValue(network, table, Constants.BG_FIELD_EDGE_ID, edgeId)
+        if (edges.size == 1) {
+            return edges.iterator().next()
+        } else {
+            return null
+        }
+    }
+
     fun getCyNodesWithValue(network: CyNetwork, nodeTable: CyTable, columnName: String, value: Any): Set<CyNode> {
         val nodes = HashSet<CyNode>()
         val matchingRows = nodeTable.getMatchingRows(columnName, value)
@@ -131,6 +150,24 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
             }
         }
         return nodes
+    }
+
+    fun getCyEdgesWithValue(network: CyNetwork, edgeTable: CyTable, columnName: String, value: Any): Set<CyEdge> {
+        val edges = HashSet<CyEdge>()
+
+        //val matchingRows = nodeTable.getMatchingRows(columnName, value)
+        val matchingRows = edgeTable.getMatchingRows(columnName, value)
+
+        val primaryKeyColumnName = edgeTable.primaryKey.name
+        for (row in matchingRows) {
+            //val nodeId = row.get(primaryKeyColumnName, Long::class.java) ?: continue
+            val edgeId = row.getRaw(primaryKeyColumnName) as? Long
+            if (edgeId is Long) {
+                val node = network.getEdge(edgeId) ?: continue
+                edges.add(node)
+            }
+        }
+        return edges
     }
 
     fun destroyAndRecreateNetworkView(network: CyNetwork, serviceManager: BGServiceManager) {
