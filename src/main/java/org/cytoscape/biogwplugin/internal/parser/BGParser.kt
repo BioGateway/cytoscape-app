@@ -70,11 +70,11 @@ class BGParser(private val serviceManager: BGServiceManager) {
                 returnData.relationsData.add(relation)
 
             } else if (returnType == BGReturnType.RELATION_TRIPLE_NAMED) {
-                val fromNodeUri = lineColumns[0]
-                val fromNodeName = lineColumns[1]
-                val relationUri = lineColumns[2]
-                val toNodeUri = lineColumns[3]
-                val toNodeName = lineColumns[4]
+                val fromNodeUri = lineColumns[0].replace("\"", "")
+                val fromNodeName = lineColumns[1].replace("\"", "")
+                val relationUri = lineColumns[2].replace("\"", "")
+                val toNodeUri = lineColumns[3].replace("\"", "")
+                val toNodeName = lineColumns[4].replace("\"", "")
 
                 var fromNode = server.getNodeFromCache(BGNode(fromNodeUri))
                 fromNode.name = fromNodeName

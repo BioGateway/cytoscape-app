@@ -7,6 +7,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.biogwplugin.internal.gui.BGRelationSearchCMF;
 import org.cytoscape.biogwplugin.internal.model.BGRelation;
+import org.cytoscape.biogwplugin.internal.query.BGRelationDirection;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
@@ -48,8 +49,10 @@ public class CyActivator extends AbstractCyActivator {
         //BGRelationPostSearchCMF postSearchCMF = new BGRelationPostSearchCMF(serviceManager);
         //BGRelationPreSearchCMF preSearchCMF = new BGRelationPreSearchCMF(serviceManager);
 
-        BGRelationSearchCMF relationSearchCMF = new BGRelationSearchCMF("Fetch Relations", serviceManager);
-        registerAllServices(bundleContext, relationSearchCMF, ezProps("preferredMenu", "BioGateway"));
+        BGRelationSearchCMF relationSearchFromCMF = new BGRelationSearchCMF("Fetch Relations from...", BGRelationDirection.FROM, serviceManager);
+        registerAllServices(bundleContext, relationSearchFromCMF, ezProps("preferredMenu", "BioGateway"));
+        BGRelationSearchCMF relationSearchToCMF = new BGRelationSearchCMF("Fetch Relations to...", BGRelationDirection.TO, serviceManager);
+        registerAllServices(bundleContext, relationSearchToCMF, ezProps("preferredMenu", "BioGateway"));
 
 
         /*

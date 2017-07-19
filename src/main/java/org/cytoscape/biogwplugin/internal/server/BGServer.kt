@@ -109,6 +109,8 @@ class BGServer(private val serviceManager: BGServiceManager) {
         }
 
         val query = BGNodeFetchQuery(serviceManager, uri, serviceManager.server.parser, BGReturnType.NODE_LIST_DESCRIPTION)
+        // TODO: Use the CloseableHttpClient. Because this might cause things to take a looooong time.
+        // TODO: This caching needs to be done more efficiently. Preferably, node names and descriptions should always be included in all results.
         val stream = query.encodeUrl()?.openStream()
         if (stream != null) {
             val reader = BufferedReader(InputStreamReader(stream))
@@ -131,8 +133,6 @@ class BGServer(private val serviceManager: BGServiceManager) {
         }
         return null
     }
-
-
 
 
     private fun loadXMLFileFromServer() {

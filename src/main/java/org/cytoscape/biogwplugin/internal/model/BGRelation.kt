@@ -23,4 +23,10 @@ class BGRelation(val fromNode: BGNode, val relationType: BGRelationType, val toN
     fun stringArray(): Array<String> {
         return arrayOf(fromNode.uri, relationType.uri, toNode.uri)
     }
+
+    override fun toString(): String {
+        val fromNodeName = fromNode.description ?: fromNode.uri
+        val toNodeName = toNode.description ?: toNode.uri
+        return fromNodeName + " -> " + relationType.description + " -> " + toNodeName
+    }
 }

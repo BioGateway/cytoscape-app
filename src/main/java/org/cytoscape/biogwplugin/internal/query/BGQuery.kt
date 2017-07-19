@@ -1,5 +1,4 @@
 package org.cytoscape.biogwplugin.internal.query
-import org.apache.http.client.HttpClient
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.util.EntityUtils
@@ -10,7 +9,6 @@ import org.cytoscape.biogwplugin.internal.parser.BGReturnType
 import org.cytoscape.work.AbstractTask
 import org.cytoscape.work.TaskMonitor
 import java.io.BufferedReader
-import java.io.InputStream
 import java.io.InputStreamReader
 import java.io.StringReader
 import java.net.URL
@@ -125,8 +123,7 @@ class BGGenericQuery(serviceManager: BGServiceManager, override var queryString:
 }
 
 
-
-class BGFindRelationsForNodeQuery(serviceManager: BGServiceManager, val node: BGNode, val direction: BGRelationDirection): BGQuery(serviceManager, BGReturnType.RELATION_TRIPLE, serviceManager.server.parser) {
+class BGFindAllRelationsForNodeQuery(serviceManager: BGServiceManager, val node: BGNode, val direction: BGRelationDirection): BGQuery(serviceManager, BGReturnType.RELATION_TRIPLE, serviceManager.server.parser) {
     override fun run(taskMonitor: TaskMonitor?) {
         run()
     }
@@ -139,7 +136,6 @@ class BGFindRelationsForNodeQuery(serviceManager: BGServiceManager, val node: BG
         get() = ""
         set(value) {}
 }
-
 
 class BGRelationsQuery(serviceManager: BGServiceManager, override var queryString: String, parser: BGParser, var returnType: BGReturnType): BGQuery(serviceManager, returnType, parser) {
     override fun run(taskMonitor: TaskMonitor?) {
@@ -159,11 +155,12 @@ class BGRelationsQuery(serviceManager: BGServiceManager, override var queryStrin
             val httpGet = HttpGet(uri)
             val response = client.execute(httpGet)
             val statusCode = response.statusLine.statusCode
-            if (statusCode > 204) {
-                throw Exception("Server connection failed with code "+statusCode)
-            }
+
             val data = EntityUtils.toString(response.entity)
-            print(data)
+            if (statusCode > 204) {
+                throw Exception("Server connection failed with code "+statusCode+": \n\n"+data)
+            }
+            //print(data)
             val reader = BufferedReader(StringReader(data))
             client.close()
             parser.parseRelations(reader, returnType) {
