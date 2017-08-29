@@ -6,6 +6,8 @@ import org.cytoscape.model.CyNode
  * Created by sholmas on 26/05/2017.
  */
 
+enum class BGNodeType { PROTEIN, GENE }
+
 open class BGNode {
 
     val uri: String

@@ -80,11 +80,13 @@ class BGParser(private val serviceManager: BGServiceManager) {
                 fromNode.name = fromNodeName
                 var toNode = server.getNodeFromCache(BGNode(toNodeUri))
                 toNode.name = toNodeName
-                val relationType = server.cache.relationTypes.get(relationUri) ?: throw NullPointerException("RelationType not found for this URI!")
+                val relationType = server.cache.relationTypes.get(relationUri)
 
-                val relation = BGRelation(fromNode, relationType, toNode)
-
-                returnData.relationsData.add(relation)
+                // Note: Will ignore relation types it doesn't already know of.
+                if (relationType != null) {
+                    val relation = BGRelation(fromNode, relationType, toNode)
+                    returnData.relationsData.add(relation)
+                }
             }
         }
         completion(returnData)

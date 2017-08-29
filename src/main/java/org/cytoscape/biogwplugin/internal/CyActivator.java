@@ -49,11 +49,8 @@ public class CyActivator extends AbstractCyActivator {
         //BGRelationPostSearchCMF postSearchCMF = new BGRelationPostSearchCMF(serviceManager);
         //BGRelationPreSearchCMF preSearchCMF = new BGRelationPreSearchCMF(serviceManager);
 
-        BGRelationSearchCMF relationSearchFromCMF = new BGRelationSearchCMF("Fetch Relations from...", BGRelationDirection.FROM, serviceManager);
+        BGRelationSearchCMF relationSearchFromCMF = new BGRelationSearchCMF(0F, serviceManager);
         registerAllServices(bundleContext, relationSearchFromCMF, ezProps("preferredMenu", "BioGateway"));
-        BGRelationSearchCMF relationSearchToCMF = new BGRelationSearchCMF("Fetch Relations to...", BGRelationDirection.TO, serviceManager);
-        registerAllServices(bundleContext, relationSearchToCMF, ezProps("preferredMenu", "BioGateway"));
-
 
         /*
         BGRelationSearchCMF postSearchCMF = new BGRelationSearchCMF(serviceManager, BGRelationsQuery.Direction.POST, "Fetch relations from this node");

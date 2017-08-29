@@ -4,30 +4,20 @@ import org.apache.http.client.methods.HttpGet
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.util.EntityUtils
 import org.cytoscape.biogwplugin.internal.BGServiceManager
-import org.cytoscape.biogwplugin.internal.model.BGRelationType
+import org.cytoscape.biogwplugin.internal.model.BGNode
 import org.cytoscape.biogwplugin.internal.parser.BGReturnType
 import org.cytoscape.work.TaskMonitor
 import java.io.BufferedReader
 import java.io.StringReader
 
-class BGFindRelationForNodeQuery(serviceManager: BGServiceManager, val relationType: BGRelationType, val nodeUri: String, val direction: BGRelationDirection): BGQuery(serviceManager, BGReturnType.RELATION_TRIPLE_NAMED, serviceManager.server.parser) {
-    override var queryString: String
-        get() = when (direction) {
-                BGRelationDirection.TO -> generateToQueryString()
-                BGRelationDirection.FROM -> generateFromQueryString()
-        } //To change initializer of created properties use File | Settings | File Templates.
-        set(value) {}
-
+class BGFindAllRelationsForNodeQuery(serviceManager: BGServiceManager, val nodeUri: String, val direction: BGRelationDirection): BGQuery(serviceManager, BGReturnType.RELATION_TRIPLE_NAMED, serviceManager.server.parser) {
     override fun run(taskMonitor: TaskMonitor?) {
-        taskMonitor?.setTitle("Searching for relations...")
         run()
     }
 
     var client = HttpClients.createDefault();
 
     override fun run() {
-
-
         val uri = encodeUrl()?.toURI()
         if (uri != null) {
             val httpGet = HttpGet(uri)
@@ -45,31 +35,34 @@ class BGFindRelationForNodeQuery(serviceManager: BGServiceManager, val relationT
         }
     }
 
+    override var queryString: String
+        get() = when (direction) {
+            BGRelationDirection.TO -> generateToQueryString()
+            BGRelationDirection.FROM -> generateFromQueryString()
+        } //To change initializer of created properties use File | Settings | File Templates.
+        set(value) {}
 
-    fun generateFromQueryString(): String {
+    private fun generateFromQueryString(): String {
         return "BASE <http://www.semantic-systems-biology.org/>\n" +
-                "PREFIX relation1: <" + relationType.uri + ">\n" +
                 "PREFIX fromNode: <" + nodeUri + ">\n" +
-                "SELECT DISTINCT fromNode: ?fromNodeName relation1: ?toNode ?toNodeName\n" +
+                "SELECT DISTINCT fromNode: ?fromNodeName ?relation ?toNode ?toNodeName\n" +
                 "WHERE {\n" +
                 "GRAPH ?graph {\n" +
-                "fromNode: relation1: ?toNode .\n" +
+                "fromNode: ?relation ?toNode .\n" +
                 "?toNode skos:prefLabel|skos:altLabel ?toNodeName .\n" +
                 "fromNode: skos:prefLabel|skos:altLabel ?fromNodeName .\n" +
                 "}}"
     }
 
-    fun generateToQueryString(): String {
+    private fun generateToQueryString(): String {
         return "BASE <http://www.semantic-systems-biology.org/>\n" +
-                "PREFIX relation1: <" + relationType.uri + ">\n" +
                 "PREFIX toNode: <" + nodeUri + ">\n" +
-                "SELECT DISTINCT ?fromNode ?fromNodeName relation1: toNode: ?toNodeName\n" +
+                "SELECT DISTINCT ?fromNode ?fromNodeName ?relation toNode: ?toNodeName\n" +
                 "WHERE {\n" +
                 "GRAPH ?graph {\n" +
-                "?fromNode relation1: toNode: .\n" +
+                "?fromNode ?relation toNode: .\n" +
                 "toNode: skos:prefLabel|skos:altLabel ?toNodeName .\n" +
                 "?fromNode skos:prefLabel|skos:altLabel ?fromNodeName .\n" +
                 "}}"
     }
 }
-

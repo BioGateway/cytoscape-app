@@ -296,11 +296,12 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                     } else if (uri.startsWith("?")) {
                         field.text = uri.sanitizeParameter()
                     } else {
+                        // TODO: Should have a "validate" button instead, letting the user choose to check.
                         // Validate the URI.
-                        val validated = Utility.validateURI(uri) // UGLY HACK! Should be asynchronous:
-                        if (!validated) {
-                            return "Unknown URI!"
-                        }
+//                        val validated = Utility.validateURI(uri) // UGLY HACK! Should be asynchronous:
+//                        if (!validated) {
+//                            return "Unknown URI!"
+//                        }
 
                     }
                 } else {

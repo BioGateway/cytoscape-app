@@ -8,7 +8,7 @@ import java.net.URL
 
 
 fun String.sanitizeParameter(): String {
-    return this.replace("\"", "").replace(" ", "")
+    return this.replace("\"", "").trim()
 }
 
 

@@ -24,6 +24,12 @@ class BGRelation(val fromNode: BGNode, val relationType: BGRelationType, val toN
         return arrayOf(fromNode.uri, relationType.uri, toNode.uri)
     }
 
+    fun nameStringArray(): Array<String> {
+        val fromNodeName = fromNode.name ?: fromNode.uri
+        val toNodeName = toNode.name ?: toNode.uri
+        return arrayOf(fromNodeName, relationType.description, toNodeName)
+    }
+
     val edgeIdentifier: String
         get() = fromNode.uri+"_"+relationType.uri+"_"+toNode.uri
 
