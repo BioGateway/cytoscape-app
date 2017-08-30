@@ -62,13 +62,48 @@ class BGRelationSearchCMF(val gravity: Float, val serviceManager: BGServiceManag
         if (nodeUri.contains("ncbigene")) {
             parentMenu.addSeparator()
             parentMenu.add(createTFTGSearchMenu(netView, BGNodeType.GENE, nodeUri))
+            parentMenu.addSeparator()
+            parentMenu.add(createFetchAssociatedGeneOrProteinMenuItem(netView, BGNodeType.GENE, nodeUri))
         } else if (nodeUri.contains("uniprot")) {
             parentMenu.addSeparator()
             parentMenu.add(createTFTGSearchMenu(netView, BGNodeType.PROTEIN, nodeUri))
+            parentMenu.addSeparator()
+            parentMenu.add(createFetchAssociatedGeneOrProteinMenuItem(netView, BGNodeType.PROTEIN, nodeUri))
         }
 
         return CyMenuItem(parentMenu, gravity)
     }
+
+    fun createFetchAssociatedGeneOrProteinMenuItem(netView: CyNetworkView, nodeType: BGNodeType, nodeUri: String): JMenuItem {
+        var menuItemText = when (nodeType) {
+            BGNodeType.GENE -> "Get associated proteins"
+            BGNodeType.PROTEIN -> "Get associated genes"
+        }
+        val direction = when (nodeType) {
+            BGNodeType.PROTEIN -> BGRelationDirection.TO
+            BGNodeType.GENE -> BGRelationDirection.FROM
+        }
+        val encodesUri = "http://semanticscience.org/resource/SIO_010078"
+        val relationType = serviceManager.server.cache.relationTypes.get(encodesUri) ?: throw Exception("Relation type with uri: "+encodesUri+" not found in cache.")
+        val menuItem = JMenuItem(menuItemText)
+
+        menuItem.addActionListener {
+            val query = BGFindRelationForNodeQuery(serviceManager, relationType, nodeUri, direction)
+            query.addCompletion {
+                val returnData = it as? BGReturnRelationsData
+                if (returnData != null) {
+                    if (returnData.relationsData.size == 0) {
+                        throw Exception("No results found.")
+                    }
+                    val network = netView.model
+                    serviceManager.server.networkBuilder.addRelationsToNetwork(network, returnData.relationsData)
+                }
+            }
+            serviceManager.taskManager.execute(TaskIterator(query))
+        }
+        return menuItem
+    }
+
 
     fun createRelationSearchMenu(description: String, netView: CyNetworkView, nodeUri: String, direction: BGRelationDirection): JMenu {
 
@@ -130,10 +165,8 @@ class BGRelationSearchCMF(val gravity: Float, val serviceManager: BGServiceManag
                 if (returnData.relationsData.size == 0) throw Exception("No relations found.")
                 val network = netView.model
                 //serviceManager.server.networkBuilder.addRelationsToNetwork(network, returnData.relationsData)
-                val columnNames = when (nodeType) {
-                    BGNodeType.PROTEIN -> arrayOf("protein", "relation", "gene")
-                    BGNodeType.GENE -> arrayOf("gene", "relation", "protein")
-                }
+                val columnNames = arrayOf("protein", "relation", "gene")
+
                 BGRelationSearchResultsController(serviceManager, returnData.relationsData, columnNames, network)
             }
 

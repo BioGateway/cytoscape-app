@@ -49,6 +49,7 @@ class BGNodeSearchQuery(serviceManager: BGServiceManager, override var queryStri
     var client = HttpClients.createDefault();
 
     override fun run(taskMonitor: TaskMonitor?) {
+        taskMonitor?.setTitle("Searching for nodes...")
         run()
     }
 
@@ -124,6 +125,7 @@ class BGGenericQuery(serviceManager: BGServiceManager, override var queryString:
 
 class BGRelationsQuery(serviceManager: BGServiceManager, override var queryString: String, parser: BGParser, var returnType: BGReturnType): BGQuery(serviceManager, returnType, parser) {
     override fun run(taskMonitor: TaskMonitor?) {
+        taskMonitor?.setTitle("Searching for relations...")
         run()
     }
 
@@ -159,6 +161,7 @@ class BGRelationsQuery(serviceManager: BGServiceManager, override var queryStrin
 
 class BGNodeFetchQuery(serviceManager: BGServiceManager, val nodeUri: String, parser: BGParser, type: BGReturnType): BGQuery(serviceManager, type, parser) {
     override fun run(taskMonitor: TaskMonitor?) {
+        taskMonitor?.setTitle("Searching for nodes...")
         run()
     }
 

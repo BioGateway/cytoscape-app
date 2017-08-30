@@ -26,8 +26,6 @@ class BGFindRelationForNodeQuery(serviceManager: BGServiceManager, val relationT
     var client = HttpClients.createDefault();
 
     override fun run() {
-
-
         val uri = encodeUrl()?.toURI()
         if (uri != null) {
             val httpGet = HttpGet(uri)
@@ -50,12 +48,13 @@ class BGFindRelationForNodeQuery(serviceManager: BGServiceManager, val relationT
         return "BASE <http://www.semantic-systems-biology.org/>\n" +
                 "PREFIX relation1: <" + relationType.uri + ">\n" +
                 "PREFIX fromNode: <" + nodeUri + ">\n" +
-                "SELECT DISTINCT fromNode: ?fromNodeName relation1: ?toNode ?toNodeName\n" +
+                "SELECT DISTINCT fromNode: fromNode: relation1: ?toNode ?toNodeName\n" +
                 "WHERE {\n" +
                 "GRAPH ?graph {\n" +
                 "fromNode: relation1: ?toNode .\n" +
+                "}\n" +
+                "GRAPH ?graph2 {\n" +
                 "?toNode skos:prefLabel|skos:altLabel ?toNodeName .\n" +
-                "fromNode: skos:prefLabel|skos:altLabel ?fromNodeName .\n" +
                 "}}"
     }
 
@@ -63,11 +62,12 @@ class BGFindRelationForNodeQuery(serviceManager: BGServiceManager, val relationT
         return "BASE <http://www.semantic-systems-biology.org/>\n" +
                 "PREFIX relation1: <" + relationType.uri + ">\n" +
                 "PREFIX toNode: <" + nodeUri + ">\n" +
-                "SELECT DISTINCT ?fromNode ?fromNodeName relation1: toNode: ?toNodeName\n" +
+                "SELECT DISTINCT ?fromNode ?fromNodeName relation1: toNode: toNode:\n" +
                 "WHERE {\n" +
                 "GRAPH ?graph {\n" +
                 "?fromNode relation1: toNode: .\n" +
-                "toNode: skos:prefLabel|skos:altLabel ?toNodeName .\n" +
+                "}\n" +
+                "GRAPH ?graph2 {\n" +
                 "?fromNode skos:prefLabel|skos:altLabel ?fromNodeName .\n" +
                 "}}"
     }
