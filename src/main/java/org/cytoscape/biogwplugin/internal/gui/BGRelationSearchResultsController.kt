@@ -1,24 +1,23 @@
 package org.cytoscape.biogwplugin.internal.gui
 
 import org.cytoscape.biogwplugin.internal.BGServiceManager
-import org.cytoscape.biogwplugin.internal.model.BGNode
 import org.cytoscape.biogwplugin.internal.model.BGRelation
+import org.cytoscape.biogwplugin.internal.util.Constants
 import org.cytoscape.model.CyNetwork
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import javax.swing.table.DefaultTableModel
 
-class BGRelationSearchResultsController(val serviceManager: BGServiceManager, val results: ArrayList<BGRelation>, val columnNames: Array<String>, val network: CyNetwork) : ActionListener {
+class BGRelationSearchResultsController(val serviceManager: BGServiceManager, private val relationsFound: ArrayList<BGRelation>, val columnNames: Array<String>, val network: CyNetwork) : ActionListener {
 
-    private val view: BGRelationSearchResultsView
+    private val view: BGRelationSearchResultsView = BGRelationSearchResultsView(this)
 
     init {
-        this.view = BGRelationSearchResultsView(this)
 
         val table = view.resultTable.model as DefaultTableModel
         table.setColumnIdentifiers(columnNames)
 
-        for (result in results) {
+        for (result in relationsFound) {
             table.addRow(result.nameStringArray())
         }
     }
@@ -27,11 +26,23 @@ class BGRelationSearchResultsController(val serviceManager: BGServiceManager, va
     private fun importSelected() {
         val relations = ArrayList<BGRelation>()
         for (row in view.resultTable.selectedRows) {
-            relations.add(results[row])
+            relations.add(relationsFound[row])
         }
         serviceManager.server.networkBuilder.addRelationsToNetwork(network, relations)
     }
 
+    private fun importToExisting() {
+
+        val allNodeUris = network.defaultNodeTable.getColumn(Constants.BG_FIELD_IDENTIFIER_URI).getValues(String::class.java)
+        var relations = ArrayList<BGRelation>()
+
+        for (result in relationsFound) {
+            if (allNodeUris.contains(result.toNode.uri) && allNodeUris.contains(result.fromNode.uri)) {
+                relations.add(result)
+            }
+        }
+        serviceManager.server.networkBuilder.addRelationsToNetwork(network, relations)
+    }
 
 
 
@@ -40,7 +51,12 @@ class BGRelationSearchResultsController(val serviceManager: BGServiceManager, va
             if (e.actionCommand == BGRelationSearchResultsView.ACTION_IMPORT) {
                 importSelected()
             }
+            if (e.actionCommand == BGRelationSearchResultsView.ACTION_IMPORT_TO_EXISTING) {
+                importToExisting()
+            }
         }
     }
+
+
 
 }

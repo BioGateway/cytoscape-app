@@ -18,6 +18,12 @@
               <text value="Import Selected"/>
             </properties>
           </component>
+          <component id="bf8ac" class="javax.swing.JButton" binding="importToExisting">
+            <constraints/>
+            <properties>
+              <text value="Import relations to existing nodes"/>
+            </properties>
+          </component>
         </children>
       </grid>
       <scrollpane id="d4647">

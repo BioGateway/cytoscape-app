@@ -7,13 +7,15 @@ import java.awt.event.ActionListener;
 public class BGRelationSearchResultsView {
 
     public static String ACTION_IMPORT = "import nodes";
+    public static String ACTION_IMPORT_TO_EXISTING = "import relations to exsisting nodes";
+
 
     private final ActionListener listener;
     private JFrame mainFrame;
     private JPanel panel1;
     private JButton importButton;
     private JTable resultTable;
-
+    private JButton importToExisting;
 
 
     public BGRelationSearchResultsView(ActionListener listener) {
@@ -28,9 +30,10 @@ public class BGRelationSearchResultsView {
     }
 
     private void setupUI() {
-
         importButton.setActionCommand(ACTION_IMPORT);
         importButton.addActionListener(listener);
+        importToExisting.setActionCommand(ACTION_IMPORT_TO_EXISTING);
+        importToExisting.addActionListener(listener);
     }
 
     public JFrame getMainFrame() {
@@ -68,6 +71,9 @@ public class BGRelationSearchResultsView {
         importButton = new JButton();
         importButton.setText("Import Selected");
         panel2.add(importButton);
+        importToExisting = new JButton();
+        importToExisting.setText("Import relations to existing nodes");
+        panel2.add(importToExisting);
         final JScrollPane scrollPane1 = new JScrollPane();
         panel1.add(scrollPane1, BorderLayout.CENTER);
         resultTable = new JTable();

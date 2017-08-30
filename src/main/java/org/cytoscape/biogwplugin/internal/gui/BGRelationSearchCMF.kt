@@ -93,7 +93,7 @@ class BGRelationSearchCMF(val gravity: Float, val serviceManager: BGServiceManag
                 val returnData = it as? BGReturnRelationsData
                 if (returnData != null) {
                     if (returnData.relationsData.size == 0) {
-                        throw Exception("No results found.")
+                        throw Exception("No relationsFound found.")
                     }
                     val network = netView.model
                     serviceManager.server.networkBuilder.addRelationsToNetwork(network, returnData.relationsData)
@@ -135,8 +135,8 @@ class BGRelationSearchCMF(val gravity: Float, val serviceManager: BGServiceManag
                     val returnData = it as? BGReturnRelationsData
                     if (returnData != null) {
                         if (returnData.relationsData.size == 0) {
-                            // TODO: Find a slightly better way of notifying the user of a lack of results.
-                            throw Exception("No results found.")
+                            // TODO: Find a slightly better way of notifying the user of a lack of relationsFound.
+                            throw Exception("No relationsFound found.")
                         }
                         val network = netView.model
                         serviceManager.server.networkBuilder.addRelationsToNetwork(network, returnData.relationsData)
