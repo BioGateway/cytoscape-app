@@ -40,7 +40,9 @@ open class BGNode {
     constructor(uri: String, name: String, description: String): this(uri, name) {
         this.description = description
     }
-
+    constructor(uri: String, name: String, description: String, taxon: String): this(uri, name, description) {
+        this.taxon = taxon
+    }
 
     fun nameStringArray(): Array<String> {
         return arrayOf(this.uri, this.name ?: "", this.description ?: "", this.taxon ?: "")

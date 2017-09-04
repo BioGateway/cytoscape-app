@@ -7,12 +7,13 @@ import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import javax.swing.table.DefaultTableModel
 
-class BGQuickSearchResultsController(val serviceManager: BGServiceManager, private val nodesFound: HashMap<String, BGNode>, val columnNames: Array<String>, val completion: (BGNode) -> Unit) : ActionListener {
+class BGQuickSearchResultsController(val serviceManager: BGServiceManager, private val nodesFound: HashMap<String, BGNode>, val completion: (BGNode) -> Unit) : ActionListener {
 
     private val view = BGQuickSearchResultsView(this)
 
     init {
         val table = view.searchResultsTable.model as DefaultTableModel
+        val columnNames = arrayOf("Node URI", "Common Name", "Description", "Taxon")
         table.setColumnIdentifiers(columnNames)
         for (result in nodesFound.values) {
             table.addRow(result.nameStringArray())

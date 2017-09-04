@@ -23,7 +23,7 @@ enum class BGParserField(val fieldName: String) {
 enum class BGReturnType(val paremeterCount: Int) {
     NODE_LIST(2),              // nodeUri, common_name
     NODE_LIST_DESCRIPTION(3),  // nodeUri, common_name, description
-    NODE_LIST_QUICKSEARCH(4),  // nodeUri, common_name, description, taxon
+    NODE_LIST_DESCRIPTION_TAXON(4),  // nodeUri, common_name, description, taxon
     RELATION_TRIPLE(3),         // nodeUri, relationUri, nodeUri
     RELATION_TRIPLE_NAMED(5),    // nodeUri, common_name, relationUri, nodeUri, common_name
     RELATION_MULTIPART_NAMED(0) // Arbitrary length. Only to be used with parsing that supports it.

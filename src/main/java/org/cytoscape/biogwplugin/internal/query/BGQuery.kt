@@ -230,11 +230,11 @@ class BGNodeFetchQuery(serviceManager: BGServiceManager, val nodeUri: String, pa
             " } } \n"
 }
 
-class BGQuickFetchNodeQuery(serviceManager: BGServiceManager, val nodeName: String, val nodeType: BGNodeType, parser: BGParser): BGQuery(serviceManager, BGReturnType.NODE_LIST_QUICKSEARCH, parser) {
+class BGQuickFetchNodeQuery(serviceManager: BGServiceManager, val nodeName: String, val nodeType: BGNodeType, parser: BGParser): BGQuery(serviceManager, BGReturnType.NODE_LIST_DESCRIPTION_TAXON, parser) {
 
     var nodeTypeGraph = when (nodeType) {
-        BGNodeType.PROTEIN -> "<refseq>"
-        BGNodeType.GENE -> "<refprot>"
+        BGNodeType.GENE -> "<refseq>"
+        BGNodeType.PROTEIN -> "<refprot>"
     }
 
     override fun run(taskMonitor: TaskMonitor?) {
@@ -246,7 +246,7 @@ class BGQuickFetchNodeQuery(serviceManager: BGServiceManager, val nodeName: Stri
         val stream = encodeUrl()?.openStream()
         if (stream != null) {
             val reader = BufferedReader(InputStreamReader(stream))
-            parser.parseNodesToTextArray(reader, BGReturnType.NODE_LIST_QUICKSEARCH) {
+            parser.parseNodesToTextArray(reader, BGReturnType.NODE_LIST_DESCRIPTION_TAXON) {
                 returnData = it as? BGReturnData ?: throw Exception("Invalid return data!")
                 runCompletions()
             }

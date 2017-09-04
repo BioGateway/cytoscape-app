@@ -136,7 +136,8 @@ class BGServer(private val serviceManager: BGServiceManager) {
 
     private fun loadXMLFileFromServer() {
         try {
-            val queryFileUrl = URL("https://www.dropbox.com/s/i4ii4lzej00m6wi/BiogatewayQueries.xml?dl=1")
+            //val queryFileUrl = URL("https://bitbucket.org/druglogics/biogw_cytoscape/raw/master/BiogatewayQueries.xml")
+            val queryFileUrl = URL("https://firebasestorage.googleapis.com/v0/b/fluttertest-788dd.appspot.com/o/BiogatewayQueries.xml?alt=media&token=88b6f562-b074-4278-b985-e30ed50d1751")
             val connection = queryFileUrl.openConnection()
             val inputStream = connection.getInputStream()
             parseXMLConfigFile(inputStream)

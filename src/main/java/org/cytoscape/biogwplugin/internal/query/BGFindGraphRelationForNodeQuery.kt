@@ -84,7 +84,7 @@ fun generateFindProteinsRegluatingGeneQueryString(): String {
             "PREFIX graph3: <tf-tg> \n" +
             "\n" +
             "PREFIX taxon: <http://purl.obolibrary.org/obo/NCBITaxon_9606>  \n" +
-            "SELECT DISTINCT ?proteinUri ?protein regulates: geneUri: ?gene\n" +
+            "SELECT DISTINCT ?proteinUri ?protein molecularly_controls: geneUri: ?gene\n" +
             "WHERE {  \n" +
             "GRAPH graph3: {  \n" +
             "?triple rdf:subject ?proteinUri .  \n" +
@@ -115,7 +115,7 @@ fun generateFindProteinsRegluatingGeneQueryString(): String {
                 "PREFIX graph3: <tf-tg> \n" +
                 "\n" +
                 "PREFIX taxon: <http://purl.obolibrary.org/obo/NCBITaxon_9606>  \n" +
-                "SELECT DISTINCT proteinUri: ?protein regulates: ?geneUri ?gene\n" +
+                "SELECT DISTINCT proteinUri: ?protein molecularly_controls: ?geneUri ?gene\n" +
                 "WHERE {  \n" +
                 "GRAPH graph3: {  \n" +
                 "?triple rdf:subject proteinUri: .  \n" +

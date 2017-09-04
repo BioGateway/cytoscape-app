@@ -56,7 +56,7 @@ public class BGCreateQueryView implements ChangeListener {
         this.listener = listener;
         JFrame frame = new JFrame("Biogateway Query Builder");
         this.mainFrame = frame;
-        frame.setPreferredSize(new Dimension(600, 400));
+        frame.setPreferredSize(new Dimension(700, 400));
         frame.setContentPane(this.mainPanel);
         this.createUIComponents();
         frame.pack();

@@ -431,12 +431,13 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                     val query = BGQuickFetchNodeQuery(serviceManager, searchString, nodeType, serviceManager.server.parser)
                     query.addCompletion {
                         val results = query.returnData as? BGReturnNodeData ?: throw Exception("Invalid return data!")
-                        val nodeSelectionViewController = BGQuickSearchResultsController(serviceManager, results.nodeData, arrayOf(""), {
+                        val nodeSelectionViewController = BGQuickSearchResultsController(serviceManager, results.nodeData, {
                             val node = it
                             // Set the value of the field to the uri of the node found and selected.
                             optionalUriComponent.textField.text = node.uri
                         })
                     }
+                    serviceManager.taskManager.execute(TaskIterator(query))
                 }
             }
             else -> {
