@@ -38,4 +38,13 @@ class BGRelation(val fromNode: BGNode, val relationType: BGRelationType, val toN
         val toNodeName = toNode.description ?: toNode.uri
         return fromNodeName + " -> " + relationType.description + " -> " + toNodeName
     }
+
+    override fun equals(other: Any?): Boolean {
+        val equal = this.toString().equals(other.toString())
+        return equal
+    }
+
+    override fun hashCode(): Int {
+        return this.toString().hashCode()
+    }
 }

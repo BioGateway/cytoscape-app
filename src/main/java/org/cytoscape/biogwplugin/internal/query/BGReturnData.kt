@@ -12,7 +12,8 @@ abstract class BGReturnData {
     val columnNames: Array<String>
 
     constructor(returnType: BGReturnType, columnNames: Array<String>) {
-        if (columnNames.size != returnType.paremeterCount) throw Exception("Parameter count must match column name count!")
+
+        if (returnType != BGReturnType.RELATION_MULTIPART_NAMED && columnNames.size != returnType.paremeterCount) throw Exception("Parameter count must match column name count!")
         this.columnNames = columnNames
     }
 

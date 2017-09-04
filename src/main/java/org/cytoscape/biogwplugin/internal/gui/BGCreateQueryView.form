@@ -53,6 +53,52 @@
               </grid>
             </children>
           </grid>
+          <grid id="1ccbb" layout-manager="BorderLayout" hgap="0" vgap="0">
+            <constraints>
+              <tabbedpane title="Chained Relations Query"/>
+            </constraints>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <grid id="4f0fe" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+                <constraints border-constraint="South"/>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="86035" class="javax.swing.JButton" binding="addLineButton" default-binding="true">
+                    <constraints/>
+                    <properties>
+                      <text value="Add Line"/>
+                    </properties>
+                  </component>
+                  <component id="dc35c" class="javax.swing.JButton" binding="removeLineButton" default-binding="true">
+                    <constraints/>
+                    <properties>
+                      <text value="Remove Line"/>
+                    </properties>
+                  </component>
+                  <component id="f528e" class="javax.swing.JButton" binding="validateURIsButton" default-binding="true">
+                    <constraints/>
+                    <properties>
+                      <text value="Validate URIs"/>
+                    </properties>
+                  </component>
+                  <component id="55426" class="javax.swing.JButton" binding="runChainQueryButton">
+                    <constraints/>
+                    <properties>
+                      <text value="Run Query"/>
+                    </properties>
+                  </component>
+                </children>
+              </grid>
+              <grid id="32a9e" binding="chainedParametersPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
+                <constraints border-constraint="Center"/>
+                <properties/>
+                <border type="none"/>
+                <children/>
+              </grid>
+            </children>
+          </grid>
           <grid id="9ef6a" binding="sparqlPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
             <constraints>
               <tabbedpane title="SparQL"/>

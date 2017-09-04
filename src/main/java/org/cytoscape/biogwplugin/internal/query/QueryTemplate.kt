@@ -5,9 +5,9 @@ import java.util.ArrayList
 
 class QueryTemplate(var name: String, var description: String, var sparqlString: String, var returnType: BGReturnType) {
 
-    var parameters = ArrayList<QueryParameter>()
+    var parameters = ArrayList<BGQueryParameter>()
 
-    fun addParameter(p: QueryParameter) {
+    fun addParameter(p: BGQueryParameter) {
         parameters.add(p)
     }
 }

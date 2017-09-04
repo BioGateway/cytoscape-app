@@ -22,6 +22,8 @@ open class BGNode {
 
     var name: String? = null
     var description: String? = null
+    var taxon: String? = null
+
 
     // This is used to keep track of the CyNodes using data from this BGNode, so they can be updated if needed.
     var cyNodes: ArrayList<CyNode>
@@ -37,5 +39,10 @@ open class BGNode {
 
     constructor(uri: String, name: String, description: String): this(uri, name) {
         this.description = description
+    }
+
+
+    fun nameStringArray(): Array<String> {
+        return arrayOf(this.uri, this.name ?: "", this.description ?: "", this.taxon ?: "")
     }
 }

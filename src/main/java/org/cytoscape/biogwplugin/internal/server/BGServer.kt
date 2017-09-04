@@ -1,12 +1,11 @@
 package org.cytoscape.biogwplugin.internal.server
 
 import org.cytoscape.biogwplugin.internal.BGServiceManager
-import org.cytoscape.biogwplugin.internal.gui.BGRelationSearchCMF
 import org.cytoscape.biogwplugin.internal.model.BGRelationType
 import org.cytoscape.biogwplugin.internal.model.BGNode
 import org.cytoscape.biogwplugin.internal.parser.*
 import org.cytoscape.biogwplugin.internal.query.BGNodeFetchQuery
-import org.cytoscape.biogwplugin.internal.query.QueryParameter
+import org.cytoscape.biogwplugin.internal.query.BGQueryParameter
 import org.cytoscape.biogwplugin.internal.query.QueryTemplate
 import org.cytoscape.model.CyNetwork
 import org.w3c.dom.Element
@@ -137,7 +136,7 @@ class BGServer(private val serviceManager: BGServiceManager) {
 
     private fun loadXMLFileFromServer() {
         try {
-            val queryFileUrl = URL("https://dl.dropboxusercontent.com/u/32368359/BiogatewayQueries.xml")
+            val queryFileUrl = URL("https://www.dropbox.com/s/i4ii4lzej00m6wi/BiogatewayQueries.xml?dl=1")
             val connection = queryFileUrl.openConnection()
             val inputStream = connection.getInputStream()
             parseXMLConfigFile(inputStream)
@@ -188,7 +187,7 @@ class BGServer(private val serviceManager: BGServiceManager) {
                         "nodeList" -> BGReturnType.NODE_LIST
                         "nodeListDescription" -> BGReturnType.NODE_LIST_DESCRIPTION
                         "relationTriple" -> BGReturnType.RELATION_TRIPLE
-
+                        "relationTripleNamed" -> BGReturnType.RELATION_TRIPLE_NAMED
                         else -> {
                             throw Exception("Unknown return type!")
                         }
@@ -212,15 +211,15 @@ class BGServer(private val serviceManager: BGServiceManager) {
 
 
                             val pType = when (pTypeString) {
-                                "text" -> QueryParameter.ParameterType.TEXT
-                                "checkbox" -> QueryParameter.ParameterType.CHECKBOX
-                                "combobox" -> QueryParameter.ParameterType.COMBOBOX
-                                "uniprot_id" -> QueryParameter.ParameterType.UNIPROT_ID
-                                "ontology" -> QueryParameter.ParameterType.ONTOLOGY
-                                "optionalUri" -> QueryParameter.ParameterType.OPTIONAL_URI
-                                else -> QueryParameter.ParameterType.TEXT
+                                "text" -> BGQueryParameter.ParameterType.TEXT
+                                "checkbox" -> BGQueryParameter.ParameterType.CHECKBOX
+                                "combobox" -> BGQueryParameter.ParameterType.COMBOBOX
+                                "uniprot_id" -> BGQueryParameter.ParameterType.UNIPROT_ID
+                                "ontology" -> BGQueryParameter.ParameterType.ONTOLOGY
+                                "optionalUri" -> BGQueryParameter.ParameterType.OPTIONAL_URI
+                                else -> BGQueryParameter.ParameterType.TEXT
                             }
-                            val qParameter = QueryParameter(pId, pName, pType)
+                            val qParameter = BGQueryParameter(pId, pName, pType)
                             val optionsList = parameter.getElementsByTagName("option")
 
                             for (oIndex in 0..optionsList.length - 1) {
@@ -243,7 +242,7 @@ class BGServer(private val serviceManager: BGServiceManager) {
                                 }
                                 val parameterValue = enabledDependency.getAttribute("forParameterValue")
                                 if (dependingId != null && parameterValue != null && isEnabled != null) {
-                                    qParameter.dependency = QueryParameter.EnabledDependency(dependingId, isEnabled, parameterValue)
+                                    qParameter.dependency = BGQueryParameter.EnabledDependency(dependingId, isEnabled, parameterValue)
 
                                 }
                             }

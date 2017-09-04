@@ -96,7 +96,21 @@ class BGRelationSearchCMF(val gravity: Float, val serviceManager: BGServiceManag
                         throw Exception("No relationsFound found.")
                     }
                     val network = netView.model
-                    serviceManager.server.networkBuilder.addRelationsToNetwork(network, returnData.relationsData)
+                    var relationsData = returnData.relationsData
+
+                    // Remove those pesky "protein" and "molecule" entries.
+                    // WARNING: Yes, I know it's bad to do this deep in the code.
+                    // TODO: Update the query to ignore "higher order" metadata.
+                    val iterator = relationsData.listIterator()
+                    while (iterator.hasNext()) {
+                        val relation = iterator.next()
+                        if (relation.toNode.uri == "http://semanticscience.org/resource/SIO_011125" ||
+                                relation.toNode.uri == "http://semanticscience.org/resource/SIO_010043") {
+                            iterator.remove()
+                        }
+                    }
+
+                    serviceManager.server.networkBuilder.addRelationsToNetwork(network, relationsData)
                 }
             }
             serviceManager.taskManager.execute(TaskIterator(query))

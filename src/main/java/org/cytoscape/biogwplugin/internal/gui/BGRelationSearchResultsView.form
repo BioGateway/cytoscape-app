@@ -21,7 +21,8 @@
           <component id="bf8ac" class="javax.swing.JButton" binding="importToExisting">
             <constraints/>
             <properties>
-              <text value="Import relations to existing nodes"/>
+              <text value="Import relations between existing nodes"/>
+              <toolTipText value="Imports all the results which are between existing nodes in the network."/>
             </properties>
           </component>
         </children>

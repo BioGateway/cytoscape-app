@@ -72,7 +72,8 @@ public class BGRelationSearchResultsView {
         importButton.setText("Import Selected");
         panel2.add(importButton);
         importToExisting = new JButton();
-        importToExisting.setText("Import relations to existing nodes");
+        importToExisting.setText("Import relations between existing nodes");
+        importToExisting.setToolTipText("Imports all the results which are between existing nodes in the network.");
         panel2.add(importToExisting);
         final JScrollPane scrollPane1 = new JScrollPane();
         panel1.add(scrollPane1, BorderLayout.CENTER);

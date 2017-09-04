@@ -2,7 +2,7 @@ package org.cytoscape.biogwplugin.internal.query
 
 import java.util.HashMap
 
-class QueryParameter(var id: String, var name: String, var type: QueryParameter.ParameterType) {
+class BGQueryParameter(var id: String, var name: String, var type: BGQueryParameter.ParameterType) {
 
     enum class ParameterType {
         TEXT, CHECKBOX, COMBOBOX, UNIPROT_ID, ONTOLOGY, OPTIONAL_URI

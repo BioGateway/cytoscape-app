@@ -1,7 +1,8 @@
 package org.cytoscape.biogwplugin.internal.gui;
 
 import net.miginfocom.swing.MigLayout;
-import org.cytoscape.biogwplugin.internal.query.QueryParameter;
+import org.cytoscape.biogwplugin.internal.query.BGQuery;
+import org.cytoscape.biogwplugin.internal.query.BGQueryParameter;
 import org.cytoscape.biogwplugin.internal.query.QueryTemplate;
 
 import javax.swing.*;
@@ -11,6 +12,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Collection;
 import java.util.HashMap;
 
 import static org.cytoscape.biogwplugin.internal.gui.BGQueryBuilderController.*;
@@ -22,6 +24,10 @@ public class BGCreateQueryView implements ChangeListener {
     private final ActionListener listener;
 
     public HashMap<String, JComponent> parameterComponents = new HashMap<>();
+    public HashMap<String, JComponent> chainedParametersComponents = new HashMap<>();
+
+    private int numberOfChainedParameters = 0;
+
 
     private JFrame mainFrame;
     private JTabbedPane tabPanel;
@@ -40,6 +46,11 @@ public class BGCreateQueryView implements ChangeListener {
     private JButton importToNewButton;
     private JButton importToSelectedNetworkButton;
     private JPanel descriptionPanel;
+    private JButton runChainQueryButton;
+    private JPanel chainedParametersPanel;
+    private JButton validateURIsButton;
+    private JButton addLineButton;
+    private JButton removeLineButton;
 
     public BGCreateQueryView(ActionListener listener) {
         this.listener = listener;
@@ -62,6 +73,7 @@ public class BGCreateQueryView implements ChangeListener {
         querySelectionBox.setModel(new SortedComboBoxModel<String>());
 
         parameterPanel.setLayout(new MigLayout("wrap 2"));
+        chainedParametersPanel.setLayout(new MigLayout("wrap 2"));
 
         runQueryButton.addActionListener(listener);
         runQueryButton.setActionCommand(Companion.getACTION_RUN_QUERY());
@@ -71,7 +83,61 @@ public class BGCreateQueryView implements ChangeListener {
         importToNewButton.setActionCommand(Companion.getACTION_IMPORT_TO_NEW());
         importToSelectedNetworkButton.addActionListener(listener);
         importToSelectedNetworkButton.setActionCommand(Companion.getACTION_IMPORT_TO_SELECTED());
+
+        runChainQueryButton.addActionListener(listener);
+        runChainQueryButton.setActionCommand(Companion.getACTION_RUN_CHAIN_QUERY());
+        addLineButton.addActionListener(listener);
+        addLineButton.setActionCommand(Companion.getACTION_ADD_CHAIN_RELATION());
+        removeLineButton.addActionListener(listener);
+        removeLineButton.setActionCommand(Companion.getACTION_REMOVE_CHAIN_RELATION());
+        validateURIsButton.addActionListener(listener);
+        validateURIsButton.setActionCommand(Companion.getACTION_VALIDATE_URIS());
     }
+
+
+    public void removeParameterField(BGQueryParameter parameter) {
+        JComponent component = chainedParametersComponents.get(parameter.getId());
+        if (component != null) {
+            chainedParametersPanel.remove(component);
+            chainedParametersComponents.remove(parameter.getId());
+        }
+        JComponent label = chainedParametersComponents.get(parameter.getId() + "_label");
+        if (label != null) {
+            chainedParametersPanel.remove(label);
+            chainedParametersComponents.remove(parameter.getId() + "_label");
+        }
+        chainedParametersPanel.repaint();
+    }
+
+    public void addChainedParameterLine(BGQueryParameter relationParameter, BGQueryParameter nodeParameter) {
+        addChainedParameterField(relationParameter);
+        addChainedParameterField(nodeParameter);
+    }
+
+    public void addChainedParameterField(BGQueryParameter parameter) {
+        JLabel label = new JLabel(parameter.getName() + ":");
+        JComponent component;
+        switch (parameter.getType()) {
+            case OPTIONAL_URI:
+                JTextField optionalField = new JTextField();
+                optionalField.setPreferredSize(new Dimension(280, 20));
+                component = new BGOptionalURIField(optionalField, listener);
+                break;
+            case COMBOBOX:
+                component = new JComboBox<>(parameter.getOptions().keySet().toArray());
+                break;
+            default:
+                component = null;
+                // TODO: Exception should be thrown.
+                break;
+        }
+        chainedParametersComponents.put(parameter.getId(), component);
+        chainedParametersComponents.put(parameter.getId() + "_label", label);
+        chainedParametersPanel.add(label);
+        chainedParametersPanel.add(component);
+        mainFrame.repaint();
+    }
+
 
     public void generateParameterFields(QueryTemplate query) {
         // Clear old data:
@@ -84,14 +150,19 @@ public class BGCreateQueryView implements ChangeListener {
         description.setFont(description.getFont().deriveFont(Font.ITALIC));
         descriptionPanel.add(description);
 
-        for (QueryParameter parameter : query.getParameters()) {
+        for (BGQueryParameter parameter : query.getParameters()) {
 
             JLabel label = new JLabel(parameter.getName() + ": ");
             JComponent component;
             switch (parameter.getType()) {
-                case TEXT:
                 case OPTIONAL_URI:
+                    JTextField optionalField = new JTextField();
+                    optionalField.setPreferredSize(new Dimension(280, 20));
+                    //component = optionalField;
+                    component = new BGOptionalURIField(optionalField, listener);
+                    break;
                 case ONTOLOGY:
+                case TEXT:
                 case UNIPROT_ID:
                     JTextField field = new JTextField();
                     field.setPreferredSize(new Dimension(280, 20));
@@ -109,7 +180,7 @@ public class BGCreateQueryView implements ChangeListener {
                     break;
             }
 
-            QueryParameter.EnabledDependency dependency = parameter.getDependency();
+            BGQueryParameter.EnabledDependency dependency = parameter.getDependency();
 
             if (dependency != null) {
                 JComponent dependingComponent = parameterComponents.get(dependency.getDependingParameter());
@@ -331,6 +402,27 @@ public class BGCreateQueryView implements ChangeListener {
         parameterPanel = new JPanel();
         parameterPanel.setLayout(new GridBagLayout());
         panel1.add(parameterPanel, BorderLayout.CENTER);
+        final JPanel panel2 = new JPanel();
+        panel2.setLayout(new BorderLayout(0, 0));
+        tabPanel.addTab("Chained Relations Query", panel2);
+        final JPanel panel3 = new JPanel();
+        panel3.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        panel2.add(panel3, BorderLayout.SOUTH);
+        addLineButton = new JButton();
+        addLineButton.setText("Add Line");
+        panel3.add(addLineButton);
+        removeLineButton = new JButton();
+        removeLineButton.setText("Remove Line");
+        panel3.add(removeLineButton);
+        validateURIsButton = new JButton();
+        validateURIsButton.setText("Validate URIs");
+        panel3.add(validateURIsButton);
+        runChainQueryButton = new JButton();
+        runChainQueryButton.setText("Run Query");
+        panel3.add(runChainQueryButton);
+        chainedParametersPanel = new JPanel();
+        chainedParametersPanel.setLayout(new BorderLayout(0, 0));
+        panel2.add(chainedParametersPanel, BorderLayout.CENTER);
         sparqlPanel = new JPanel();
         sparqlPanel.setLayout(new BorderLayout(0, 0));
         tabPanel.addTab("SparQL", sparqlPanel);
@@ -341,29 +433,29 @@ public class BGCreateQueryView implements ChangeListener {
         resultPanel = new JPanel();
         resultPanel.setLayout(new BorderLayout(0, 0));
         tabPanel.addTab("Query Result", resultPanel);
-        final JPanel panel2 = new JPanel();
-        panel2.setLayout(new BorderLayout(0, 0));
-        resultPanel.add(panel2, BorderLayout.CENTER);
+        final JPanel panel4 = new JPanel();
+        panel4.setLayout(new BorderLayout(0, 0));
+        resultPanel.add(panel4, BorderLayout.CENTER);
         final JScrollPane scrollPane2 = new JScrollPane();
-        panel2.add(scrollPane2, BorderLayout.CENTER);
+        panel4.add(scrollPane2, BorderLayout.CENTER);
         resultTable = new JTable();
         resultTable.setAutoCreateRowSorter(true);
         resultTable.setFillsViewportHeight(true);
         scrollPane2.setViewportView(resultTable);
-        final JPanel panel3 = new JPanel();
-        panel3.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        panel2.add(panel3, BorderLayout.SOUTH);
+        final JPanel panel5 = new JPanel();
+        panel5.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        panel4.add(panel5, BorderLayout.SOUTH);
         importToNewButton = new JButton();
         importToNewButton.setText("Import to new Network");
-        panel3.add(importToNewButton);
+        panel5.add(importToNewButton);
         importToSelectedNetworkButton = new JButton();
         importToSelectedNetworkButton.setText("Import to selected Network");
-        panel3.add(importToSelectedNetworkButton);
-        final JPanel panel4 = new JPanel();
-        panel4.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        mainPanel.add(panel4, BorderLayout.NORTH);
+        panel5.add(importToSelectedNetworkButton);
+        final JPanel panel6 = new JPanel();
+        panel6.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        mainPanel.add(panel6, BorderLayout.NORTH);
         querySelectionBox = new JComboBox();
-        panel4.add(querySelectionBox);
+        panel6.add(querySelectionBox);
     }
 
     /**

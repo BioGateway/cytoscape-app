@@ -3,6 +3,7 @@ import org.apache.http.client.methods.HttpGet
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.util.EntityUtils
 import org.cytoscape.biogwplugin.internal.BGServiceManager
+import org.cytoscape.biogwplugin.internal.model.BGNodeType
 import org.cytoscape.biogwplugin.internal.parser.BGParser
 import org.cytoscape.biogwplugin.internal.parser.BGReturnType
 import org.cytoscape.work.AbstractTask
@@ -158,6 +159,47 @@ class BGRelationsQuery(serviceManager: BGServiceManager, override var queryStrin
     }
 }
 
+class BGChainedRelationsQuery(serviceManager: BGServiceManager, override var queryString: String, parser: BGParser, var returnType: BGReturnType): BGQuery(serviceManager, returnType, parser) {
+
+    var taskMonitor: TaskMonitor? = null
+
+    override fun run(taskMonitor: TaskMonitor?) {
+        taskMonitor?.setTitle("Searching for relations...")
+        this.taskMonitor = taskMonitor
+        run()
+    }
+
+    val client = HttpClients.createDefault()
+
+    override fun cancel() {
+        client.close()
+        super.cancel()
+    }
+
+    override fun run() {
+        val uri = encodeUrl()?.toURI()
+        if (uri != null) {
+            val httpGet = HttpGet(uri)
+            val response = client.execute(httpGet)
+            val statusCode = response.statusLine.statusCode
+
+            val data = EntityUtils.toString(response.entity)
+            if (statusCode > 204) {
+                throw Exception("Server connection failed with code "+statusCode+": \n\n"+data)
+            }
+            //print(data)
+            val reader = BufferedReader(StringReader(data))
+            client.close()
+            taskMonitor?.setTitle("Parsing results...")
+            parser.parsePathway(reader, returnType) {
+                returnData = it as? BGReturnData ?: throw Exception("Invalid return data!")
+                taskMonitor?.setTitle("Loading results...")
+                runCompletions()
+            }
+        }
+    }
+}
+
 
 class BGNodeFetchQuery(serviceManager: BGServiceManager, val nodeUri: String, parser: BGParser, type: BGReturnType): BGQuery(serviceManager, type, parser) {
     override fun run(taskMonitor: TaskMonitor?) {
@@ -188,5 +230,47 @@ class BGNodeFetchQuery(serviceManager: BGServiceManager, val nodeUri: String, pa
             " } } \n"
 }
 
+class BGQuickFetchNodeQuery(serviceManager: BGServiceManager, val nodeName: String, val nodeType: BGNodeType, parser: BGParser): BGQuery(serviceManager, BGReturnType.NODE_LIST_QUICKSEARCH, parser) {
 
+    var nodeTypeGraph = when (nodeType) {
+        BGNodeType.PROTEIN -> "<refseq>"
+        BGNodeType.GENE -> "<refprot>"
+    }
+
+    override fun run(taskMonitor: TaskMonitor?) {
+        taskMonitor?.setTitle("Searching for nodes...")
+        run()
+    }
+
+    override fun run() {
+        val stream = encodeUrl()?.openStream()
+        if (stream != null) {
+            val reader = BufferedReader(InputStreamReader(stream))
+            parser.parseNodesToTextArray(reader, BGReturnType.NODE_LIST_QUICKSEARCH) {
+                returnData = it as? BGReturnData ?: throw Exception("Invalid return data!")
+                runCompletions()
+            }
+        }
+    }
+
+    override var queryString = "BASE <http://www.semantic-systems-biology.org/>  \n" +
+            "PREFIX inheres_in: <http://purl.obolibrary.org/obo/RO_0000052>  \n" +
+            "PREFIX searchGraph: "+nodeTypeGraph+"\n" +
+            "PREFIX taxaGraph: <cco>\n" +
+            "PREFIX sio:  <http://semanticscience.org/resource/>  \n" +
+            "SELECT DISTINCT ?resourceUri ?value ?description ?taxonName\n" +
+            "WHERE {  \n" +
+            "\tFILTER ( ?value = '"+nodeName+"') . \n" +
+            "\tGRAPH searchGraph: {  \n" +
+            "\t\t?resourceUri skos:prefLabel|skos:altLabel ?value .\n" +
+            " ?resourceUri skos:definition ?description .\n" +
+            " ?resourceUri inheres_in: ?taxon .\n" +
+            "\t} \n" +
+            "GRAPH taxaGraph: {\n" +
+            "?taxon rdfs:subClassOf sio:SIO_010000 . \n" +
+            "?taxon skos:prefLabel ?taxonName\n" +
+            "}  \n" +
+            "}\n" +
+            "ORDER BY ?resourceUri"
+}
 
