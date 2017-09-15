@@ -41,6 +41,42 @@ class BGOptionalURIField(val textField: JTextField, val listener: ActionListener
         this.add(searchButton)
     }
 }
+
+class BGRelationQueryRow(relationTypes: Array<String>, val listener: ActionListener): JPanel() {
+    val fromNodeField = BGOptionalURIField(JTextField(), listener)
+    val toNodeField = BGOptionalURIField(JTextField(), listener)
+    val comboBox: JComboBox<String>
+    init {
+        this.layout = FlowLayout()
+        comboBox = JComboBox(relationTypes)
+        this.add(fromNodeField)
+        this.add(comboBox)
+        this.add(toNodeField)
+    }
+}
+
+class BGRelationTypeField(val combobox: JComboBox<String>): JPanel() {
+    var direction: BGRelationDirection = BGRelationDirection.TO
+    init {
+        this.layout = FlowLayout()
+        this.add(combobox)
+        val directionButton = JButton("↓")
+        directionButton.addActionListener {
+            directionButton.text = when (direction) {
+                BGRelationDirection.TO -> {
+                    direction = BGRelationDirection.FROM
+                    "↑"
+                }
+                BGRelationDirection.FROM -> {
+                    direction = BGRelationDirection.TO
+                    "↓"
+                }
+            }
+        }
+        this.add(directionButton)
+    }
+}
+
 class BGComponentButton(label: String, val associatedComponent: JComponent): JButton(label)
 
 class BGQueryBuilderController(private val serviceManager: BGServiceManager) : ActionListener, ChangeListener {
@@ -75,6 +111,11 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         chainedQuery.addParameter(firstNode)
         view.addChainedParameterField(firstNode)
         addChainedParameterLine()
+//        val firstRow = BGQueryParameter("row1", "", BGQueryParameter.ParameterType.RELATION_QUERY_ROW)
+//        for (relation in serviceManager.server.cache.relationTypes.values) {
+//            firstRow.addOption(relation.description, relation.uri)
+//        }
+//        view.addChainedParameterField(firstRow)
     }
 
     private fun readParameterComponents(parameters: Collection<BGQueryParameter>, parameterComponents: HashMap<String, JComponent>) {
@@ -88,6 +129,13 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                     val box = component as JComboBox<String>
                     val selected = box.selectedItem as String
                     parameter.value = parameter.options[selected]
+                }
+                BGQueryParameter.ParameterType.RELATION_COMBOBOX -> {
+                    val field = component as BGRelationTypeField
+                    val selected = field.combobox.selectedItem as String
+                    parameter.value = parameter.options[selected]
+                    parameter.direction = field.direction
+
                 }
                 BGQueryParameter.ParameterType.UNIPROT_ID -> {
                     var uniprotID = (component as JTextField).text
@@ -104,12 +152,6 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                     parameter.value = ontology.sanitizeParameter()
                 }
                 BGQueryParameter.ParameterType.OPTIONAL_URI -> {
-//                    val uri = (component as JTextField).text
-//                    if (uri.startsWith("?")) {
-//                        parameter.value = uri
-//                    } else {
-//                        parameter.value = "<"+uri+">" // Virtuoso requires brackets if it's a real URL.
-//                    }
                     val optionalUriField = component as? BGOptionalURIField ?: throw Exception("Invalid component type!")
                     val uri = optionalUriField.textField.text
                     if (uri.startsWith("?")) {
@@ -222,17 +264,21 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                 view.tabPanel.selectedIndex = 3 // Open the result tab.
 
                 // Try the darnest to make the window appear on top!
-                EventQueue.invokeLater {
-                    view.mainFrame.toFront()
-                    view.mainFrame.isAlwaysOnTop = true
-                    view.mainFrame.isAlwaysOnTop = false
-                    view.mainFrame.requestFocus()
-                }
+                fightForFocus()
             }
 
             val iterator = TaskIterator(query)
             serviceManager.taskManager.execute(iterator)
 
+        }
+    }
+
+    private fun fightForFocus() {
+        EventQueue.invokeLater {
+            view.mainFrame.toFront()
+            view.mainFrame.isAlwaysOnTop = true
+            view.mainFrame.isAlwaysOnTop = false
+            view.mainFrame.requestFocus()
         }
     }
 
@@ -435,6 +481,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                             val node = it
                             // Set the value of the field to the uri of the node found and selected.
                             optionalUriComponent.textField.text = node.uri
+                            fightForFocus()
                         })
                     }
                     serviceManager.taskManager.execute(TaskIterator(query))
@@ -448,7 +495,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
     private fun addChainedParameterLine() {
 
         val parameterCount = chainedQuery.parameters.count()
-        var relationParameter = BGQueryParameter("parameter"+(parameterCount+1), "Relation", BGQueryParameter.ParameterType.COMBOBOX)
+        var relationParameter = BGQueryParameter("parameter"+(parameterCount+1), "Relation", BGQueryParameter.ParameterType.RELATION_COMBOBOX)
         var nodeParameter = BGQueryParameter("parameter"+(parameterCount+2), "Node URI", BGQueryParameter.ParameterType.OPTIONAL_URI)
 
         for (relation in serviceManager.server.cache.relationTypes.values) {
@@ -461,9 +508,9 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
     }
 
     private fun runChainQuery() {
-        chainedQuery.sparqlString = generateChainQuery(chainedQuery)
         validatePropertyFields(chainedQuery.parameters, view.chainedParametersComponents)
         readParameterComponents(chainedQuery.parameters, view.chainedParametersComponents)
+        chainedQuery.sparqlString = generateChainQuery(chainedQuery)
         val queryString = createQueryString(chainedQuery)
         view.sparqlTextArea.text = queryString ?: throw Exception("Query String cannot be empty!")
 
@@ -491,12 +538,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
 
             view.tabPanel.selectedIndex = 3
             // Try the darnest to make the window appear on top!
-            EventQueue.invokeLater {
-                view.mainFrame.toFront()
-                view.mainFrame.isAlwaysOnTop = true
-                view.mainFrame.isAlwaysOnTop = false
-                view.mainFrame.requestFocus()
-            }
+            fightForFocus()
         }
         val iterator = TaskIterator(query)
         serviceManager.taskManager.execute(iterator)
@@ -522,7 +564,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
 
     private fun generateChainQuery(chainQueryTemplate: QueryTemplate): String {
         var nodes = ArrayList<String>()
-        val relations = ArrayList<String>()
+        val relations = ArrayList<Pair<String, BGRelationDirection>>()
         var returnNames = ArrayList<String>()
         var returnSparqlString = ""
 
@@ -531,9 +573,10 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                 nodes.add(parameter.id)
                 returnSparqlString += " @"+parameter.id+" ?name_"+parameter.id
             }
-            if (parameter.type == BGQueryParameter.ParameterType.COMBOBOX) {
+            if (parameter.type == BGQueryParameter.ParameterType.RELATION_COMBOBOX) {
                 val parameterTag = "<@"+parameter.id+">"
-                relations.add(parameterTag)
+                val direction = parameter.direction ?: BGRelationDirection.TO
+                relations.add(Pair(parameterTag, direction))
                 returnNames.add(parameterTag)
                 returnSparqlString += " "+parameterTag
             }
@@ -545,12 +588,16 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         var graphsQueryString = ""
 
         while(nodeCounter < nodes.size && relationCounter < relations.size) {
+            val relation = relations.get(relationCounter)
             val firstNode = nodes.get(nodeCounter)
             nodeCounter += 1
-            val relation = relations.get(relationCounter)
             relationCounter += 1
             val secondNode = nodes.get(nodeCounter)
-            graphsQueryString += generateChainQuerySparqlGraph(graphCounter, firstNode, relation, secondNode)
+
+            when (relation.second) {
+                BGRelationDirection.TO -> graphsQueryString += generateChainQuerySparqlGraph(graphCounter, firstNode, relation.first, secondNode)
+                BGRelationDirection.FROM -> graphsQueryString += generateChainQuerySparqlGraph(graphCounter, secondNode, relation.first, firstNode)
+            }
             graphCounter += 1
         }
 

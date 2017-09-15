@@ -6,6 +6,7 @@ import org.cytoscape.biogwplugin.BiogwPlugin;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.biogwplugin.internal.gui.BGChangeEdgeTypeCMF;
+import org.cytoscape.biogwplugin.internal.gui.BGOpenEdgePumedIdCMF;
 import org.cytoscape.biogwplugin.internal.gui.BGRelationSearchCMF;
 import org.cytoscape.biogwplugin.internal.model.BGRelation;
 import org.cytoscape.biogwplugin.internal.query.BGRelationDirection;
@@ -55,6 +56,10 @@ public class CyActivator extends AbstractCyActivator {
 
         BGChangeEdgeTypeCMF changeEdgeTypeCMF = new BGChangeEdgeTypeCMF(0F, serviceManager);
         registerAllServices(bundleContext, changeEdgeTypeCMF, ezProps("preferredMenu", "BioGateway"));
+
+        BGOpenEdgePumedIdCMF openPumedIdCMF = new BGOpenEdgePumedIdCMF(1F, serviceManager);
+        registerAllServices(bundleContext, openPumedIdCMF, ezProps("preferredMenu", "BioGateway"));
+
 
         /*
         BGRelationSearchCMF postSearchCMF = new BGRelationSearchCMF(serviceManager, BGRelationsQuery.Direction.POST, "Fetch relations from this node");

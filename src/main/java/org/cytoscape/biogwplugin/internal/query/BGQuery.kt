@@ -25,7 +25,22 @@ enum class BGRelationDirection {
 abstract class BGQuery(val serviceManager: BGServiceManager, var type: BGReturnType, val parser: BGParser): AbstractTask(), Runnable {
     var completionBlocks: ArrayList<(BGReturnData?) -> Unit> = ArrayList()
     var returnData: BGReturnData? = null
+    var client = HttpClients.createDefault();
+    var taskMonitor: TaskMonitor? = null
+
     abstract var queryString: String
+
+    override fun run(taskMonitor: TaskMonitor?) {
+        this.taskMonitor = taskMonitor
+        run()
+    }
+
+    override fun cancel() {
+        client.close()
+        serviceManager.server.parser.cancel()
+        super.cancel()
+        throw Exception("Cancelled.")
+    }
 
     fun addCompletion(completion: (BGReturnData?) -> Unit) {
         completionBlocks.add(completion)
@@ -47,19 +62,9 @@ abstract class BGQuery(val serviceManager: BGServiceManager, var type: BGReturnT
 }
 
 class BGNodeSearchQuery(serviceManager: BGServiceManager, override var queryString: String, returnType: BGReturnType, parser: BGParser): BGQuery(serviceManager, returnType, parser) {
-    var client = HttpClients.createDefault();
-
-    override fun run(taskMonitor: TaskMonitor?) {
-        taskMonitor?.setTitle("Searching for nodes...")
-        run()
-    }
-
-    override fun cancel() {
-        client.close()
-        super.cancel()
-    }
 
     override fun run() {
+        taskMonitor?.setTitle("Searching for nodes...")
         val uri = encodeUrl()?.toURI()
         if (uri != null) {
             val httpGet = HttpGet(uri)
@@ -72,6 +77,7 @@ class BGNodeSearchQuery(serviceManager: BGServiceManager, override var queryStri
             print(data)
             val reader = BufferedReader(StringReader(data))
             client.close()
+            taskMonitor?.setTitle("Parsing results...")
             parser.parseNodesToTextArray(reader, type) {
                 returnData = it as? BGReturnNodeData ?: throw Exception("Invalid return data!")
                 runCompletions()
@@ -90,54 +96,11 @@ class BGNodeSearchQuery(serviceManager: BGServiceManager, override var queryStri
     }
 }
 
-class BGGenericQuery(serviceManager: BGServiceManager, override var queryString: String, parser: BGParser, var returnType: BGReturnType): BGQuery(serviceManager, returnType, parser) {
-    override fun run(taskMonitor: TaskMonitor?) {
-        run()
-    }
-    var client = HttpClients.createDefault();
-
-    override fun run() {
-        val uri = encodeUrl()?.toURI()
-        if (uri != null) {
-            val httpGet = HttpGet(uri)
-            val response = client.execute(httpGet)
-            val statusCode = response.statusLine.statusCode
-            val data = EntityUtils.toString(response.entity)
-            print(data)
-            val reader = BufferedReader(StringReader(data))
-            client.close()
-            parser.parseRelations(reader, returnType) {
-                returnData = it as? BGReturnData ?: throw Exception("Invalid return data!")
-                runCompletions()
-            }
-        }
-
-        /*
-        val stream = encodeUrl()?.openStream()
-        if (stream != null) {
-            parser.parseRelations(stream, returnType) {
-                returnData = it as? BGReturnData ?: throw Exception("Invalid return data!")
-                runCompletions()
-            }
-        } */
-    }
-}
-
-
 class BGRelationsQuery(serviceManager: BGServiceManager, override var queryString: String, parser: BGParser, var returnType: BGReturnType): BGQuery(serviceManager, returnType, parser) {
-    override fun run(taskMonitor: TaskMonitor?) {
-        taskMonitor?.setTitle("Searching for relations...")
-        run()
-    }
-
-    val client = HttpClients.createDefault()
-
-    override fun cancel() {
-        client.close()
-        super.cancel()
-    }
 
     override fun run() {
+        taskMonitor?.setTitle("Searching for relations...")
+
         val uri = encodeUrl()?.toURI()
         if (uri != null) {
             val httpGet = HttpGet(uri)
@@ -151,6 +114,7 @@ class BGRelationsQuery(serviceManager: BGServiceManager, override var queryStrin
             //print(data)
             val reader = BufferedReader(StringReader(data))
             client.close()
+            taskMonitor?.setTitle("Parsing results...")
             parser.parseRelations(reader, returnType) {
                 returnData = it as? BGReturnData ?: throw Exception("Invalid return data!")
                 runCompletions()
@@ -161,22 +125,8 @@ class BGRelationsQuery(serviceManager: BGServiceManager, override var queryStrin
 
 class BGChainedRelationsQuery(serviceManager: BGServiceManager, override var queryString: String, parser: BGParser, var returnType: BGReturnType): BGQuery(serviceManager, returnType, parser) {
 
-    var taskMonitor: TaskMonitor? = null
-
-    override fun run(taskMonitor: TaskMonitor?) {
-        taskMonitor?.setTitle("Searching for relations...")
-        this.taskMonitor = taskMonitor
-        run()
-    }
-
-    val client = HttpClients.createDefault()
-
-    override fun cancel() {
-        client.close()
-        super.cancel()
-    }
-
     override fun run() {
+        taskMonitor?.setTitle("Searching for relations...")
         val uri = encodeUrl()?.toURI()
         if (uri != null) {
             val httpGet = HttpGet(uri)
@@ -202,17 +152,15 @@ class BGChainedRelationsQuery(serviceManager: BGServiceManager, override var que
 
 
 class BGNodeFetchQuery(serviceManager: BGServiceManager, val nodeUri: String, parser: BGParser, type: BGReturnType): BGQuery(serviceManager, type, parser) {
-    override fun run(taskMonitor: TaskMonitor?) {
-        taskMonitor?.setTitle("Searching for nodes...")
-        run()
-    }
 
     override fun run() {
+        taskMonitor?.setTitle("Searching for nodes...")
         val stream = encodeUrl()?.openStream()
         if (stream != null) {
+            taskMonitor?.setTitle("Parsing results...")
             val reader = BufferedReader(InputStreamReader(stream))
             parser.parseNodesToTextArray(reader, type) {
-                returnData = it as? BGReturnData ?: throw Exception("Invalid return data!")
+                returnData = it as? BGReturnNodeData ?: throw Exception("Invalid return data!")
                 runCompletions()
             }
         }
@@ -229,22 +177,139 @@ class BGNodeFetchQuery(serviceManager: BGServiceManager, val nodeUri: String, pa
             " term_id: skos:definition ?description .\n" +
             " } } \n"
 }
+class BGFetchPubmedIdQuery(serviceManager: BGServiceManager, val fromNodeUri: String, val relationUri: String, val toNodeUri: String): BGQuery(serviceManager, BGReturnType.PUBMED_ID, serviceManager.server.parser) {
+    override var queryString: String
+        get() = generateQueryString(fromNodeUri, relationUri, toNodeUri) //To change initializer of created properties use File | Settings | File Templates.
+        set(value) {}
+
+    override fun run() {
+        val stream = encodeUrl()?.openStream()
+        if (stream != null) {
+
+        }
+        val uri = encodeUrl()?.toURI()
+        if (uri != null) {
+            val httpGet = HttpGet(uri)
+            val response = client.execute(httpGet)
+            val statusCode = response.statusLine.statusCode
+
+            val data = EntityUtils.toString(response.entity)
+            if (statusCode > 204) {
+                throw Exception("Server connection failed with code "+statusCode+": \n\n"+data)
+            }
+            //print(data)
+            val reader = BufferedReader(StringReader(data))
+            client.close()
+
+
+            taskMonitor?.setTitle("Parsing results...")
+            parser.parsePubmedIdsToTextArray(reader, type) {
+                taskMonitor?.setTitle("Loading results...")
+                returnData = it
+                runCompletions()
+            }
+        }
+    }
+
+    fun synchronousRun(completion: (String?) -> Unit) {
+        val stream = encodeUrl()?.openStream()
+        if (stream != null) {
+            val reader = BufferedReader(InputStreamReader(stream))
+//            val pubmedIDs = parser.parsePubmedIdsToTextArray(reader, type)
+//            if (pubmedIDs.size > 0) {
+//                return pubmedIDs[0]
+//            }
+            parser.parsePubmedIdsToTextArray(reader, type) {
+                if (it == null) {
+                    throw Exception("Invalid return data!")
+                }
+                returnData = it
+                val pubmedIds = it.pubmedIDlist
+                if (pubmedIds.size == 0) throw Exception("No results found.")
+                completion(pubmedIds[0])
+                return@parsePubmedIdsToTextArray
+            }
+        }
+    }
+
+    fun generateQueryString(fromNodeUri: String, relationUri: String, toNodeUri: String): String {
+        return "BASE <http://www.semantic-systems-biology.org/>  \n" +
+                "PREFIX has_source: <http://semanticscience.org/resource/SIO_000253> \n" +
+                "SELECT DISTINCT ?pubmedId\n" +
+                "WHERE {\n" +
+                "GRAPH <tf-tg> {  \n" +
+                "?triple rdf:subject <"+fromNodeUri+"> .  \n" +
+                "?triple rdf:predicate <"+relationUri+"> .  \n" +
+                "?triple rdf:object <"+toNodeUri+"> . \n" +
+                "?triple has_source: ?pubmedId .\n" +
+                "}}"
+    }
+}
+
+class BGNodeURILookupQuery(serviceManager: BGServiceManager, val searchString: String, val useRegex: Boolean, val nodeType: BGNodeType): BGQuery(serviceManager, BGReturnType.NODE_LIST_DESCRIPTION_TAXON, serviceManager.server.parser) {
+    override var queryString: String
+        get() = generateQueryString()
+        set(value) {}
+
+
+    override fun run() {
+        taskMonitor?.setTitle("Searching for nodes...")
+        val stream = encodeUrl()?.openStream()
+        if (stream != null) {
+            taskMonitor?.setTitle("Parsing results...")
+            val reader = BufferedReader(InputStreamReader(stream))
+            parser.parseNodesToTextArray(reader, BGReturnType.NODE_LIST_DESCRIPTION_TAXON) {
+                returnData = it as? BGReturnData ?: throw Exception("Invalid return data!")
+                runCompletions()
+            }
+        }
+    }
+
+
+    fun generateQueryString(): String {
+        val nodeTypeGraph = when (nodeType) {
+            BGNodeType.GENE -> "<refseq>"
+            BGNodeType.PROTEIN -> "<refprot>"
+            BGNodeType.GO -> "<go-basic>"
+            BGNodeType.ANY -> "?anyGraph"
+        }
+        val filter = when (useRegex) {
+            true -> "FILTER regex ( ?name, "+searchString+",'i' ) .\n"
+            false -> "FILTER ( ?name = "+searchString+") .\n"
+        }
+
+        val queryString = "BASE <http://www.semantic-systems-biology.org/>\n" +
+                "PREFIX inheres_in: <http://purl.obolibrary.org/obo/RO_0000052>\n" +
+                "SELECT DISTINCT ?uri ?definition ?name ?taxon  \n" +
+                "WHERE {  \n" +
+                filter +
+                "GRAPH "+nodeTypeGraph+" { \n" +
+                "?uri skos:prefLabel|skos:altLabel ?name . \n" +
+                "?uri skos:definition ?definition .\n" +
+                "?uri inheres_in: ?taxon . \n" +
+                "}\n" +
+                "}  \n" +
+                "ORDER BY ?taxon  \n"
+        return queryString
+    }
+
+}
+
 
 class BGQuickFetchNodeQuery(serviceManager: BGServiceManager, val nodeName: String, val nodeType: BGNodeType, parser: BGParser): BGQuery(serviceManager, BGReturnType.NODE_LIST_DESCRIPTION_TAXON, parser) {
 
     var nodeTypeGraph = when (nodeType) {
         BGNodeType.GENE -> "<refseq>"
         BGNodeType.PROTEIN -> "<refprot>"
-    }
-
-    override fun run(taskMonitor: TaskMonitor?) {
-        taskMonitor?.setTitle("Searching for nodes...")
-        run()
+        BGNodeType.GO -> "<go-basic-inf>"
+        BGNodeType.ANY -> "?anyGraph"
     }
 
     override fun run() {
+        taskMonitor?.setTitle("Searching for nodes...")
         val stream = encodeUrl()?.openStream()
         if (stream != null) {
+            taskMonitor?.setTitle("Parsing results...")
             val reader = BufferedReader(InputStreamReader(stream))
             parser.parseNodesToTextArray(reader, BGReturnType.NODE_LIST_DESCRIPTION_TAXON) {
                 returnData = it as? BGReturnData ?: throw Exception("Invalid return data!")
@@ -255,13 +320,12 @@ class BGQuickFetchNodeQuery(serviceManager: BGServiceManager, val nodeName: Stri
 
     override var queryString = "BASE <http://www.semantic-systems-biology.org/>  \n" +
             "PREFIX inheres_in: <http://purl.obolibrary.org/obo/RO_0000052>  \n" +
-            "PREFIX searchGraph: "+nodeTypeGraph+"\n" +
             "PREFIX taxaGraph: <cco>\n" +
             "PREFIX sio:  <http://semanticscience.org/resource/>  \n" +
             "SELECT DISTINCT ?resourceUri ?value ?description ?taxonName\n" +
             "WHERE {  \n" +
             "\tFILTER ( ?value = '"+nodeName+"') . \n" +
-            "\tGRAPH searchGraph: {  \n" +
+            "\tGRAPH "+nodeTypeGraph+" {  \n" +
             "\t\t?resourceUri skos:prefLabel|skos:altLabel ?value .\n" +
             " ?resourceUri skos:definition ?description .\n" +
             " ?resourceUri inheres_in: ?taxon .\n" +
@@ -273,4 +337,5 @@ class BGQuickFetchNodeQuery(serviceManager: BGServiceManager, val nodeName: Stri
             "}\n" +
             "ORDER BY ?resourceUri"
 }
+
 

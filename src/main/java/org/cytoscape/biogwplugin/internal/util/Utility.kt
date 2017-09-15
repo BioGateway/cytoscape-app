@@ -11,7 +11,7 @@ fun String.sanitizeParameter(): String {
     return this.replace("\"", "").trim()
 }
 
-
+class Tuple<X, Y>(val x: X, val y: Y)
 
 object Utility {
     // TODO: Identify a set of legal characters.

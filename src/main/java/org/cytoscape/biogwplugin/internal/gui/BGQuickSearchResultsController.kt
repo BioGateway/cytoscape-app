@@ -3,8 +3,10 @@ package org.cytoscape.biogwplugin.internal.gui
 import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.model.BGNode
 import org.cytoscape.biogwplugin.internal.model.BGRelation
+import java.awt.EventQueue
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
+import java.awt.event.WindowEvent
 import javax.swing.table.DefaultTableModel
 
 class BGQuickSearchResultsController(val serviceManager: BGServiceManager, private val nodesFound: HashMap<String, BGNode>, val completion: (BGNode) -> Unit) : ActionListener {
@@ -17,6 +19,12 @@ class BGQuickSearchResultsController(val serviceManager: BGServiceManager, priva
         table.setColumnIdentifiers(columnNames)
         for (result in nodesFound.values) {
             table.addRow(result.nameStringArray())
+        }
+        EventQueue.invokeLater {
+            view.mainFrame.toFront()
+            view.mainFrame.isAlwaysOnTop = true
+            view.mainFrame.isAlwaysOnTop = false
+            view.mainFrame.requestFocus()
         }
     }
 
@@ -34,6 +42,7 @@ class BGQuickSearchResultsController(val serviceManager: BGServiceManager, priva
         val uri = view.searchResultsTable.model.getValueAt(row, 0)
         val node = nodesFound[uri] ?: throw Exception("Invalid node! Node not found in return data!")
         completion(node)
+        view.mainFrame.dispatchEvent(WindowEvent(view.mainFrame, WindowEvent.WINDOW_CLOSING))
     }
 
     override fun actionPerformed(e: ActionEvent?) {

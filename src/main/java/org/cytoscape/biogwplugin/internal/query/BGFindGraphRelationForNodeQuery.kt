@@ -10,7 +10,7 @@ import org.cytoscape.work.TaskMonitor
 import java.io.BufferedReader
 import java.io.StringReader
 
-class BGFindGraphRelationForNodeQuery(serviceManager: BGServiceManager, val nodeType: BGNodeType, val nodeUri: String): BGQuery(serviceManager, BGReturnType.RELATION_TRIPLE_NAMED, serviceManager.server.parser) {
+class BGFindGraphRelationForNodeQuery(serviceManager: BGServiceManager, val nodeType: BGNodeType, val nodeUri: String): BGQuery(serviceManager, BGReturnType.RELATION_TRIPLE_PUBMED, serviceManager.server.parser) {
     override var queryString: String
         get() = when (nodeType) {
             BGNodeType.GENE -> generateFindProteinsRegluatingGeneQueryString()
@@ -18,14 +18,8 @@ class BGFindGraphRelationForNodeQuery(serviceManager: BGServiceManager, val node
         }
         set(value) {}
 
-    override fun run(taskMonitor: TaskMonitor?) {
-        taskMonitor?.setTitle("Searching for relations...")
-        run()
-    }
-
-    var client = HttpClients.createDefault();
-
     override fun run() {
+        taskMonitor?.setTitle("Searching for relations...")
         val uri = encodeUrl()?.toURI()
         if (uri != null) {
             val httpGet = HttpGet(uri)
@@ -36,6 +30,7 @@ class BGFindGraphRelationForNodeQuery(serviceManager: BGServiceManager, val node
             println(data)
             val reader = BufferedReader(StringReader(data))
             client.close()
+            taskMonitor?.setTitle("Parsing results...")
             parser.parseRelations(reader, type) {
                 returnData = it as? BGReturnData ?: throw Exception("Invalid return data!")
                 runCompletions()
@@ -44,52 +39,26 @@ class BGFindGraphRelationForNodeQuery(serviceManager: BGServiceManager, val node
     }
 
 
-//    fun generateFindProteinsRegluatingGeneQueryString(): String {
-//        return "BASE <http://www.semantic-systems-biology.org/>  \n" +
-//                "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n" +
-//                "PREFIX inheres_in: <http://purl.obolibrary.org/obo/RO_0000052>  \n" +
-//                "PREFIX molecularly_controls: <http://purl.obolibrary.org/obo/RO_0002448>\n" +
-//                "PREFIX geneUri: <" + nodeUri + ">\n" +
-//                "PREFIX graph1: <refseq>  \n" +
-//                "PREFIX graph2: <refprot> \n" +
-//                "PREFIX graph3: <tf-tg> \n" +
-//                "\n" +
-//                "PREFIX taxon: <http://purl.obolibrary.org/obo/NCBITaxon_9606>  \n" +
-//                "SELECT DISTINCT geneUri: ?gene molecularly_controls: ?proteinUri ?protein\n" +
-//                "WHERE {  \n" +
-//                "GRAPH graph3: {  \n" +
-//                "?triple rdf:subject ?proteinUri .  \n" +
-//                "?triple rdf:predicate molecularly_controls: .  \n" +
-//                "?triple rdf:object geneUri: .  \n" +
-//                "  }  \n" +
-//                "GRAPH graph2: {  \n" +
-//                "?proteinUri skos:prefLabel ?protein .  \n" +
-//                "?proteinUri inheres_in: taxon: . \n" +
-//                "  }  \n" +
-//                "GRAPH graph1: {  \n" +
-//                "geneUri: skos:prefLabel ?gene .  \n" +
-//                "geneUri: inheres_in: taxon: .  \n" +
-//                "  }  \n" +
-//                "}"
-//    }
 fun generateFindProteinsRegluatingGeneQueryString(): String {
     return "BASE <http://www.semantic-systems-biology.org/>  \n" +
             "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n" +
             "PREFIX inheres_in: <http://purl.obolibrary.org/obo/RO_0000052>  \n" +
             "PREFIX molecularly_controls: <http://purl.obolibrary.org/obo/RO_0002448>\n" +
             "PREFIX regulates: <http://purl.obolibrary.org/obo/RO_0002211>\n" +
+            "PREFIX source: <http://semanticscience.org/resource/SIO_000253> \n" +
             "PREFIX geneUri: <" + nodeUri + ">\n" +
             "PREFIX graph1: <refseq>  \n" +
             "PREFIX graph2: <refprot> \n" +
             "PREFIX graph3: <tf-tg> \n" +
             "\n" +
             "PREFIX taxon: <http://purl.obolibrary.org/obo/NCBITaxon_9606>  \n" +
-            "SELECT DISTINCT ?proteinUri ?protein molecularly_controls: geneUri: ?gene\n" +
+            "SELECT DISTINCT ?proteinUri ?protein molecularly_controls: geneUri: ?gene ?pubmedUri\n" +
             "WHERE {  \n" +
             "GRAPH graph3: {  \n" +
             "?triple rdf:subject ?proteinUri .  \n" +
             "?triple rdf:predicate molecularly_controls: .  \n" +
             "?triple rdf:object geneUri: .  \n" +
+            "?triple source: ?pubmedUri . \n" +
             "  }  \n" +
             "GRAPH graph2: {  \n" +
             "?proteinUri skos:prefLabel ?protein .  \n" +
@@ -102,25 +71,26 @@ fun generateFindProteinsRegluatingGeneQueryString(): String {
             "}"
 }
 
-
     fun generateFindGenesRegulatedByProteinQueryString(): String {
         return "BASE <http://www.semantic-systems-biology.org/>  \n" +
                 "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n" +
                 "PREFIX inheres_in: <http://purl.obolibrary.org/obo/RO_0000052>  \n" +
                 "PREFIX molecularly_controls: <http://purl.obolibrary.org/obo/RO_0002448>\n" +
                 "PREFIX regulates: <http://purl.obolibrary.org/obo/RO_0002211>\n" +
+                "PREFIX source: <http://semanticscience.org/resource/SIO_000253> \n" +
                 "PREFIX proteinUri: <" + nodeUri + ">\n" +
                 "PREFIX graph1: <refseq>  \n" +
                 "PREFIX graph2: <refprot> \n" +
                 "PREFIX graph3: <tf-tg> \n" +
                 "\n" +
                 "PREFIX taxon: <http://purl.obolibrary.org/obo/NCBITaxon_9606>  \n" +
-                "SELECT DISTINCT proteinUri: ?protein molecularly_controls: ?geneUri ?gene\n" +
+                "SELECT DISTINCT proteinUri: ?protein molecularly_controls: ?geneUri ?gene ?pubmedUri\n" +
                 "WHERE {  \n" +
                 "GRAPH graph3: {  \n" +
                 "?triple rdf:subject proteinUri: .  \n" +
                 "?triple rdf:predicate molecularly_controls: .  \n" +
                 "?triple rdf:object ?geneUri .  \n" +
+                "?triple source: ?pubmedUri . \n" +
                 "  }  \n" +
                 "GRAPH graph2: {  \n" +
                 "proteinUri: skos:prefLabel ?protein .  \n" +

@@ -20,6 +20,8 @@ class BGRelationType(val uri: String, val description: String) {
 
 class BGRelation(val fromNode: BGNode, val relationType: BGRelationType, val toNode: BGNode) {
 
+    var pubmedUri: String? = null
+
     fun stringArray(): Array<String> {
         return arrayOf(fromNode.uri, relationType.uri, toNode.uri)
     }

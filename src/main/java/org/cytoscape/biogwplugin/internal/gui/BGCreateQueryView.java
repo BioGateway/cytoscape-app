@@ -1,7 +1,6 @@
 package org.cytoscape.biogwplugin.internal.gui;
 
 import net.miginfocom.swing.MigLayout;
-import org.cytoscape.biogwplugin.internal.query.BGQuery;
 import org.cytoscape.biogwplugin.internal.query.BGQueryParameter;
 import org.cytoscape.biogwplugin.internal.query.QueryTemplate;
 
@@ -12,7 +11,6 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Collection;
 import java.util.HashMap;
 
 import static org.cytoscape.biogwplugin.internal.gui.BGQueryBuilderController.*;
@@ -123,8 +121,12 @@ public class BGCreateQueryView implements ChangeListener {
                 optionalField.setPreferredSize(new Dimension(280, 20));
                 component = new BGOptionalURIField(optionalField, listener);
                 break;
-            case COMBOBOX:
-                component = new JComboBox<>(parameter.getOptions().keySet().toArray());
+            case RELATION_COMBOBOX:
+                JComboBox comboBox = new JComboBox<>(parameter.getOptions().keySet().toArray());
+                component = new BGRelationTypeField(comboBox);
+                break;
+            case RELATION_QUERY_ROW:
+                component = new BGRelationQueryRow((String[]) parameter.getOptions().keySet().toArray(), listener);
                 break;
             default:
                 component = null;
@@ -173,6 +175,13 @@ public class BGCreateQueryView implements ChangeListener {
                     break;
                 case COMBOBOX:
                     component = new JComboBox<>(parameter.getOptions().keySet().toArray());
+                    break;
+                case RELATION_COMBOBOX:
+                    JComboBox comboBox = new JComboBox<>((String[]) parameter.getOptions().keySet().toArray());
+                    component = new BGRelationTypeField(comboBox);
+                    break;
+                case RELATION_QUERY_ROW:
+                    component = new BGRelationQueryRow((String[]) parameter.getOptions().keySet().toArray(), listener);
                     break;
                 default:
                     // Crash..!
@@ -384,6 +393,27 @@ public class BGCreateQueryView implements ChangeListener {
         mainPanel.setLayout(new BorderLayout(0, 0));
         tabPanel = new JTabbedPane();
         mainPanel.add(tabPanel, BorderLayout.CENTER);
+        final JPanel panel1 = new JPanel();
+        panel1.setLayout(new BorderLayout(0, 0));
+        tabPanel.addTab("Chained Relations Query", panel1);
+        final JPanel panel2 = new JPanel();
+        panel2.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        panel1.add(panel2, BorderLayout.SOUTH);
+        addLineButton = new JButton();
+        addLineButton.setText("Add Line");
+        panel2.add(addLineButton);
+        removeLineButton = new JButton();
+        removeLineButton.setText("Remove Line");
+        panel2.add(removeLineButton);
+        validateURIsButton = new JButton();
+        validateURIsButton.setText("Validate URIs");
+        panel2.add(validateURIsButton);
+        runChainQueryButton = new JButton();
+        runChainQueryButton.setText("Run Query");
+        panel2.add(runChainQueryButton);
+        chainedParametersPanel = new JPanel();
+        chainedParametersPanel.setLayout(new BorderLayout(0, 0));
+        panel1.add(chainedParametersPanel, BorderLayout.CENTER);
         queryPanel = new JPanel();
         queryPanel.setLayout(new BorderLayout(0, 0));
         tabPanel.addTab("Query", queryPanel);
@@ -393,36 +423,20 @@ public class BGCreateQueryView implements ChangeListener {
         runQueryButton = new JButton();
         runQueryButton.setText("Run Query");
         buttonPanel.add(runQueryButton);
-        final JPanel panel1 = new JPanel();
-        panel1.setLayout(new BorderLayout(0, 0));
-        queryPanel.add(panel1, BorderLayout.CENTER);
-        descriptionPanel = new JPanel();
-        descriptionPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
-        panel1.add(descriptionPanel, BorderLayout.NORTH);
+        final JPanel panel3 = new JPanel();
+        panel3.setLayout(new BorderLayout(0, 0));
+        queryPanel.add(panel3, BorderLayout.CENTER);
         parameterPanel = new JPanel();
         parameterPanel.setLayout(new GridBagLayout());
-        panel1.add(parameterPanel, BorderLayout.CENTER);
-        final JPanel panel2 = new JPanel();
-        panel2.setLayout(new BorderLayout(0, 0));
-        tabPanel.addTab("Chained Relations Query", panel2);
-        final JPanel panel3 = new JPanel();
-        panel3.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        panel2.add(panel3, BorderLayout.SOUTH);
-        addLineButton = new JButton();
-        addLineButton.setText("Add Line");
-        panel3.add(addLineButton);
-        removeLineButton = new JButton();
-        removeLineButton.setText("Remove Line");
-        panel3.add(removeLineButton);
-        validateURIsButton = new JButton();
-        validateURIsButton.setText("Validate URIs");
-        panel3.add(validateURIsButton);
-        runChainQueryButton = new JButton();
-        runChainQueryButton.setText("Run Query");
-        panel3.add(runChainQueryButton);
-        chainedParametersPanel = new JPanel();
-        chainedParametersPanel.setLayout(new BorderLayout(0, 0));
-        panel2.add(chainedParametersPanel, BorderLayout.CENTER);
+        panel3.add(parameterPanel, BorderLayout.CENTER);
+        final JPanel panel4 = new JPanel();
+        panel4.setLayout(new BorderLayout(0, 0));
+        panel3.add(panel4, BorderLayout.NORTH);
+        descriptionPanel = new JPanel();
+        descriptionPanel.setLayout(new BorderLayout(0, 0));
+        panel4.add(descriptionPanel, BorderLayout.SOUTH);
+        querySelectionBox = new JComboBox();
+        panel4.add(querySelectionBox, BorderLayout.NORTH);
         sparqlPanel = new JPanel();
         sparqlPanel.setLayout(new BorderLayout(0, 0));
         tabPanel.addTab("SparQL", sparqlPanel);
@@ -433,29 +447,27 @@ public class BGCreateQueryView implements ChangeListener {
         resultPanel = new JPanel();
         resultPanel.setLayout(new BorderLayout(0, 0));
         tabPanel.addTab("Query Result", resultPanel);
-        final JPanel panel4 = new JPanel();
-        panel4.setLayout(new BorderLayout(0, 0));
-        resultPanel.add(panel4, BorderLayout.CENTER);
+        final JPanel panel5 = new JPanel();
+        panel5.setLayout(new BorderLayout(0, 0));
+        resultPanel.add(panel5, BorderLayout.CENTER);
         final JScrollPane scrollPane2 = new JScrollPane();
-        panel4.add(scrollPane2, BorderLayout.CENTER);
+        panel5.add(scrollPane2, BorderLayout.CENTER);
         resultTable = new JTable();
         resultTable.setAutoCreateRowSorter(true);
         resultTable.setFillsViewportHeight(true);
         scrollPane2.setViewportView(resultTable);
-        final JPanel panel5 = new JPanel();
-        panel5.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        panel4.add(panel5, BorderLayout.SOUTH);
-        importToNewButton = new JButton();
-        importToNewButton.setText("Import to new Network");
-        panel5.add(importToNewButton);
-        importToSelectedNetworkButton = new JButton();
-        importToSelectedNetworkButton.setText("Import to selected Network");
-        panel5.add(importToSelectedNetworkButton);
         final JPanel panel6 = new JPanel();
         panel6.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        mainPanel.add(panel6, BorderLayout.NORTH);
-        querySelectionBox = new JComboBox();
-        panel6.add(querySelectionBox);
+        panel5.add(panel6, BorderLayout.SOUTH);
+        importToNewButton = new JButton();
+        importToNewButton.setText("Import to new Network");
+        panel6.add(importToNewButton);
+        importToSelectedNetworkButton = new JButton();
+        importToSelectedNetworkButton.setText("Import to selected Network");
+        panel6.add(importToSelectedNetworkButton);
+        final JPanel panel7 = new JPanel();
+        panel7.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        mainPanel.add(panel7, BorderLayout.NORTH);
     }
 
     /**

@@ -22,6 +22,10 @@ abstract class BGReturnData {
     }
 }
 
+class BGReturnPubmedIds(columnNames: Array<String>): BGReturnData(BGReturnType.PUBMED_ID, columnNames) {
+    var pubmedIDlist = ArrayList<String>()
+}
+
 class BGReturnNodeData(val returnType: BGReturnType, columnNames: Array<String>): BGReturnData(returnType, columnNames) {
 
     val nodeData = HashMap<String, BGNode>()

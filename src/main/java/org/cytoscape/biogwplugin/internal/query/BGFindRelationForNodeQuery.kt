@@ -18,14 +18,8 @@ class BGFindRelationForNodeQuery(serviceManager: BGServiceManager, val relationT
         } //To change initializer of created properties use File | Settings | File Templates.
         set(value) {}
 
-    override fun run(taskMonitor: TaskMonitor?) {
-        taskMonitor?.setTitle("Searching for relations...")
-        run()
-    }
-
-    var client = HttpClients.createDefault();
-
     override fun run() {
+        taskMonitor?.setTitle("Searching for relations...")
         val uri = encodeUrl()?.toURI()
         if (uri != null) {
             val httpGet = HttpGet(uri)
@@ -36,6 +30,7 @@ class BGFindRelationForNodeQuery(serviceManager: BGServiceManager, val relationT
             println(data)
             val reader = BufferedReader(StringReader(data))
             client.close()
+            taskMonitor?.setTitle("Parsing results...")
             parser.parseRelations(reader, type) {
                 returnData = it as? BGReturnData ?: throw Exception("Invalid return data!")
                 runCompletions()

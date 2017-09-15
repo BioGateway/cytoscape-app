@@ -62,8 +62,8 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
 
         if (nodeTable.getColumn(Constants.BG_FIELD_IDENTIFIER_URI) == null) nodeTable.createColumn(Constants.BG_FIELD_IDENTIFIER_URI, String::class.java, false)
         if (edgeTable.getColumn(Constants.BG_FIELD_IDENTIFIER_URI) == null) edgeTable.createColumn(Constants.BG_FIELD_IDENTIFIER_URI, String::class.java, false)
+        if (edgeTable.getColumn(Constants.BG_FIELD_PUBMED_URI) == null) edgeTable.createColumn(Constants.BG_FIELD_PUBMED_URI, String::class.java, false)
         if (edgeTable.getColumn(Constants.BG_FIELD_EDGE_ID) == null) edgeTable.createColumn(Constants.BG_FIELD_EDGE_ID, String::class.java, false)
-
 
 
         // Find the unique nodes in the set of relations. Duplicates get overwritten.
@@ -91,7 +91,7 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
 
             val matchingRows = edgeTable.getMatchingRows(Constants.BG_FIELD_EDGE_ID, relation.edgeIdentifier)
             if (matchingRows.size == 0) {
-                val edge = addEdgeToNetwork(fromNode, toNode, network, edgeTable, relation.relationType, relation.edgeIdentifier)
+                val edge = addEdgeToNetwork(fromNode, toNode, network, edgeTable, relation.relationType, relation.edgeIdentifier, relation.pubmedUri)
             } else if (matchingRows.size > 1) {
                 println("WARNING: Duplicate edges!")
             }
@@ -99,11 +99,15 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
     }
 
 
-    fun addEdgeToNetwork(from: CyNode, to: CyNode, network: CyNetwork, edgeTable: CyTable, relationType: BGRelationType, edgeId: String): CyEdge {
+    fun addEdgeToNetwork(from: CyNode, to: CyNode, network: CyNetwork, edgeTable: CyTable, relationType: BGRelationType, edgeId: String, pubmedId: String?): CyEdge {
         val edge = network.addEdge(from, to, true)
         edgeTable.getRow(edge.suid).set(Constants.BG_FIELD_IDENTIFIER_URI, relationType.uri)
         edgeTable.getRow(edge.suid).set(Constants.BG_FIELD_NAME, relationType.description)
         edgeTable.getRow(edge.suid).set(Constants.BG_FIELD_EDGE_ID, edgeId)
+        if (pubmedId != null) {
+            edgeTable.getRow(edge.suid).set(Constants.BG_FIELD_PUBMED_URI, pubmedId)
+        }
+
         return edge
     }
 

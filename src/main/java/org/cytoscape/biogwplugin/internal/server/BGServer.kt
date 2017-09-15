@@ -7,6 +7,7 @@ import org.cytoscape.biogwplugin.internal.parser.*
 import org.cytoscape.biogwplugin.internal.query.BGNodeFetchQuery
 import org.cytoscape.biogwplugin.internal.query.BGQueryParameter
 import org.cytoscape.biogwplugin.internal.query.QueryTemplate
+import org.cytoscape.biogwplugin.internal.util.Constants
 import org.cytoscape.model.CyNetwork
 import org.w3c.dom.Element
 import org.w3c.dom.Node
@@ -136,8 +137,7 @@ class BGServer(private val serviceManager: BGServiceManager) {
 
     private fun loadXMLFileFromServer() {
         try {
-            //val queryFileUrl = URL("https://bitbucket.org/druglogics/biogw_cytoscape/raw/master/BiogatewayQueries.xml")
-            val queryFileUrl = URL("https://firebasestorage.googleapis.com/v0/b/fluttertest-788dd.appspot.com/o/BiogatewayQueries.xml?alt=media&token=88b6f562-b074-4278-b985-e30ed50d1751")
+            val queryFileUrl = URL(Constants.BG_CONFIG_FILE_URL)
             val connection = queryFileUrl.openConnection()
             val inputStream = connection.getInputStream()
             parseXMLConfigFile(inputStream)

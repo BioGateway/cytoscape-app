@@ -12,47 +12,6 @@
         <properties/>
         <border type="none"/>
         <children>
-          <grid id="b3611" binding="queryPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
-            <constraints>
-              <tabbedpane title="Query"/>
-            </constraints>
-            <properties/>
-            <border type="none"/>
-            <children>
-              <grid id="fef17" binding="buttonPanel" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
-                <constraints border-constraint="South"/>
-                <properties/>
-                <border type="none"/>
-                <children>
-                  <component id="d2d61" class="javax.swing.JButton" binding="runQueryButton" default-binding="true">
-                    <constraints/>
-                    <properties>
-                      <text value="Run Query"/>
-                    </properties>
-                  </component>
-                </children>
-              </grid>
-              <grid id="868ac" layout-manager="BorderLayout" hgap="0" vgap="0">
-                <constraints border-constraint="Center"/>
-                <properties/>
-                <border type="none"/>
-                <children>
-                  <grid id="ca358" binding="descriptionPanel" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="0">
-                    <constraints border-constraint="North"/>
-                    <properties/>
-                    <border type="none"/>
-                    <children/>
-                  </grid>
-                  <grid id="a8a4b" binding="parameterPanel" layout-manager="GridBagLayout">
-                    <constraints border-constraint="Center"/>
-                    <properties/>
-                    <border type="none"/>
-                    <children/>
-                  </grid>
-                </children>
-              </grid>
-            </children>
-          </grid>
           <grid id="1ccbb" layout-manager="BorderLayout" hgap="0" vgap="0">
             <constraints>
               <tabbedpane title="Chained Relations Query"/>
@@ -96,6 +55,58 @@
                 <properties/>
                 <border type="none"/>
                 <children/>
+              </grid>
+            </children>
+          </grid>
+          <grid id="b3611" binding="queryPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
+            <constraints>
+              <tabbedpane title="Query"/>
+            </constraints>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <grid id="fef17" binding="buttonPanel" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+                <constraints border-constraint="South"/>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="d2d61" class="javax.swing.JButton" binding="runQueryButton" default-binding="true">
+                    <constraints/>
+                    <properties>
+                      <text value="Run Query"/>
+                    </properties>
+                  </component>
+                </children>
+              </grid>
+              <grid id="868ac" layout-manager="BorderLayout" hgap="0" vgap="0">
+                <constraints border-constraint="Center"/>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <grid id="a8a4b" binding="parameterPanel" layout-manager="GridBagLayout">
+                    <constraints border-constraint="Center"/>
+                    <properties/>
+                    <border type="none"/>
+                    <children/>
+                  </grid>
+                  <grid id="86fdc" layout-manager="BorderLayout" hgap="0" vgap="0">
+                    <constraints border-constraint="North"/>
+                    <properties/>
+                    <border type="none"/>
+                    <children>
+                      <grid id="ca358" binding="descriptionPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
+                        <constraints border-constraint="South"/>
+                        <properties/>
+                        <border type="none"/>
+                        <children/>
+                      </grid>
+                      <component id="5f85b" class="javax.swing.JComboBox" binding="querySelectionBox">
+                        <constraints border-constraint="North"/>
+                        <properties/>
+                      </component>
+                    </children>
+                  </grid>
+                </children>
               </grid>
             </children>
           </grid>
@@ -174,12 +185,7 @@
         <constraints border-constraint="North"/>
         <properties/>
         <border type="none"/>
-        <children>
-          <component id="5f85b" class="javax.swing.JComboBox" binding="querySelectionBox">
-            <constraints/>
-            <properties/>
-          </component>
-        </children>
+        <children/>
       </grid>
     </children>
   </grid>
