@@ -29,6 +29,7 @@ public class BGURILookupView {
         mainFrame.setPreferredSize(new Dimension(600, 400));
         mainFrame.setContentPane(this.panel1);
         setupUI();
+        mainFrame.getRootPane().setDefaultButton(searchButton);
         mainFrame.pack();
         mainFrame.setVisible(true);
 
