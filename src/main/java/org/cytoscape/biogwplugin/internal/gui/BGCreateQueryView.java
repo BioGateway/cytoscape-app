@@ -49,6 +49,7 @@ public class BGCreateQueryView implements ChangeListener {
     private JButton validateURIsButton;
     private JButton addLineButton;
     private JButton removeLineButton;
+    private JCheckBox filterRelationsToExistingCheckBox;
 
     public BGCreateQueryView(ActionListener listener) {
         this.listener = listener;
@@ -80,6 +81,8 @@ public class BGCreateQueryView implements ChangeListener {
         importToNewButton.setActionCommand(Companion.getACTION_IMPORT_TO_NEW());
         importToSelectedNetworkButton.addActionListener(listener);
         importToSelectedNetworkButton.setActionCommand(Companion.getACTION_IMPORT_TO_SELECTED());
+        filterRelationsToExistingCheckBox.addActionListener(listener);
+        filterRelationsToExistingCheckBox.setActionCommand(Companion.getACTION_FILTER_EDGES_TO_EXISTING());
 
         runChainQueryButton.addActionListener(listener);
         runChainQueryButton.setActionCommand(Companion.getACTION_RUN_MULTIQUERY());
@@ -439,6 +442,9 @@ public class BGCreateQueryView implements ChangeListener {
         importToSelectedNetworkButton = new JButton();
         importToSelectedNetworkButton.setText("Import to selected Network");
         panel6.add(importToSelectedNetworkButton);
+        filterRelationsToExistingCheckBox = new JCheckBox();
+        filterRelationsToExistingCheckBox.setText("Only show relations to nodes in network");
+        panel6.add(filterRelationsToExistingCheckBox);
         final JPanel panel7 = new JPanel();
         panel7.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
         mainPanel.add(panel7, BorderLayout.NORTH);

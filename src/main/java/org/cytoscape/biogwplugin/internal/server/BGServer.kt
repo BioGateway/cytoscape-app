@@ -172,10 +172,13 @@ class BGServer(private val serviceManager: BGServiceManager) {
             for (index in 0..rList.length -1) {
                 val element = rList.item(index) as? Element
                 val name = element?.getAttribute("name")
+                val defaultGraph = element?.getAttribute("defaultGraph")
                 val uri = element?.textContent
 
                 if (name != null && uri != null) {
-                    relationTypes.put(uri, BGRelationType(uri, name))
+                    val relationType = BGRelationType(uri, name)
+                    relationType.defaultGraphName = defaultGraph
+                    relationTypes.put(uri, relationType)
                 }
             }
             cache.relationTypes = relationTypes

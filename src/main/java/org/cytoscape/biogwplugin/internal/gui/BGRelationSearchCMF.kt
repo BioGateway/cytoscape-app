@@ -78,14 +78,16 @@ class BGRelationSearchCMF(val gravity: Float, val serviceManager: BGServiceManag
         var menuItemText = when (nodeType) {
             BGNodeType.GENE -> "Get associated proteins"
             BGNodeType.PROTEIN -> "Get associated genes"
-            BGNodeType.GO -> ""
-            BGNodeType.ANY -> ""
+            else -> {
+                ""
+            }
         }
         val direction = when (nodeType) {
             BGNodeType.PROTEIN -> BGRelationDirection.TO
             BGNodeType.GENE -> BGRelationDirection.FROM
-            BGNodeType.GO -> TODO("This should not be possible!")
-            BGNodeType.ANY -> TODO("This should not be possible!")
+               else -> {
+                   throw Exception("Must be gene or protein!")
+            }
         }
         val encodesUri = "http://semanticscience.org/resource/SIO_010078"
         val relationType = serviceManager.server.cache.relationTypes.get(encodesUri) ?: throw Exception("Relation type with uri: "+encodesUri+" not found in cache.")

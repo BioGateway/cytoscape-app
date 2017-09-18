@@ -1,6 +1,7 @@
 package org.cytoscape.biogwplugin.internal.gui
 
 import org.cytoscape.biogwplugin.internal.BGServiceManager
+import org.cytoscape.biogwplugin.internal.model.BGRelationType
 import java.awt.Dimension
 import java.awt.FlowLayout
 import javax.swing.*
@@ -218,14 +219,14 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager, val relationTypes:
         for (line in queryLines) {
             val fromUri = line.fromUri ?: throw Exception("Invalid From URI!")
             var relationUri = line.relationType?.let { serviceManager.cache.namedRelationTypes.get(it) } ?: throw Exception("Invalid Relation Type!")
-            relationUri = "<"+relationUri+">"
+            val relationType = serviceManager.server.cache.relationTypes.get(relationUri) ?: throw Exception("Unknown relation type!")
             val toUri = line.toUri ?: throw Exception("Invalid To URI!")
 
             val fromName = "?name_"+getSafeString(fromUri)
             val toName = "?name_"+getSafeString(toUri)
 
-            returnValues += fromUri+" as ?"+getSafeString(fromUri)+numberOfGraphQueries+" "+fromName+" as "+fromName+numberOfGraphQueries+" "+relationUri+" "+toUri+" as ?"+getSafeString(toUri)+numberOfGraphQueries+" "+toName+" as "+toName+numberOfGraphQueries+" "
-            graphQueries += generateSparqlGraph(numberOfGraphQueries, fromUri, relationUri, toUri)
+            returnValues += fromUri+" as ?"+getSafeString(fromUri)+numberOfGraphQueries+" "+fromName+" as "+fromName+numberOfGraphQueries+" <"+relationUri+"> "+toUri+" as ?"+getSafeString(toUri)+numberOfGraphQueries+" "+toName+" as "+toName+numberOfGraphQueries+" "
+            graphQueries += generateSparqlGraph(numberOfGraphQueries, fromUri, relationType, toUri)
             nodeNames.add(fromUri)
             nodeNames.add(toUri)
             numberOfGraphQueries += 1
@@ -257,9 +258,19 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager, val relationTypes:
     }
 
 
-    private fun generateSparqlGraph(graphNumber: Int, first: String, relation: String, second: String): String {
-        return "GRAPH ?graph"+graphNumber+" {\n" +
-                first+" "+relation+" "+second+" .\n" +
+    private fun generateSparqlGraph(graphNumber: Int, first: String, relation: BGRelationType, second: String): String {
+
+        var graphName = "?graph"+graphNumber
+
+        relation.defaultGraphName?.let {
+            if (it.length > 0) {
+                graphName = "<"+it+">"
+            }
+        }
+
+
+        return "GRAPH "+graphName+" {\n" +
+                first+" <"+relation.uri+"> "+second+" .\n" +
                 "}\n"
     }
 
@@ -268,12 +279,6 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager, val relationTypes:
         for (nodeUri in nodeUris) {
             nameQueryLines += nodeUri+" skos:prefLabel ?name_"+getSafeString(nodeUri)+" .\n"
         }
-
-        return "GRAPH ?nameGraph {\n" +
-                nameQueryLines +
-                "}\n" +
-                "GRAPH ?nameGraph2 {\n" +
-                nameQueryLines +
-                "}"
+        return nameQueryLines
     }
 }

@@ -253,6 +253,7 @@ class BGQuickFetchNodeQuery(serviceManager: BGServiceManager, val nodeName: Stri
         BGNodeType.GENE -> "<refseq>"
         BGNodeType.PROTEIN -> "<refprot>"
         BGNodeType.GO -> "<go-basic-inf>"
+        BGNodeType.TAXON -> "<cco>"
         BGNodeType.ANY -> "?anyGraph"
     }
 

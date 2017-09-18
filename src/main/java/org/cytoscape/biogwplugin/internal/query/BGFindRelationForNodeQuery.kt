@@ -1,12 +1,10 @@
 package org.cytoscape.biogwplugin.internal.query
 
 import org.apache.http.client.methods.HttpGet
-import org.apache.http.impl.client.HttpClients
 import org.apache.http.util.EntityUtils
 import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.model.BGRelationType
 import org.cytoscape.biogwplugin.internal.parser.BGReturnType
-import org.cytoscape.work.TaskMonitor
 import java.io.BufferedReader
 import java.io.StringReader
 

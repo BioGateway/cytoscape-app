@@ -6,6 +6,7 @@ import org.cytoscape.biogwplugin.internal.model.BGNodeType
 import org.cytoscape.biogwplugin.internal.model.BGRelation
 import org.cytoscape.biogwplugin.internal.parser.BGReturnType
 import org.cytoscape.biogwplugin.internal.query.*
+import org.cytoscape.biogwplugin.internal.util.Constants
 import org.cytoscape.biogwplugin.internal.util.Utility
 import org.cytoscape.biogwplugin.internal.util.sanitizeParameter
 import org.cytoscape.model.CyNetwork
@@ -77,21 +78,25 @@ class BGRelationTypeField(val combobox: JComboBox<String>): JPanel() {
     }
 }
 
+private abstract class BGResultRow()
+
+private class BGNodeResultRow(val node: BGNode): BGResultRow()
+private class BGRelationResultRow(val relation: BGRelation): BGResultRow()
+
 class BGComponentButton(label: String, val associatedComponent: JComponent): JButton(label)
 
 class BGQueryBuilderController(private val serviceManager: BGServiceManager) : ActionListener, ChangeListener {
-
-
-
 
     private val view: BGCreateQueryView
 
     //private var relationList = ArrayList<BGRelation>()
 
     private var currentQuery: QueryTemplate? = null
-    private var chainedQuery = QueryTemplate("", "", "", BGReturnType.RELATION_MULTIPART_NAMED)
 
     private var currentReturnData: BGReturnData? = null
+    //private var currentResultsInTable = HashMap<String, BGResultRow>()
+    private var currentResultsInTable = HashMap<Int, BGResultRow>()
+
     private var  queries = HashMap<String, QueryTemplate>()
 
     init {
@@ -254,22 +259,10 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                 }
 
                 if (data is BGReturnNodeData) {
-                    for ((uri, node) in data.nodeData) {
-                        val row = arrayOf(uri, node.name, node.description)
-                        tableModel.addRow(row)
-                    }
+                    setNodeTableData(data.nodeData.values)
                 }
                 if (data is BGReturnRelationsData) {
-
-                    for (relation in data.relationsData) {
-
-                        var row = relation.stringArray()
-                        val fromNodeName = relation.fromNode.name ?: relation.fromNode.uri
-                        val relationName = relation.relationType.description
-                        val toNodeName = relation.toNode.name ?: relation.toNode.uri
-                        row = arrayOf(fromNodeName, relationName, toNodeName)
-                        tableModel.addRow(row)
-                    }
+                    setRelationTableData(data.relationsData)
                 }
                 view.tabPanel.selectedIndex = 3 // Open the result tab.
 
@@ -328,58 +321,20 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         val nodes = HashMap<String, BGNode>()
         val relations = ArrayList<BGRelation>()
         val model = view.resultTable.model as DefaultTableModel
-        for (row in view.resultTable.selectedRows) {
+        for (rowNumber in view.resultTable.selectedRows) {
+
+            val resultRow = currentResultsInTable[view.resultTable.convertRowIndexToModel(rowNumber)]
 
             when(returnType) {
-                BGReturnType.NODE_LIST -> {
-                    val uri = model.getValueAt(row, 0) as String
-                    val name = model.getValueAt(row, 1) as String
-                    val node = server.getNodeFromCache(BGNode(uri, name))
-                    nodes.put(uri, node)
+                BGReturnType.NODE_LIST, BGReturnType.NODE_LIST_DESCRIPTION, BGReturnType.NODE_LIST_DESCRIPTION_TAXON -> {
+                    val node = (resultRow as? BGNodeResultRow)?.node ?: throw Exception("Result must be a node!")
+                    nodes.put(node.uri, node)
                 }
-                BGReturnType.NODE_LIST_DESCRIPTION -> {
-                    val uri = model.getValueAt(row, 0) as String
-                    val name = model.getValueAt(row, 1) as String
-                    val description = model.getValueAt(row, 2) as String
-                    val node = server.getNodeFromCache(BGNode(uri, name, description))
-                    nodes.put(uri, node)
-                }
-                BGReturnType.RELATION_TRIPLE -> {
-                    /*
-                    // TODO: We seem to lose the relation data after importing it, because the only thing we do is populating this table.
-                    val fromNodeUri = model.getValueAt(row, 0) as String
-                    val relationUri = model.getValueAt(row, 1) as String
-                    val toNodeUri = model.getValueAt(row, 2) as String
-                    val fromNode = server.getNodeFromCache(BGNode(fromNodeUri))
-                    val toNode = server.getNodeFromCache(BGNode(toNodeUri))
-                    var relationType = server.cache.relationTypes.get(relationUri)
-
-                    if (relationType == null) {
-                        relationType = BGRelationType(relationUri, relationUri)
-                    }
-                    */
-                    //val relation = BGRelation(fromNode, relationType, toNode)
-
-                    val returnData = currentReturnData as? BGReturnRelationsData
-                    returnData?.let {
-                        //TODO: WARNING! BUG! When sorting the table, the row is no longer the same as relation index!
-                        val relation = returnData.relationsData[row]
-                        nodes.put(relation.fromNode.uri, relation.fromNode)
-                        nodes.put(relation.toNode.uri, relation.toNode)
-                        relations.add(relation)
-                    }
-                }
-                BGReturnType.RELATION_TRIPLE_NAMED -> {
-
-                }
-                BGReturnType.RELATION_MULTIPART_NAMED -> {
-                    val returnData = currentReturnData as? BGReturnRelationsData
-                    returnData?.let {
-                        val relation = returnData.relationsData[row]
-                        nodes.put(relation.fromNode.uri, relation.fromNode)
-                        nodes.put(relation.toNode.uri, relation.toNode)
-                        relations.add(relation)
-                    }
+                BGReturnType.RELATION_TRIPLE, BGReturnType.RELATION_TRIPLE_NAMED, BGReturnType.RELATION_MULTIPART_NAMED -> {
+                    val relation = (resultRow as? BGRelationResultRow)?.relation ?: throw Exception("Result must be a relation!")
+                    nodes.put(relation.fromNode.uri, relation.fromNode)
+                    nodes.put(relation.fromNode.uri, relation.fromNode)
+                    relations.add(relation)
                 }
             }
 
@@ -448,30 +403,32 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         return null
     }
 
-    private fun openFileChooser(): File? {
-        val chooser = JFileChooser()
-
-        val filter = object : FileFilter() {
-            override fun getDescription(): String {
-                return "XML File"
+    fun lookupNodeUri(button: BGComponentButton) {
+        val component = button.associatedComponent as? BGOptionalURIField
+        component?.let {
+            val optionalUriComponent = it
+            val searchString = optionalUriComponent.textField.text
+            val nodeType = when (optionalUriComponent.comboBox.selectedItem) {
+                "Protein" -> BGNodeType.PROTEIN
+                "Gene" -> BGNodeType.GENE
+                else -> {
+                    throw Exception("Invalid node type selected in combobox!")
+                }
             }
-
-            override fun accept(f: File): Boolean {
-
-                if (f.name.toLowerCase().endsWith("xml")) return true
-                if (f.isDirectory) return true
-                return false
+            val query = BGQuickFetchNodeQuery(serviceManager, searchString, nodeType, serviceManager.server.parser)
+            query.addCompletion {
+                val results = query.returnData as? BGReturnNodeData ?: throw Exception("Invalid return data!")
+                val nodeSelectionViewController = BGQuickSearchResultsController(serviceManager, results.nodeData, {
+                    val node = it
+                    // Set the value of the field to the uri of the node found and selected.
+                    optionalUriComponent.textField.text = node.uri
+                    fightForFocus()
+                })
             }
+            serviceManager.taskManager.execute(TaskIterator(query))
         }
-
-        chooser.fileFilter = filter
-
-        val choice = chooser.showOpenDialog(view.mainFrame)
-        if (choice != JFileChooser.APPROVE_OPTION) return null
-        val chosenFile = chooser.selectedFile
-
-        return chosenFile
     }
+
 
     override fun actionPerformed(e: ActionEvent) {
         when (e.actionCommand) {
@@ -490,32 +447,65 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
             ACTION_VALIDATE_URIS -> validateUris()
             ACTION_LOOKUP_NODE_URI -> {
                 val button = e.source as? BGComponentButton ?: throw Exception("Expected BGComponentButton")
-                val component = button.associatedComponent as? BGOptionalURIField
-                component?.let {
-                    val optionalUriComponent = it
-                    val searchString = optionalUriComponent.textField.text
-                    val nodeType = when (optionalUriComponent.comboBox.selectedItem) {
-                        "Protein" -> BGNodeType.PROTEIN
-                        "Gene" -> BGNodeType.GENE
-                        else -> {
-                            throw Exception("Invalid node type selected in combobox!")
-                        }
-                    }
-                    val query = BGQuickFetchNodeQuery(serviceManager, searchString, nodeType, serviceManager.server.parser)
-                    query.addCompletion {
-                        val results = query.returnData as? BGReturnNodeData ?: throw Exception("Invalid return data!")
-                        val nodeSelectionViewController = BGQuickSearchResultsController(serviceManager, results.nodeData, {
-                            val node = it
-                            // Set the value of the field to the uri of the node found and selected.
-                            optionalUriComponent.textField.text = node.uri
-                            fightForFocus()
-                        })
-                    }
-                    serviceManager.taskManager.execute(TaskIterator(query))
-                }
+                lookupNodeUri(button)
+            }
+            ACTION_FILTER_EDGES_TO_EXISTING -> {
+                val box = e.source as? JCheckBox ?: throw Exception("Expected JCheckBox!")
+                filterRelationsToNodesInCurrentNetwork(box.isSelected)
             }
             else -> {
             }
+        }
+    }
+
+    private fun filterRelationsToNodesInCurrentNetwork(filterOn: Boolean) {
+
+        val returnData = currentReturnData as? BGReturnRelationsData ?: return
+        val relationsFound = returnData.relationsData
+
+        if (filterOn) {
+            val network = serviceManager.applicationManager.currentNetwork
+            val allNodeUris = network.defaultNodeTable.getColumn(Constants.BG_FIELD_IDENTIFIER_URI).getValues(String::class.java)
+            var relations = ArrayList<BGRelation>()
+            for (result in relationsFound) {
+                if (allNodeUris.contains(result.toNode.uri) || allNodeUris.contains(result.fromNode.uri)) {
+                    relations.add(result)
+                }
+            }
+            setRelationTableData(relations)
+        } else {
+            setRelationTableData(relationsFound)
+        }
+    }
+
+    private fun setNodeTableData(nodes: Collection<BGNode>) {
+        val tableModel = view.resultTable.model as DefaultTableModel
+
+        currentResultsInTable.clear()
+        for (i in tableModel.rowCount -1 downTo 0) {
+            tableModel.removeRow(i)
+        }
+        for (node in nodes) {
+            val row = arrayOf(node.uri, node.name, node.description)
+            tableModel.addRow(row)
+            currentResultsInTable[tableModel.rowCount-1] = BGNodeResultRow(node)
+        }
+    }
+
+    private fun setRelationTableData(relations: Collection<BGRelation>) {
+        val tableModel = view.resultTable.model as DefaultTableModel
+
+        currentResultsInTable.clear()
+        for (i in tableModel.rowCount -1 downTo 0) {
+            tableModel.removeRow(i)
+        }
+        for (relation in relations) {
+            val fromNodeName = relation.fromNode.name ?: relation.fromNode.uri
+            val relationName = relation.relationType.description
+            val toNodeName = relation.toNode.name ?: relation.toNode.uri
+            val row = arrayOf(fromNodeName, relationName, toNodeName)
+            tableModel.addRow(row)
+            currentResultsInTable[tableModel.rowCount-1] = BGRelationResultRow(relation)
         }
     }
 
@@ -544,18 +534,8 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                 val tableModel = view.resultTable.model as DefaultTableModel
                 tableModel.setColumnIdentifiers(data.columnNames)
 
-                for (i in tableModel.rowCount -1 downTo 0) {
-                    tableModel.removeRow(i)
-                }
-                    for (relation in data.relationsData) {
+                setRelationTableData(data.relationsData)
 
-                        var row = relation.stringArray()
-                        val fromNodeName = relation.fromNode.name ?: relation.fromNode.uri
-                        val relationName = relation.relationType.description
-                        val toNodeName = relation.toNode.name ?: relation.toNode.uri
-                        row = arrayOf(fromNodeName, relationName, toNodeName)
-                        tableModel.addRow(row)
-                    }
                 view.tabPanel.selectedIndex = 3 // Open the result tab.
 
                 // Try the darnest to make the window appear on top!
@@ -574,130 +554,6 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         view.addMultiQueryLine();
     }
 
-    /*
-    private fun runMultiQuery() {
-        validatePropertyFields(chainedQuery.parameters, view.chainedParametersComponents)
-        readParameterComponents(chainedQuery.parameters, view.chainedParametersComponents)
-        chainedQuery.sparqlString = generateChainQuery(chainedQuery)
-        val queryString = createQueryString(chainedQuery)
-        view.sparqlTextArea.text = queryString ?: throw Exception("Query String cannot be empty!")
-
-        val query = BGMultiRelationsQuery(serviceManager, queryString, serviceManager.server.parser, BGReturnType.RELATION_MULTIPART_NAMED)
-        query.addCompletion {
-            val data = it as? BGReturnRelationsData ?: throw Exception("Expected relations data in return!")
-
-            currentReturnData = data
-
-            val tableModel = view.resultTable.model as DefaultTableModel
-            val columnNames = arrayOf("from node uri", "from node name", "relation", "to node uri", "to node name")
-            tableModel.setColumnIdentifiers(columnNames)
-
-            for (i in tableModel.rowCount -1 downTo 0) {
-                tableModel.removeRow(i)
-            }
-
-            for (relation in data.relationsData) {
-                val fromNodeName = relation.fromNode.name ?: relation.fromNode.uri
-                val relationName = relation.relationType.description
-                val toNodeName = relation.toNode.name ?: relation.toNode.uri
-                val row = arrayOf(relation.fromNode.uri, fromNodeName, relationName, relation.toNode.uri, toNodeName)
-                tableModel.addRow(row)
-            }
-
-            view.tabPanel.selectedIndex = 3
-            // Try the darnest to make the window appear on top!
-            fightForFocus()
-        }
-        val iterator = TaskIterator(query)
-        serviceManager.taskManager.execute(iterator)
-    }
-
-
-    private fun removeMultiQueryLine() {
-
-        val lastParameterIndex = chainedQuery.parameters.count() -1
-        val secondLastParameterIndex = chainedQuery.parameters.count() -2
-        val lastParameter = chainedQuery.parameters.get(lastParameterIndex)
-        val secondLastParameter = chainedQuery.parameters.get(secondLastParameterIndex)
-
-        chainedQuery.parameters.removeAt(lastParameterIndex)
-        chainedQuery.parameters.removeAt(secondLastParameterIndex)
-
-        view.removeParameterField(lastParameter)
-        view.removeParameterField(secondLastParameter)
-    }
-
-    private fun generateChainQuery(chainQueryTemplate: QueryTemplate): String {
-        var nodes = ArrayList<String>()
-        val relations = ArrayList<Pair<String, BGRelationDirection>>()
-        var returnNames = ArrayList<String>()
-        var returnSparqlString = ""
-
-        for (parameter in chainQueryTemplate.parameters) {
-            if (parameter.type == BGQueryParameter.ParameterType.OPTIONAL_URI) {
-                nodes.add(parameter.id)
-                returnSparqlString += " @"+parameter.id+" ?name_"+parameter.id
-            }
-            if (parameter.type == BGQueryParameter.ParameterType.RELATION_COMBOBOX) {
-                val parameterTag = "<@"+parameter.id+">"
-                val direction = parameter.direction ?: BGRelationDirection.TO
-                relations.add(Pair(parameterTag, direction))
-                returnNames.add(parameterTag)
-                returnSparqlString += " "+parameterTag
-            }
-        }
-
-        var nodeCounter = 0
-        var relationCounter = 0
-        var graphCounter = 0
-        var graphsQueryString = ""
-
-        while(nodeCounter < nodes.size && relationCounter < relations.size) {
-            val relation = relations.get(relationCounter)
-            val firstNode = nodes.get(nodeCounter)
-            nodeCounter += 1
-            relationCounter += 1
-            val secondNode = nodes.get(nodeCounter)
-
-            when (relation.second) {
-                BGRelationDirection.TO -> graphsQueryString += generateChainQuerySparqlGraph(graphCounter, firstNode, relation.first, secondNode)
-                BGRelationDirection.FROM -> graphsQueryString += generateChainQuerySparqlGraph(graphCounter, secondNode, relation.first, firstNode)
-            }
-            graphCounter += 1
-        }
-
-        return generateChainQuerySparql(returnSparqlString, graphsQueryString, generateChainQuerySparqlNameGraphs(nodes))
-    }
-
-    private fun generateChainQuerySparqlGraph(graphNumber: Int, first: String, relation: String, second: String): String {
-        return "GRAPH ?graph"+graphNumber+" {\n" +
-                "@"+first+" "+relation+" @"+second+" .\n" +
-                "}\n"
-    }
-
-    private fun generateChainQuerySparqlNameGraphs(nodeNames: List<String>): String {
-        var nameQueryLines = ""
-        for (name in nodeNames) {
-            nameQueryLines += "@"+name+" skos:prefLabel ?name_"+name+" .\n"
-        }
-
-        return "GRAPH ?nameGraph {\n" +
-                nameQueryLines +
-                "}\n" +
-                "GRAPH ?nameGraph2 {\n" +
-                nameQueryLines +
-                "}"
-    }
-
-    private fun generateChainQuerySparql(returnNames: String, graphQueries: String, nameQueries: String): String {
-        return "BASE <http://www.semantic-systems-biology.org/>\n" +
-                "SELECT DISTINCT" + returnNames + "\n" +
-                "WHERE {\n" +
-                graphQueries +
-                nameQueries +
-                "}"
-    }
-*/
 
     companion object {
         public val SERVER_PATH = "http://www.semantic-systems-biology.org/biogateway/endpoint"
@@ -716,5 +572,6 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         public val UNIPROT_PREFIX = "http://identifiers.org/uniprot/"
         public val ONTOLOGY_PREFIX = "http://purl.obolibrary.org/obo/"
         public val ACTION_LOOKUP_NODE_URI = "Lookup Node Uri from name"
+        public val ACTION_FILTER_EDGES_TO_EXISTING = "filter relations to exsisting nodes"
     }
 }

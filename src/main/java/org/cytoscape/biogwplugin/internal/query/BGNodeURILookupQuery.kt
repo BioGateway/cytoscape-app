@@ -31,6 +31,7 @@ class BGNodeURILookupQuery(serviceManager: BGServiceManager, val searchString: S
             BGNodeType.GENE -> "<refseq>"
             BGNodeType.PROTEIN -> "<refprot>"
             BGNodeType.GO -> "<go-basic>"
+            BGNodeType.TAXON -> "<cco>"
             BGNodeType.ANY -> "?anyGraph"
         }
         val filter = when (useRegex) {
@@ -49,8 +50,26 @@ class BGNodeURILookupQuery(serviceManager: BGServiceManager, val searchString: S
         val taxaName = when (nodeType) {
             BGNodeType.PROTEIN, BGNodeType.GENE -> "?taxaName"
             else -> {
-                "'None'"
+                "'N/A'"
             }
+        }
+
+        if (nodeType == BGNodeType.TAXON) {
+            val queryString = "BASE   <http://www.semantic-systems-biology.org/>  \n" +
+                    "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n" +
+                    "PREFIX sio:  <http://semanticscience.org/resource/>  \n" +
+                    "PREFIX graph: <cco>  \n" +
+                    "SELECT DISTINCT ?uri ?definition ?name "+taxaName+"\n"+
+                    "WHERE {  \n" +
+                    " FILTER regex ( ?name, '"+searchString+"', 'i') .\n" +
+                    " GRAPH graph: {  \n" +
+                    " ?uri rdfs:subClassOf sio:SIO_010000 .  \n" +
+                    " ?uri skos:prefLabel ?name .  \n" +
+                    " ?uri skos:definition ?definition . \n" +
+                    " }  \n" +
+                    "}  \n" +
+                    "ORDER BY ?name"
+            return queryString
         }
 
         val queryString = "BASE <http://www.semantic-systems-biology.org/>\n" +

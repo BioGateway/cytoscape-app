@@ -6,7 +6,7 @@ import org.cytoscape.model.CyNode
  * Created by sholmas on 26/05/2017.
  */
 
-enum class BGNodeType { PROTEIN, GENE, GO, ANY }
+enum class BGNodeType { PROTEIN, GENE, GO, TAXON, ANY }
 
 open class BGNode {
 
