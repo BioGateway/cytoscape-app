@@ -431,7 +431,7 @@ public class BGCreateQueryView implements ChangeListener {
         panel5.add(scrollPane2, BorderLayout.CENTER);
         resultTable = new JTable();
         resultTable.setAutoCreateRowSorter(true);
-        resultTable.setFillsViewportHeight(true);
+        resultTable.setFillsViewportHeight(false);
         scrollPane2.setViewportView(resultTable);
         final JPanel panel6 = new JPanel();
         panel6.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
@@ -443,7 +443,7 @@ public class BGCreateQueryView implements ChangeListener {
         importToSelectedNetworkButton.setText("Import to selected Network");
         panel6.add(importToSelectedNetworkButton);
         filterRelationsToExistingCheckBox = new JCheckBox();
-        filterRelationsToExistingCheckBox.setText("Only show relations to nodes in network");
+        filterRelationsToExistingCheckBox.setText("Only show relations to nodes in current network");
         panel6.add(filterRelationsToExistingCheckBox);
         final JPanel panel7 = new JPanel();
         panel7.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));

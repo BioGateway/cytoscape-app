@@ -67,9 +67,8 @@ class BGURILookupViewController(val serviceManager: BGServiceManager, val comple
         if (selectedRows.size > 1) {
             throw Exception("Multiple rows selected! Unable to pick one.")
         }
-        val row = selectedRows.get(0)
+        val row = view.resultTable.convertRowIndexToModel(selectedRows.get(0))
         val uri = view.resultTable.model.getValueAt(row, 0)
-
 
         val node = nodesFound[uri] ?: throw Exception("Invalid node! Node not found in return data!")
         completion(node)

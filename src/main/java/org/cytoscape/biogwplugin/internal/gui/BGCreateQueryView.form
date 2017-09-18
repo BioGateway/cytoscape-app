@@ -2,7 +2,7 @@
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="org.cytoscape.biogwplugin.internal.gui.BGCreateQueryView">
   <grid id="27dc6" binding="mainPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
     <constraints>
-      <xy x="20" y="20" width="687" height="400"/>
+      <xy x="20" y="20" width="736" height="400"/>
     </constraints>
     <properties/>
     <border type="none"/>
@@ -151,7 +151,7 @@
                         <constraints/>
                         <properties>
                           <autoCreateRowSorter value="true"/>
-                          <fillsViewportHeight value="true"/>
+                          <fillsViewportHeight value="false"/>
                         </properties>
                       </component>
                     </children>
@@ -176,7 +176,7 @@
                       <component id="34e70" class="javax.swing.JCheckBox" binding="filterRelationsToExistingCheckBox">
                         <constraints/>
                         <properties>
-                          <text value="Only show relations to nodes in network"/>
+                          <text value="Only show relations to nodes in current network"/>
                         </properties>
                       </component>
                     </children>

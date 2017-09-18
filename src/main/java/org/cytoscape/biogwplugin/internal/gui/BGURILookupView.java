@@ -109,6 +109,7 @@ public class BGURILookupView {
         final JScrollPane scrollPane1 = new JScrollPane();
         panel1.add(scrollPane1, BorderLayout.CENTER);
         resultTable = new JTable();
+        resultTable.setAutoCreateRowSorter(true);
         scrollPane1.setViewportView(resultTable);
     }
 

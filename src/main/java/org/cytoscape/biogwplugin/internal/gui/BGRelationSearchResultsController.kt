@@ -26,7 +26,7 @@ class BGRelationSearchResultsController(val serviceManager: BGServiceManager, pr
     private fun importSelected() {
         val relations = ArrayList<BGRelation>()
         for (row in view.resultTable.selectedRows) {
-            relations.add(relationsFound[row])
+            relations.add(relationsFound[view.resultTable.convertRowIndexToModel(row)])
         }
         serviceManager.server.networkBuilder.addRelationsToNetwork(network, relations)
     }

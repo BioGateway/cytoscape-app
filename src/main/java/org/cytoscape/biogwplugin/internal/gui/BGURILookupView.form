@@ -67,7 +67,9 @@
         <children>
           <component id="4e594" class="javax.swing.JTable" binding="resultTable">
             <constraints/>
-            <properties/>
+            <properties>
+              <autoCreateRowSorter value="true"/>
+            </properties>
           </component>
         </children>
       </scrollpane>
