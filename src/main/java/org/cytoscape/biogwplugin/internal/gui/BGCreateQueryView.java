@@ -369,7 +369,7 @@ public class BGCreateQueryView implements ChangeListener {
         mainPanel.add(tabPanel, BorderLayout.CENTER);
         final JPanel panel1 = new JPanel();
         panel1.setLayout(new BorderLayout(0, 0));
-        tabPanel.addTab("Chained Relations Query", panel1);
+        tabPanel.addTab("Build Query", panel1);
         final JPanel panel2 = new JPanel();
         panel2.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
         panel1.add(panel2, BorderLayout.SOUTH);
@@ -390,7 +390,7 @@ public class BGCreateQueryView implements ChangeListener {
         panel1.add(multiQueryContainer, BorderLayout.CENTER);
         queryPanel = new JPanel();
         queryPanel.setLayout(new BorderLayout(0, 0));
-        tabPanel.addTab("Query", queryPanel);
+        tabPanel.addTab("Predefined Queries", queryPanel);
         buttonPanel = new JPanel();
         buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
         queryPanel.add(buttonPanel, BorderLayout.SOUTH);
@@ -413,7 +413,7 @@ public class BGCreateQueryView implements ChangeListener {
         panel4.add(querySelectionBox, BorderLayout.NORTH);
         sparqlPanel = new JPanel();
         sparqlPanel.setLayout(new BorderLayout(0, 0));
-        tabPanel.addTab("SparQL", sparqlPanel);
+        tabPanel.addTab("SPARQL Code", sparqlPanel);
         final JScrollPane scrollPane1 = new JScrollPane();
         sparqlPanel.add(scrollPane1, BorderLayout.CENTER);
         sparqlTextArea = new JTextArea();

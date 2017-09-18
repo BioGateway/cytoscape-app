@@ -14,7 +14,7 @@
         <children>
           <grid id="1ccbb" layout-manager="BorderLayout" hgap="0" vgap="0">
             <constraints>
-              <tabbedpane title="Chained Relations Query"/>
+              <tabbedpane title="Build Query"/>
             </constraints>
             <properties/>
             <border type="none"/>
@@ -60,7 +60,7 @@
           </grid>
           <grid id="b3611" binding="queryPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
             <constraints>
-              <tabbedpane title="Query"/>
+              <tabbedpane title="Predefined Queries"/>
             </constraints>
             <properties/>
             <border type="none"/>
@@ -112,7 +112,7 @@
           </grid>
           <grid id="9ef6a" binding="sparqlPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
             <constraints>
-              <tabbedpane title="SparQL"/>
+              <tabbedpane title="SPARQL Code"/>
             </constraints>
             <properties/>
             <border type="none"/>

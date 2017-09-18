@@ -123,7 +123,7 @@ class BGQueryVariableManager() {
     }
 
     fun getUsedVariables(): Array<String> {
-        return usedVariables.values.sorted().toTypedArray()
+        return usedVariables.values.toHashSet().sorted().toTypedArray()
     }
 
     fun unRegisterUseOfVariableForComponent(jComboBox: JComboBox<String>) {
