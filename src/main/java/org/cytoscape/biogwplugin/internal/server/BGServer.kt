@@ -38,6 +38,16 @@ class BGServer(private val serviceManager: BGServiceManager) {
             if (nodeCache.contains(node.uri)) return
             nodeCache.set(node.uri, node)
         }
+
+        // TODO: Use some better remapping.
+        val namedRelationTypes: HashMap<String, String>
+        get() {
+            val map = HashMap<String, String>()
+            for (relation in relationTypes.values) {
+                map[relation.description] = relation.uri
+            }
+            return map
+        }
     }
 
     val cache = BGCache()

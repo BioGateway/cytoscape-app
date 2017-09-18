@@ -3,9 +3,7 @@ package org.cytoscape.biogwplugin.internal.gui
 import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.model.BGNode
 import org.cytoscape.biogwplugin.internal.model.BGNodeType
-import org.cytoscape.biogwplugin.internal.query.BGNodeSearchQuery
 import org.cytoscape.biogwplugin.internal.query.BGNodeURILookupQuery
-import org.cytoscape.biogwplugin.internal.query.BGQuickFetchNodeQuery
 import org.cytoscape.biogwplugin.internal.query.BGReturnNodeData
 import java.awt.EventQueue
 import java.awt.event.ActionEvent
@@ -25,10 +23,15 @@ class BGURILookupViewController(val serviceManager: BGServiceManager, val comple
     }
 
     private fun loadResultsIntoTable(nodesFound: HashMap<String, BGNode>) {
-        val table = view.resultTable.model as DefaultTableModel
+        val tableModel = view.resultTable.model as DefaultTableModel
+
+        for (i in tableModel.rowCount -1 downTo 0) {
+            tableModel.removeRow(i)
+        }
+
         this.nodesFound = nodesFound
         for (result in nodesFound.values) {
-            table.addRow(result.nameStringArray())
+            tableModel.addRow(result.nameStringArray())
         }
 
         // GIVE ME FOREGROUND! (Can't believe Cytoscape is so difficult at this...)
@@ -49,8 +52,10 @@ class BGURILookupViewController(val serviceManager: BGServiceManager, val comple
         val query = BGNodeURILookupQuery(serviceManager, searchString, useRegex, nodeType)
         query.addCompletion {
             val data = it as? BGReturnNodeData ?: return@addCompletion
-            nodesFound = data.nodeData
+            loadResultsIntoTable(data.nodeData)
         }
+        // TODO: Use the built-in task manager?
+        query.run()
     }
 
     private fun useSelectedNode() {

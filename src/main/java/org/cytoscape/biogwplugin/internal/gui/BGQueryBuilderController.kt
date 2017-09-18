@@ -12,7 +12,6 @@ import org.cytoscape.model.CyNetwork
 import org.cytoscape.work.TaskIterator
 
 import javax.swing.*
-import javax.swing.event.ChangeEvent
 import javax.swing.event.ChangeListener
 import javax.swing.filechooser.FileFilter
 import javax.swing.table.DefaultTableModel
@@ -21,6 +20,7 @@ import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import java.io.File
 import java.util.ArrayList
+import javax.swing.event.ChangeEvent
 
 /**
  * Created by sholmas on 23/05/2017.
@@ -80,6 +80,10 @@ class BGRelationTypeField(val combobox: JComboBox<String>): JPanel() {
 class BGComponentButton(label: String, val associatedComponent: JComponent): JButton(label)
 
 class BGQueryBuilderController(private val serviceManager: BGServiceManager) : ActionListener, ChangeListener {
+
+
+
+
     private val view: BGCreateQueryView
 
     //private var relationList = ArrayList<BGRelation>()
@@ -96,27 +100,33 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         updateUIAfterXMLLoad()
     }
 
-
-
     private fun updateUIAfterXMLLoad() {
         view.querySelectionBox.removeAllItems()
         for (queryName in queries.keys) {
             view.querySelectionBox.addItem(queryName)
         }
-        setupChainedQuery()
+        setupMultiQueryPanel()
     }
 
+    private fun setupMultiQueryPanel() {
+        val panel = BGMultiQueryPanel(serviceManager, serviceManager.cache.namedRelationTypes)
+        panel.addQueryLine()
+        view.setUpMultiQueryPanel(panel)
+    }
+
+    /*
     private fun setupChainedQuery() {
         val firstNode = BGQueryParameter("parameter0", "Node URI", BGQueryParameter.ParameterType.OPTIONAL_URI)
         chainedQuery.addParameter(firstNode)
         view.addChainedParameterField(firstNode)
-        addChainedParameterLine()
+        addMultiQueryLine()
 //        val firstRow = BGQueryParameter("row1", "", BGQueryParameter.ParameterType.RELATION_QUERY_ROW)
 //        for (relation in serviceManager.server.cache.relationTypes.values) {
 //            firstRow.addOption(relation.description, relation.uri)
 //        }
 //        view.addChainedParameterField(firstRow)
     }
+    */
 
     private fun readParameterComponents(parameters: Collection<BGQueryParameter>, parameterComponents: HashMap<String, JComponent>) {
         for (parameter in parameters) {
@@ -421,6 +431,16 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         println("TODO: Validate those URIs!")
     }
 
+    private fun validateMultiQuery(): String? {
+
+        for (line in view.multiQueryPanel.queryLines) {
+            val fromUri = line.fromUri ?: return "The URI can not be left blank when not using variables."
+            val toUri = line.toUri ?: return "The URI can not be left blank when not using variables."
+
+        }
+        return null
+    }
+
     private fun openFileChooser(): File? {
         val chooser = JFileChooser()
 
@@ -457,9 +477,9 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                 importSelectedResults(network, currentQuery!!.returnType)
             }
             ACTION_IMPORT_TO_NEW -> importSelectedResults(null, currentQuery!!.returnType)
-            ACTION_ADD_CHAIN_RELATION -> addChainedParameterLine()
-            ACTION_REMOVE_CHAIN_RELATION -> removeLastChainedParameter()
-            ACTION_RUN_CHAIN_QUERY -> runChainQuery()
+            ACTION_ADD_MULTIQUERY_LINE -> addMultiQueryLine()
+            ACTION_REMOVE_MULTIQUERY_LINE -> removeMultiQueryLine()
+            ACTION_RUN_MULTIQUERY -> runMultiQuery()
             ACTION_VALIDATE_URIS -> validateUris()
             ACTION_LOOKUP_NODE_URI -> {
                 val button = e.source as? BGComponentButton ?: throw Exception("Expected BGComponentButton")
@@ -492,29 +512,70 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         }
     }
 
-    private fun addChainedParameterLine() {
-
-        val parameterCount = chainedQuery.parameters.count()
-        var relationParameter = BGQueryParameter("parameter"+(parameterCount+1), "Relation", BGQueryParameter.ParameterType.RELATION_COMBOBOX)
-        var nodeParameter = BGQueryParameter("parameter"+(parameterCount+2), "Node URI", BGQueryParameter.ParameterType.OPTIONAL_URI)
-
-        for (relation in serviceManager.server.cache.relationTypes.values) {
-            relationParameter.addOption(relation.description, relation.uri)
-        }
-        chainedQuery.addParameter(relationParameter)
-        chainedQuery.addParameter(nodeParameter)
-        view.addChainedParameterLine(relationParameter, nodeParameter)
-
+    override fun stateChanged(e: ChangeEvent?) {
+        //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    private fun runChainQuery() {
+    private fun runMultiQuery() {
+
+        val errorText = validateMultiQuery()
+        if (errorText != null) {
+            JOptionPane.showMessageDialog(view.mainFrame, errorText)
+        } else {
+
+            val queryString = view.multiQueryPanel.generateSPARQLQuery()
+            view.sparqlTextArea.text = queryString
+
+            val queryType = BGReturnType.RELATION_MULTIPART_NAMED
+
+            val query = BGMultiRelationsQuery(serviceManager, queryString, serviceManager.server.parser, queryType)
+
+            query.addCompletion {
+                val data = it as? BGReturnRelationsData ?: throw Exception("Expected Relation Data in return!")
+                currentReturnData = data
+
+                val tableModel = view.resultTable.model as DefaultTableModel
+                tableModel.setColumnIdentifiers(data.columnNames)
+
+                for (i in tableModel.rowCount -1 downTo 0) {
+                    tableModel.removeRow(i)
+                }
+                    for (relation in data.relationsData) {
+
+                        var row = relation.stringArray()
+                        val fromNodeName = relation.fromNode.name ?: relation.fromNode.uri
+                        val relationName = relation.relationType.description
+                        val toNodeName = relation.toNode.name ?: relation.toNode.uri
+                        row = arrayOf(fromNodeName, relationName, toNodeName)
+                        tableModel.addRow(row)
+                    }
+                view.tabPanel.selectedIndex = 3 // Open the result tab.
+
+                // Try the darnest to make the window appear on top!
+                fightForFocus()
+            }
+            val iterator = TaskIterator(query)
+            serviceManager.taskManager.execute(iterator)
+        }
+    }
+
+    private fun removeMultiQueryLine() {
+        view.removeLastMultiQueryLine()
+    }
+
+    private fun addMultiQueryLine() {
+        view.addMultiQueryLine();
+    }
+
+    /*
+    private fun runMultiQuery() {
         validatePropertyFields(chainedQuery.parameters, view.chainedParametersComponents)
         readParameterComponents(chainedQuery.parameters, view.chainedParametersComponents)
         chainedQuery.sparqlString = generateChainQuery(chainedQuery)
         val queryString = createQueryString(chainedQuery)
         view.sparqlTextArea.text = queryString ?: throw Exception("Query String cannot be empty!")
 
-        val query = BGChainedRelationsQuery(serviceManager, queryString, serviceManager.server.parser, BGReturnType.RELATION_MULTIPART_NAMED)
+        val query = BGMultiRelationsQuery(serviceManager, queryString, serviceManager.server.parser, BGReturnType.RELATION_MULTIPART_NAMED)
         query.addCompletion {
             val data = it as? BGReturnRelationsData ?: throw Exception("Expected relations data in return!")
 
@@ -544,7 +605,8 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         serviceManager.taskManager.execute(iterator)
     }
 
-    private fun removeLastChainedParameter() {
+
+    private fun removeMultiQueryLine() {
 
         val lastParameterIndex = chainedQuery.parameters.count() -1
         val secondLastParameterIndex = chainedQuery.parameters.count() -2
@@ -556,10 +618,6 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
 
         view.removeParameterField(lastParameter)
         view.removeParameterField(secondLastParameter)
-    }
-
-    override fun stateChanged(e: ChangeEvent) {
-
     }
 
     private fun generateChainQuery(chainQueryTemplate: QueryTemplate): String {
@@ -632,6 +690,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                 nameQueries +
                 "}"
     }
+*/
 
     companion object {
         public val SERVER_PATH = "http://www.semantic-systems-biology.org/biogateway/endpoint"
@@ -643,9 +702,9 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         public val ACTION_IMPORT_TO_SELECTED = "importToSelectedNetwork"
         public val ACTION_IMPORT_TO_NEW = "importToNewNetwork"
         public val ACTION_VALIDATE_URIS = "validateUris"
-        public val ACTION_RUN_CHAIN_QUERY = "runChainQuery"
-        public val ACTION_ADD_CHAIN_RELATION = "addChainRelation"
-        public val ACTION_REMOVE_CHAIN_RELATION = "removeChainRelation"
+        public val ACTION_RUN_MULTIQUERY = "runMultiQuery"
+        public val ACTION_ADD_MULTIQUERY_LINE = "addChainRelation"
+        public val ACTION_REMOVE_MULTIQUERY_LINE = "removeChainRelation"
         public val CHANGE_TAB_CHANGED = "tabbedPaneHasChanged"
         public val UNIPROT_PREFIX = "http://identifiers.org/uniprot/"
         public val ONTOLOGY_PREFIX = "http://purl.obolibrary.org/obo/"

@@ -15,6 +15,9 @@ class BGFindGraphRelationForNodeQuery(serviceManager: BGServiceManager, val node
         get() = when (nodeType) {
             BGNodeType.GENE -> generateFindProteinsRegluatingGeneQueryString()
             BGNodeType.PROTEIN -> generateFindGenesRegulatedByProteinQueryString()
+            else -> {
+                throw Exception("TG-TF search is only available for genes and proteins!")
+            }
         }
         set(value) {}
 

@@ -79,7 +79,10 @@ class BGParser(private val serviceManager: BGServiceManager) {
         if (returnType != BGReturnType.RELATION_MULTIPART_NAMED) throw Exception("Return type must be relation multipart!")
 
         val server = serviceManager.server
-        val columnNames = reader.readLine().split("\t").dropLastWhile { it.isEmpty() }.map { it.replace("\"", "") }.toTypedArray()
+        var columnNames = reader.readLine().split("\t").dropLastWhile { it.isEmpty() }.map { it.replace("\"", "") }.toTypedArray()
+
+        columnNames = arrayOf("From node", "Relation Uri", "To node")
+
         val returnData = BGReturnRelationsData(returnType, columnNames)
 
         // This might generate a lot of duplicate relations, so we use a set to eliminate duplicates.
@@ -97,7 +100,7 @@ class BGParser(private val serviceManager: BGServiceManager) {
                 val relationUri = lineColumns[fromNodeIndex+2].replace("\"", "")
                 val toNodeUri = lineColumns[fromNodeIndex+3].replace("\"", "")
                 val toNodeName = lineColumns[fromNodeIndex+4].replace("\"", "")
-                fromNodeIndex += 3
+                fromNodeIndex += 5
 
                 var fromNode = server.getNodeFromCache(BGNode(fromNodeUri))
                 fromNode.name = fromNodeName

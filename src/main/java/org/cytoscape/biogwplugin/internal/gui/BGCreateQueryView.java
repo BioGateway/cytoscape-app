@@ -22,7 +22,6 @@ public class BGCreateQueryView implements ChangeListener {
     private final ActionListener listener;
 
     public HashMap<String, JComponent> parameterComponents = new HashMap<>();
-    public HashMap<String, JComponent> chainedParametersComponents = new HashMap<>();
 
     private int numberOfChainedParameters = 0;
 
@@ -45,7 +44,8 @@ public class BGCreateQueryView implements ChangeListener {
     private JButton importToSelectedNetworkButton;
     private JPanel descriptionPanel;
     private JButton runChainQueryButton;
-    private JPanel chainedParametersPanel;
+    private JPanel multiQueryContainer;
+    private BGMultiQueryPanel multiQueryPanel;
     private JButton validateURIsButton;
     private JButton addLineButton;
     private JButton removeLineButton;
@@ -54,7 +54,7 @@ public class BGCreateQueryView implements ChangeListener {
         this.listener = listener;
         JFrame frame = new JFrame("Biogateway Query Builder");
         this.mainFrame = frame;
-        frame.setPreferredSize(new Dimension(700, 400));
+        frame.setPreferredSize(new Dimension(1100, 480));
         frame.setContentPane(this.mainPanel);
         this.createUIComponents();
         frame.pack();
@@ -71,7 +71,6 @@ public class BGCreateQueryView implements ChangeListener {
         querySelectionBox.setModel(new SortedComboBoxModel<String>());
 
         parameterPanel.setLayout(new MigLayout("wrap 2"));
-        chainedParametersPanel.setLayout(new MigLayout("wrap 2"));
 
         runQueryButton.addActionListener(listener);
         runQueryButton.setActionCommand(Companion.getACTION_RUN_QUERY());
@@ -83,63 +82,14 @@ public class BGCreateQueryView implements ChangeListener {
         importToSelectedNetworkButton.setActionCommand(Companion.getACTION_IMPORT_TO_SELECTED());
 
         runChainQueryButton.addActionListener(listener);
-        runChainQueryButton.setActionCommand(Companion.getACTION_RUN_CHAIN_QUERY());
+        runChainQueryButton.setActionCommand(Companion.getACTION_RUN_MULTIQUERY());
         addLineButton.addActionListener(listener);
-        addLineButton.setActionCommand(Companion.getACTION_ADD_CHAIN_RELATION());
+        addLineButton.setActionCommand(Companion.getACTION_ADD_MULTIQUERY_LINE());
         removeLineButton.addActionListener(listener);
-        removeLineButton.setActionCommand(Companion.getACTION_REMOVE_CHAIN_RELATION());
+        removeLineButton.setActionCommand(Companion.getACTION_REMOVE_MULTIQUERY_LINE());
         validateURIsButton.addActionListener(listener);
         validateURIsButton.setActionCommand(Companion.getACTION_VALIDATE_URIS());
     }
-
-
-    public void removeParameterField(BGQueryParameter parameter) {
-        JComponent component = chainedParametersComponents.get(parameter.getId());
-        if (component != null) {
-            chainedParametersPanel.remove(component);
-            chainedParametersComponents.remove(parameter.getId());
-        }
-        JComponent label = chainedParametersComponents.get(parameter.getId() + "_label");
-        if (label != null) {
-            chainedParametersPanel.remove(label);
-            chainedParametersComponents.remove(parameter.getId() + "_label");
-        }
-        chainedParametersPanel.repaint();
-    }
-
-    public void addChainedParameterLine(BGQueryParameter relationParameter, BGQueryParameter nodeParameter) {
-        addChainedParameterField(relationParameter);
-        addChainedParameterField(nodeParameter);
-    }
-
-    public void addChainedParameterField(BGQueryParameter parameter) {
-        JLabel label = new JLabel(parameter.getName() + ":");
-        JComponent component;
-        switch (parameter.getType()) {
-            case OPTIONAL_URI:
-                JTextField optionalField = new JTextField();
-                optionalField.setPreferredSize(new Dimension(280, 20));
-                component = new BGOptionalURIField(optionalField, listener);
-                break;
-            case RELATION_COMBOBOX:
-                JComboBox comboBox = new JComboBox<>(parameter.getOptions().keySet().toArray());
-                component = new BGRelationTypeField(comboBox);
-                break;
-            case RELATION_QUERY_ROW:
-                component = new BGRelationQueryRow((String[]) parameter.getOptions().keySet().toArray(), listener);
-                break;
-            default:
-                component = null;
-                // TODO: Exception should be thrown.
-                break;
-        }
-        chainedParametersComponents.put(parameter.getId(), component);
-        chainedParametersComponents.put(parameter.getId() + "_label", label);
-        chainedParametersPanel.add(label);
-        chainedParametersPanel.add(component);
-        mainFrame.repaint();
-    }
-
 
     public void generateParameterFields(QueryTemplate query) {
         // Clear old data:
@@ -220,6 +170,21 @@ public class BGCreateQueryView implements ChangeListener {
         mainFrame.repaint();
     }
 
+    public void addMultiQueryLine() {
+        this.multiQueryPanel.addQueryLine();
+        mainFrame.repaint();
+    }
+
+    public void removeLastMultiQueryLine() {
+        int lastIndex = multiQueryPanel.getQueryLines().size() - 1;
+        if (lastIndex < 1) {
+            return;
+        }
+        BGMultiQueryLine lastLine = multiQueryPanel.getQueryLines().get(lastIndex);
+        this.multiQueryPanel.removeQueryLine(lastLine);
+        mainFrame.repaint();
+    }
+
     @Override
     public void stateChanged(ChangeEvent e) {
         if (e.getSource() instanceof JTabbedPane) {
@@ -237,6 +202,15 @@ public class BGCreateQueryView implements ChangeListener {
         }
     }
 
+    public void setUpMultiQueryPanel(BGMultiQueryPanel multiQueryPanel) {
+        this.multiQueryContainer.add(multiQueryPanel, BorderLayout.CENTER);
+        this.multiQueryPanel = multiQueryPanel;
+        mainFrame.repaint();
+    }
+
+    public BGMultiQueryPanel getMultiQueryPanel() {
+        return multiQueryPanel;
+    }
 
     public HashMap<String, JComponent> getParameterComponents() {
         return parameterComponents;
@@ -411,9 +385,9 @@ public class BGCreateQueryView implements ChangeListener {
         runChainQueryButton = new JButton();
         runChainQueryButton.setText("Run Query");
         panel2.add(runChainQueryButton);
-        chainedParametersPanel = new JPanel();
-        chainedParametersPanel.setLayout(new BorderLayout(0, 0));
-        panel1.add(chainedParametersPanel, BorderLayout.CENTER);
+        multiQueryContainer = new JPanel();
+        multiQueryContainer.setLayout(new BorderLayout(0, 0));
+        panel1.add(multiQueryContainer, BorderLayout.CENTER);
         queryPanel = new JPanel();
         queryPanel.setLayout(new BorderLayout(0, 0));
         tabPanel.addTab("Query", queryPanel);

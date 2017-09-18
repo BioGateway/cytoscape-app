@@ -123,7 +123,7 @@ class BGRelationsQuery(serviceManager: BGServiceManager, override var queryStrin
     }
 }
 
-class BGChainedRelationsQuery(serviceManager: BGServiceManager, override var queryString: String, parser: BGParser, var returnType: BGReturnType): BGQuery(serviceManager, returnType, parser) {
+class BGMultiRelationsQuery(serviceManager: BGServiceManager, override var queryString: String, parser: BGParser, var returnType: BGReturnType): BGQuery(serviceManager, returnType, parser) {
 
     override fun run() {
         taskMonitor?.setTitle("Searching for relations...")
@@ -244,55 +244,6 @@ class BGFetchPubmedIdQuery(serviceManager: BGServiceManager, val fromNodeUri: St
                 "?triple has_source: ?pubmedId .\n" +
                 "}}"
     }
-}
-
-class BGNodeURILookupQuery(serviceManager: BGServiceManager, val searchString: String, val useRegex: Boolean, val nodeType: BGNodeType): BGQuery(serviceManager, BGReturnType.NODE_LIST_DESCRIPTION_TAXON, serviceManager.server.parser) {
-    override var queryString: String
-        get() = generateQueryString()
-        set(value) {}
-
-
-    override fun run() {
-        taskMonitor?.setTitle("Searching for nodes...")
-        val stream = encodeUrl()?.openStream()
-        if (stream != null) {
-            taskMonitor?.setTitle("Parsing results...")
-            val reader = BufferedReader(InputStreamReader(stream))
-            parser.parseNodesToTextArray(reader, BGReturnType.NODE_LIST_DESCRIPTION_TAXON) {
-                returnData = it as? BGReturnData ?: throw Exception("Invalid return data!")
-                runCompletions()
-            }
-        }
-    }
-
-
-    fun generateQueryString(): String {
-        val nodeTypeGraph = when (nodeType) {
-            BGNodeType.GENE -> "<refseq>"
-            BGNodeType.PROTEIN -> "<refprot>"
-            BGNodeType.GO -> "<go-basic>"
-            BGNodeType.ANY -> "?anyGraph"
-        }
-        val filter = when (useRegex) {
-            true -> "FILTER regex ( ?name, "+searchString+",'i' ) .\n"
-            false -> "FILTER ( ?name = "+searchString+") .\n"
-        }
-
-        val queryString = "BASE <http://www.semantic-systems-biology.org/>\n" +
-                "PREFIX inheres_in: <http://purl.obolibrary.org/obo/RO_0000052>\n" +
-                "SELECT DISTINCT ?uri ?definition ?name ?taxon  \n" +
-                "WHERE {  \n" +
-                filter +
-                "GRAPH "+nodeTypeGraph+" { \n" +
-                "?uri skos:prefLabel|skos:altLabel ?name . \n" +
-                "?uri skos:definition ?definition .\n" +
-                "?uri inheres_in: ?taxon . \n" +
-                "}\n" +
-                "}  \n" +
-                "ORDER BY ?taxon  \n"
-        return queryString
-    }
-
 }
 
 

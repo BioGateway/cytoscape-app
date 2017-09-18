@@ -78,10 +78,14 @@ class BGRelationSearchCMF(val gravity: Float, val serviceManager: BGServiceManag
         var menuItemText = when (nodeType) {
             BGNodeType.GENE -> "Get associated proteins"
             BGNodeType.PROTEIN -> "Get associated genes"
+            BGNodeType.GO -> ""
+            BGNodeType.ANY -> ""
         }
         val direction = when (nodeType) {
             BGNodeType.PROTEIN -> BGRelationDirection.TO
             BGNodeType.GENE -> BGRelationDirection.FROM
+            BGNodeType.GO -> TODO("This should not be possible!")
+            BGNodeType.ANY -> TODO("This should not be possible!")
         }
         val encodesUri = "http://semanticscience.org/resource/SIO_010078"
         val relationType = serviceManager.server.cache.relationTypes.get(encodesUri) ?: throw Exception("Relation type with uri: "+encodesUri+" not found in cache.")
@@ -166,9 +170,12 @@ class BGRelationSearchCMF(val gravity: Float, val serviceManager: BGServiceManag
 
     fun createTFTGSearchMenu(netView: CyNetworkView, nodeType: BGNodeType, nodeUri: String): JMenuItem {
 
-        var menuItemText = when (nodeType) {
-            BGNodeType.GENE -> "Find proteins regulating this gene"
-            BGNodeType.PROTEIN -> "Find genes regulated by this protein"
+        var menuItemText = ""
+
+        if (nodeType == BGNodeType.PROTEIN) {
+            menuItemText = "Find genes regulated by this protein"
+        } else if (nodeType == BGNodeType.GENE) {
+            menuItemText = "Find proteins regulating this gene"
         }
 
         val searchTFTG = JMenuItem(menuItemText)

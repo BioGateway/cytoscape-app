@@ -50,7 +50,7 @@
                   </component>
                 </children>
               </grid>
-              <grid id="32a9e" binding="chainedParametersPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
+              <grid id="7871f" binding="multiQueryContainer" layout-manager="BorderLayout" hgap="0" vgap="0">
                 <constraints border-constraint="Center"/>
                 <properties/>
                 <border type="none"/>
