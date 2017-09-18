@@ -25,7 +25,6 @@ class BGFindRelationForNodeQuery(serviceManager: BGServiceManager, val relationT
             val statusCode = response.statusLine.statusCode
             val data = EntityUtils.toString(response.entity)
             if (statusCode < 200 || statusCode > 399) throw Exception("Server error "+statusCode+": \n"+data)
-            println(data)
             val reader = BufferedReader(StringReader(data))
             client.close()
             taskMonitor?.setTitle("Parsing results...")

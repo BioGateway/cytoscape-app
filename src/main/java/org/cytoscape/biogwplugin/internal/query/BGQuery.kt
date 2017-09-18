@@ -74,7 +74,6 @@ class BGNodeSearchQuery(serviceManager: BGServiceManager, override var queryStri
                 throw Exception("Server connection failed with code "+ statusCode)
             }
             val data = EntityUtils.toString(response.entity)
-            print(data)
             val reader = BufferedReader(StringReader(data))
             client.close()
             taskMonitor?.setTitle("Parsing results...")

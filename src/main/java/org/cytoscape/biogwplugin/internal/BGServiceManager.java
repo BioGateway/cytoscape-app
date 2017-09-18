@@ -18,6 +18,9 @@ import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.osgi.framework.BundleContext;
 
+import javax.swing.*;
+import java.net.URL;
+
 /**
  * Created by sholmas on 23/03/2017.
  */
@@ -45,7 +48,6 @@ public class BGServiceManager {
     private CyTableFactory tableFactory;
     private CyTableManager tableManager;
     private CloseableHttpClient httpClient;
-
 
     private BGServer.BGCache cache;
     private BGServer server;

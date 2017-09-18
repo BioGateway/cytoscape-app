@@ -51,7 +51,7 @@ class BGParser(private val serviceManager: BGServiceManager) {
 
             val lineColumns = it.split("\t").dropLastWhile({it.isEmpty()}).toTypedArray()
             returnData.addEntry(lineColumns)
-            println("new Fetched node: "+it)
+            //println("new Fetched node: "+it)
         }
         completion(returnData)
     }

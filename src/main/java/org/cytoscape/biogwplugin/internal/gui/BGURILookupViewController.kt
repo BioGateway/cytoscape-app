@@ -9,6 +9,7 @@ import java.awt.EventQueue
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import java.awt.event.WindowEvent
+import javax.swing.JOptionPane
 import javax.swing.table.DefaultTableModel
 
 class BGURILookupViewController(val serviceManager: BGServiceManager, val completion: (BGNode?) -> Unit): ActionListener {
@@ -52,6 +53,9 @@ class BGURILookupViewController(val serviceManager: BGServiceManager, val comple
         val query = BGNodeURILookupQuery(serviceManager, searchString, useRegex, nodeType)
         query.addCompletion {
             val data = it as? BGReturnNodeData ?: return@addCompletion
+            if (data.nodeData.count() == 0) {
+                JOptionPane.showMessageDialog(view.mainFrame, "No entities found.")
+            }
             loadResultsIntoTable(data.nodeData)
         }
         // TODO: Use the built-in task manager?

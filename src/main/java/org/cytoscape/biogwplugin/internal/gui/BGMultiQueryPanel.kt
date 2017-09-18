@@ -9,6 +9,9 @@ import javax.swing.*
 
 class BGMultiQueryLine(val serviceManager: BGServiceManager, val fromTextField: JTextField, val relationTypeComboBox: JComboBox<String>, val toTextField: JTextField, val variableManager: BGQueryVariableManager): JPanel() {
 
+    val searchButtonTooltipText = "Search for entity URIs."
+    val variablesTooltipText = "Choose URI to specify an entity, or pick a variable letter to find matching entities."
+
     val fromComboBox: JComboBox<String>
     val toComboBox: JComboBox<String>
 
@@ -30,32 +33,39 @@ class BGMultiQueryLine(val serviceManager: BGServiceManager, val fromTextField: 
         this.layout = FlowLayout()
 
         fromComboBox = JComboBox(variableManager.getShownVariables())
+        fromComboBox.toolTipText = variablesTooltipText
         updateComboBox(fromComboBox, fromTextField)
         fromComboBox.addActionListener {
             updateComboBox(fromComboBox, fromTextField)
         }
 
         toComboBox = JComboBox(variableManager.getShownVariables())
+        toComboBox.toolTipText = variablesTooltipText
         updateComboBox(toComboBox, toTextField)
         toComboBox.addActionListener {
             updateComboBox(toComboBox, toTextField)
         }
 
-        val fromUriSearchButton = JButton("?")
-        fromUriSearchButton.preferredSize = Dimension(20, 20)
+        val searchIcon = ImageIcon(this.javaClass.classLoader.getResource("search.png"))
+        val fromUriSearchButton = JButton(searchIcon)
+        fromUriSearchButton.toolTipText = searchButtonTooltipText
+        //fromUriSearchButton.preferredSize = Dimension(20, 20)
         fromUriSearchButton.addActionListener {
             val lookupController = BGURILookupViewController(serviceManager) {
                 if (it != null) {
                     this.fromUri = it.uri
+                    this.fromTextField.toolTipText = it.description
                 }
             }
         }
-        val toUriSearchButton = JButton("?")
-        toUriSearchButton.preferredSize = Dimension(20, 20)
+        val toUriSearchButton = JButton(searchIcon)
+        toUriSearchButton.toolTipText = searchButtonTooltipText
+        //toUriSearchButton.preferredSize = Dimension(20, 20)
         toUriSearchButton.addActionListener {
             val lookupController = BGURILookupViewController(serviceManager) {
                 if (it != null) {
                     this.toUri = it.uri
+                    this.toTextField.toolTipText = it.description
                 }
             }
         }
@@ -179,6 +189,8 @@ class BGQueryVariableManager() {
 
 class BGMultiQueryPanel(val serviceManager: BGServiceManager, val relationTypes: HashMap<String, String>): JPanel() {
 
+    val deleteButtonTooltipText = "Delete this row."
+
     val variableManager = BGQueryVariableManager()
 
     init {
@@ -189,11 +201,22 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager, val relationTypes:
 
     fun addQueryLine() {
         val fromField = JTextField()
-        fromField.preferredSize = Dimension(320, 20)
+        fromField.preferredSize = Dimension(290, 20)
         val toField = JTextField()
-        toField.preferredSize = Dimension(320, 20)
+        toField.preferredSize = Dimension(290, 20)
         val relationTypeBox = JComboBox(relationTypes.keys.toTypedArray())
         val queryLine = BGMultiQueryLine(serviceManager, fromField, relationTypeBox, toField, variableManager)
+
+        val deleteIcon = ImageIcon(this.javaClass.classLoader.getResource("delete.png"))
+        val deleteButton = JButton(deleteIcon)
+        deleteButton.addActionListener {
+            if (queryLines.count() > 1) {
+                removeQueryLine(queryLine) // Retain loop?
+                queryLine.remove(deleteButton)
+            }
+        }
+        deleteButton.toolTipText = deleteButtonTooltipText
+        queryLine.add(deleteButton)
         queryLines.add(queryLine)
         this.add(queryLine)
     }
@@ -206,6 +229,8 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager, val relationTypes:
         variableManager.URIcomboBoxes.remove(queryLine.toComboBox)
 
         this.remove(queryLine)
+        this.repaint()
+        this.topLevelAncestor.repaint()
     }
 
     fun generateSPARQLQuery(): String {
