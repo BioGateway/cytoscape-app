@@ -428,7 +428,12 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
     }
 
     private fun validateUris() {
-        println("TODO: Validate those URIs!")
+        if (view.tabPanel.selectedIndex == 0) {
+            val errorText = validateMultiQuery()
+            if (errorText != null) {
+                JOptionPane.showMessageDialog(view.mainFrame, errorText)
+            }
+        }
     }
 
     private fun validateMultiQuery(): String? {
@@ -437,6 +442,8 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
             val fromUri = line.fromUri ?: return "The URI can not be left blank when not using variables."
             val toUri = line.toUri ?: return "The URI can not be left blank when not using variables."
 
+            if (!fromUri.startsWith("?") && !fromUri.startsWith("<http://")) return "The From URI is invalid."
+            if (!toUri.startsWith("?") && !toUri.startsWith("<http://")) return "The To URI is invalid."
         }
         return null
     }
