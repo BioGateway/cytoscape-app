@@ -16,7 +16,7 @@ class BGNodeURILookupQuery(serviceManager: BGServiceManager, val searchString: S
         taskMonitor?.setTitle("Searching for nodes...")
         val stream = encodeUrl()?.openStream()
         if (stream != null) {
-            taskMonitor?.setTitle("Parsing results...")
+            taskMonitor?.setTitle("Loading results...")
             val reader = BufferedReader(InputStreamReader(stream))
             parser.parseNodesToTextArray(reader, BGReturnType.NODE_LIST_DESCRIPTION_TAXON) {
                 returnData = it as? BGReturnData ?: throw Exception("Invalid return data!")

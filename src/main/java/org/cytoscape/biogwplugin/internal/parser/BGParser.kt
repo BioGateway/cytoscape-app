@@ -94,18 +94,18 @@ class BGParser(private val serviceManager: BGServiceManager) {
 
             val lineColumns = it.split("\t").dropLastWhile {  it.isEmpty() }.toTypedArray()
             var fromNodeIndex = 0
-            while (fromNodeIndex < lineColumns.size-4) {
+            while (fromNodeIndex < lineColumns.size-2) {
                 val fromNodeUri = lineColumns[fromNodeIndex+0].replace("\"", "")
-                val fromNodeName = lineColumns[fromNodeIndex+1].replace("\"", "")
-                val relationUri = lineColumns[fromNodeIndex+2].replace("\"", "")
-                val toNodeUri = lineColumns[fromNodeIndex+3].replace("\"", "")
-                val toNodeName = lineColumns[fromNodeIndex+4].replace("\"", "")
-                fromNodeIndex += 5
+                //val fromNodeName = lineColumns[fromNodeIndex+1].replace("\"", "")
+                val relationUri = lineColumns[fromNodeIndex+1].replace("\"", "")
+                val toNodeUri = lineColumns[fromNodeIndex+2].replace("\"", "")
+                //val toNodeName = lineColumns[fromNodeIndex+4].replace("\"", "")
+                fromNodeIndex += 3
 
                 var fromNode = server.getNodeFromCache(BGNode(fromNodeUri))
-                fromNode.name = fromNodeName
+                //fromNode.name = fromNodeName
                 var toNode = server.getNodeFromCache(BGNode(toNodeUri))
-                toNode.name = toNodeName
+                //toNode.name = toNodeName
                 val relationType = server.cache.relationTypeMap.get(relationUri)
 
                 // Note: Will ignore relation types it doesn't already know of.

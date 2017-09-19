@@ -23,7 +23,7 @@ class BGFindAllRelationsForNodeQuery(serviceManager: BGServiceManager, val nodeU
             if (statusCode < 200 || statusCode > 399) throw Exception("Server error "+statusCode+": \n"+data)
             val reader = BufferedReader(StringReader(data))
             client.close()
-            taskMonitor?.setTitle("Parsing results...")
+            taskMonitor?.setTitle("Loading results...")
             parser.parseRelations(reader, type) {
                 returnData = it as? BGReturnData ?: throw Exception("Invalid return data!")
                 runCompletions()

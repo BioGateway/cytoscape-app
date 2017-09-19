@@ -251,7 +251,9 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager): JPanel() {
             val fromName = "?name_"+getSafeString(fromUri)
             val toName = "?name_"+getSafeString(toUri)
 
-            returnValues += fromUri+" as ?"+getSafeString(fromUri)+numberOfGraphQueries+" "+fromName+" as "+fromName+numberOfGraphQueries+" <"+relationUri+"> "+toUri+" as ?"+getSafeString(toUri)+numberOfGraphQueries+" "+toName+" as "+toName+numberOfGraphQueries+" "
+            returnValues += fromUri+" as ?"+getSafeString(fromUri)+numberOfGraphQueries+" <"+relationUri+"> "+toUri+" as ?"+getSafeString(toUri)+numberOfGraphQueries+" "
+
+            //returnValues += fromUri+" as ?"+getSafeString(fromUri)+numberOfGraphQueries+" "+fromName+" as "+fromName+numberOfGraphQueries+" <"+relationUri+"> "+toUri+" as ?"+getSafeString(toUri)+numberOfGraphQueries+" "+toName+" as "+toName+numberOfGraphQueries+" "
             graphQueries += generateSparqlGraph(numberOfGraphQueries, fromUri, relationType, toUri)
             nodeNames.add(fromUri)
             nodeNames.add(toUri)
@@ -264,7 +266,7 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager): JPanel() {
                 "SELECT DISTINCT " + returnValues + "\n" +
                 "WHERE {\n" +
                 graphQueries +
-                nameQueries +
+                //nameQueries +
                 "}"
 
         return query

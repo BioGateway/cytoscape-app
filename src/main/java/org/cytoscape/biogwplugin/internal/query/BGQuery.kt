@@ -76,7 +76,7 @@ class BGNodeSearchQuery(serviceManager: BGServiceManager, override var queryStri
             val data = EntityUtils.toString(response.entity)
             val reader = BufferedReader(StringReader(data))
             client.close()
-            taskMonitor?.setTitle("Parsing results...")
+            taskMonitor?.setTitle("Loading results...")
             parser.parseNodesToTextArray(reader, type) {
                 returnData = it as? BGReturnNodeData ?: throw Exception("Invalid return data!")
                 runCompletions()
@@ -113,7 +113,7 @@ class BGRelationsQuery(serviceManager: BGServiceManager, override var queryStrin
             //print(data)
             val reader = BufferedReader(StringReader(data))
             client.close()
-            taskMonitor?.setTitle("Parsing results...")
+            taskMonitor?.setTitle("Loading results...")
             parser.parseRelations(reader, returnType) {
                 returnData = it as? BGReturnData ?: throw Exception("Invalid return data!")
                 runCompletions()
@@ -139,7 +139,7 @@ class BGMultiRelationsQuery(serviceManager: BGServiceManager, override var query
             //print(data)
             val reader = BufferedReader(StringReader(data))
             client.close()
-            taskMonitor?.setTitle("Parsing results...")
+            taskMonitor?.setTitle("Loading results...")
             parser.parsePathway(reader, returnType) {
                 returnData = it as? BGReturnData ?: throw Exception("Invalid return data!")
                 taskMonitor?.setTitle("Loading results...")
@@ -156,7 +156,7 @@ class BGNodeFetchQuery(serviceManager: BGServiceManager, val nodeUri: String, pa
         taskMonitor?.setTitle("Searching for nodes...")
         val stream = encodeUrl()?.openStream()
         if (stream != null) {
-            taskMonitor?.setTitle("Parsing results...")
+            taskMonitor?.setTitle("Loading results...")
             val reader = BufferedReader(InputStreamReader(stream))
             parser.parseNodesToTextArray(reader, type) {
                 returnData = it as? BGReturnNodeData ?: throw Exception("Invalid return data!")
@@ -210,7 +210,7 @@ class BGFetchPubmedIdQuery(serviceManager: BGServiceManager, val fromNodeUri: St
             client.close()
 
 
-            taskMonitor?.setTitle("Parsing results...")
+            taskMonitor?.setTitle("Loading results...")
             parser.parsePubmedIdsToTextArray(reader, type) {
                 taskMonitor?.setTitle("Loading results...")
                 returnData = it
@@ -269,7 +269,7 @@ class BGQuickFetchNodeQuery(serviceManager: BGServiceManager, val nodeName: Stri
         taskMonitor?.setTitle("Searching for nodes...")
         val stream = encodeUrl()?.openStream()
         if (stream != null) {
-            taskMonitor?.setTitle("Parsing results...")
+            taskMonitor?.setTitle("Loading results...")
             val reader = BufferedReader(InputStreamReader(stream))
             parser.parseNodesToTextArray(reader, BGReturnType.NODE_LIST_DESCRIPTION_TAXON) {
                 returnData = it as? BGReturnData ?: throw Exception("Invalid return data!")
