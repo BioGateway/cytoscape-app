@@ -125,7 +125,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         addMultiQueryLine()
 //        val firstRow = BGQueryParameter("row1", "", BGQueryParameter.ParameterType.RELATION_QUERY_ROW)
 //        for (relation in serviceManager.server.cache.relationTypeMap.values) {
-//            firstRow.addOption(relation.description, relation.uri)
+//            firstRow.addOption(relation.name, relation.uri)
 //        }
 //        view.addChainedParameterField(firstRow)
     }
@@ -499,7 +499,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         }
         for (relation in relations) {
             val fromNodeName = relation.fromNode.name ?: relation.fromNode.uri
-            val relationName = relation.relationType.description
+            val relationName = relation.relationType.name
             val toNodeName = relation.toNode.name ?: relation.toNode.uri
             val row = arrayOf(fromNodeName, relationName, toNodeName)
             tableModel.addRow(row)

@@ -11,7 +11,7 @@ class BGRelation(val fromNode: BGNode, val relationType: BGRelationType, val toN
     fun nameStringArray(): Array<String> {
         val fromNodeName = fromNode.name ?: fromNode.uri
         val toNodeName = toNode.name ?: toNode.uri
-        return arrayOf(fromNodeName, relationType.description, toNodeName)
+        return arrayOf(fromNodeName, relationType.name, toNodeName)
     }
 
     val edgeIdentifier: String
@@ -20,7 +20,7 @@ class BGRelation(val fromNode: BGNode, val relationType: BGRelationType, val toN
     override fun toString(): String {
         val fromNodeName = fromNode.description ?: fromNode.uri
         val toNodeName = toNode.description ?: toNode.uri
-        return fromNodeName + " -> " + relationType.description + " -> " + toNodeName
+        return fromNodeName + " -> " + relationType.name + " -> " + toNodeName
     }
 
     override fun equals(other: Any?): Boolean {

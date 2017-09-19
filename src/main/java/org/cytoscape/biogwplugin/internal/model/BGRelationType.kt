@@ -4,9 +4,14 @@ package org.cytoscape.biogwplugin.internal.model
  * Created by sholmas on 26/05/2017.
  */
 
-class BGRelationType(val uri: String, val description: String) {
+class BGRelationType(val uri: String, val name: String, val number: Int, val defaultGraphName: String? = null) {
 
-    var defaultGraphName: String? = null
+    val description: String get() {
+        return when (defaultGraphName != null) {
+            true -> defaultGraphName!!.toUpperCase() + ": "+name
+            false -> name
+        }
+    }
 
     companion object {
         fun createRelationTypeHashMapFromArrayList(list: ArrayList<BGRelationType>): HashMap<String, BGRelationType> {

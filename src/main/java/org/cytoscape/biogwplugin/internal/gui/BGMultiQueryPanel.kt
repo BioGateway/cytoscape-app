@@ -192,6 +192,7 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager): JPanel() {
     val deleteButtonTooltipText = "Delete this row."
 
     val variableManager = BGQueryVariableManager()
+    val relationTypes = serviceManager.cache.relationTypeDescriptions
 
     init {
         layout = FlowLayout()
@@ -199,13 +200,23 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager): JPanel() {
 
     var queryLines = ArrayList<BGMultiQueryLine>()
 
+
+    fun generateRelationTypeList(): LinkedHashMap<String, BGRelationType> {
+        val relationTypes = LinkedHashMap<String, BGRelationType>()
+        val relations = serviceManager.cache.relationTypeMap.values.sortedBy { it.number }
+        for (relation in relations) {
+            relationTypes.put(relation.description, relation)
+        }
+        return relationTypes
+    }
+
     fun addQueryLine() {
         val fromField = JTextField()
         fromField.preferredSize = Dimension(290, 20)
         val toField = JTextField()
         toField.preferredSize = Dimension(290, 20)
-        val relationTypeArray = serviceManager.cache.relationTypeOrderedList.map { serviceManager.cache.relationTypeMap.get(it) }.map { it?.description }.filter { it != null }.map { it as String }.toTypedArray()
-        val relationTypeBox = JComboBox(relationTypeArray)
+
+        val relationTypeBox = JComboBox(relationTypes.keys.toTypedArray())
         val queryLine = BGMultiQueryLine(serviceManager, fromField, relationTypeBox, toField, variableManager)
 
         val deleteIcon = ImageIcon(this.javaClass.classLoader.getResource("delete.png"))
@@ -244,14 +255,13 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager): JPanel() {
 
         for (line in queryLines) {
             val fromUri = line.fromUri ?: throw Exception("Invalid From URI!")
-            var relationUri = line.relationType?.let { serviceManager.cache.getRelationUriForName(it) } ?: throw Exception("Invalid Relation Type!")
-            val relationType = serviceManager.server.cache.relationTypeMap.get(relationUri) ?: throw Exception("Unknown relation type!")
+            var relationType = line.relationType?.let { relationTypes.get(it) } ?: throw Exception("Invalid Relation Type!")
             val toUri = line.toUri ?: throw Exception("Invalid To URI!")
 
             val fromName = "?name_"+getSafeString(fromUri)
             val toName = "?name_"+getSafeString(toUri)
 
-            returnValues += fromUri+" as ?"+getSafeString(fromUri)+numberOfGraphQueries+" <"+relationUri+"> "+toUri+" as ?"+getSafeString(toUri)+numberOfGraphQueries+" "
+            returnValues += fromUri+" as ?"+getSafeString(fromUri)+numberOfGraphQueries+" <"+relationType.uri+"> "+toUri+" as ?"+getSafeString(toUri)+numberOfGraphQueries+" "
 
             //returnValues += fromUri+" as ?"+getSafeString(fromUri)+numberOfGraphQueries+" "+fromName+" as "+fromName+numberOfGraphQueries+" <"+relationUri+"> "+toUri+" as ?"+getSafeString(toUri)+numberOfGraphQueries+" "+toName+" as "+toName+numberOfGraphQueries+" "
             graphQueries += generateSparqlGraph(numberOfGraphQueries, fromUri, relationType, toUri)

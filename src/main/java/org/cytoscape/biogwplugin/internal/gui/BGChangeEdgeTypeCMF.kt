@@ -20,7 +20,7 @@ class BGChangeEdgeTypeCMF(val gravity: Float, val serviceManager: BGServiceManag
         for (key in serviceManager.cache.relationTypeMap.keys) {
             val relationType = serviceManager.cache.relationTypeMap.get(key)
             if (relationType != null) {
-                val item = JMenuItem(relationType.description)
+                val item = JMenuItem(relationType.name)
                 item.addActionListener {
                     if (key == edgeUri) {
                         return@addActionListener
@@ -31,8 +31,8 @@ class BGChangeEdgeTypeCMF(val gravity: Float, val serviceManager: BGServiceManag
                         edgeTable?.getRow(edgeSuid)?.set(Constants.BG_FIELD_EDGE_ID,  edgeId.replace(edgeUri, relationType.uri))
                     }
 
-                    edgeTable?.getRow(edgeSuid)?.set(Constants.BG_FIELD_NAME, relationType.description)
-                    edgeTable?.getRow(edgeSuid)?.set("shared name", relationType.description)
+                    edgeTable?.getRow(edgeSuid)?.set(Constants.BG_FIELD_NAME, relationType.name)
+                    edgeTable?.getRow(edgeSuid)?.set("shared name", relationType.name)
                     edgeTable?.getRow(edgeSuid)?.set(Constants.BG_FIELD_IDENTIFIER_URI, relationType.uri)
 
 

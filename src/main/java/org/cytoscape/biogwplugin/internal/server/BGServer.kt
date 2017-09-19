@@ -25,7 +25,16 @@ class BGServer(private val serviceManager: BGServiceManager) {
         var nodeCache = HashMap<String, BGNode>()
 
         var relationTypeMap = HashMap<String, BGRelationType>()
-        var relationTypeOrderedList = ArrayList<String>()
+
+        val relationTypeDescriptions: LinkedHashMap<String, BGRelationType> get() {
+                val relationTypes = LinkedHashMap<String, BGRelationType>()
+                val relations = relationTypeMap.values.sortedBy { it.number }
+                for (relation in relations) {
+                    relationTypes.put(relation.description, relation)
+                }
+                return relationTypes
+        }
+
         var queryTemplates = HashMap<String, QueryTemplate>()
 
         fun addNode(node: BGNode) {
@@ -36,7 +45,7 @@ class BGServer(private val serviceManager: BGServiceManager) {
         }
 
         fun getRelationUriForName(name: String): String? {
-            val keys = relationTypeMap.filter { it.value.description == name }.keys.toTypedArray()
+            val keys = relationTypeMap.filter { it.value.name == name }.keys.toTypedArray()
             if (keys.size == 1) {
                 return keys.first()
             }
@@ -80,6 +89,8 @@ class BGServer(private val serviceManager: BGServiceManager) {
                     }
                 }
             }
+        } else {
+            println("Cache hit: "+node.name)
         }
         return node
     }
@@ -167,10 +178,8 @@ class BGServer(private val serviceManager: BGServiceManager) {
                 val uri = element?.textContent
 
                 if (name != null && uri != null) {
-                    val relationType = BGRelationType(uri, name)
-                    relationType.defaultGraphName = defaultGraph
+                    val relationType = BGRelationType(uri, name, index, defaultGraph)
                     relationTypes.put(uri, relationType)
-                    cache.relationTypeOrderedList.add(uri)
                 }
             }
             cache.relationTypeMap = relationTypes
@@ -186,7 +195,7 @@ class BGServer(private val serviceManager: BGServiceManager) {
                     val qElement = nNode as Element
                     val queryName = qElement.getAttribute("name")
                     val returnTypeString = qElement.getAttribute("returnType")
-                    val queryDescription = qElement.getElementsByTagName("description").item(0).textContent
+                    val queryDescription = qElement.getElementsByTagName("name").item(0).textContent
                     val sparqlString = qElement.getElementsByTagName("sparql").item(0).textContent.replace("\t", "") // Remove tabs from the XML file. (They might be added "for show").
 
                     val returnType = when (returnTypeString) {

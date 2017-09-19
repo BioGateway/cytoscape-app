@@ -168,21 +168,21 @@ class BGNodeFetchQuery(serviceManager: BGServiceManager, val nodeUri: String, pa
     override var queryString = "BASE   <http://www.semantic-systems-biology.org/> \n" +
             "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>  \n" +
             "PREFIX term_id: <"+ nodeUri +">  \n" +
-            "SELECT DISTINCT term_id: ?label ?description\n" +
+            "SELECT DISTINCT term_id: ?label ?name\n" +
             "WHERE {\n"+
             "term_id: skos:prefLabel ?label .\n" +
-            "term_id: skos:definition ?description .\n" +
+            "term_id: skos:definition ?name .\n" +
             "} \n"
 
 //    override var queryString = "BASE   <http://www.semantic-systems-biology.org/> \n" +
 //            "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>  \n" +
 //            "PREFIX term_id: <"+ nodeUri +">  \n" +
 //            "PREFIX graph: <cco>  \n" +
-//            "SELECT term_id: ?label ?description\n" +
+//            "SELECT term_id: ?label ?name\n" +
 //            "WHERE {  \n" +
 //            " GRAPH graph: {  \n" +
 //            "  term_id: skos:prefLabel ?label .\n" +
-//            " term_id: skos:definition ?description .\n" +
+//            " term_id: skos:definition ?name .\n" +
 //            " } } \n"
 }
 class BGFetchPubmedIdQuery(serviceManager: BGServiceManager, val fromNodeUri: String, val relationUri: String, val toNodeUri: String): BGQuery(serviceManager, BGReturnType.PUBMED_ID, serviceManager.server.parser) {
@@ -282,12 +282,12 @@ class BGQuickFetchNodeQuery(serviceManager: BGServiceManager, val nodeName: Stri
             "PREFIX inheres_in: <http://purl.obolibrary.org/obo/RO_0000052>  \n" +
             "PREFIX taxaGraph: <cco>\n" +
             "PREFIX sio:  <http://semanticscience.org/resource/>  \n" +
-            "SELECT DISTINCT ?resourceUri ?value ?description ?taxonName\n" +
+            "SELECT DISTINCT ?resourceUri ?value ?name ?taxonName\n" +
             "WHERE {  \n" +
             "\tFILTER ( ?value = '"+nodeName+"') . \n" +
             "\tGRAPH "+nodeTypeGraph+" {  \n" +
             "\t\t?resourceUri skos:prefLabel|skos:altLabel ?value .\n" +
-            " ?resourceUri skos:definition ?description .\n" +
+            " ?resourceUri skos:definition ?name .\n" +
             " ?resourceUri inheres_in: ?taxon .\n" +
             "\t} \n" +
             "GRAPH taxaGraph: {\n" +

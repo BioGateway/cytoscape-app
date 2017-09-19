@@ -57,7 +57,7 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
         // TODO: Can we remove the checks, as no column would exist in a brand new table?
         if (nodeTable.getColumn(Constants.BG_FIELD_IDENTIFIER_URI) == null) nodeTable.createColumn(Constants.BG_FIELD_IDENTIFIER_URI, String::class.java, false)
         if (edgeTable.getColumn(Constants.BG_FIELD_IDENTIFIER_URI) == null) edgeTable.createColumn(Constants.BG_FIELD_IDENTIFIER_URI, String::class.java, false)
-        if (edgeTable.getColumn(Constants.BG_FIELD_PUBMED_URI) == null) edgeTable.createColumn(Constants.BG_FIELD_PUBMED_URI, String::class.java, false)
+        //if (edgeTable.getColumn(Constants.BG_FIELD_PUBMED_URI) == null) edgeTable.createColumn(Constants.BG_FIELD_PUBMED_URI, String::class.java, false)
         if (edgeTable.getColumn(Constants.BG_FIELD_SOURCE_GRAPH) == null) edgeTable.createColumn(Constants.BG_FIELD_SOURCE_GRAPH, String::class.java, false)
         if (edgeTable.getColumn(Constants.BG_FIELD_EDGE_ID) == null) edgeTable.createColumn(Constants.BG_FIELD_EDGE_ID, String::class.java, false)
 
@@ -112,11 +112,8 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
     fun addEdgeToNetwork(from: CyNode, to: CyNode, network: CyNetwork, edgeTable: CyTable, relationType: BGRelationType, edgeId: String, metadata: BGRelationMetadata): CyEdge {
         val edge = network.addEdge(from, to, true)
         edgeTable.getRow(edge.suid).set(Constants.BG_FIELD_IDENTIFIER_URI, relationType.uri)
-        edgeTable.getRow(edge.suid).set(Constants.BG_FIELD_NAME, relationType.description)
+        edgeTable.getRow(edge.suid).set(Constants.BG_FIELD_NAME, relationType.name)
         edgeTable.getRow(edge.suid).set(Constants.BG_FIELD_EDGE_ID, edgeId)
-        if (metadata.pubmedUrl != null) {
-            edgeTable.getRow(edge.suid).set(Constants.BG_FIELD_PUBMED_URI, metadata.pubmedUrl)
-        }
         if (metadata.sourceGraph != null) {
             edgeTable.getRow(edge.suid).set(Constants.BG_FIELD_SOURCE_GRAPH, metadata.sourceGraph)
         }

@@ -21,8 +21,8 @@ enum class BGParserField(val fieldName: String) {
 
 enum class BGReturnType(val paremeterCount: Int) {
     NODE_LIST(2),              // nodeUri, common_name
-    NODE_LIST_DESCRIPTION(3),  // nodeUri, common_name, description
-    NODE_LIST_DESCRIPTION_TAXON(4),  // nodeUri, common_name, description, taxon
+    NODE_LIST_DESCRIPTION(3),  // nodeUri, common_name, name
+    NODE_LIST_DESCRIPTION_TAXON(4),  // nodeUri, common_name, name, taxon
     RELATION_TRIPLE(3),         // nodeUri, relationUri, nodeUri
     RELATION_TRIPLE_NAMED(5),    // nodeUri, common_name, relationUri, nodeUri, common_name
     RELATION_TRIPLE_PUBMED(6),  // nodeUri, common_name, relationUri, nodeUri, common_name, pubmedUri
@@ -111,6 +111,9 @@ class BGParser(private val serviceManager: BGServiceManager) {
                 // Note: Will ignore relation types it doesn't already know of.
                 if (relationType != null) {
                     val relation = BGRelation(fromNode, relationType, toNode)
+                    relationType.defaultGraphName?.let {
+                        relation.metadata.sourceGraph = it
+                    }
                     relationSet.add(relation)
                 }
             }
@@ -143,7 +146,7 @@ class BGParser(private val serviceManager: BGServiceManager) {
                 var fromNode = server.getNodeFromCache(BGNode(fromNodeUri))
                 var toNode = server.getNodeFromCache(BGNode(toNodeUri))
                 //val relationType = server.cache.relationTypeMap.get(relationUri) ?: throw NullPointerException("RelationType not found for this URI!")
-                val relationType = server.cache.relationTypeMap.get(relationUri) ?: BGRelationType(relationUri, relationUri)
+                val relationType = server.cache.relationTypeMap.get(relationUri) ?: BGRelationType(relationUri, relationUri, 0)
                 val relation = BGRelation(fromNode, relationType, toNode)
                 relationType.defaultGraphName?.let {
                     relation.metadata.sourceGraph = it

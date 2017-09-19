@@ -22,15 +22,15 @@ class BGRelationSearchCMF(val gravity: Float, val serviceManager: BGServiceManag
     /*
     override fun createMenuItem(netView: CyNetworkView?, nodeView: View<CyNode>?): CyMenuItem {
         val nodeUri = netView?.model?.defaultNodeTable?.getRow(nodeView?.model?.suid)?.get("identifier uri", String::class.java) ?: throw Exception("Node URI not found in CyNetwork table. Are you sure you are querying a node created with this plugin?")
-        var parentMenu = JMenu(description)
+        var parentMenu = JMenu(name)
 
 
         // Will only create the menu if the config is loaded.
         for (relationType in serviceManager.cache.relationTypeMap.values) {
-            val item = JMenuItem(relationType.description)
+            val item = JMenuItem(relationType.name)
 
             item.addActionListener(ActionListener {
-                println("TODO: Should search for relations of type \""+relationType.description+"\" from node "+nodeUri)
+                println("TODO: Should search for relations of type \""+relationType.name+"\" from node "+nodeUri)
                 val query = BGFindRelationForNodeQuery(serviceManager, relationType, nodeUri, direction)
                 query.addCompletion {
                     val returnData = it as? BGReturnRelationsData
@@ -146,7 +146,7 @@ class BGRelationSearchCMF(val gravity: Float, val serviceManager: BGServiceManag
 
         // Will only create the menu if the config is loaded.
         for (relationType in serviceManager.cache.relationTypeMap.values) {
-            val item = JMenuItem(relationType.description)
+            val item = JMenuItem(relationType.name)
 
             item.addActionListener(ActionListener {
                 val query = BGFindRelationForNodeQuery(serviceManager, relationType, nodeUri, direction)

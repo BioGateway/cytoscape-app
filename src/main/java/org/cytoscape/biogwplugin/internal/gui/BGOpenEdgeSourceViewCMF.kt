@@ -26,34 +26,20 @@ class BGOpenEdgeSourceViewCMF(val gravity: Float, val serviceManager: BGServiceM
         val item = JMenuItem("Open PubMed Source.")
 
         item.addActionListener {
-
-
-
-
-
-
-
-            var pubmedId = edgeTable.getRow(edgeSuid)?.get("pubmed uri", String::class.java)
-
-            if (pubmedId != null && pubmedId.length > 0) {
-                if (Desktop.isDesktopSupported()) {
-                    Desktop.getDesktop().browse(URI(pubmedId));
-                }
-            } else {
-                val query = BGFetchPubmedIdQuery(serviceManager, fromNodeUri, edgeUri, toNodeUri)
+            val query = BGFetchPubmedIdQuery(serviceManager, fromNodeUri, edgeUri, toNodeUri)
                 query.addCompletion {
                     val data = it as? BGReturnPubmedIds ?: throw Exception("Invalid return data!")
                     if (data.pubmedIDlist.size == 0) {
                         throw Exception("No results found.")
                     }
-                    pubmedId = data.pubmedIDlist[0]
+                    // TODO: Show a list of pubmedIds.
+                    val pubmedId = data.pubmedIDlist[0]
                     if (Desktop.isDesktopSupported()) {
                         Desktop.getDesktop().browse(URI(pubmedId));
                     }
                 }
                 serviceManager.taskManager.execute(TaskIterator(query))
             }
-        }
         return CyMenuItem(item, gravity)
     }
 }
