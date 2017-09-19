@@ -168,13 +168,22 @@ class BGNodeFetchQuery(serviceManager: BGServiceManager, val nodeUri: String, pa
     override var queryString = "BASE   <http://www.semantic-systems-biology.org/> \n" +
             "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>  \n" +
             "PREFIX term_id: <"+ nodeUri +">  \n" +
-            "PREFIX graph: <cco>  \n" +
-            "SELECT term_id: ?label ?description\n" +
-            "WHERE {  \n" +
-            " GRAPH graph: {  \n" +
-            "  term_id: skos:prefLabel ?label .\n" +
-            " term_id: skos:definition ?description .\n" +
-            " } } \n"
+            "SELECT DISTINCT term_id: ?label ?description\n" +
+            "WHERE {\n"+
+            "term_id: skos:prefLabel ?label .\n" +
+            "term_id: skos:definition ?description .\n" +
+            "} \n"
+
+//    override var queryString = "BASE   <http://www.semantic-systems-biology.org/> \n" +
+//            "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>  \n" +
+//            "PREFIX term_id: <"+ nodeUri +">  \n" +
+//            "PREFIX graph: <cco>  \n" +
+//            "SELECT term_id: ?label ?description\n" +
+//            "WHERE {  \n" +
+//            " GRAPH graph: {  \n" +
+//            "  term_id: skos:prefLabel ?label .\n" +
+//            " term_id: skos:definition ?description .\n" +
+//            " } } \n"
 }
 class BGFetchPubmedIdQuery(serviceManager: BGServiceManager, val fromNodeUri: String, val relationUri: String, val toNodeUri: String): BGQuery(serviceManager, BGReturnType.PUBMED_ID, serviceManager.server.parser) {
     override var queryString: String
@@ -236,7 +245,7 @@ class BGFetchPubmedIdQuery(serviceManager: BGServiceManager, val fromNodeUri: St
                 "PREFIX has_source: <http://semanticscience.org/resource/SIO_000253> \n" +
                 "SELECT DISTINCT ?pubmedId\n" +
                 "WHERE {\n" +
-                "GRAPH <tf-tg> {  \n" +
+                "GRAPH ?graph {  \n" +
                 "?triple rdf:subject <"+fromNodeUri+"> .  \n" +
                 "?triple rdf:predicate <"+relationUri+"> .  \n" +
                 "?triple rdf:object <"+toNodeUri+"> . \n" +
@@ -249,11 +258,11 @@ class BGFetchPubmedIdQuery(serviceManager: BGServiceManager, val fromNodeUri: St
 class BGQuickFetchNodeQuery(serviceManager: BGServiceManager, val nodeName: String, val nodeType: BGNodeType, parser: BGParser): BGQuery(serviceManager, BGReturnType.NODE_LIST_DESCRIPTION_TAXON, parser) {
 
     var nodeTypeGraph = when (nodeType) {
-        BGNodeType.GENE -> "<refseq>"
-        BGNodeType.PROTEIN -> "<refprot>"
+        BGNodeType.Gene -> "<refseq>"
+        BGNodeType.Protein -> "<refprot>"
         BGNodeType.GO -> "<go-basic-inf>"
-        BGNodeType.TAXON -> "<cco>"
-        BGNodeType.ANY -> "?anyGraph"
+        BGNodeType.Taxon -> "<cco>"
+        BGNodeType.Any -> "?anyGraph"
     }
 
     override fun run() {
@@ -288,5 +297,41 @@ class BGQuickFetchNodeQuery(serviceManager: BGServiceManager, val nodeName: Stri
             "}\n" +
             "ORDER BY ?resourceUri"
 }
+
+
+
+
+class BGFetchNodeNameForURIQuery(val serviceManager: BGServiceManager, val nodeUri: String) {
+
+    var queryString = "BASE <http://www.semantic-systems-biology.org/>\n" +
+            "SELECT DISTINCT ?name\n" +
+            "WHERE {\n" +
+            "<"+nodeUri+"> skos:prefLabel ?name .\n" +
+            "\n" +
+            "}"
+
+    fun runSynchronously(): String? {
+        val stream = encodeUrl()?.openStream()
+        if (stream != null) {
+            val reader = BufferedReader(InputStreamReader(stream))
+            reader.readLine()
+            val name = reader.readLine()
+            if (name.length > 0) {
+                return name
+            }
+        }
+        return null
+    }
+
+    fun encodeUrl(): URL? {
+        val RETURN_TYPE_TSV = "text/tab-separated-values"
+        val BIOPAX_DEFAULT_OPTIONS = "timeout=0&debug=on"
+
+        val queryURL = URL(serviceManager.serverPath + "?query=" + URLEncoder.encode(queryString, "UTF-8") + "&format=" + RETURN_TYPE_TSV +"&" + BIOPAX_DEFAULT_OPTIONS)
+
+        return queryURL
+    }
+}
+
 
 

@@ -106,7 +106,7 @@ class BGParser(private val serviceManager: BGServiceManager) {
                 fromNode.name = fromNodeName
                 var toNode = server.getNodeFromCache(BGNode(toNodeUri))
                 toNode.name = toNodeName
-                val relationType = server.cache.relationTypes.get(relationUri)
+                val relationType = server.cache.relationTypeMap.get(relationUri)
 
                 // Note: Will ignore relation types it doesn't already know of.
                 if (relationType != null) {
@@ -142,11 +142,12 @@ class BGParser(private val serviceManager: BGServiceManager) {
 
                 var fromNode = server.getNodeFromCache(BGNode(fromNodeUri))
                 var toNode = server.getNodeFromCache(BGNode(toNodeUri))
-                //val relationType = server.cache.relationTypes.get(relationUri) ?: throw NullPointerException("RelationType not found for this URI!")
-                val relationType = server.cache.relationTypes.get(relationUri) ?: BGRelationType(relationUri, relationUri)
-
+                //val relationType = server.cache.relationTypeMap.get(relationUri) ?: throw NullPointerException("RelationType not found for this URI!")
+                val relationType = server.cache.relationTypeMap.get(relationUri) ?: BGRelationType(relationUri, relationUri)
                 val relation = BGRelation(fromNode, relationType, toNode)
-
+                relationType.defaultGraphName?.let {
+                    relation.metadata.sourceGraph = it
+                }
                 relationSet.add(relation)
 
             } else if (returnType == BGReturnType.RELATION_TRIPLE_NAMED) {
@@ -160,11 +161,14 @@ class BGParser(private val serviceManager: BGServiceManager) {
                 fromNode.name = fromNodeName
                 var toNode = server.getNodeFromCache(BGNode(toNodeUri))
                 toNode.name = toNodeName
-                val relationType = server.cache.relationTypes.get(relationUri)
+                val relationType = server.cache.relationTypeMap.get(relationUri)
 
                 // Note: Will ignore relation types it doesn't already know of.
                 if (relationType != null) {
                     val relation = BGRelation(fromNode, relationType, toNode)
+                    relationType.defaultGraphName?.let {
+                        relation.metadata.sourceGraph = it
+                    }
                     returnData.relationsData.add(relation)
                 }
             }
@@ -180,12 +184,15 @@ class BGParser(private val serviceManager: BGServiceManager) {
                 fromNode.name = fromNodeName
                 var toNode = server.getNodeFromCache(BGNode(toNodeUri))
                 toNode.name = toNodeName
-                val relationType = server.cache.relationTypes.get(relationUri)
+                val relationType = server.cache.relationTypeMap.get(relationUri)
 
                 // Note: Will ignore relation types it doesn't already know of.
                 if (relationType != null) {
                     val relation = BGRelation(fromNode, relationType, toNode)
-                    relation.pubmedUri = pubmedUri
+                    relation.metadata.pubmedUrl = pubmedUri
+                    relationType.defaultGraphName?.let {
+                        relation.metadata.sourceGraph = it
+                    }
                     returnData.relationsData.add(relation)
                 }
             }

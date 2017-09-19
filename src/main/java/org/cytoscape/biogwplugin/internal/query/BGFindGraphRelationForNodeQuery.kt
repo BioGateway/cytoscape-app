@@ -1,20 +1,18 @@
 package org.cytoscape.biogwplugin.internal.query
 
 import org.apache.http.client.methods.HttpGet
-import org.apache.http.impl.client.HttpClients
 import org.apache.http.util.EntityUtils
 import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.model.BGNodeType
 import org.cytoscape.biogwplugin.internal.parser.BGReturnType
-import org.cytoscape.work.TaskMonitor
 import java.io.BufferedReader
 import java.io.StringReader
 
 class BGFindGraphRelationForNodeQuery(serviceManager: BGServiceManager, val nodeType: BGNodeType, val nodeUri: String): BGQuery(serviceManager, BGReturnType.RELATION_TRIPLE_PUBMED, serviceManager.server.parser) {
     override var queryString: String
         get() = when (nodeType) {
-            BGNodeType.GENE -> generateFindProteinsRegluatingGeneQueryString()
-            BGNodeType.PROTEIN -> generateFindGenesRegulatedByProteinQueryString()
+            BGNodeType.Gene -> generateFindProteinsRegluatingGeneQueryString()
+            BGNodeType.Protein -> generateFindGenesRegulatedByProteinQueryString()
             else -> {
                 throw Exception("TG-TF search is only available for genes and proteins!")
             }

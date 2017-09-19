@@ -5,7 +5,6 @@ import org.cytoscape.application.swing.CyNodeViewContextMenuFactory
 import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.model.BGNodeType
 import org.cytoscape.biogwplugin.internal.query.*
-import org.cytoscape.model.CyNetwork
 import org.cytoscape.model.CyNode
 import org.cytoscape.view.model.CyNetworkView
 import org.cytoscape.view.model.View
@@ -27,7 +26,7 @@ class BGRelationSearchCMF(val gravity: Float, val serviceManager: BGServiceManag
 
 
         // Will only create the menu if the config is loaded.
-        for (relationType in serviceManager.cache.relationTypes.values) {
+        for (relationType in serviceManager.cache.relationTypeMap.values) {
             val item = JMenuItem(relationType.description)
 
             item.addActionListener(ActionListener {
@@ -61,14 +60,14 @@ class BGRelationSearchCMF(val gravity: Float, val serviceManager: BGServiceManag
 
         if (nodeUri.contains("ncbigene")) {
             parentMenu.addSeparator()
-            parentMenu.add(createTFTGSearchMenu(netView, BGNodeType.GENE, nodeUri))
+            parentMenu.add(createTFTGSearchMenu(netView, BGNodeType.Gene, nodeUri))
             parentMenu.addSeparator()
-            parentMenu.add(createFetchAssociatedGeneOrProteinMenuItem(netView, BGNodeType.GENE, nodeUri))
+            parentMenu.add(createFetchAssociatedGeneOrProteinMenuItem(netView, BGNodeType.Gene, nodeUri))
         } else if (nodeUri.contains("uniprot")) {
             parentMenu.addSeparator()
-            parentMenu.add(createTFTGSearchMenu(netView, BGNodeType.PROTEIN, nodeUri))
+            parentMenu.add(createTFTGSearchMenu(netView, BGNodeType.Protein, nodeUri))
             parentMenu.addSeparator()
-            parentMenu.add(createFetchAssociatedGeneOrProteinMenuItem(netView, BGNodeType.PROTEIN, nodeUri))
+            parentMenu.add(createFetchAssociatedGeneOrProteinMenuItem(netView, BGNodeType.Protein, nodeUri))
         }
 
         return CyMenuItem(parentMenu, gravity)
@@ -76,21 +75,21 @@ class BGRelationSearchCMF(val gravity: Float, val serviceManager: BGServiceManag
 
     fun createFetchAssociatedGeneOrProteinMenuItem(netView: CyNetworkView, nodeType: BGNodeType, nodeUri: String): JMenuItem {
         var menuItemText = when (nodeType) {
-            BGNodeType.GENE -> "Get associated proteins"
-            BGNodeType.PROTEIN -> "Get associated genes"
+            BGNodeType.Gene -> "Get associated proteins"
+            BGNodeType.Protein -> "Get associated genes"
             else -> {
                 ""
             }
         }
         val direction = when (nodeType) {
-            BGNodeType.PROTEIN -> BGRelationDirection.TO
-            BGNodeType.GENE -> BGRelationDirection.FROM
+            BGNodeType.Protein -> BGRelationDirection.TO
+            BGNodeType.Gene -> BGRelationDirection.FROM
                else -> {
                    throw Exception("Must be gene or protein!")
             }
         }
         val encodesUri = "http://semanticscience.org/resource/SIO_010078"
-        val relationType = serviceManager.server.cache.relationTypes.get(encodesUri) ?: throw Exception("Relation type with uri: "+encodesUri+" not found in cache.")
+        val relationType = serviceManager.server.cache.relationTypeMap.get(encodesUri) ?: throw Exception("Relation type with uri: "+encodesUri+" not found in cache.")
         val menuItem = JMenuItem(menuItemText)
 
         menuItem.addActionListener {
@@ -146,7 +145,7 @@ class BGRelationSearchCMF(val gravity: Float, val serviceManager: BGServiceManag
         parentMenu.add(searchAllItem)
 
         // Will only create the menu if the config is loaded.
-        for (relationType in serviceManager.cache.relationTypes.values) {
+        for (relationType in serviceManager.cache.relationTypeMap.values) {
             val item = JMenuItem(relationType.description)
 
             item.addActionListener(ActionListener {
@@ -174,9 +173,9 @@ class BGRelationSearchCMF(val gravity: Float, val serviceManager: BGServiceManag
 
         var menuItemText = ""
 
-        if (nodeType == BGNodeType.PROTEIN) {
+        if (nodeType == BGNodeType.Protein) {
             menuItemText = "Find genes regulated by this protein"
-        } else if (nodeType == BGNodeType.GENE) {
+        } else if (nodeType == BGNodeType.Gene) {
             menuItemText = "Find proteins regulating this gene"
         }
 

@@ -51,7 +51,7 @@ class BGMultiQueryLine(val serviceManager: BGServiceManager, val fromTextField: 
         fromUriSearchButton.toolTipText = searchButtonTooltipText
         //fromUriSearchButton.preferredSize = Dimension(20, 20)
         fromUriSearchButton.addActionListener {
-            val lookupController = BGURILookupViewController(serviceManager) {
+            val lookupController = BGURILookupController(serviceManager, this) {
                 if (it != null) {
                     this.fromUri = it.uri
                     this.fromTextField.toolTipText = it.description
@@ -62,7 +62,7 @@ class BGMultiQueryLine(val serviceManager: BGServiceManager, val fromTextField: 
         toUriSearchButton.toolTipText = searchButtonTooltipText
         //toUriSearchButton.preferredSize = Dimension(20, 20)
         toUriSearchButton.addActionListener {
-            val lookupController = BGURILookupViewController(serviceManager) {
+            val lookupController = BGURILookupController(serviceManager, this) {
                 if (it != null) {
                     this.toUri = it.uri
                     this.toTextField.toolTipText = it.description
@@ -187,7 +187,7 @@ class BGQueryVariableManager() {
     }
 }
 
-class BGMultiQueryPanel(val serviceManager: BGServiceManager, val relationTypes: HashMap<String, String>): JPanel() {
+class BGMultiQueryPanel(val serviceManager: BGServiceManager): JPanel() {
 
     val deleteButtonTooltipText = "Delete this row."
 
@@ -204,7 +204,8 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager, val relationTypes:
         fromField.preferredSize = Dimension(290, 20)
         val toField = JTextField()
         toField.preferredSize = Dimension(290, 20)
-        val relationTypeBox = JComboBox(relationTypes.keys.toTypedArray())
+        val relationTypeArray = serviceManager.cache.relationTypeOrderedList.map { serviceManager.cache.relationTypeMap.get(it) }.map { it?.description }.filter { it != null }.map { it as String }.toTypedArray()
+        val relationTypeBox = JComboBox(relationTypeArray)
         val queryLine = BGMultiQueryLine(serviceManager, fromField, relationTypeBox, toField, variableManager)
 
         val deleteIcon = ImageIcon(this.javaClass.classLoader.getResource("delete.png"))
@@ -243,8 +244,8 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager, val relationTypes:
 
         for (line in queryLines) {
             val fromUri = line.fromUri ?: throw Exception("Invalid From URI!")
-            var relationUri = line.relationType?.let { serviceManager.cache.namedRelationTypes.get(it) } ?: throw Exception("Invalid Relation Type!")
-            val relationType = serviceManager.server.cache.relationTypes.get(relationUri) ?: throw Exception("Unknown relation type!")
+            var relationUri = line.relationType?.let { serviceManager.cache.getRelationUriForName(it) } ?: throw Exception("Invalid Relation Type!")
+            val relationType = serviceManager.server.cache.relationTypeMap.get(relationUri) ?: throw Exception("Unknown relation type!")
             val toUri = line.toUri ?: throw Exception("Invalid To URI!")
 
             val fromName = "?name_"+getSafeString(fromUri)

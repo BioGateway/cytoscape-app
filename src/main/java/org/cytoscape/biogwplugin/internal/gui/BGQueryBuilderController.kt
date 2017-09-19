@@ -14,12 +14,10 @@ import org.cytoscape.work.TaskIterator
 
 import javax.swing.*
 import javax.swing.event.ChangeListener
-import javax.swing.filechooser.FileFilter
 import javax.swing.table.DefaultTableModel
 import java.awt.*
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
-import java.io.File
 import java.util.ArrayList
 import javax.swing.event.ChangeEvent
 
@@ -87,7 +85,7 @@ class BGComponentButton(label: String, val associatedComponent: JComponent): JBu
 
 class BGQueryBuilderController(private val serviceManager: BGServiceManager) : ActionListener, ChangeListener {
 
-    private val view: BGCreateQueryView
+    private val view: BGQueryBuilderView
 
     //private var relationList = ArrayList<BGRelation>()
 
@@ -100,7 +98,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
     private var  queries = HashMap<String, QueryTemplate>()
 
     init {
-        this.view = BGCreateQueryView(this)
+        this.view = BGQueryBuilderView(this)
         this.queries = serviceManager.server.cache.queryTemplates
         updateUIAfterXMLLoad()
     }
@@ -114,7 +112,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
     }
 
     private fun setupMultiQueryPanel() {
-        val panel = BGMultiQueryPanel(serviceManager, serviceManager.cache.namedRelationTypes)
+        val panel = BGMultiQueryPanel(serviceManager)
         panel.addQueryLine()
         view.setUpMultiQueryPanel(panel)
     }
@@ -126,7 +124,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         view.addChainedParameterField(firstNode)
         addMultiQueryLine()
 //        val firstRow = BGQueryParameter("row1", "", BGQueryParameter.ParameterType.RELATION_QUERY_ROW)
-//        for (relation in serviceManager.server.cache.relationTypes.values) {
+//        for (relation in serviceManager.server.cache.relationTypeMap.values) {
 //            firstRow.addOption(relation.description, relation.uri)
 //        }
 //        view.addChainedParameterField(firstRow)
@@ -409,8 +407,8 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
             val optionalUriComponent = it
             val searchString = optionalUriComponent.textField.text
             val nodeType = when (optionalUriComponent.comboBox.selectedItem) {
-                "Protein" -> BGNodeType.PROTEIN
-                "Gene" -> BGNodeType.GENE
+                "Protein" -> BGNodeType.Protein
+                "Gene" -> BGNodeType.Gene
                 else -> {
                     throw Exception("Invalid node type selected in combobox!")
                 }

@@ -3,6 +3,7 @@ package org.cytoscape.biogwplugin.internal.parser
 import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.model.BGNode
 import org.cytoscape.biogwplugin.internal.model.BGRelation
+import org.cytoscape.biogwplugin.internal.model.BGRelationMetadata
 import org.cytoscape.biogwplugin.internal.model.BGRelationType
 import org.cytoscape.biogwplugin.internal.util.Constants
 import org.cytoscape.model.CyEdge
@@ -42,9 +43,24 @@ fun CyNode.getDescription(network: CyNetwork): String {
 class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
 
     fun createNetworkFromBGNodes(nodes: Collection<BGNode>): CyNetwork {
-        val networkFactory = serviceManager.networkFactory
-        var network = networkFactory.createNetwork()
+        val network = createNetwork()
         addBGNodesToNetwork(nodes, network)
+        return network
+    }
+
+    fun createNetwork(): CyNetwork {
+        val network = serviceManager.networkFactory.createNetwork()
+        val nodeTable = network.defaultNodeTable
+        val edgeTable = network.defaultEdgeTable
+
+        // Create the columns needed:
+        // TODO: Can we remove the checks, as no column would exist in a brand new table?
+        if (nodeTable.getColumn(Constants.BG_FIELD_IDENTIFIER_URI) == null) nodeTable.createColumn(Constants.BG_FIELD_IDENTIFIER_URI, String::class.java, false)
+        if (edgeTable.getColumn(Constants.BG_FIELD_IDENTIFIER_URI) == null) edgeTable.createColumn(Constants.BG_FIELD_IDENTIFIER_URI, String::class.java, false)
+        if (edgeTable.getColumn(Constants.BG_FIELD_PUBMED_URI) == null) edgeTable.createColumn(Constants.BG_FIELD_PUBMED_URI, String::class.java, false)
+        if (edgeTable.getColumn(Constants.BG_FIELD_SOURCE_GRAPH) == null) edgeTable.createColumn(Constants.BG_FIELD_SOURCE_GRAPH, String::class.java, false)
+        if (edgeTable.getColumn(Constants.BG_FIELD_EDGE_ID) == null) edgeTable.createColumn(Constants.BG_FIELD_EDGE_ID, String::class.java, false)
+
         return network
     }
 
@@ -59,12 +75,6 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
     fun addRelationsToNetwork(network: CyNetwork, relations: Collection<BGRelation>) {
         val nodeTable = network.defaultNodeTable
         val edgeTable = network.defaultEdgeTable
-
-        if (nodeTable.getColumn(Constants.BG_FIELD_IDENTIFIER_URI) == null) nodeTable.createColumn(Constants.BG_FIELD_IDENTIFIER_URI, String::class.java, false)
-        if (edgeTable.getColumn(Constants.BG_FIELD_IDENTIFIER_URI) == null) edgeTable.createColumn(Constants.BG_FIELD_IDENTIFIER_URI, String::class.java, false)
-        if (edgeTable.getColumn(Constants.BG_FIELD_PUBMED_URI) == null) edgeTable.createColumn(Constants.BG_FIELD_PUBMED_URI, String::class.java, false)
-        if (edgeTable.getColumn(Constants.BG_FIELD_EDGE_ID) == null) edgeTable.createColumn(Constants.BG_FIELD_EDGE_ID, String::class.java, false)
-
 
         // Find the unique nodes in the set of relations. Duplicates get overwritten.
         val uniqueNodes = HashMap<String, BGNode>()
@@ -91,7 +101,7 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
 
             val matchingRows = edgeTable.getMatchingRows(Constants.BG_FIELD_EDGE_ID, relation.edgeIdentifier)
             if (matchingRows.size == 0) {
-                val edge = addEdgeToNetwork(fromNode, toNode, network, edgeTable, relation.relationType, relation.edgeIdentifier, relation.pubmedUri)
+                val edge = addEdgeToNetwork(fromNode, toNode, network, edgeTable, relation.relationType, relation.edgeIdentifier, relation.metadata)
             } else if (matchingRows.size > 1) {
                 println("WARNING: Duplicate edges!")
             }
@@ -99,15 +109,17 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
     }
 
 
-    fun addEdgeToNetwork(from: CyNode, to: CyNode, network: CyNetwork, edgeTable: CyTable, relationType: BGRelationType, edgeId: String, pubmedId: String?): CyEdge {
+    fun addEdgeToNetwork(from: CyNode, to: CyNode, network: CyNetwork, edgeTable: CyTable, relationType: BGRelationType, edgeId: String, metadata: BGRelationMetadata): CyEdge {
         val edge = network.addEdge(from, to, true)
         edgeTable.getRow(edge.suid).set(Constants.BG_FIELD_IDENTIFIER_URI, relationType.uri)
         edgeTable.getRow(edge.suid).set(Constants.BG_FIELD_NAME, relationType.description)
         edgeTable.getRow(edge.suid).set(Constants.BG_FIELD_EDGE_ID, edgeId)
-        if (pubmedId != null) {
-            edgeTable.getRow(edge.suid).set(Constants.BG_FIELD_PUBMED_URI, pubmedId)
+        if (metadata.pubmedUrl != null) {
+            edgeTable.getRow(edge.suid).set(Constants.BG_FIELD_PUBMED_URI, metadata.pubmedUrl)
         }
-
+        if (metadata.sourceGraph != null) {
+            edgeTable.getRow(edge.suid).set(Constants.BG_FIELD_SOURCE_GRAPH, metadata.sourceGraph)
+        }
         return edge
     }
 

@@ -9,12 +9,13 @@ import java.awt.EventQueue
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import java.awt.event.WindowEvent
+import javax.swing.JComponent
 import javax.swing.JOptionPane
 import javax.swing.table.DefaultTableModel
 
-class BGURILookupViewController(val serviceManager: BGServiceManager, val completion: (BGNode?) -> Unit): ActionListener {
+class BGURILookupController(val serviceManager: BGServiceManager, parentComponent: JComponent?, val completion: (BGNode?) -> Unit): ActionListener {
 
-    private val view = BGURILookupView(this)
+    private val view = BGURILookupView(this, parentComponent)
     private var nodesFound = HashMap<String, BGNode>()
 
     init {

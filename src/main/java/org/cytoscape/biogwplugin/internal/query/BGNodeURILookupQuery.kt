@@ -28,11 +28,11 @@ class BGNodeURILookupQuery(serviceManager: BGServiceManager, val searchString: S
 
     fun generateQueryString(): String {
         val nodeTypeGraph = when (nodeType) {
-            BGNodeType.GENE -> "<refseq>"
-            BGNodeType.PROTEIN -> "<refprot>"
+            BGNodeType.Gene -> "<refseq>"
+            BGNodeType.Protein -> "<refprot>"
             BGNodeType.GO -> "<go-basic>"
-            BGNodeType.TAXON -> "<cco>"
-            BGNodeType.ANY -> "?anyGraph"
+            BGNodeType.Taxon -> "<cco>"
+            BGNodeType.Any -> "?anyGraph"
         }
         val filter = when (useRegex) {
             true -> "FILTER regex ( ?name, '"+searchString+"','i' ) .\n"
@@ -40,7 +40,7 @@ class BGNodeURILookupQuery(serviceManager: BGServiceManager, val searchString: S
         }
 
         val taxaGraph = when (nodeType) {
-            BGNodeType.GENE, BGNodeType.PROTEIN -> "?uri inheres_in: ?taxon . \n } GRAPH taxaGraph: {\n" +
+            BGNodeType.Gene, BGNodeType.Protein -> "?uri inheres_in: ?taxon . \n } GRAPH taxaGraph: {\n" +
                     "?taxon rdfs:subClassOf sio:SIO_010000 . \n" +
                     "?taxon skos:prefLabel ?taxaName }\n"
             else -> {
@@ -48,13 +48,13 @@ class BGNodeURILookupQuery(serviceManager: BGServiceManager, val searchString: S
             }
         }
         val taxaName = when (nodeType) {
-            BGNodeType.PROTEIN, BGNodeType.GENE -> "?taxaName"
+            BGNodeType.Protein, BGNodeType.Gene -> "?taxaName"
             else -> {
                 "'N/A'"
             }
         }
 
-        if (nodeType == BGNodeType.TAXON) {
+        if (nodeType == BGNodeType.Taxon) {
             val queryString = "BASE   <http://www.semantic-systems-biology.org/>  \n" +
                     "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n" +
                     "PREFIX sio:  <http://semanticscience.org/resource/>  \n" +

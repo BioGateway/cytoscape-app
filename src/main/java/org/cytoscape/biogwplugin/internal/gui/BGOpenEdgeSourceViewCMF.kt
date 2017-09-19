@@ -14,7 +14,7 @@ import java.awt.Desktop
 import java.net.URI
 import javax.swing.JMenuItem
 
-class BGOpenEdgePumedIdCMF(val gravity: Float, val serviceManager: BGServiceManager): CyEdgeViewContextMenuFactory {
+class BGOpenEdgeSourceViewCMF(val gravity: Float, val serviceManager: BGServiceManager): CyEdgeViewContextMenuFactory {
     override fun createMenuItem(netView: CyNetworkView?, edgeView: View<CyEdge>?): CyMenuItem {
         val edgeSuid = edgeView?.model?.suid
         val edgeTable = netView?.model?.defaultEdgeTable
@@ -26,9 +26,16 @@ class BGOpenEdgePumedIdCMF(val gravity: Float, val serviceManager: BGServiceMana
         val item = JMenuItem("Open PubMed Source.")
 
         item.addActionListener {
+
+
+
+
+
+
+
             var pubmedId = edgeTable.getRow(edgeSuid)?.get("pubmed uri", String::class.java)
 
-            if (pubmedId != null) {
+            if (pubmedId != null && pubmedId.length > 0) {
                 if (Desktop.isDesktopSupported()) {
                     Desktop.getDesktop().browse(URI(pubmedId));
                 }

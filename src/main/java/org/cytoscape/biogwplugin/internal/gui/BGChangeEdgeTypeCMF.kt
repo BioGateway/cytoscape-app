@@ -5,7 +5,6 @@ import org.cytoscape.application.swing.CyMenuItem
 import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.util.Constants
 import org.cytoscape.model.CyEdge
-import org.cytoscape.model.CyNode
 import org.cytoscape.view.model.CyNetworkView
 import org.cytoscape.view.model.View
 import javax.swing.JMenu
@@ -18,8 +17,8 @@ class BGChangeEdgeTypeCMF(val gravity: Float, val serviceManager: BGServiceManag
         val edgeTable = netView?.model?.defaultEdgeTable
         val edgeUri = edgeTable?.getRow(edgeSuid)?.get("identifier uri", String::class.java) ?: throw Exception("Edge URI not found in CyNetwork")
 
-        for (key in serviceManager.cache.relationTypes.keys) {
-            val relationType = serviceManager.cache.relationTypes.get(key)
+        for (key in serviceManager.cache.relationTypeMap.keys) {
+            val relationType = serviceManager.cache.relationTypeMap.get(key)
             if (relationType != null) {
                 val item = JMenuItem(relationType.description)
                 item.addActionListener {

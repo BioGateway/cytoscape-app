@@ -1,8 +1,8 @@
 package org.cytoscape.biogwplugin.internal.server
 
 import org.cytoscape.biogwplugin.internal.BGServiceManager
-import org.cytoscape.biogwplugin.internal.model.BGRelationType
 import org.cytoscape.biogwplugin.internal.model.BGNode
+import org.cytoscape.biogwplugin.internal.model.BGRelationType
 import org.cytoscape.biogwplugin.internal.parser.*
 import org.cytoscape.biogwplugin.internal.query.BGNodeFetchQuery
 import org.cytoscape.biogwplugin.internal.query.BGQueryParameter
@@ -17,11 +17,6 @@ import java.net.URL
 import java.net.URLEncoder
 import javax.xml.parsers.DocumentBuilderFactory
 
-/**
- * Created by sholmas on 26/05/2017.
- */
-
-
 class BGServer(private val serviceManager: BGServiceManager) {
 
     class BGCache() {
@@ -29,7 +24,8 @@ class BGServer(private val serviceManager: BGServiceManager) {
         // Note that this cache is independent of the CyNodes and CyNetworks.
         var nodeCache = HashMap<String, BGNode>()
 
-        var relationTypes = HashMap<String, BGRelationType>()
+        var relationTypeMap = HashMap<String, BGRelationType>()
+        var relationTypeOrderedList = ArrayList<String>()
         var queryTemplates = HashMap<String, QueryTemplate>()
 
         fun addNode(node: BGNode) {
@@ -39,14 +35,12 @@ class BGServer(private val serviceManager: BGServiceManager) {
             nodeCache.set(node.uri, node)
         }
 
-        // TODO: Use some better remapping.
-        val namedRelationTypes: HashMap<String, String>
-        get() {
-            val map = HashMap<String, String>()
-            for (relation in relationTypes.values) {
-                map[relation.description] = relation.uri
+        fun getRelationUriForName(name: String): String? {
+            val keys = relationTypeMap.filter { it.value.description == name }.keys.toTypedArray()
+            if (keys.size == 1) {
+                return keys.first()
             }
-            return map
+            return null
         }
     }
 
@@ -179,9 +173,10 @@ class BGServer(private val serviceManager: BGServiceManager) {
                     val relationType = BGRelationType(uri, name)
                     relationType.defaultGraphName = defaultGraph
                     relationTypes.put(uri, relationType)
+                    cache.relationTypeOrderedList.add(uri)
                 }
             }
-            cache.relationTypes = relationTypes
+            cache.relationTypeMap = relationTypes
 
             // Will crash if the queryList tag isn't present.
             val queryList = (doc.getElementsByTagName("queryList").item(0) as? Element) ?: throw Exception("queryList element not found in XML file!")
