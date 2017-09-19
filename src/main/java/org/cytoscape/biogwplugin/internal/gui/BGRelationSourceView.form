@@ -29,7 +29,7 @@
             <constraints border-constraint="Center"/>
             <properties>
               <autoCreateRowSorter value="true"/>
-              <enabled value="true"/>
+              <enabled value="false"/>
             </properties>
           </component>
         </children>

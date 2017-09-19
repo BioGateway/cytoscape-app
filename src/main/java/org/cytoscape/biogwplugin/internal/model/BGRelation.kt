@@ -35,5 +35,6 @@ class BGRelation(val fromNode: BGNode, val relationType: BGRelationType, val toN
 
 class BGRelationMetadata() {
     var sourceGraph: String? = null
-    var pubmedUrl: String? = null
+    var pubmedUris = HashSet<String>()
+    val confidence: Double? = null
 }

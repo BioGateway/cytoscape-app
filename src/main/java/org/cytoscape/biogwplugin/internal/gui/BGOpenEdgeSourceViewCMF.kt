@@ -3,6 +3,7 @@ package org.cytoscape.biogwplugin.internal.gui
 import org.cytoscape.application.swing.CyEdgeViewContextMenuFactory
 import org.cytoscape.application.swing.CyMenuItem
 import org.cytoscape.biogwplugin.internal.BGServiceManager
+import org.cytoscape.biogwplugin.internal.model.BGRelationMetadata
 import org.cytoscape.biogwplugin.internal.query.BGFetchPubmedIdQuery
 import org.cytoscape.biogwplugin.internal.query.BGReturnPubmedIds
 import org.cytoscape.biogwplugin.internal.util.Constants
@@ -19,24 +20,20 @@ class BGOpenEdgeSourceViewCMF(val gravity: Float, val serviceManager: BGServiceM
         val edgeSuid = edgeView?.model?.suid
         val edgeTable = netView?.model?.defaultEdgeTable
         val nodeTable = netView?.model?.defaultNodeTable
-        val edgeUri = edgeTable?.getRow(edgeSuid)?.get("identifier uri", String::class.java) ?: throw Exception("Edge URI not found in CyNetwork")
+        val edgeUri = edgeTable?.getRow(edgeSuid)?.get(Constants.BG_FIELD_IDENTIFIER_URI, String::class.java) ?: throw Exception("Edge URI not found in CyNetwork")
         val fromNodeUri = nodeTable?.getRow(edgeView?.model?.source?.suid)?.get(Constants.BG_FIELD_IDENTIFIER_URI, String::class.java) ?: throw Exception("From node URI not found in CyNetwork!")
         val toNodeUri = nodeTable?.getRow(edgeView?.model?.target?.suid)?.get(Constants.BG_FIELD_IDENTIFIER_URI, String::class.java) ?: throw Exception("To node URI not found in CyNetwork!")
-
-        val item = JMenuItem("Open PubMed Source.")
+        val sourceGraph = edgeTable?.getRow(edgeSuid)?.get(Constants.BG_FIELD_SOURCE_GRAPH, String::class.java)
+        val item = JMenuItem("View source data")
 
         item.addActionListener {
             val query = BGFetchPubmedIdQuery(serviceManager, fromNodeUri, edgeUri, toNodeUri)
                 query.addCompletion {
+                    val metadata = BGRelationMetadata()
+                    metadata.sourceGraph = sourceGraph
                     val data = it as? BGReturnPubmedIds ?: throw Exception("Invalid return data!")
-                    if (data.pubmedIDlist.size == 0) {
-                        throw Exception("No results found.")
-                    }
-                    // TODO: Show a list of pubmedIds.
-                    val pubmedId = data.pubmedIDlist[0]
-                    if (Desktop.isDesktopSupported()) {
-                        Desktop.getDesktop().browse(URI(pubmedId));
-                    }
+                    metadata.pubmedUris.addAll(data.pubmedIDlist)
+                    BGRelationSourceController(metadata)
                 }
                 serviceManager.taskManager.execute(TaskIterator(query))
             }

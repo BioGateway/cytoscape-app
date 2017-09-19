@@ -192,7 +192,7 @@ class BGParser(private val serviceManager: BGServiceManager) {
                 // Note: Will ignore relation types it doesn't already know of.
                 if (relationType != null) {
                     val relation = BGRelation(fromNode, relationType, toNode)
-                    relation.metadata.pubmedUrl = pubmedUri
+                    relation.metadata.pubmedUris.add(pubmedUri)
                     relationType.defaultGraphName?.let {
                         relation.metadata.sourceGraph = it
                     }
