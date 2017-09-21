@@ -31,8 +31,8 @@ class BGFindRelationsBetweenNodesCMF(val gravity: Float, val serviceManager: BGS
             val firstNode = selectedNodes.get(0)
             val secondNode = selectedNodes.get(1)
 
-            val firstUri = netView.model.defaultNodeTable.getRow(firstNode.suid).get("identifier uri", String::class.java)
-            val secondUri = netView.model.defaultNodeTable.getRow(secondNode.suid).get("identifier uri", String::class.java)
+            val firstUri = netView.model.defaultNodeTable.getRow(firstNode.suid).get(Constants.BG_FIELD_IDENTIFIER_URI, String::class.java)
+            val secondUri = netView.model.defaultNodeTable.getRow(secondNode.suid).get(Constants.BG_FIELD_IDENTIFIER_URI, String::class.java)
 
             val queryString = generateQueryString(firstUri, secondUri)
             val query = BGRelationsQuery(serviceManager, queryString, serviceManager.server.parser, BGReturnType.RELATION_TRIPLE_NAMED)

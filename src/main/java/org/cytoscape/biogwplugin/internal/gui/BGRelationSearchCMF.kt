@@ -5,6 +5,7 @@ import org.cytoscape.application.swing.CyNodeViewContextMenuFactory
 import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.model.BGNodeType
 import org.cytoscape.biogwplugin.internal.query.*
+import org.cytoscape.biogwplugin.internal.util.Constants
 import org.cytoscape.model.CyNode
 import org.cytoscape.view.model.CyNetworkView
 import org.cytoscape.view.model.View
@@ -12,6 +13,7 @@ import org.cytoscape.work.TaskIterator
 import java.awt.event.ActionListener
 import javax.swing.JMenu
 import javax.swing.JMenuItem
+import javax.swing.JOptionPane
 
 /**
  * Created by sholmas on 06/07/2017.
@@ -19,37 +21,8 @@ import javax.swing.JMenuItem
 
 class BGRelationSearchCMF(val gravity: Float, val serviceManager: BGServiceManager): CyNodeViewContextMenuFactory {
 
-    /*
     override fun createMenuItem(netView: CyNetworkView?, nodeView: View<CyNode>?): CyMenuItem {
-        val nodeUri = netView?.model?.defaultNodeTable?.getRow(nodeView?.model?.suid)?.get("identifier uri", String::class.java) ?: throw Exception("Node URI not found in CyNetwork table. Are you sure you are querying a node created with this plugin?")
-        var parentMenu = JMenu(name)
-
-
-        // Will only create the menu if the config is loaded.
-        for (relationType in serviceManager.cache.relationTypeMap.values) {
-            val item = JMenuItem(relationType.name)
-
-            item.addActionListener(ActionListener {
-                println("TODO: Should search for relations of type \""+relationType.name+"\" from node "+nodeUri)
-                val query = BGFindRelationForNodeQuery(serviceManager, relationType, nodeUri, direction)
-                query.addCompletion {
-                    val returnData = it as? BGReturnRelationsData
-                    if (returnData != null) {
-                        val network = netView.model
-                        serviceManager.server.networkBuilder.addRelationsToNetwork(network, returnData.relationsData)
-                    }
-                }
-                serviceManager.taskManager.execute(TaskIterator(query))
-            })
-
-            parentMenu.add(item)
-        }
-        return CyMenuItem(parentMenu, 0F)
-    }
-    */
-
-    override fun createMenuItem(netView: CyNetworkView?, nodeView: View<CyNode>?): CyMenuItem {
-        val nodeUri = netView?.model?.defaultNodeTable?.getRow(nodeView?.model?.suid)?.get("identifier uri", String::class.java) ?: throw Exception("Node URI not found in CyNetwork table. Are you sure you are querying a node created with this plugin?")
+        val nodeUri = netView?.model?.defaultNodeTable?.getRow(nodeView?.model?.suid)?.get(Constants.BG_FIELD_IDENTIFIER_URI, String::class.java) ?: throw Exception("Node URI not found in CyNetwork table. Are you sure you are querying a node created with this plugin?")
 
         var parentMenu = JMenu("BioGateway")
 
@@ -84,8 +57,8 @@ class BGRelationSearchCMF(val gravity: Float, val serviceManager: BGServiceManag
         val direction = when (nodeType) {
             BGNodeType.Protein -> BGRelationDirection.TO
             BGNodeType.Gene -> BGRelationDirection.FROM
-               else -> {
-                   throw Exception("Must be gene or protein!")
+            else -> {
+                throw Exception("Must be gene or protein!")
             }
         }
         val encodesUri = "http://semanticscience.org/resource/SIO_010078"
@@ -114,8 +87,9 @@ class BGRelationSearchCMF(val gravity: Float, val serviceManager: BGServiceManag
                             iterator.remove()
                         }
                     }
-
-                    serviceManager.server.networkBuilder.addRelationsToNetwork(network, relationsData)
+                    BGLoadUnloadedNodes.createAndRun(serviceManager, returnData.unloadedNodes) {
+                        serviceManager.server.networkBuilder.addRelationsToNetwork(network, relationsData)
+                    }
                 }
             }
             serviceManager.taskManager.execute(TaskIterator(query))
@@ -136,16 +110,18 @@ class BGRelationSearchCMF(val gravity: Float, val serviceManager: BGServiceManag
                 val returnData = it as? BGReturnRelationsData ?: throw Exception("Invalid return data!")
                 if (returnData.relationsData.size == 0) throw Exception("No relations found.")
                 val network = netView.model
-                //serviceManager.server.networkBuilder.addRelationsToNetwork(network, returnData.relationsData)
                 val columnNames = arrayOf("from node","relation type", "to node")
-                BGRelationSearchResultsController(serviceManager, returnData.relationsData, columnNames, network)
+
+                BGLoadUnloadedNodes.createAndRun(serviceManager, returnData.unloadedNodes) {
+                    BGRelationSearchResultsController(serviceManager, returnData.relationsData, columnNames, network)
+                }
             }
             serviceManager.taskManager.execute(TaskIterator(query))
         }
         parentMenu.add(searchAllItem)
 
         // Will only create the menu if the config is loaded.
-        for (relationType in serviceManager.cache.relationTypeMap.values) {
+        for (relationType in serviceManager.cache.relationTypeMap.values.sortedBy { it.number }) {
             val item = JMenuItem(relationType.name)
 
             item.addActionListener(ActionListener {
@@ -153,12 +129,15 @@ class BGRelationSearchCMF(val gravity: Float, val serviceManager: BGServiceManag
                 query.addCompletion {
                     val returnData = it as? BGReturnRelationsData
                     if (returnData != null) {
-                        if (returnData.relationsData.size == 0) {
-                            // TODO: Find a slightly better way of notifying the user of a lack of relationsFound.
-                            throw Exception("No relationsFound found.")
-                        }
                         val network = netView.model
-                        serviceManager.server.networkBuilder.addRelationsToNetwork(network, returnData.relationsData)
+                        if (returnData.relationsData.size == 0) throw Exception("No relationsFound found.")
+
+                        val columnNames = arrayOf("from node","relation type", "to node")
+
+                        BGLoadUnloadedNodes.createAndRun(serviceManager, returnData.unloadedNodes) {
+                            println("Loaded "+it.toString()+ " nodes.")
+                            BGRelationSearchResultsController(serviceManager, returnData.relationsData, columnNames, network)
+                        }
                     }
                 }
                 serviceManager.taskManager.execute(TaskIterator(query))
@@ -184,18 +163,19 @@ class BGRelationSearchCMF(val gravity: Float, val serviceManager: BGServiceManag
             val query = BGFindGraphRelationForNodeQuery(serviceManager, nodeType!!, nodeUri)
             query.addCompletion {
                 val returnData = it as? BGReturnRelationsData ?: throw Exception("Invalid return data!")
-                if (returnData.relationsData.size == 0) throw Exception("No relations found.")
+                if (returnData.relationsData.size == 0)  {
+                    if (nodeType == BGNodeType.Protein) throw Exception("No results found. Are you sure it is a transcription factor?")
+                    throw Exception("No relations found.")
+                }
                 val network = netView.model
                 //serviceManager.server.networkBuilder.addRelationsToNetwork(network, returnData.relationsData)
                 val columnNames = arrayOf("protein", "relation", "gene")
 
-                BGRelationSearchResultsController(serviceManager, returnData.relationsData, columnNames, network)
+                BGLoadUnloadedNodes.createAndRun(serviceManager, returnData.unloadedNodes) {
+                    BGRelationSearchResultsController(serviceManager, returnData.relationsData, columnNames, network)
+                }
             }
 
-//                    val returnData = it as? BGReturnRelationsData ?: throw Exception("Invalid return data!")
-//                    if (returnData.relationsData.size == 0) throw Exception("No relations found.")
-//                    val network = netView.model
-//                    serviceManager.server.networkBuilder.addRelationsToNetwork(network, returnData.relationsData)
             serviceManager.taskManager.execute(TaskIterator(query))
         }
         return searchTFTG

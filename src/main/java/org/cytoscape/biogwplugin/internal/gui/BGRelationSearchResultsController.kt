@@ -20,6 +20,7 @@ class BGRelationSearchResultsController(val serviceManager: BGServiceManager, pr
         for (result in relationsFound) {
             table.addRow(result.nameStringArray())
         }
+        view.mainFrame.toFront()
     }
 
 

@@ -8,7 +8,7 @@ import org.cytoscape.biogwplugin.internal.parser.BGReturnType
 import java.io.BufferedReader
 import java.io.StringReader
 
-class BGFindRelationForNodeQuery(serviceManager: BGServiceManager, val relationType: BGRelationType, val nodeUri: String, val direction: BGRelationDirection): BGQuery(serviceManager, BGReturnType.RELATION_TRIPLE_NAMED, serviceManager.server.parser) {
+class BGFindRelationForNodeQuery(serviceManager: BGServiceManager, val relationType: BGRelationType, val nodeUri: String, val direction: BGRelationDirection): BGQuery(serviceManager, BGReturnType.RELATION_TRIPLE, serviceManager.server.parser) {
     override var queryString: String
         get() = when (direction) {
                 BGRelationDirection.TO -> generateToQueryString()
@@ -28,11 +28,18 @@ class BGFindRelationForNodeQuery(serviceManager: BGServiceManager, val relationT
             val reader = BufferedReader(StringReader(data))
             client.close()
             taskMonitor?.setTitle("Loading results...")
-            parser.parseRelations(reader, type) {
+            parser.parseRelations(reader, type, taskMonitor) {
                 returnData = it as? BGReturnData ?: throw Exception("Invalid return data!")
                 runCompletions()
             }
         }
+    }
+
+    val graphName: String get() {
+        relationType.defaultGraphName?.let {
+            return "<"+it+">"
+        }
+        return "?graph"
     }
 
 
@@ -40,27 +47,22 @@ class BGFindRelationForNodeQuery(serviceManager: BGServiceManager, val relationT
         return "BASE <http://www.semantic-systems-biology.org/>\n" +
                 "PREFIX relation1: <" + relationType.uri + ">\n" +
                 "PREFIX fromNode: <" + nodeUri + ">\n" +
-                "SELECT DISTINCT fromNode: fromNode: relation1: ?toNode ?toNodeName\n" +
+                "SELECT DISTINCT fromNode: relation1: ?toNode\n" +
                 "WHERE {\n" +
-                "GRAPH ?graph {\n" +
+                "GRAPH "+graphName+" {\n" +
                 "fromNode: relation1: ?toNode .\n" +
-                "}\n" +
-                "GRAPH ?graph2 {\n" +
-                "?toNode skos:prefLabel|skos:altLabel ?toNodeName .\n" +
                 "}}"
+
     }
 
     fun generateToQueryString(): String {
         return "BASE <http://www.semantic-systems-biology.org/>\n" +
                 "PREFIX relation1: <" + relationType.uri + ">\n" +
                 "PREFIX toNode: <" + nodeUri + ">\n" +
-                "SELECT DISTINCT ?fromNode ?fromNodeName relation1: toNode: toNode:\n" +
+                "SELECT DISTINCT ?fromNode relation1: toNode:\n" +
                 "WHERE {\n" +
-                "GRAPH ?graph {\n" +
+                "GRAPH "+graphName+" {\n" +
                 "?fromNode relation1: toNode: .\n" +
-                "}\n" +
-                "GRAPH ?graph2 {\n" +
-                "?fromNode skos:prefLabel|skos:altLabel ?fromNodeName .\n" +
                 "}}"
     }
 }

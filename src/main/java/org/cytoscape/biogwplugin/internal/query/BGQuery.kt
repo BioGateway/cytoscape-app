@@ -114,7 +114,7 @@ class BGRelationsQuery(serviceManager: BGServiceManager, override var queryStrin
             val reader = BufferedReader(StringReader(data))
             client.close()
             taskMonitor?.setTitle("Loading results...")
-            parser.parseRelations(reader, returnType) {
+            parser.parseRelations(reader, returnType, taskMonitor) {
                 returnData = it as? BGReturnData ?: throw Exception("Invalid return data!")
                 runCompletions()
             }
@@ -140,7 +140,7 @@ class BGMultiRelationsQuery(serviceManager: BGServiceManager, override var query
             val reader = BufferedReader(StringReader(data))
             client.close()
             taskMonitor?.setTitle("Loading results...")
-            parser.parsePathway(reader, returnType) {
+            parser.parsePathway(reader, returnType, taskMonitor) {
                 returnData = it as? BGReturnData ?: throw Exception("Invalid return data!")
                 taskMonitor?.setTitle("Loading results...")
                 runCompletions()

@@ -98,7 +98,7 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
         for (relation in relations) {
             val fromNode = cyNodes.get(relation.fromNode.uri) ?: throw Exception("CyNode not found!")
             val toNode = cyNodes.get(relation.toNode.uri) ?: throw Exception("CyNode not found!")
-
+            if (edgeTable.getColumn(Constants.BG_FIELD_EDGE_ID) == null) throw Exception(Constants.BG_FIELD_EDGE_ID+" column not found in default Edge Table for this network!")
             val matchingRows = edgeTable.getMatchingRows(Constants.BG_FIELD_EDGE_ID, relation.edgeIdentifier)
             if (matchingRows.size == 0) {
                 val edge = addEdgeToNetwork(fromNode, toNode, network, edgeTable, relation.relationType, relation.edgeIdentifier, relation.metadata)
@@ -133,9 +133,9 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
     fun getNodeWithUri(uri: String, network: CyNetwork, table: CyTable): CyNode? {
         val nodes = getCyNodesWithValue(network, table, Constants.BG_FIELD_IDENTIFIER_URI, uri)
         if (nodes.size == 1) {
+            if (nodes.size > 1) println("WARNING: Duplicate nodes!")
             return nodes.iterator().next()
         } else {
-            // TODO: Maybe throw an exception if the count is > 1?
             return null
         }
     }

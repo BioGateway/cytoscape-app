@@ -64,7 +64,7 @@ public class BGRelationSourceView {
         panel1.add(panel3, BorderLayout.CENTER);
         sourceInformationTable = new JTable();
         sourceInformationTable.setAutoCreateRowSorter(true);
-        sourceInformationTable.setEnabled(true);
+        sourceInformationTable.setEnabled(false);
         panel3.add(sourceInformationTable, BorderLayout.CENTER);
     }
 

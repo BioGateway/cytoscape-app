@@ -236,7 +236,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
 
             query.addCompletion {
 
-                val data = when(queryType) {
+                val data = when (queryType) {
                     BGReturnType.NODE_LIST, BGReturnType.NODE_LIST_DESCRIPTION -> {
                         it as? BGReturnNodeData ?: throw Exception("Expected Node Data in return!")
                     }
@@ -244,7 +244,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                         it as? BGReturnRelationsData ?: throw Exception("Expected Relation Data in return!")
                     }
                     else -> {
-                        throw Exception("Unexpected query type: "+queryType.toString())
+                        throw Exception("Unexpected query type: " + queryType.toString())
                     }
                 }
                 currentReturnData = data
@@ -252,7 +252,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                 val tableModel = view.resultTable.model as DefaultTableModel
                 tableModel.setColumnIdentifiers(data.columnNames)
 
-                for (i in tableModel.rowCount -1 downTo 0) {
+                for (i in tableModel.rowCount - 1 downTo 0) {
                     tableModel.removeRow(i)
                 }
 
@@ -260,14 +260,17 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                     setNodeTableData(data.nodeData.values)
                 }
                 if (data is BGReturnRelationsData) {
-                    setRelationTableData(data.relationsData)
+                    BGLoadUnloadedNodes.createAndRun(serviceManager, data.unloadedNodes) {
+                        setRelationTableData(data.relationsData)
+                        view.tabPanel.selectedIndex = 3
+                        fightForFocus()
+                    }
+                    return@addCompletion
+                } else {
+                    view.tabPanel.selectedIndex = 3 // Open the result tab.
+                    fightForFocus()
                 }
-                view.tabPanel.selectedIndex = 3 // Open the result tab.
-
-                // Try the darnest to make the window appear on top!
-                fightForFocus()
             }
-
             val iterator = TaskIterator(query)
             serviceManager.taskManager.execute(iterator)
 
@@ -352,31 +355,31 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
     private fun validatePropertyFields(parameters: Collection<BGQueryParameter>, parameterComponents: HashMap<String, JComponent>): String? {
         for (parameter in parameters) {
             val component = parameterComponents[parameter.id]
-                if (parameter.type === BGQueryParameter.ParameterType.OPTIONAL_URI) {
-                    val optionalUriField = component as? BGOptionalURIField ?: throw Exception("Invalid component type!")
-                    val uri = optionalUriField.textField.text
-                    if (uri.sanitizeParameter().isEmpty()) {
-                        // Empty string.
-                        optionalUriField.textField.text = "?" + parameter.id
-                    } else if (uri.startsWith("?")) {
-                        optionalUriField.textField.text = uri.sanitizeParameter()
-                    } else {
-                        // TODO: Should have a "validate" button instead, letting the user choose to check.
-                        // Validate the URI.
+            if (parameter.type === BGQueryParameter.ParameterType.OPTIONAL_URI) {
+                val optionalUriField = component as? BGOptionalURIField ?: throw Exception("Invalid component type!")
+                val uri = optionalUriField.textField.text
+                if (uri.sanitizeParameter().isEmpty()) {
+                    // Empty string.
+                    optionalUriField.textField.text = "?" + parameter.id
+                } else if (uri.startsWith("?")) {
+                    optionalUriField.textField.text = uri.sanitizeParameter()
+                } else {
+                    // TODO: Should have a "validate" button instead, letting the user choose to check.
+                    // Validate the URI.
 //                        val validated = Utility.validateURI(uri) // UGLY HACK! Should be asynchronous:
 //                        if (!validated) {
 //                            return "Unknown URI!"
 //                        }
 
-                    }
-                } else if (component is JTextField) {
-                    val field = component
-                    field.text = Utility.sanitizeParameter(field.text)
-                    if (field.text.isEmpty()) {
-                        return "All required text fields must be filled out!"
-                    }
+                }
+            } else if (component is JTextField) {
+                val field = component
+                field.text = Utility.sanitizeParameter(field.text)
+                if (field.text.isEmpty()) {
+                    return "All required text fields must be filled out!"
                 }
             }
+        }
         return null
     }
 

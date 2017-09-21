@@ -7,7 +7,7 @@ package org.cytoscape.biogwplugin.internal.model
 class BGRelationType(val uri: String, val name: String, val number: Int, val defaultGraphName: String? = null) {
 
     val description: String get() {
-        return when (defaultGraphName != null) {
+        return when (defaultGraphName != null && defaultGraphName.isNotEmpty()) {
             true -> defaultGraphName!!.toUpperCase() + ": "+name
             false -> name
         }

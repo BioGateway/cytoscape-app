@@ -1,6 +1,6 @@
 package org.cytoscape.biogwplugin.internal.model
 
-class BGRelation(val fromNode: BGNode, val relationType: BGRelationType, val toNode: BGNode) {
+class BGRelation(var fromNode: BGNode, val relationType: BGRelationType, var toNode: BGNode) {
 
     val metadata = BGRelationMetadata()
 

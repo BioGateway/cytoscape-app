@@ -12,5 +12,6 @@ object Constants {
     val BG_FIELD_PUBMED_URI = "Pubmed uri"
     val BG_CONFIG_FILE_URL = "https://www.dropbox.com/s/yjirkcgdq43bqqh/BiogatewayQueries.xml?dl=1"
     val BG_FIELD_SOURCE_GRAPH = "Source Graph"
+    val BG_LOAD_NODE_WARNING_LIMIT = 1000
 
 }

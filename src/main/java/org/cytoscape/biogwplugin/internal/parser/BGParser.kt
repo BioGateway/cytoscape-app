@@ -7,17 +7,14 @@ import org.cytoscape.biogwplugin.internal.model.BGRelationType
 import org.cytoscape.biogwplugin.internal.query.BGReturnNodeData
 import org.cytoscape.biogwplugin.internal.query.BGReturnPubmedIds
 import org.cytoscape.biogwplugin.internal.query.BGReturnRelationsData
+import org.cytoscape.work.TaskMonitor
 import java.io.BufferedReader
+import javax.swing.JOptionPane
 
 /**
  * Created by sholmas on 26/05/2017.
  */
 
-enum class BGParserField(val fieldName: String) {
-    URI("identifier uri"),
-    COMMON_NAME("common name"),
-    RELATION_TYPE("type")
-}
 
 enum class BGReturnType(val paremeterCount: Int) {
     NODE_LIST(2),              // nodeUri, common_name
@@ -34,9 +31,12 @@ enum class BGReturnType(val paremeterCount: Int) {
 class BGParser(private val serviceManager: BGServiceManager) {
 
     var cancelled = false
+    var nodeFetchThread: Thread? = null
 
     fun cancel() {
         cancelled = true
+        nodeFetchThread?.stop()
+        throw Exception("Cancelled.")
     }
 
     fun parseNodesToTextArray(reader: BufferedReader, returnType: BGReturnType, completion: (BGReturnNodeData?) -> Unit) {
@@ -73,8 +73,10 @@ class BGParser(private val serviceManager: BGServiceManager) {
         completion(returnData)
     }
 
-    fun parsePathway(reader: BufferedReader, returnType: BGReturnType, completion: (BGReturnRelationsData) -> Unit) {
+    fun parsePathway(reader: BufferedReader, returnType: BGReturnType, taskMonitor: TaskMonitor?, completion: (BGReturnRelationsData) -> Unit) {
         cancelled = false
+        val unloadedNodes = ArrayList<BGNode>()
+        taskMonitor?.setTitle("Parsing nodes...")
 
         if (returnType != BGReturnType.RELATION_MULTIPART_NAMED) throw Exception("Return type must be relation multipart!")
 
@@ -102,9 +104,11 @@ class BGParser(private val serviceManager: BGServiceManager) {
                 //val toNodeName = lineColumns[fromNodeIndex+4].replace("\"", "")
                 fromNodeIndex += 3
 
-                var fromNode = server.getNodeFromCache(BGNode(fromNodeUri))
+                var fromNode = server.getNodeFromCacheOrNetworks(BGNode(fromNodeUri))
+                if (!fromNode.isLoaded) unloadedNodes.add(fromNode)
                 //fromNode.name = fromNodeName
-                var toNode = server.getNodeFromCache(BGNode(toNodeUri))
+                var toNode = server.getNodeFromCacheOrNetworks(BGNode(toNodeUri))
+                if (!toNode.isLoaded) unloadedNodes.add(toNode)
                 //toNode.name = toNodeName
                 val relationType = server.cache.relationTypeMap.get(relationUri)
 
@@ -119,12 +123,44 @@ class BGParser(private val serviceManager: BGServiceManager) {
             }
         }
         returnData.relationsData.addAll(relationSet)
-        completion(returnData)
+
+        val numberOfRelations = returnData.relationsData.count()
+
+        println(unloadedNodes.size.toString()+" nodes missing.")
+
+
+        nodeFetchThread = Thread {
+
+            for (index in 0..returnData.relationsData.size-1) {
+                if (this.cancelled) {
+                    throw Exception("Cancelled.")
+                }
+                val relation = returnData.relationsData[index]
+                taskMonitor?.setTitle("Loading relation " + index + " of " + numberOfRelations + "...")
+                taskMonitor?.setProgress(index.toDouble() / numberOfRelations.toDouble())
+
+                //relation.toNode = server.getNodeFromCacheOrNetworks(relation.toNode)
+                //relation.fromNode = server.getNodeFromCacheOrNetworks(relation.fromNode)
+
+                if (!relation.toNode.isLoaded) {
+                    server.loadDataForNode(relation.toNode)
+                }
+                if (!relation.fromNode.isLoaded) {
+                    server.loadDataForNode(relation.fromNode)
+                }
+            }
+            completion(returnData)
+        }
+        nodeFetchThread?.run()
     }
 
 
-    fun parseRelations(reader: BufferedReader, returnType: BGReturnType, completion: (BGReturnRelationsData?) -> Unit) {
+    fun parseRelations(reader: BufferedReader, returnType: BGReturnType, taskMonitor: TaskMonitor?, completion: (BGReturnRelationsData?) -> Unit) {
         cancelled = false
+
+        val unloadedNodes = ArrayList<BGNode>()
+
+        taskMonitor?.setTitle("Parsing relations...")
 
         val server = serviceManager.server
 
@@ -134,8 +170,7 @@ class BGParser(private val serviceManager: BGServiceManager) {
 
         reader.forEachLine {
             if (cancelled) throw Exception("Cancelled.")
-
-            val lineColumns = it.split("\t").dropLastWhile {  it.isEmpty() }.toTypedArray()
+            val lineColumns = it.split("\t").dropLastWhile { it.isEmpty() }.toTypedArray()
             if (lineColumns.size != returnType.paremeterCount) throw Exception("Number of columns in data array must match the parameter count of the query type!")
 
             if (returnType == BGReturnType.RELATION_TRIPLE) {
@@ -143,9 +178,11 @@ class BGParser(private val serviceManager: BGServiceManager) {
                 val relationUri = lineColumns[1].replace("\"", "")
                 val toNodeUri = lineColumns[2].replace("\"", "")
 
-                var fromNode = server.getNodeFromCache(BGNode(fromNodeUri))
-                var toNode = server.getNodeFromCache(BGNode(toNodeUri))
-                //val relationType = server.cache.relationTypeMap.get(relationUri) ?: throw NullPointerException("RelationType not found for this URI!")
+                var fromNode = server.getNodeFromCacheOrNetworks(BGNode(fromNodeUri))
+                if (!fromNode.isLoaded) unloadedNodes.add(fromNode)
+                var toNode = server.getNodeFromCacheOrNetworks(BGNode(toNodeUri))
+                if (!toNode.isLoaded) unloadedNodes.add(toNode)
+
                 val relationType = server.cache.relationTypeMap.get(relationUri) ?: BGRelationType(relationUri, relationUri, 0)
                 val relation = BGRelation(fromNode, relationType, toNode)
                 relationType.defaultGraphName?.let {
@@ -160,10 +197,12 @@ class BGParser(private val serviceManager: BGServiceManager) {
                 val toNodeUri = lineColumns[3].replace("\"", "")
                 val toNodeName = lineColumns[4].replace("\"", "")
 
-                var fromNode = server.getNodeFromCache(BGNode(fromNodeUri))
-                fromNode.name = fromNodeName
-                var toNode = server.getNodeFromCache(BGNode(toNodeUri))
-                toNode.name = toNodeName
+                var fromNode = server.getNodeFromCacheOrNetworks(BGNode(fromNodeUri))
+                if (!fromNode.isLoaded) unloadedNodes.add(fromNode)
+                //fromNode.name = fromNodeName
+                var toNode = server.getNodeFromCacheOrNetworks(BGNode(toNodeUri))
+                if (!toNode.isLoaded) unloadedNodes.add(toNode)
+                //toNode.name = toNodeName
                 val relationType = server.cache.relationTypeMap.get(relationUri)
 
                 // Note: Will ignore relation types it doesn't already know of.
@@ -174,8 +213,7 @@ class BGParser(private val serviceManager: BGServiceManager) {
                     }
                     returnData.relationsData.add(relation)
                 }
-            }
-            else if (returnType == BGReturnType.RELATION_TRIPLE_PUBMED) {
+            } else if (returnType == BGReturnType.RELATION_TRIPLE_PUBMED) {
                 val fromNodeUri = lineColumns[0].replace("\"", "")
                 val fromNodeName = lineColumns[1].replace("\"", "")
                 val relationUri = lineColumns[2].replace("\"", "")
@@ -183,9 +221,11 @@ class BGParser(private val serviceManager: BGServiceManager) {
                 val toNodeName = lineColumns[4].replace("\"", "")
                 val pubmedUri = lineColumns[5].replace("\"", "")
 
-                var fromNode = server.getNodeFromCache(BGNode(fromNodeUri))
+                var fromNode = server.getNodeFromCacheOrNetworks(BGNode(fromNodeUri))
+                if (!fromNode.isLoaded) unloadedNodes.add(fromNode)
+                var toNode = server.getNodeFromCacheOrNetworks(BGNode(toNodeUri))
+                if (!toNode.isLoaded) unloadedNodes.add(toNode)
                 fromNode.name = fromNodeName
-                var toNode = server.getNodeFromCache(BGNode(toNodeUri))
                 toNode.name = toNodeName
                 val relationType = server.cache.relationTypeMap.get(relationUri)
 
@@ -201,6 +241,11 @@ class BGParser(private val serviceManager: BGServiceManager) {
             }
         }
         returnData.relationsData.addAll(relationSet)
+
+        val numberOfRelations = returnData.relationsData.count()
+        println(unloadedNodes.size.toString() + " nodes missing.")
+
+        returnData.unloadedNodes = unloadedNodes
         completion(returnData)
     }
 }

@@ -24,7 +24,7 @@ class BGFindAllRelationsForNodeQuery(serviceManager: BGServiceManager, val nodeU
             val reader = BufferedReader(StringReader(data))
             client.close()
             taskMonitor?.setTitle("Loading results...")
-            parser.parseRelations(reader, type) {
+            parser.parseRelations(reader, type, taskMonitor) {
                 returnData = it as? BGReturnData ?: throw Exception("Invalid return data!")
                 runCompletions()
             }

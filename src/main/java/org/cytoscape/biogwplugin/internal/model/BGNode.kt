@@ -6,11 +6,17 @@ import org.cytoscape.model.CyNode
  * Created by sholmas on 26/05/2017.
  */
 
-enum class BGNodeType { Protein, Gene, GO, Taxon, Any }
+enum class BGNodeType(val paremeterType: String) {
+    Protein("Protein"),
+    Gene("Gene"),
+    GO("GO annotation"),
+    Taxon("Taxon"),
+    Any("Undefined type") }
 
 open class BGNode {
 
     val uri: String
+    var isLoaded: Boolean = false
 
     constructor(uri: String) {
         this.uri = uri

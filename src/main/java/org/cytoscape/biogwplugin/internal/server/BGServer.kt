@@ -27,12 +27,12 @@ class BGServer(private val serviceManager: BGServiceManager) {
         var relationTypeMap = HashMap<String, BGRelationType>()
 
         val relationTypeDescriptions: LinkedHashMap<String, BGRelationType> get() {
-                val relationTypes = LinkedHashMap<String, BGRelationType>()
-                val relations = relationTypeMap.values.sortedBy { it.number }
-                for (relation in relations) {
-                    relationTypes.put(relation.description, relation)
-                }
-                return relationTypes
+            val relationTypes = LinkedHashMap<String, BGRelationType>()
+            val relations = relationTypeMap.values.sortedBy { it.number }
+            for (relation in relations) {
+                relationTypes.put(relation.description, relation)
+            }
+            return relationTypes
         }
 
         var queryTemplates = HashMap<String, QueryTemplate>()
@@ -61,32 +61,19 @@ class BGServer(private val serviceManager: BGServiceManager) {
         loadXMLFileFromServer()
     }
 
-    fun getNodeFromCache(newNode: BGNode): BGNode {
+    fun getNodeFromCacheOrNetworks(newNode: BGNode): BGNode {
         // Check if the node already exists in the cache.
         var node = cache.nodeCache[newNode.uri]
 
         if (node == null) {
             // If it doesn't exist, add the new node.
             node = newNode
-            cache.nodeCache.put(node.uri, node)
 
-            if ((newNode.description == null) or (newNode.name == null)) {
-                // Query the server for more info about this node.
-                if (node.uri.startsWith("http")) {
-                getNodeFromServer(node.uri) {
-                    if (it != null) {
-                        newNode.name = it.name
-                        newNode.description = it.description
-                        for (cyNode in newNode.cyNodes) {
-                            it.name?.let {
-                                cyNode.setName(it, cyNode.networkPointer)
-                            }
-                            it.description?.let {
-                                cyNode.setDescription(it, cyNode.networkPointer)
-                            }
-                        }
-                    }
-                    }
+            if ((node.description == null) or (node.name == null)) {
+                val nodeFromNetwork = getNodeDataFromNetworks(node.uri)
+                if (nodeFromNetwork != null) {
+                    node = nodeFromNetwork
+                    println("CyNetwork hit: "+node.name)
                 }
             }
         } else {
@@ -95,25 +82,46 @@ class BGServer(private val serviceManager: BGServiceManager) {
         return node
     }
 
-
-    fun getNodeFromUri(uri: String, completion: (BGNode?) -> Unit) {
-        var node = cache.nodeCache.get(uri)
-        if (node != null) {
-            completion(node)
-            return
-        }
-        for (network in serviceManager.networkManager.networkSet) {
-            node = getNodeFromCyNetwork(uri, network)
-            if (node != null) {
-                cache.addNode(node)
-                completion(node)
+    fun loadDataForNode(node: BGNode) {
+        if ((node.description == null) or (node.name == null)) {
+            // Query the server for more info about this node.
+            if (!node.uri.startsWith("http")) {
                 return
             }
+            getNodeFromServer(node.uri) {
+                if (it != null) {
+                    println("Cache miss: "+it.name)
+                    node.name = it.name
+                    node.description = it.description
+                    node.isLoaded = true
+                    cache.addNode(node)
+                    for (cyNode in node.cyNodes) {
+                        it.name?.let {
+                            cyNode.setName(it, cyNode.networkPointer)
+                        }
+                        it.description?.let {
+                            cyNode.setDescription(it, cyNode.networkPointer)
+                        }
+                    }
+                }
+            }
+        } else {
+            cache.addNode(node)
+            node.isLoaded = true
         }
-        // Missed both our cache and the data stored in the CyNetwork. Seems like we have to fetch it from Biogateway.
-        getNodeFromServer(uri) {
-            completion(it)
+    }
+
+
+    private fun getNodeDataFromNetworks(uri: String): BGNode? {
+        for (network in serviceManager.networkManager.networkSet) {
+            val node = getNodeFromCyNetwork(uri, network)
+            if (node != null) {
+                cache.addNode(node)
+                node.isLoaded = true
+                return node
+            }
         }
+        return null
     }
 
     private fun  getNodeFromServer(uri: String, completion: (BGNode?) -> Unit) {
@@ -134,14 +142,17 @@ class BGServer(private val serviceManager: BGServiceManager) {
         }
     }
 
-    fun getNodeFromCyNetwork(uri: String, network: CyNetwork): BGNode? {
+    private fun getNodeFromCyNetwork(uri: String, network: CyNetwork): BGNode? {
         val nodeTable = network.defaultNodeTable
-        val nodes = networkBuilder.getCyNodesWithValue(network, nodeTable, "identifier uri", uri)
+        val nodes = networkBuilder.getCyNodesWithValue(network, nodeTable, Constants.BG_FIELD_IDENTIFIER_URI, uri)
 
-        if (nodes.size == 1) {
-            val cyNode = nodes.iterator().next() // Get the first (next) node.
-            val nodeName = nodeTable.getRow(cyNode.suid).get("name", String::class.java)
-
+        for (cyNode in nodes) {
+            val nodeName = nodeTable.getRow(cyNode.suid).get(Constants.BG_FIELD_NAME, String::class.java)
+            val description = nodeTable.getRow(cyNode.suid).get(Constants.BG_FIELD_DESCRIPTION, String::class.java)
+            if (nodeName != null && description != null) {
+                val node = BGNode(uri, nodeName, description)
+                return node
+            }
         }
         return null
     }
