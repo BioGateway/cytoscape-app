@@ -263,26 +263,17 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                     BGLoadUnloadedNodes.createAndRun(serviceManager, data.unloadedNodes) {
                         setRelationTableData(data.relationsData)
                         view.tabPanel.selectedIndex = 3
-                        fightForFocus()
+                        Utility.fightForFocus(view.mainFrame)
                     }
                     return@addCompletion
                 } else {
                     view.tabPanel.selectedIndex = 3 // Open the result tab.
-                    fightForFocus()
+                    Utility.fightForFocus(view.mainFrame)
                 }
             }
             val iterator = TaskIterator(query)
             serviceManager.taskManager.execute(iterator)
 
-        }
-    }
-
-    private fun fightForFocus() {
-        EventQueue.invokeLater {
-            view.mainFrame.toFront()
-            view.mainFrame.isAlwaysOnTop = true
-            view.mainFrame.isAlwaysOnTop = false
-            view.mainFrame.requestFocus()
         }
     }
 
@@ -423,7 +414,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                     val node = it
                     // Set the value of the field to the uri of the node found and selected.
                     optionalUriComponent.textField.text = node.uri
-                    fightForFocus()
+                    Utility.fightForFocus(view.mainFrame)
                 })
             }
             serviceManager.taskManager.execute(TaskIterator(query))
@@ -540,7 +531,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                 view.tabPanel.selectedIndex = 3 // Open the result tab.
 
                 // Try the darnest to make the window appear on top!
-                fightForFocus()
+                Utility.fightForFocus(view.mainFrame)
             }
             val iterator = TaskIterator(query)
             serviceManager.taskManager.execute(iterator)

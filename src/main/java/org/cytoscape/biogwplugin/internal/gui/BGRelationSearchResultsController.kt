@@ -3,24 +3,32 @@ package org.cytoscape.biogwplugin.internal.gui
 import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.model.BGRelation
 import org.cytoscape.biogwplugin.internal.util.Constants
+import org.cytoscape.biogwplugin.internal.util.Utility
 import org.cytoscape.model.CyNetwork
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
+import java.util.*
+import javax.swing.RowFilter
 import javax.swing.table.DefaultTableModel
+import javax.swing.table.TableRowSorter
 
 class BGRelationSearchResultsController(val serviceManager: BGServiceManager, private val relationsFound: ArrayList<BGRelation>, val columnNames: Array<String>, val network: CyNetwork) : ActionListener {
 
     private val view: BGRelationSearchResultsView = BGRelationSearchResultsView(this)
 
     init {
+        val model = view.resultTable.model as DefaultTableModel
+        model.setColumnIdentifiers(columnNames)
 
-        val table = view.resultTable.model as DefaultTableModel
-        table.setColumnIdentifiers(columnNames)
+        showAllResults()
+        Utility.fightForFocus(view.mainFrame)
+     }
 
+    fun showAllResults() {
+        val model = view.resultTable.model as DefaultTableModel
         for (result in relationsFound) {
-            table.addRow(result.nameStringArray())
+            model.addRow(result.nameStringArray())
         }
-        view.mainFrame.toFront()
     }
 
 
@@ -45,6 +53,10 @@ class BGRelationSearchResultsController(val serviceManager: BGServiceManager, pr
         serviceManager.server.networkBuilder.addRelationsToNetwork(network, relations)
     }
 
+    private fun filterResults() {
+        val filterText = view.filterTextField.text
+        val model = view.resultTable.model as DefaultTableModel
+    }
 
 
     override fun actionPerformed(e: ActionEvent?) {
@@ -55,8 +67,12 @@ class BGRelationSearchResultsController(val serviceManager: BGServiceManager, pr
             if (e.actionCommand == BGRelationSearchResultsView.ACTION_IMPORT_TO_EXISTING) {
                 importToExisting()
             }
+            if (e.source == view.filterTextField) {
+                filterResults()
+            }
         }
     }
+
 
 
 

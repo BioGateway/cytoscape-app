@@ -1,14 +1,20 @@
 package org.cytoscape.biogwplugin.internal.gui;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class BGRelationSearchResultsView {
 
     public static String ACTION_IMPORT = "import nodes";
     public static String ACTION_IMPORT_TO_EXISTING = "import relations to exsisting nodes";
-
+    public static String ACTION_FILTER_RESULTS = "filter results";
 
     private final ActionListener listener;
     private JFrame mainFrame;
@@ -16,11 +22,12 @@ public class BGRelationSearchResultsView {
     private JButton importButton;
     private JTable resultTable;
     private JButton importToExisting;
-
+    private JTextField filterTextField;
+    private TableRowSorter<TableModel> sorter;
 
     public BGRelationSearchResultsView(ActionListener listener) {
         this.listener = listener;
-        JFrame frame = new JFrame("Biogateway Query Builder");
+        JFrame frame = new JFrame("Biogateway Query Results");
         this.mainFrame = frame;
         frame.setPreferredSize(new Dimension(600, 400));
         frame.setContentPane(this.panel1);
@@ -28,6 +35,8 @@ public class BGRelationSearchResultsView {
         frame.pack();
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
+        sorter = new TableRowSorter<TableModel>((DefaultTableModel) resultTable.getModel());
+        resultTable.setRowSorter(sorter);
     }
 
     private void setupUI() {
@@ -35,6 +44,27 @@ public class BGRelationSearchResultsView {
         importButton.addActionListener(listener);
         importToExisting.setActionCommand(ACTION_IMPORT_TO_EXISTING);
         importToExisting.addActionListener(listener);
+        filterTextField.setPreferredSize(new Dimension(200, 20));
+        filterTextField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                filterRows();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                filterRows();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                filterRows();
+            }
+        });
+    }
+
+    private void filterRows() {
+        sorter.setRowFilter(RowFilter.regexFilter(filterTextField.getText()));
     }
 
     public JFrame getMainFrame() {
@@ -47,6 +77,10 @@ public class BGRelationSearchResultsView {
 
     public JTable getResultTable() {
         return resultTable;
+    }
+
+    public JTextField getFilterTextField() {
+        return filterTextField;
     }
 
     {
@@ -79,8 +113,16 @@ public class BGRelationSearchResultsView {
         final JScrollPane scrollPane1 = new JScrollPane();
         panel1.add(scrollPane1, BorderLayout.CENTER);
         resultTable = new JTable();
-        resultTable.setAutoCreateRowSorter(true);
+        resultTable.setAutoCreateRowSorter(false);
         scrollPane1.setViewportView(resultTable);
+        final JPanel panel3 = new JPanel();
+        panel3.setLayout(new FlowLayout(FlowLayout.RIGHT, 5, 5));
+        panel1.add(panel3, BorderLayout.NORTH);
+        final JLabel label1 = new JLabel();
+        label1.setText("Filter results:");
+        panel3.add(label1);
+        filterTextField = new JTextField();
+        panel3.add(filterTextField);
     }
 
     /**

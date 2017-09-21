@@ -1,10 +1,11 @@
 package org.cytoscape.biogwplugin.internal.util
 
+import java.awt.EventQueue
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.MalformedURLException
 import java.net.URL
-
+import javax.swing.JFrame
 
 
 fun String.sanitizeParameter(): String {
@@ -23,6 +24,16 @@ object Utility {
         fun sanitizeParameter(parameter: String): String {
             return parameter.sanitizeParameter()
         }
+
+    fun fightForFocus(frame: JFrame) {
+        EventQueue.invokeLater {
+            frame.toFront()
+            frame.isAlwaysOnTop = true
+            frame.isAlwaysOnTop = false
+            frame.requestFocus()
+        }
+    }
+
 
         fun validateURI(uri: String): Boolean {
 

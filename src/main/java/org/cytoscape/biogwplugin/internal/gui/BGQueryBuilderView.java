@@ -51,6 +51,7 @@ public class BGQueryBuilderView implements ChangeListener {
     private JButton removeLineButton;
     private JCheckBox filterRelationsToExistingCheckBox;
 
+
     public BGQueryBuilderView(ActionListener listener) {
         this.listener = listener;
         JFrame frame = new JFrame("Biogateway Query Builder");

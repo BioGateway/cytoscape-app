@@ -35,11 +35,28 @@
           <component id="5b873" class="javax.swing.JTable" binding="resultTable">
             <constraints/>
             <properties>
-              <autoCreateRowSorter value="true"/>
+              <autoCreateRowSorter value="false"/>
             </properties>
           </component>
         </children>
       </scrollpane>
+      <grid id="2d654" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="2">
+        <constraints border-constraint="North"/>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <component id="e9026" class="javax.swing.JLabel">
+            <constraints/>
+            <properties>
+              <text value="Filter results:"/>
+            </properties>
+          </component>
+          <component id="2fb43" class="javax.swing.JTextField" binding="filterTextField">
+            <constraints/>
+            <properties/>
+          </component>
+        </children>
+      </grid>
     </children>
   </grid>
 </form>
