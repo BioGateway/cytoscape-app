@@ -75,10 +75,8 @@ object Utility {
         val stream = url?.openStream()
         if (stream != null) {
             val reader = BufferedReader(InputStreamReader(stream))
-            println(reader.readLine())
             val countLine = reader.readLine()
             val count = countLine.toIntOrNull()
-            println(count)
             return count
         }
         return null
