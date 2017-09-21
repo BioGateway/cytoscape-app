@@ -50,6 +50,8 @@ public class BGQueryBuilderView implements ChangeListener {
     private JButton addLineButton;
     private JCheckBox filterRelationsToExistingCheckBox;
     private JButton parseSPARQLButton;
+    private JButton loadQueryButton;
+    private JButton saveQueryButton;
 
 
     public BGQueryBuilderView(ActionListener listener) {
@@ -94,6 +96,10 @@ public class BGQueryBuilderView implements ChangeListener {
         generateSPARQLButton.setActionCommand(Companion.getACTION_GENERATE_SPARQL());
         parseSPARQLButton.addActionListener(listener);
         parseSPARQLButton.setActionCommand(Companion.getACTION_PARSE_SPARQL());
+        loadQueryButton.addActionListener(listener);
+        loadQueryButton.setActionCommand(Companion.getACTION_LOAD_SPARQL());
+        saveQueryButton.addActionListener(listener);
+        saveQueryButton.setActionCommand(Companion.getACTION_WRITE_SPARQL());
     }
 
     public void generateParameterFields(QueryTemplate query) {
@@ -384,6 +390,12 @@ public class BGQueryBuilderView implements ChangeListener {
         generateSPARQLButton = new JButton();
         generateSPARQLButton.setText("Generate SPARQL");
         panel2.add(generateSPARQLButton);
+        loadQueryButton = new JButton();
+        loadQueryButton.setText("Load Query");
+        panel2.add(loadQueryButton);
+        saveQueryButton = new JButton();
+        saveQueryButton.setText("Save Query");
+        panel2.add(saveQueryButton);
         runChainQueryButton = new JButton();
         runChainQueryButton.setText("Run Query");
         panel2.add(runChainQueryButton);

@@ -2,9 +2,13 @@ package org.cytoscape.biogwplugin.internal.gui
 
 import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.model.BGRelationType
+import org.cytoscape.biogwplugin.internal.query.BGQuery
 import java.awt.Dimension
 import java.awt.FlowLayout
+import java.io.File
+import java.net.URI
 import javax.swing.*
+import javax.swing.filechooser.FileFilter
 
 
 class BGMultiQueryLine(val serviceManager: BGServiceManager, val fromTextField: JTextField, val relationTypeComboBox: JComboBox<String>, val toTextField: JTextField, val variableManager: BGQueryVariableManager): JPanel() {
@@ -133,7 +137,7 @@ class BGQueryVariableManager() {
         return null
     }
 
-    fun getUsedVariables(): Array<String> {
+    private fun getUsedVariables(): Array<String> {
         return usedVariables.values.toHashSet().sorted().toTypedArray()
     }
 
@@ -149,7 +153,7 @@ class BGQueryVariableManager() {
         updateComboBoxModels()
     }
 
-    fun updateComboBoxModels() {
+    private fun updateComboBoxModels() {
         val comboBoxes = usedVariables.keys + URIcomboBoxes
         for (comboBox in comboBoxes) {
             val model = comboBox.model as DefaultComboBoxModel<String>
@@ -201,16 +205,7 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager): JPanel() {
     var queryLines = ArrayList<BGMultiQueryLine>()
 
 
-    fun generateRelationTypeList(): LinkedHashMap<String, BGRelationType> {
-        val relationTypes = LinkedHashMap<String, BGRelationType>()
-        val relations = serviceManager.cache.relationTypeMap.values.sortedBy { it.number }
-        for (relation in relations) {
-            relationTypes.put(relation.description, relation)
-        }
-        return relationTypes
-    }
-
-    fun addQueryLine() {
+    private fun createQueryLine(): BGMultiQueryLine {
         val fromField = JTextField()
         fromField.preferredSize = Dimension(290, 20)
         val toField = JTextField()
@@ -229,8 +224,62 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager): JPanel() {
         }
         deleteButton.toolTipText = deleteButtonTooltipText
         queryLine.add(deleteButton)
+        return queryLine
+    }
+
+    fun addQueryLine() {
+        val queryLine = createQueryLine()
         queryLines.add(queryLine)
         this.add(queryLine)
+    }
+
+    private fun addQueryLine(graph: BGSPARQLParser.BGQueryGraph) {
+        val queryLine = createQueryLine()
+
+        when (graph.from.type) {
+            BGSPARQLParser.BGVariableType.URI -> {
+                queryLine.fromUri = graph.from.value
+                queryLine.fromComboBox.selectedItem = "URI:"
+            }
+            BGSPARQLParser.BGVariableType.Variable -> {
+                queryLine.fromComboBox.selectedItem = graph.from.value
+            }
+            BGSPARQLParser.BGVariableType.INVALID -> throw Exception("Unable to parse invalid values!")
+        }
+
+        if (graph.relation.type != BGSPARQLParser.BGVariableType.URI) throw Exception("Relation type cannot be a variable!")
+
+        val relation = serviceManager.cache.relationTypeMap.get(graph.relation.value) ?: throw Exception("Relation name not found!")
+        queryLine.relationTypeComboBox.selectedItem = relation.description
+
+        when (graph.to.type) {
+            BGSPARQLParser.BGVariableType.URI -> {
+                queryLine.toUri = graph.to.value
+                queryLine.toComboBox.selectedItem = "URI:"
+            }
+            BGSPARQLParser.BGVariableType.Variable -> {
+                queryLine.toComboBox.selectedItem = graph.to.value
+            }
+            BGSPARQLParser.BGVariableType.INVALID -> throw Exception("Unable to parse invalid values!")
+        }
+
+        queryLines.add(queryLine)
+        this.add(queryLine)
+    }
+
+    private fun removeAllQueryLines() {
+        for (line in queryLines) {
+            this.remove(line)
+        }
+        queryLines.clear()
+        this.topLevelAncestor.repaint()
+    }
+
+    fun loadQueryGraphs(queryGraphs: Collection<BGSPARQLParser.BGQueryGraph>) {
+        removeAllQueryLines()
+        for (graph in queryGraphs) {
+            addQueryLine(graph)
+        }
     }
 
     fun removeQueryLine(queryLine: BGMultiQueryLine) {

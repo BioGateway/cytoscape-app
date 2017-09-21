@@ -11,19 +11,23 @@ import org.cytoscape.biogwplugin.internal.util.Utility
 import org.cytoscape.biogwplugin.internal.util.sanitizeParameter
 import org.cytoscape.model.CyNetwork
 import org.cytoscape.work.TaskIterator
-
-import javax.swing.*
-import javax.swing.event.ChangeListener
-import javax.swing.table.DefaultTableModel
-import java.awt.*
+import java.awt.FlowLayout
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
+import java.io.File
 import java.util.ArrayList
+import java.util.prefs.Preferences
+import javax.swing.*
 import javax.swing.event.ChangeEvent
+import javax.swing.event.ChangeListener
+import javax.swing.filechooser.FileFilter
+import javax.swing.table.DefaultTableModel
+import kotlin.collections.Collection
+import kotlin.collections.HashMap
+import kotlin.collections.set
+import javax.swing.JFileChooser
 
-/**
- * Created by sholmas on 23/05/2017.
- */
+
 
 
 class BGOptionalURIField(val textField: JTextField, val listener: ActionListener): JPanel() {
@@ -84,6 +88,8 @@ private class BGRelationResultRow(val relation: BGRelation): BGResultRow()
 class BGComponentButton(label: String, val associatedComponent: JComponent): JButton(label)
 
 class BGQueryBuilderController(private val serviceManager: BGServiceManager) : ActionListener, ChangeListener {
+
+    private var preferences = Preferences.userRoot().node(javaClass.name)
 
     private val view: BGQueryBuilderView
 
@@ -180,8 +186,8 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                                 throw Exception("Invalid optionalUriField combobox value! Must be Gene or Protein!")
                             }
                         }
-                        val uri = baseUri + uri
-                        parameter.value = "<"+uri+">"
+                        val parameterUri = baseUri + uri
+                        parameter.value = "<"+parameterUri+">"
                     }
                 }
                 else -> {
@@ -262,12 +268,12 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                 if (data is BGReturnRelationsData) {
                     BGLoadUnloadedNodes.createAndRun(serviceManager, data.unloadedNodes) {
                         setRelationTableData(data.relationsData)
-                        view.tabPanel.selectedIndex = 3
+                        view.tabPanel.selectedIndex = TAB_PANEL_RESULTS_INDEX
                         Utility.fightForFocus(view.mainFrame)
                     }
                     return@addCompletion
                 } else {
-                    view.tabPanel.selectedIndex = 3 // Open the result tab.
+                    view.tabPanel.selectedIndex = TAB_PANEL_RESULTS_INDEX // Open the result tab.
                     Utility.fightForFocus(view.mainFrame)
                 }
             }
@@ -374,17 +380,16 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         return null
     }
 
-    private fun generateSPARQLCode() {
-        if (view.tabPanel.selectedIndex == 0) {
+    private fun generateSPARQLCode(): String? {
             val errorText = validateMultiQuery()
             if (errorText != null) {
                 JOptionPane.showMessageDialog(view.mainFrame, errorText)
             } else {
                 val queryString = view.multiQueryPanel.generateSPARQLQuery()
                 view.sparqlTextArea.text = queryString
-                view.tabPanel.selectedIndex = 2
+                return queryString
             }
-        }
+        return null
     }
 
     private fun validateMultiQuery(): String? {
@@ -422,34 +427,6 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                 })
             }
             serviceManager.taskManager.execute(TaskIterator(query))
-        }
-    }
-
-
-    override fun actionPerformed(e: ActionEvent) {
-        when (e.actionCommand) {
-            ACTION_OPEN_XML_FILE -> openXMLFile()
-            ACTION_CREATE_QUERY -> createQuery()
-            ACTION_RUN_QUERY -> runQuery()
-            ACTION_CHANGED_QUERY -> updateSelectedQuery()
-            ACTION_IMPORT_TO_SELECTED -> {
-                val network = serviceManager.applicationManager.currentNetwork
-                importSelectedResults(network, currentQuery!!.returnType)
-            }
-            ACTION_IMPORT_TO_NEW -> importSelectedResults(null, currentQuery!!.returnType)
-            ACTION_ADD_MULTIQUERY_LINE -> addMultiQueryLine()
-            ACTION_RUN_MULTIQUERY -> runMultiQuery()
-            ACTION_GENERATE_SPARQL -> generateSPARQLCode()
-            ACTION_LOOKUP_NODE_URI -> {
-                val button = e.source as? BGComponentButton ?: throw Exception("Expected BGComponentButton")
-                lookupNodeUri(button)
-            }
-            ACTION_FILTER_EDGES_TO_EXISTING -> {
-                val box = e.source as? JCheckBox ?: throw Exception("Expected JCheckBox!")
-                filterRelationsToNodesInCurrentNetwork(box.isSelected)
-            }
-            else -> {
-            }
         }
     }
 
@@ -504,9 +481,102 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         }
     }
 
+    private fun parseSPARQLCode() {
+
+        val sparqlCode = view.sparqlTextArea.text
+        if (sparqlCode.isEmpty()) return
+
+        val queryGraphs = BGSPARQLParser.parseSPARQLCode(sparqlCode, serviceManager.cache.relationTypeMap)
+
+        if (queryGraphs.isEmpty()) {
+            JOptionPane.showMessageDialog(view.mainFrame, "Unable to parse any queries from current SPARQL.")
+        }
+        view.multiQueryPanel.loadQueryGraphs(queryGraphs)
+        view.tabPanel.selectedIndex = TAB_PANEL_BUILD_QUERY_INDEX
+    }
+
     override fun stateChanged(e: ChangeEvent?) {
         //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
+
+    private fun loadSPARQLFromFile() {
+        val file = openFileChooser() ?: return
+        val sparqlCode = file.readText()
+
+        val queryGraphs = BGSPARQLParser.parseSPARQLCode(sparqlCode, serviceManager.cache.relationTypeMap)
+        view.multiQueryPanel.loadQueryGraphs(queryGraphs)
+    }
+
+    private fun saveSPARQLToFile() {
+        val sparqlCode = generateSPARQLCode() ?: return
+        val file = saveFileChooser() ?: return
+        file.writeText(sparqlCode)
+    }
+
+    private fun saveFileChooser(): File? {
+        val lastDir = preferences.get(Constants.BG_PREFERENCES_LAST_FOLDER, File(".").absolutePath)
+
+        val chooser = when (lastDir != null) {
+            true -> JFileChooser(lastDir)
+            false -> JFileChooser()
+        }
+
+        val filter = object : FileFilter() {
+            override fun getDescription(): String {
+                return "Biogateway SPARQL File"
+            }
+
+            override fun accept(f: File): Boolean {
+                if (f.name.toLowerCase().endsWith(Constants.BG_FILE_EXTENSION)) return true
+                if (f.isDirectory) return true
+                return false
+            }
+        }
+        chooser.fileFilter = filter
+        val choice = chooser.showSaveDialog(view.mainFrame)
+        if (choice == JFileChooser.APPROVE_OPTION) {
+            preferences.put(Constants.BG_PREFERENCES_LAST_FOLDER, chooser.selectedFile.parent)
+            val path = chooser.selectedFile.absolutePath
+            if (!path.endsWith("."+Constants.BG_FILE_EXTENSION)) {
+                val file = File(path + "."+ Constants.BG_FILE_EXTENSION)
+                return file
+            }
+            return chooser.selectedFile
+        }
+        return null
+    }
+
+
+    private fun openFileChooser(): File? {
+        val lastDir = preferences.get(Constants.BG_PREFERENCES_LAST_FOLDER, File(".").absolutePath)
+
+        val chooser = when (lastDir != null) {
+            true -> JFileChooser(lastDir)
+            false -> JFileChooser()
+        }
+
+        val filter = object : FileFilter() {
+            override fun getDescription(): String {
+                return "Biogateway SPARQL File"
+            }
+
+            override fun accept(f: File): Boolean {
+                if (f.name.toLowerCase().endsWith(Constants.BG_FILE_EXTENSION)) return true
+                if (f.isDirectory) return true
+                return false
+            }
+        }
+        chooser.fileFilter = filter
+        val choice = chooser.showOpenDialog(view.mainFrame)
+        if (choice == JFileChooser.APPROVE_OPTION) {
+            preferences.put(Constants.BG_PREFERENCES_LAST_FOLDER, chooser.selectedFile.parent)
+            return chooser.selectedFile
+        }
+        return null
+    }
+
+
+
 
     private fun runMultiQuery() {
 
@@ -531,7 +601,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
 
                 setRelationTableData(data.relationsData)
 
-                view.tabPanel.selectedIndex = 3 // Open the result tab.
+                view.tabPanel.selectedIndex = TAB_PANEL_RESULTS_INDEX // Open the result tab.
 
                 // Try the darnest to make the window appear on top!
                 Utility.fightForFocus(view.mainFrame)
@@ -549,6 +619,38 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         view.addMultiQueryLine();
     }
 
+    override fun actionPerformed(e: ActionEvent) {
+        when (e.actionCommand) {
+            ACTION_OPEN_XML_FILE -> openXMLFile()
+            ACTION_CREATE_QUERY -> createQuery()
+            ACTION_RUN_QUERY -> runQuery()
+            ACTION_CHANGED_QUERY -> updateSelectedQuery()
+            ACTION_IMPORT_TO_SELECTED -> {
+                val network = serviceManager.applicationManager.currentNetwork
+                importSelectedResults(network, currentQuery!!.returnType)
+            }
+            ACTION_IMPORT_TO_NEW -> importSelectedResults(null, currentQuery!!.returnType)
+            ACTION_ADD_MULTIQUERY_LINE -> addMultiQueryLine()
+            ACTION_RUN_MULTIQUERY -> runMultiQuery()
+            ACTION_GENERATE_SPARQL -> {
+                if (generateSPARQLCode() != null) view.tabPanel.selectedIndex = TAB_PANEL_SPARQL_INDEX
+            }
+            ACTION_PARSE_SPARQL -> parseSPARQLCode()
+            ACTION_WRITE_SPARQL -> saveSPARQLToFile()
+            ACTION_LOAD_SPARQL -> loadSPARQLFromFile()
+            ACTION_LOOKUP_NODE_URI -> {
+                val button = e.source as? BGComponentButton ?: throw Exception("Expected BGComponentButton")
+                lookupNodeUri(button)
+            }
+            ACTION_FILTER_EDGES_TO_EXISTING -> {
+                val box = e.source as? JCheckBox ?: throw Exception("Expected JCheckBox!")
+                filterRelationsToNodesInCurrentNetwork(box.isSelected)
+            }
+            else -> {
+            }
+        }
+    }
+
 
     companion object {
         public val SERVER_PATH = "http://www.semantic-systems-biology.org/biogateway/endpoint"
@@ -561,6 +663,8 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         public val ACTION_IMPORT_TO_NEW = "importToNewNetwork"
         public val ACTION_GENERATE_SPARQL = "generateSPARQL"
         public val ACTION_PARSE_SPARQL = "parseSPARQL"
+        public val ACTION_LOAD_SPARQL = "loadSPARQLFromFile"
+        public val ACTION_WRITE_SPARQL = "writeSPARQLToFile"
         public val ACTION_RUN_MULTIQUERY = "runMultiQuery"
         public val ACTION_ADD_MULTIQUERY_LINE = "addMultiRelation"
         public val CHANGE_TAB_CHANGED = "tabbedPaneHasChanged"
@@ -568,5 +672,9 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         public val ONTOLOGY_PREFIX = "http://purl.obolibrary.org/obo/"
         public val ACTION_LOOKUP_NODE_URI = "Lookup Node Uri from name"
         public val ACTION_FILTER_EDGES_TO_EXISTING = "filter relations to exsisting nodes"
+        val TAB_PANEL_BUILD_QUERY_INDEX = 0
+        val TAB_PANEL_PREDEFINED_INDEX = 1
+        val TAB_PANEL_SPARQL_INDEX = 2
+        val TAB_PANEL_RESULTS_INDEX = 3
     }
 }

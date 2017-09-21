@@ -36,6 +36,18 @@
                       <text value="Generate SPARQL"/>
                     </properties>
                   </component>
+                  <component id="6eb46" class="javax.swing.JButton" binding="loadQueryButton" default-binding="true">
+                    <constraints/>
+                    <properties>
+                      <text value="Load Query"/>
+                    </properties>
+                  </component>
+                  <component id="61d45" class="javax.swing.JButton" binding="saveQueryButton" default-binding="true">
+                    <constraints/>
+                    <properties>
+                      <text value="Save Query"/>
+                    </properties>
+                  </component>
                   <component id="55426" class="javax.swing.JButton" binding="runChainQueryButton">
                     <constraints/>
                     <properties>
