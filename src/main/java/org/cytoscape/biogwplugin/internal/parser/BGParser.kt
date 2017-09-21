@@ -98,18 +98,14 @@ class BGParser(private val serviceManager: BGServiceManager) {
             var fromNodeIndex = 0
             while (fromNodeIndex < lineColumns.size-2) {
                 val fromNodeUri = lineColumns[fromNodeIndex+0].replace("\"", "")
-                //val fromNodeName = lineColumns[fromNodeIndex+1].replace("\"", "")
                 val relationUri = lineColumns[fromNodeIndex+1].replace("\"", "")
                 val toNodeUri = lineColumns[fromNodeIndex+2].replace("\"", "")
-                //val toNodeName = lineColumns[fromNodeIndex+4].replace("\"", "")
                 fromNodeIndex += 3
 
                 var fromNode = server.getNodeFromCacheOrNetworks(BGNode(fromNodeUri))
                 if (!fromNode.isLoaded) unloadedNodes.add(fromNode)
-                //fromNode.name = fromNodeName
                 var toNode = server.getNodeFromCacheOrNetworks(BGNode(toNodeUri))
                 if (!toNode.isLoaded) unloadedNodes.add(toNode)
-                //toNode.name = toNodeName
                 val relationType = server.cache.relationTypeMap.get(relationUri)
 
                 // Note: Will ignore relation types it doesn't already know of.
@@ -164,14 +160,18 @@ class BGParser(private val serviceManager: BGServiceManager) {
 
         val server = serviceManager.server
 
-        val columnNames = reader.readLine().split("\t").dropLastWhile { it.isEmpty() }.map { it.replace("\"", "") }.toTypedArray()
+        val columnNames = when (returnType) {
+            BGReturnType.RELATION_MULTIPART_NAMED -> arrayOf("From node", "Relation Uri", "To node")
+            else -> reader.readLine().split("\t").dropLastWhile { it.isEmpty() }.map { it.replace("\"", "") }.toTypedArray()
+        }
+
         var returnData = BGReturnRelationsData(returnType, columnNames)
         var relationSet = HashSet<BGRelation>()
 
         reader.forEachLine {
             if (cancelled) throw Exception("Cancelled.")
             val lineColumns = it.split("\t").dropLastWhile { it.isEmpty() }.toTypedArray()
-            if (lineColumns.size != returnType.paremeterCount) throw Exception("Number of columns in data array must match the parameter count of the query type!")
+            if (lineColumns.size != returnType.paremeterCount && returnType != BGReturnType.RELATION_MULTIPART_NAMED) throw Exception("Number of columns in data array must match the parameter count of the query type!")
 
             if (returnType == BGReturnType.RELATION_TRIPLE) {
                 val fromNodeUri = lineColumns[0].replace("\"", "")
@@ -238,11 +238,36 @@ class BGParser(private val serviceManager: BGServiceManager) {
                     }
                     returnData.relationsData.add(relation)
                 }
+            } else if (returnType == BGReturnType.RELATION_MULTIPART_NAMED) {
+                var fromNodeIndex = 0
+                while (fromNodeIndex < lineColumns.size-2) {
+                    val fromNodeUri = lineColumns[fromNodeIndex+0].replace("\"", "")
+                    val relationUri = lineColumns[fromNodeIndex+1].replace("\"", "")
+                    val toNodeUri = lineColumns[fromNodeIndex+2].replace("\"", "")
+                    fromNodeIndex += 3
+
+                    var fromNode = server.getNodeFromCacheOrNetworks(BGNode(fromNodeUri))
+                    if (!fromNode.isLoaded) unloadedNodes.add(fromNode)
+                    var toNode = server.getNodeFromCacheOrNetworks(BGNode(toNodeUri))
+                    if (!toNode.isLoaded) unloadedNodes.add(toNode)
+                    val relationType = server.cache.relationTypeMap.get(relationUri)
+
+                    // Note: Will ignore relation types it doesn't already know of.
+                    if (relationType != null) {
+                        val relation = BGRelation(fromNode, relationType, toNode)
+                        relationType.defaultGraphName?.let {
+                            relation.metadata.sourceGraph = it
+                        }
+                        relationSet.add(relation)
+                    }
+                }
             }
         }
+
+
+
         returnData.relationsData.addAll(relationSet)
 
-        val numberOfRelations = returnData.relationsData.count()
         println(unloadedNodes.size.toString() + " nodes missing.")
 
         returnData.unloadedNodes = unloadedNodes

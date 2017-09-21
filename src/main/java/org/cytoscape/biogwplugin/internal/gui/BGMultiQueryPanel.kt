@@ -295,6 +295,30 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager): JPanel() {
     }
 
     fun generateSPARQLQuery(): String {
+        val queryComponents = generateReturnValuesAndGraphQueries()
+
+        val query = "BASE <http://www.semantic-systems-biology.org/>\n" +
+                "SELECT DISTINCT " + queryComponents.first + "\n" +
+                "WHERE {\n" +
+                queryComponents.second +
+                "}"
+
+        return query
+    }
+
+    fun generateSPARQLCountQuery(): String {
+        val graphQueries = generateReturnValuesAndGraphQueries().second
+        val query = "BASE <http://www.semantic-systems-biology.org/>\n" +
+                "SELECT COUNT (*) \n" +
+                "WHERE {\n" +
+                graphQueries +
+                "}"
+
+        return query
+    }
+
+
+    fun generateReturnValuesAndGraphQueries(): Pair<String, String> {
         var returnValues = ""
         var graphQueries = ""
 
@@ -318,18 +342,11 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager): JPanel() {
             nodeNames.add(toUri)
             numberOfGraphQueries += 1
         }
-
-        val nameQueries = generateSparqlNameGraphs(nodeNames)
-
-        val query = "BASE <http://www.semantic-systems-biology.org/>\n" +
-                "SELECT DISTINCT " + returnValues + "\n" +
-                "WHERE {\n" +
-                graphQueries +
-                //nameQueries +
-                "}"
-
-        return query
+        return Pair(returnValues, graphQueries)
     }
+
+
+
 
     private fun getSafeString(uri: String): String {
         return when (uri.startsWith("?")) {

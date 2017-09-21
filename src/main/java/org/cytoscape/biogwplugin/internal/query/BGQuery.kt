@@ -61,6 +61,7 @@ abstract class BGQuery(val serviceManager: BGServiceManager, var type: BGReturnT
     }
 }
 
+
 class BGNodeSearchQuery(serviceManager: BGServiceManager, override var queryString: String, returnType: BGReturnType, parser: BGParser): BGQuery(serviceManager, returnType, parser) {
 
     override fun run() {
@@ -122,7 +123,7 @@ class BGRelationsQuery(serviceManager: BGServiceManager, override var queryStrin
     }
 }
 
-class BGMultiRelationsQuery(serviceManager: BGServiceManager, override var queryString: String, parser: BGParser, var returnType: BGReturnType): BGQuery(serviceManager, returnType, parser) {
+open class BGMultiRelationsQuery(serviceManager: BGServiceManager, override var queryString: String, parser: BGParser, var returnType: BGReturnType): BGQuery(serviceManager, returnType, parser) {
 
     override fun run() {
         taskMonitor?.setTitle("Searching for relations...")
@@ -140,7 +141,7 @@ class BGMultiRelationsQuery(serviceManager: BGServiceManager, override var query
             val reader = BufferedReader(StringReader(data))
             client.close()
             taskMonitor?.setTitle("Loading results...")
-            parser.parsePathway(reader, returnType, taskMonitor) {
+            parser.parseRelations(reader, returnType, taskMonitor) {
                 returnData = it as? BGReturnData ?: throw Exception("Invalid return data!")
                 taskMonitor?.setTitle("Loading results...")
                 runCompletions()
@@ -173,18 +174,8 @@ class BGNodeFetchQuery(serviceManager: BGServiceManager, val nodeUri: String, pa
             "term_id: skos:prefLabel ?label .\n" +
             "term_id: skos:definition ?name .\n" +
             "} \n"
-
-//    override var queryString = "BASE   <http://www.semantic-systems-biology.org/> \n" +
-//            "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>  \n" +
-//            "PREFIX term_id: <"+ nodeUri +">  \n" +
-//            "PREFIX graph: <cco>  \n" +
-//            "SELECT term_id: ?label ?name\n" +
-//            "WHERE {  \n" +
-//            " GRAPH graph: {  \n" +
-//            "  term_id: skos:prefLabel ?label .\n" +
-//            " term_id: skos:definition ?name .\n" +
-//            " } } \n"
 }
+
 class BGFetchPubmedIdQuery(serviceManager: BGServiceManager, val fromNodeUri: String, val relationUri: String, val toNodeUri: String): BGQuery(serviceManager, BGReturnType.PUBMED_ID, serviceManager.server.parser) {
     override var queryString: String
         get() = generateQueryString(fromNodeUri, relationUri, toNodeUri) //To change initializer of created properties use File | Settings | File Templates.

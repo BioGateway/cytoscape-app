@@ -7,7 +7,11 @@ import org.cytoscape.biogwplugin.internal.query.QueryTemplate;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -52,6 +56,8 @@ public class BGQueryBuilderView implements ChangeListener {
     private JButton parseSPARQLButton;
     private JButton loadQueryButton;
     private JButton saveQueryButton;
+    private JTextField filterResultsTextField;
+    private TableRowSorter<TableModel> sorter;
 
 
     public BGQueryBuilderView(ActionListener listener) {
@@ -100,6 +106,31 @@ public class BGQueryBuilderView implements ChangeListener {
         loadQueryButton.setActionCommand(Companion.getACTION_LOAD_SPARQL());
         saveQueryButton.addActionListener(listener);
         saveQueryButton.setActionCommand(Companion.getACTION_WRITE_SPARQL());
+
+        sorter = new TableRowSorter<TableModel>((DefaultTableModel) resultTable.getModel());
+        resultTable.setRowSorter(sorter);
+        filterResultsTextField.setPreferredSize(new Dimension(200, 20));
+        filterResultsTextField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                filterResultRows();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                filterResultRows();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                filterResultRows();
+            }
+        });
+
+    }
+
+    private void filterResultRows() {
+        sorter.setRowFilter(RowFilter.regexFilter(filterResultsTextField.getText()));
     }
 
     public void generateParameterFields(QueryTemplate query) {
@@ -447,7 +478,7 @@ public class BGQueryBuilderView implements ChangeListener {
         final JScrollPane scrollPane2 = new JScrollPane();
         panel6.add(scrollPane2, BorderLayout.CENTER);
         resultTable = new JTable();
-        resultTable.setAutoCreateRowSorter(true);
+        resultTable.setAutoCreateRowSorter(false);
         resultTable.setFillsViewportHeight(false);
         scrollPane2.setViewportView(resultTable);
         final JPanel panel7 = new JPanel();
@@ -463,8 +494,16 @@ public class BGQueryBuilderView implements ChangeListener {
         filterRelationsToExistingCheckBox.setText("Only show relations to nodes in current network");
         panel7.add(filterRelationsToExistingCheckBox);
         final JPanel panel8 = new JPanel();
-        panel8.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        mainPanel.add(panel8, BorderLayout.NORTH);
+        panel8.setLayout(new FlowLayout(FlowLayout.RIGHT, 5, 5));
+        panel6.add(panel8, BorderLayout.NORTH);
+        final JLabel label1 = new JLabel();
+        label1.setText("Filter results:");
+        panel8.add(label1);
+        filterResultsTextField = new JTextField();
+        panel8.add(filterResultsTextField);
+        final JPanel panel9 = new JPanel();
+        panel9.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        mainPanel.add(panel9, BorderLayout.NORTH);
     }
 
     /**

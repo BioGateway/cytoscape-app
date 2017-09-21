@@ -17,6 +17,7 @@ import java.awt.event.ActionListener
 import java.io.File
 import java.util.ArrayList
 import java.util.prefs.Preferences
+import javax.rmi.CORBA.Util
 import javax.swing.*
 import javax.swing.event.ChangeEvent
 import javax.swing.event.ChangeListener
@@ -585,6 +586,16 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
             JOptionPane.showMessageDialog(view.mainFrame, errorText)
         } else {
 
+            val relationCount = Utility.countMatchingRowsQuery(serviceManager, view.multiQueryPanel.generateSPARQLCountQuery()) ?: throw Exception("Unable to get relation count.")
+
+            if (relationCount > Constants.BG_RELATION_COUNT_WARNING_LIMIT) {
+                val message = "Estimated "+relationCount.toString()+" relations found. This might take a very long time or time out. Are you sure you want to proceed?"
+                val response = JOptionPane.showOptionDialog(null, message, "Proceed with query?", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, null, null, null)
+                if (response != JOptionPane.OK_OPTION) {
+                    return
+                }
+            }
+
             val queryString = view.multiQueryPanel.generateSPARQLQuery()
             view.sparqlTextArea.text = queryString
 
@@ -599,12 +610,12 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                 val tableModel = view.resultTable.model as DefaultTableModel
                 tableModel.setColumnIdentifiers(data.columnNames)
 
-                setRelationTableData(data.relationsData)
-
-                view.tabPanel.selectedIndex = TAB_PANEL_RESULTS_INDEX // Open the result tab.
-
-                // Try the darnest to make the window appear on top!
-                Utility.fightForFocus(view.mainFrame)
+                BGLoadUnloadedNodes.createAndRun(serviceManager, data.unloadedNodes) {
+                    setRelationTableData(data.relationsData)
+                    view.tabPanel.selectedIndex = TAB_PANEL_RESULTS_INDEX // Open the result tab.
+                    // Try the darnest to make the window appear on top!
+                    Utility.fightForFocus(view.mainFrame)
+                }
             }
             val iterator = TaskIterator(query)
             serviceManager.taskManager.execute(iterator)

@@ -169,7 +169,7 @@
                       <component id="c341a" class="javax.swing.JTable" binding="resultTable">
                         <constraints/>
                         <properties>
-                          <autoCreateRowSorter value="true"/>
+                          <autoCreateRowSorter value="false"/>
                           <fillsViewportHeight value="false"/>
                         </properties>
                       </component>
@@ -197,6 +197,23 @@
                         <properties>
                           <text value="Only show relations to nodes in current network"/>
                         </properties>
+                      </component>
+                    </children>
+                  </grid>
+                  <grid id="11213" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="2">
+                    <constraints border-constraint="North"/>
+                    <properties/>
+                    <border type="none"/>
+                    <children>
+                      <component id="aec48" class="javax.swing.JLabel">
+                        <constraints/>
+                        <properties>
+                          <text value="Filter results:"/>
+                        </properties>
+                      </component>
+                      <component id="f056c" class="javax.swing.JTextField" binding="filterResultsTextField">
+                        <constraints/>
+                        <properties/>
                       </component>
                     </children>
                   </grid>

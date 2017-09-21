@@ -8,7 +8,6 @@ import org.cytoscape.work.TaskIterator
 import org.cytoscape.work.TaskMonitor
 import java.awt.EventQueue
 import javax.swing.JOptionPane
-import kotlin.concurrent.thread
 
 
 class BGLoadUnloadedNodes(val serviceManager: BGServiceManager, val unloadedNodes: ArrayList<BGNode>, private val queryCompletion: (Int) -> Unit): AbstractTask(), Runnable {
@@ -63,3 +62,4 @@ class BGLoadUnloadedNodes(val serviceManager: BGServiceManager, val unloadedNode
         this.isCancelled = true
     }
 }
+
