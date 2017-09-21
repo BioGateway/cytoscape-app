@@ -374,11 +374,15 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         return null
     }
 
-    private fun validateUris() {
+    private fun generateSPARQLCode() {
         if (view.tabPanel.selectedIndex == 0) {
             val errorText = validateMultiQuery()
             if (errorText != null) {
                 JOptionPane.showMessageDialog(view.mainFrame, errorText)
+            } else {
+                val queryString = view.multiQueryPanel.generateSPARQLQuery()
+                view.sparqlTextArea.text = queryString
+                view.tabPanel.selectedIndex = 2
             }
         }
     }
@@ -434,9 +438,8 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
             }
             ACTION_IMPORT_TO_NEW -> importSelectedResults(null, currentQuery!!.returnType)
             ACTION_ADD_MULTIQUERY_LINE -> addMultiQueryLine()
-            ACTION_REMOVE_MULTIQUERY_LINE -> removeMultiQueryLine()
             ACTION_RUN_MULTIQUERY -> runMultiQuery()
-            ACTION_VALIDATE_URIS -> validateUris()
+            ACTION_GENERATE_SPARQL -> generateSPARQLCode()
             ACTION_LOOKUP_NODE_URI -> {
                 val button = e.source as? BGComponentButton ?: throw Exception("Expected BGComponentButton")
                 lookupNodeUri(button)
@@ -556,10 +559,10 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         public val ACTION_RUN_QUERY = "runBiogwQuery"
         public val ACTION_IMPORT_TO_SELECTED = "importToSelectedNetwork"
         public val ACTION_IMPORT_TO_NEW = "importToNewNetwork"
-        public val ACTION_VALIDATE_URIS = "validateUris"
+        public val ACTION_GENERATE_SPARQL = "generateSPARQL"
+        public val ACTION_PARSE_SPARQL = "parseSPARQL"
         public val ACTION_RUN_MULTIQUERY = "runMultiQuery"
-        public val ACTION_ADD_MULTIQUERY_LINE = "addChainRelation"
-        public val ACTION_REMOVE_MULTIQUERY_LINE = "removeChainRelation"
+        public val ACTION_ADD_MULTIQUERY_LINE = "addMultiRelation"
         public val CHANGE_TAB_CHANGED = "tabbedPaneHasChanged"
         public val UNIPROT_PREFIX = "http://identifiers.org/uniprot/"
         public val ONTOLOGY_PREFIX = "http://purl.obolibrary.org/obo/"

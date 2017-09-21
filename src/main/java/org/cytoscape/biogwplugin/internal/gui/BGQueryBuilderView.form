@@ -30,16 +30,10 @@
                       <text value="Add Line"/>
                     </properties>
                   </component>
-                  <component id="dc35c" class="javax.swing.JButton" binding="removeLineButton" default-binding="true">
+                  <component id="f528e" class="javax.swing.JButton" binding="generateSPARQLButton">
                     <constraints/>
                     <properties>
-                      <text value="Remove Line"/>
-                    </properties>
-                  </component>
-                  <component id="f528e" class="javax.swing.JButton" binding="validateURIsButton" default-binding="true">
-                    <constraints/>
-                    <properties>
-                      <text value="Validate URIs"/>
+                      <text value="Generate SPARQL"/>
                     </properties>
                   </component>
                   <component id="55426" class="javax.swing.JButton" binding="runChainQueryButton">
@@ -128,6 +122,19 @@
                   </component>
                 </children>
               </scrollpane>
+              <grid id="caa75" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+                <constraints border-constraint="South"/>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="98b50" class="javax.swing.JButton" binding="parseSPARQLButton">
+                    <constraints/>
+                    <properties>
+                      <text value="Parse SPARQL to Biogateway Query"/>
+                    </properties>
+                  </component>
+                </children>
+              </grid>
             </children>
           </grid>
           <grid id="a8fb2" binding="resultPanel" layout-manager="BorderLayout" hgap="0" vgap="0">

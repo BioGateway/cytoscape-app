@@ -46,10 +46,10 @@ public class BGQueryBuilderView implements ChangeListener {
     private JButton runChainQueryButton;
     private JPanel multiQueryContainer;
     private BGMultiQueryPanel multiQueryPanel;
-    private JButton validateURIsButton;
+    private JButton generateSPARQLButton;
     private JButton addLineButton;
-    private JButton removeLineButton;
     private JCheckBox filterRelationsToExistingCheckBox;
+    private JButton parseSPARQLButton;
 
 
     public BGQueryBuilderView(ActionListener listener) {
@@ -90,10 +90,10 @@ public class BGQueryBuilderView implements ChangeListener {
         runChainQueryButton.setActionCommand(Companion.getACTION_RUN_MULTIQUERY());
         addLineButton.addActionListener(listener);
         addLineButton.setActionCommand(Companion.getACTION_ADD_MULTIQUERY_LINE());
-        removeLineButton.addActionListener(listener);
-        removeLineButton.setActionCommand(Companion.getACTION_REMOVE_MULTIQUERY_LINE());
-        validateURIsButton.addActionListener(listener);
-        validateURIsButton.setActionCommand(Companion.getACTION_VALIDATE_URIS());
+        generateSPARQLButton.addActionListener(listener);
+        generateSPARQLButton.setActionCommand(Companion.getACTION_GENERATE_SPARQL());
+        parseSPARQLButton.addActionListener(listener);
+        parseSPARQLButton.setActionCommand(Companion.getACTION_PARSE_SPARQL());
     }
 
     public void generateParameterFields(QueryTemplate query) {
@@ -381,12 +381,9 @@ public class BGQueryBuilderView implements ChangeListener {
         addLineButton = new JButton();
         addLineButton.setText("Add Line");
         panel2.add(addLineButton);
-        removeLineButton = new JButton();
-        removeLineButton.setText("Remove Line");
-        panel2.add(removeLineButton);
-        validateURIsButton = new JButton();
-        validateURIsButton.setText("Validate URIs");
-        panel2.add(validateURIsButton);
+        generateSPARQLButton = new JButton();
+        generateSPARQLButton.setText("Generate SPARQL");
+        panel2.add(generateSPARQLButton);
         runChainQueryButton = new JButton();
         runChainQueryButton.setText("Run Query");
         panel2.add(runChainQueryButton);
@@ -423,33 +420,39 @@ public class BGQueryBuilderView implements ChangeListener {
         sparqlPanel.add(scrollPane1, BorderLayout.CENTER);
         sparqlTextArea = new JTextArea();
         scrollPane1.setViewportView(sparqlTextArea);
+        final JPanel panel5 = new JPanel();
+        panel5.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        sparqlPanel.add(panel5, BorderLayout.SOUTH);
+        parseSPARQLButton = new JButton();
+        parseSPARQLButton.setText("Parse SPARQL to Biogateway Query");
+        panel5.add(parseSPARQLButton);
         resultPanel = new JPanel();
         resultPanel.setLayout(new BorderLayout(0, 0));
         tabPanel.addTab("Query Result", resultPanel);
-        final JPanel panel5 = new JPanel();
-        panel5.setLayout(new BorderLayout(0, 0));
-        resultPanel.add(panel5, BorderLayout.CENTER);
+        final JPanel panel6 = new JPanel();
+        panel6.setLayout(new BorderLayout(0, 0));
+        resultPanel.add(panel6, BorderLayout.CENTER);
         final JScrollPane scrollPane2 = new JScrollPane();
-        panel5.add(scrollPane2, BorderLayout.CENTER);
+        panel6.add(scrollPane2, BorderLayout.CENTER);
         resultTable = new JTable();
         resultTable.setAutoCreateRowSorter(true);
         resultTable.setFillsViewportHeight(false);
         scrollPane2.setViewportView(resultTable);
-        final JPanel panel6 = new JPanel();
-        panel6.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        panel5.add(panel6, BorderLayout.SOUTH);
-        importToNewButton = new JButton();
-        importToNewButton.setText("Import to new Network");
-        panel6.add(importToNewButton);
-        importToSelectedNetworkButton = new JButton();
-        importToSelectedNetworkButton.setText("Import to selected Network");
-        panel6.add(importToSelectedNetworkButton);
-        filterRelationsToExistingCheckBox = new JCheckBox();
-        filterRelationsToExistingCheckBox.setText("Only show relations to nodes in current network");
-        panel6.add(filterRelationsToExistingCheckBox);
         final JPanel panel7 = new JPanel();
         panel7.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        mainPanel.add(panel7, BorderLayout.NORTH);
+        panel6.add(panel7, BorderLayout.SOUTH);
+        importToNewButton = new JButton();
+        importToNewButton.setText("Import to new Network");
+        panel7.add(importToNewButton);
+        importToSelectedNetworkButton = new JButton();
+        importToSelectedNetworkButton.setText("Import to selected Network");
+        panel7.add(importToSelectedNetworkButton);
+        filterRelationsToExistingCheckBox = new JCheckBox();
+        filterRelationsToExistingCheckBox.setText("Only show relations to nodes in current network");
+        panel7.add(filterRelationsToExistingCheckBox);
+        final JPanel panel8 = new JPanel();
+        panel8.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        mainPanel.add(panel8, BorderLayout.NORTH);
     }
 
     /**
