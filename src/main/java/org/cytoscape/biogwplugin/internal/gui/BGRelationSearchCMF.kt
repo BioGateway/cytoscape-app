@@ -10,7 +10,9 @@ import org.cytoscape.model.CyNode
 import org.cytoscape.view.model.CyNetworkView
 import org.cytoscape.view.model.View
 import org.cytoscape.work.TaskIterator
+import java.awt.Desktop
 import java.awt.event.ActionListener
+import java.net.URI
 import javax.swing.JMenu
 import javax.swing.JMenuItem
 import javax.swing.JOptionPane
@@ -41,6 +43,10 @@ class BGRelationSearchCMF(val gravity: Float, val serviceManager: BGServiceManag
             parentMenu.add(createTFTGSearchMenu(netView, BGNodeType.Protein, nodeUri))
             parentMenu.addSeparator()
             parentMenu.add(createFetchAssociatedGeneOrProteinMenuItem(netView, BGNodeType.Protein, nodeUri))
+        }
+        createOpenURIMenu(nodeUri)?.let {
+            parentMenu.addSeparator()
+            parentMenu.add(it)
         }
 
         return CyMenuItem(parentMenu, gravity)
@@ -179,5 +185,20 @@ class BGRelationSearchCMF(val gravity: Float, val serviceManager: BGServiceManag
             serviceManager.taskManager.execute(TaskIterator(query))
         }
         return searchTFTG
+    }
+
+    fun createOpenURIMenu(nodeUri: String): JMenuItem? {
+
+        if (nodeUri.startsWith("http")) {
+            val menuItem = JMenuItem("Open resource URI")
+            menuItem.addActionListener {
+                // Probably a pubmed id?
+                if (Desktop.isDesktopSupported()) {
+                    Desktop.getDesktop().browse(URI(nodeUri));
+                }
+            }
+            return menuItem
+        }
+        return null
     }
 }

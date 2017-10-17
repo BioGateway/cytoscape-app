@@ -51,7 +51,6 @@ class BGParser(private val serviceManager: BGServiceManager) {
 
             val lineColumns = it.split("\t").dropLastWhile({it.isEmpty()}).toTypedArray()
             returnData.addEntry(lineColumns)
-            //println("new Fetched node: "+it)
         }
         completion(returnData)
     }
@@ -72,84 +71,6 @@ class BGParser(private val serviceManager: BGServiceManager) {
         }
         completion(returnData)
     }
-
-    fun parsePathway(reader: BufferedReader, returnType: BGReturnType, taskMonitor: TaskMonitor?, completion: (BGReturnRelationsData) -> Unit) {
-        cancelled = false
-        val unloadedNodes = ArrayList<BGNode>()
-        taskMonitor?.setTitle("Parsing nodes...")
-
-        if (returnType != BGReturnType.RELATION_MULTIPART_NAMED) throw Exception("Return type must be relation multipart!")
-
-        val server = serviceManager.server
-        var columnNames = reader.readLine().split("\t").dropLastWhile { it.isEmpty() }.map { it.replace("\"", "") }.toTypedArray()
-
-        columnNames = arrayOf("From node", "Relation Uri", "To node")
-
-        val returnData = BGReturnRelationsData(returnType, columnNames)
-
-        // This might generate a lot of duplicate relations, so we use a set to eliminate duplicates.
-
-        var relationSet = HashSet<BGRelation>()
-
-        reader.forEachLine {
-            if (cancelled) throw Exception("Cancelled.")
-
-            val lineColumns = it.split("\t").dropLastWhile {  it.isEmpty() }.toTypedArray()
-            var fromNodeIndex = 0
-            while (fromNodeIndex < lineColumns.size-2) {
-                val fromNodeUri = lineColumns[fromNodeIndex+0].replace("\"", "")
-                val relationUri = lineColumns[fromNodeIndex+1].replace("\"", "")
-                val toNodeUri = lineColumns[fromNodeIndex+2].replace("\"", "")
-                fromNodeIndex += 3
-
-                var fromNode = server.getNodeFromCacheOrNetworks(BGNode(fromNodeUri))
-                if (!fromNode.isLoaded) unloadedNodes.add(fromNode)
-                var toNode = server.getNodeFromCacheOrNetworks(BGNode(toNodeUri))
-                if (!toNode.isLoaded) unloadedNodes.add(toNode)
-                val relationType = server.cache.relationTypeMap.get(relationUri)
-
-                // Note: Will ignore relation types it doesn't already know of.
-                if (relationType != null) {
-                    val relation = BGRelation(fromNode, relationType, toNode)
-                    relationType.defaultGraphName?.let {
-                        relation.metadata.sourceGraph = it
-                    }
-                    relationSet.add(relation)
-                }
-            }
-        }
-        returnData.relationsData.addAll(relationSet)
-
-        val numberOfRelations = returnData.relationsData.count()
-
-        println(unloadedNodes.size.toString()+" nodes missing.")
-
-
-        nodeFetchThread = Thread {
-
-            for (index in 0..returnData.relationsData.size-1) {
-                if (this.cancelled) {
-                    throw Exception("Cancelled.")
-                }
-                val relation = returnData.relationsData[index]
-                taskMonitor?.setTitle("Loading relation " + index + " of " + numberOfRelations + "...")
-                taskMonitor?.setProgress(index.toDouble() / numberOfRelations.toDouble())
-
-                //relation.toNode = server.getNodeFromCacheOrNetworks(relation.toNode)
-                //relation.fromNode = server.getNodeFromCacheOrNetworks(relation.fromNode)
-
-                if (!relation.toNode.isLoaded) {
-                    server.loadDataForNode(relation.toNode)
-                }
-                if (!relation.fromNode.isLoaded) {
-                    server.loadDataForNode(relation.fromNode)
-                }
-            }
-            completion(returnData)
-        }
-        nodeFetchThread?.run()
-    }
-
 
     fun parseRelations(reader: BufferedReader, returnType: BGReturnType, taskMonitor: TaskMonitor?, completion: (BGReturnRelationsData?) -> Unit) {
         cancelled = false

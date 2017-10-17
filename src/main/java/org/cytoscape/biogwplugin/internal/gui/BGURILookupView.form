@@ -47,32 +47,63 @@
           </component>
         </children>
       </grid>
-      <grid id="ea04a" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+      <grid id="ea04a" layout-manager="BorderLayout" hgap="0" vgap="0">
         <constraints border-constraint="South"/>
         <properties/>
         <border type="none"/>
         <children>
-          <component id="f1da6" class="javax.swing.JButton" binding="useURIButton" default-binding="true">
-            <constraints/>
-            <properties>
-              <text value="Use URI"/>
-            </properties>
-          </component>
+          <grid id="cf2ab" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="0">
+            <constraints border-constraint="Center"/>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <component id="ff3a6" class="javax.swing.JLabel">
+                <constraints/>
+                <properties>
+                  <text value="Filter results:"/>
+                </properties>
+              </component>
+              <component id="5ea8f" class="javax.swing.JTextField" binding="filterTextField">
+                <constraints/>
+                <properties/>
+              </component>
+            </children>
+          </grid>
+          <grid id="3ebf4" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="2">
+            <constraints border-constraint="East"/>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <component id="f1da6" class="javax.swing.JButton" binding="useURIButton" default-binding="true">
+                <constraints/>
+                <properties>
+                  <text value="Use Selected URI"/>
+                </properties>
+              </component>
+            </children>
+          </grid>
         </children>
       </grid>
-      <scrollpane id="f7ac9">
+      <grid id="db8e9" layout-manager="BorderLayout" hgap="0" vgap="0">
         <constraints border-constraint="Center"/>
         <properties/>
         <border type="none"/>
         <children>
-          <component id="4e594" class="javax.swing.JTable" binding="resultTable">
-            <constraints/>
-            <properties>
-              <autoCreateRowSorter value="true"/>
-            </properties>
-          </component>
+          <scrollpane id="f7ac9">
+            <constraints border-constraint="Center"/>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <component id="4e594" class="javax.swing.JTable" binding="resultTable">
+                <constraints/>
+                <properties>
+                  <autoCreateRowSorter value="false"/>
+                </properties>
+              </component>
+            </children>
+          </scrollpane>
         </children>
-      </scrollpane>
+      </grid>
     </children>
   </grid>
 </form>

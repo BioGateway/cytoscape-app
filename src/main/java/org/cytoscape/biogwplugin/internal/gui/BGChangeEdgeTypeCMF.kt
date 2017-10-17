@@ -35,8 +35,6 @@ class BGChangeEdgeTypeCMF(val gravity: Float, val serviceManager: BGServiceManag
                     edgeTable?.getRow(edgeSuid)?.set("shared name", relationType.name)
                     edgeTable?.getRow(edgeSuid)?.set(Constants.BG_FIELD_IDENTIFIER_URI, relationType.uri)
 
-
-
                 }
                 parentMenu.add(item)
             }

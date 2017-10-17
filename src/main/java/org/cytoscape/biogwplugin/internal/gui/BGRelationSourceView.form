@@ -28,8 +28,8 @@
           <component id="e5c2e" class="javax.swing.JTable" binding="sourceInformationTable">
             <constraints border-constraint="Center"/>
             <properties>
-              <autoCreateRowSorter value="true"/>
-              <enabled value="false"/>
+              <autoCreateRowSorter value="false"/>
+              <enabled value="true"/>
             </properties>
           </component>
         </children>

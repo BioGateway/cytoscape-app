@@ -1,6 +1,7 @@
 package org.cytoscape.biogwplugin.internal.gui;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionListener;
 
@@ -16,12 +17,17 @@ public class BGRelationSourceView {
         mainFrame = new JFrame("Relation source data");
         mainFrame.setPreferredSize(new Dimension(400, 300));
         mainFrame.setContentPane(this.panel1);
-
         openPubmedURLButton.addActionListener(listener);
-
         mainFrame.pack();
         mainFrame.setLocationRelativeTo(parentComponent);
         mainFrame.setVisible(true);
+        DefaultTableModel tableModel = new DefaultTableModel() {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        sourceInformationTable.setModel(tableModel);
     }
 
     public JFrame getMainFrame() {
@@ -63,8 +69,8 @@ public class BGRelationSourceView {
         panel3.setLayout(new BorderLayout(0, 0));
         panel1.add(panel3, BorderLayout.CENTER);
         sourceInformationTable = new JTable();
-        sourceInformationTable.setAutoCreateRowSorter(true);
-        sourceInformationTable.setEnabled(false);
+        sourceInformationTable.setAutoCreateRowSorter(false);
+        sourceInformationTable.setEnabled(true);
         panel3.add(sourceInformationTable, BorderLayout.CENTER);
     }
 

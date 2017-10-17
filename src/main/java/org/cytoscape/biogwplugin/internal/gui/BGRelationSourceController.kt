@@ -32,6 +32,7 @@ class BGRelationSourceController(val metadata: BGRelationMetadata): ActionListen
     private fun openSelectedPubmedId() {
         val model = view.sourceInformationTable.model
         val row = view.sourceInformationTable.selectedRow
+        if (row == -1) return
         val pubmedId = model.getValueAt(view.sourceInformationTable.convertRowIndexToModel(row), 1) as? String
         pubmedId?.let {
             if (it.startsWith("http")) {

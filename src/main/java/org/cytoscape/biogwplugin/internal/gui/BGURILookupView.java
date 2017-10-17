@@ -1,8 +1,14 @@
 package org.cytoscape.biogwplugin.internal.gui;
 
 import org.cytoscape.biogwplugin.internal.model.BGNodeType;
+import org.cytoscape.biogwplugin.internal.util.Utility;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.ActionListener;
 
@@ -10,6 +16,7 @@ public class BGURILookupView {
 
     private final ActionListener listener;
     private final JFrame mainFrame;
+    private final TableRowSorter<TableModel> sorter;
 
     private JPanel panel1;
     private JTextField searchField;
@@ -18,6 +25,7 @@ public class BGURILookupView {
     private JTable resultTable;
     private JButton useURIButton;
     private JComboBox nodeTypeComboBox;
+    private JTextField filterTextField;
 
     public static final String ACTION_SELECT_NODE = "Choose selected node";
     public static final String ACTION_SEARCH = "Search for URIs";
@@ -33,7 +41,15 @@ public class BGURILookupView {
         mainFrame.pack();
         mainFrame.setLocationRelativeTo(parentComponent);
         mainFrame.setVisible(true);
-
+        DefaultTableModel tableModel = new DefaultTableModel() {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        sorter = new TableRowSorter<TableModel>(tableModel);
+        resultTable.setModel(tableModel);
+        resultTable.setRowSorter(sorter);
     }
 
     private void setupUI() {
@@ -42,8 +58,28 @@ public class BGURILookupView {
         searchButton.setActionCommand(ACTION_SEARCH);
         useURIButton.setActionCommand(ACTION_SELECT_NODE);
         useURIButton.addActionListener(listener);
+        filterTextField.setPreferredSize(new Dimension(200, Utility.INSTANCE.getJTextFieldHeight()));
+        filterTextField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                filterRows();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                filterRows();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                filterRows();
+            }
+        });
     }
 
+    private void filterRows() {
+        sorter.setRowFilter(RowFilter.regexFilter("(?i)" + filterTextField.getText()));
+    }
 
     public JCheckBox getRegexCheckBox() {
         return regexCheckBox;
@@ -102,15 +138,29 @@ public class BGURILookupView {
         label1.setText("Node name:");
         panel2.add(label1, BorderLayout.WEST);
         final JPanel panel4 = new JPanel();
-        panel4.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        panel4.setLayout(new BorderLayout(0, 0));
         panel1.add(panel4, BorderLayout.SOUTH);
+        final JPanel panel5 = new JPanel();
+        panel5.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
+        panel4.add(panel5, BorderLayout.CENTER);
+        final JLabel label2 = new JLabel();
+        label2.setText("Filter results:");
+        panel5.add(label2);
+        filterTextField = new JTextField();
+        panel5.add(filterTextField);
+        final JPanel panel6 = new JPanel();
+        panel6.setLayout(new FlowLayout(FlowLayout.RIGHT, 5, 5));
+        panel4.add(panel6, BorderLayout.EAST);
         useURIButton = new JButton();
-        useURIButton.setText("Use URI");
-        panel4.add(useURIButton);
+        useURIButton.setText("Use Selected URI");
+        panel6.add(useURIButton);
+        final JPanel panel7 = new JPanel();
+        panel7.setLayout(new BorderLayout(0, 0));
+        panel1.add(panel7, BorderLayout.CENTER);
         final JScrollPane scrollPane1 = new JScrollPane();
-        panel1.add(scrollPane1, BorderLayout.CENTER);
+        panel7.add(scrollPane1, BorderLayout.CENTER);
         resultTable = new JTable();
-        resultTable.setAutoCreateRowSorter(true);
+        resultTable.setAutoCreateRowSorter(false);
         scrollPane1.setViewportView(resultTable);
     }
 

@@ -19,7 +19,7 @@ class BGLoadUnloadedNodes(val serviceManager: BGServiceManager, val unloadedNode
                 EventQueue.invokeLater {
                     val query = BGLoadUnloadedNodes(serviceManager, unloadedNodes, completion)
                     if (unloadedNodes.size > Constants.BG_LOAD_NODE_WARNING_LIMIT) {
-                        val message = unloadedNodes.size.toString() + " needs to be loaded from the server. Do you want to proceed?"
+                        val message = unloadedNodes.size.toString() + " nodes needs to be loaded from the server. Do you want to proceed?"
                         val response = JOptionPane.showOptionDialog(null, message, "Load nodes from server?", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, null, null, null)
                         if (response == JOptionPane.OK_OPTION) {
                             serviceManager.taskManager.execute(TaskIterator(query))

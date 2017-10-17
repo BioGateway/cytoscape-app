@@ -31,6 +31,15 @@ object Utility {
         return parameter.sanitizeParameter()
     }
 
+    fun getJTextFieldHeight(): Int {
+        val osName = System.getProperty("os.name")
+
+        if (osName.startsWith("Mac")) return 20
+        if (osName.startsWith("Windows")) return 20
+        if (osName.startsWith("Linux")) return 25
+        return 20
+    }
+
     fun fightForFocus(frame: JFrame) {
         EventQueue.invokeLater {
             frame.toFront()
@@ -75,6 +84,7 @@ object Utility {
         val stream = url?.openStream()
         if (stream != null) {
             val reader = BufferedReader(InputStreamReader(stream))
+            val headerLine = reader.readLine()
             val countLine = reader.readLine()
             val count = countLine.toIntOrNull()
             return count

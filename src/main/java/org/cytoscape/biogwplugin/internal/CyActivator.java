@@ -41,7 +41,7 @@ public class CyActivator extends AbstractCyActivator {
         CreateQueryAction createQueryAction = new CreateQueryAction("Create query", "always", serviceManager);
         registerService(context, createQueryAction, CyAction.class, new Properties());
         registerContextMenuItems(context, serviceManager);
-	}
+    }
 
 
 	private void registerContextMenuItems(BundleContext bundleContext, BGServiceManager serviceManager) {

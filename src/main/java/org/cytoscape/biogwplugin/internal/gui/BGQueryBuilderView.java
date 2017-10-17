@@ -1,8 +1,10 @@
 package org.cytoscape.biogwplugin.internal.gui;
 
 import net.miginfocom.swing.MigLayout;
+import org.cytoscape.biogwplugin.internal.BGServiceManager;
 import org.cytoscape.biogwplugin.internal.query.BGQueryParameter;
 import org.cytoscape.biogwplugin.internal.query.QueryTemplate;
+import org.cytoscape.biogwplugin.internal.util.Utility;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -24,6 +26,7 @@ import static org.cytoscape.biogwplugin.internal.gui.BGQueryBuilderController.*;
  */
 public class BGQueryBuilderView implements ChangeListener {
     private final ActionListener listener;
+    private final BGServiceManager serviceManager;
 
     public HashMap<String, JComponent> parameterComponents = new HashMap<>();
 
@@ -60,8 +63,9 @@ public class BGQueryBuilderView implements ChangeListener {
     private TableRowSorter<TableModel> sorter;
 
 
-    public BGQueryBuilderView(ActionListener listener) {
+    public BGQueryBuilderView(ActionListener listener, BGServiceManager serviceManager) {
         this.listener = listener;
+        this.serviceManager = serviceManager;
         JFrame frame = new JFrame("Biogateway Query Builder");
         this.mainFrame = frame;
         frame.setPreferredSize(new Dimension(1200, 480));
@@ -74,11 +78,6 @@ public class BGQueryBuilderView implements ChangeListener {
 
 
     private void createUIComponents() {
-        // TODO: Add support for all the result types
-        DefaultTableModel resultTableModel = new DefaultTableModel();
-        resultTableModel.setColumnIdentifiers(new String[]{"Common name", "OPTIONAL_URI"});
-        resultTable.setModel(resultTableModel);
-
         querySelectionBox.setModel(new SortedComboBoxModel<String>());
 
         parameterPanel.setLayout(new MigLayout("wrap 2"));
@@ -107,9 +106,16 @@ public class BGQueryBuilderView implements ChangeListener {
         saveQueryButton.addActionListener(listener);
         saveQueryButton.setActionCommand(Companion.getACTION_WRITE_SPARQL());
 
-        sorter = new TableRowSorter<TableModel>((DefaultTableModel) resultTable.getModel());
+        DefaultTableModel tableModel = new DefaultTableModel() {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        sorter = new TableRowSorter<TableModel>(tableModel);
+        resultTable.setModel(tableModel);
         resultTable.setRowSorter(sorter);
-        filterResultsTextField.setPreferredSize(new Dimension(200, 20));
+        filterResultsTextField.setPreferredSize(new Dimension(200, Utility.INSTANCE.getJTextFieldHeight()));
         filterResultsTextField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
@@ -130,7 +136,7 @@ public class BGQueryBuilderView implements ChangeListener {
     }
 
     private void filterResultRows() {
-        sorter.setRowFilter(RowFilter.regexFilter(filterResultsTextField.getText()));
+        sorter.setRowFilter(RowFilter.regexFilter("(?i)" + filterResultsTextField.getText()));
     }
 
     public void generateParameterFields(QueryTemplate query) {
@@ -151,15 +157,15 @@ public class BGQueryBuilderView implements ChangeListener {
             switch (parameter.getType()) {
                 case OPTIONAL_URI:
                     JTextField optionalField = new JTextField();
-                    optionalField.setPreferredSize(new Dimension(280, 20));
+                    optionalField.setPreferredSize(new Dimension(280, Utility.INSTANCE.getJTextFieldHeight()));
                     //component = optionalField;
-                    component = new BGOptionalURIField(optionalField, listener);
+                    component = new BGOptionalURIField(optionalField, serviceManager);
                     break;
                 case ONTOLOGY:
                 case TEXT:
                 case UNIPROT_ID:
                     JTextField field = new JTextField();
-                    field.setPreferredSize(new Dimension(280, 20));
+                    field.setPreferredSize(new Dimension(280, Utility.INSTANCE.getJTextFieldHeight()));
                     component = field;
                     break;
                 case CHECKBOX:
@@ -173,7 +179,7 @@ public class BGQueryBuilderView implements ChangeListener {
                     component = new BGRelationTypeField(comboBox);
                     break;
                 case RELATION_QUERY_ROW:
-                    component = new BGRelationQueryRow((String[]) parameter.getOptions().keySet().toArray(), listener);
+                    component = new BGRelationQueryRow((String[]) parameter.getOptions().keySet().toArray(), serviceManager);
                     break;
                 default:
                     // Crash..!

@@ -1,5 +1,7 @@
 package org.cytoscape.biogwplugin.internal.gui;
 
+import org.cytoscape.biogwplugin.internal.util.Utility;
+
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -35,8 +37,6 @@ public class BGRelationSearchResultsView {
         frame.pack();
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
-        sorter = new TableRowSorter<TableModel>((DefaultTableModel) resultTable.getModel());
-        resultTable.setRowSorter(sorter);
     }
 
     private void setupUI() {
@@ -44,7 +44,16 @@ public class BGRelationSearchResultsView {
         importButton.addActionListener(listener);
         importToExisting.setActionCommand(ACTION_IMPORT_TO_EXISTING);
         importToExisting.addActionListener(listener);
-        filterTextField.setPreferredSize(new Dimension(200, 20));
+        DefaultTableModel tableModel = new DefaultTableModel() {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        sorter = new TableRowSorter<TableModel>(tableModel);
+        resultTable.setModel(tableModel);
+        resultTable.setRowSorter(sorter);
+        filterTextField.setPreferredSize(new Dimension(200, Utility.INSTANCE.getJTextFieldHeight()));
         filterTextField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
@@ -64,7 +73,7 @@ public class BGRelationSearchResultsView {
     }
 
     private void filterRows() {
-        sorter.setRowFilter(RowFilter.regexFilter(filterTextField.getText()));
+        sorter.setRowFilter(RowFilter.regexFilter("(?i)" + filterTextField.getText()));
     }
 
     public JFrame getMainFrame() {

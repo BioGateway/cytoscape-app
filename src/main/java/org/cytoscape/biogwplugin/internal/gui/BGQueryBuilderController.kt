@@ -2,7 +2,6 @@ package org.cytoscape.biogwplugin.internal.gui
 
 import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.model.BGNode
-import org.cytoscape.biogwplugin.internal.model.BGNodeType
 import org.cytoscape.biogwplugin.internal.model.BGRelation
 import org.cytoscape.biogwplugin.internal.parser.BGReturnType
 import org.cytoscape.biogwplugin.internal.query.*
@@ -11,13 +10,13 @@ import org.cytoscape.biogwplugin.internal.util.Utility
 import org.cytoscape.biogwplugin.internal.util.sanitizeParameter
 import org.cytoscape.model.CyNetwork
 import org.cytoscape.work.TaskIterator
+import java.awt.FileDialog
 import java.awt.FlowLayout
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import java.io.File
 import java.util.ArrayList
 import java.util.prefs.Preferences
-import javax.rmi.CORBA.Util
 import javax.swing.*
 import javax.swing.event.ChangeEvent
 import javax.swing.event.ChangeListener
@@ -27,28 +26,39 @@ import kotlin.collections.Collection
 import kotlin.collections.HashMap
 import kotlin.collections.set
 import javax.swing.JFileChooser
+import java.io.FilenameFilter
 
 
 
 
-class BGOptionalURIField(val textField: JTextField, val listener: ActionListener): JPanel() {
+
+
+class BGOptionalURIField(val textField: JTextField, val serviceManager: BGServiceManager): JPanel() {
     val comboBox: JComboBox<String>
     init {
         val comboBoxOptions = arrayOf("Gene", "Protein")
         comboBox = JComboBox(comboBoxOptions)
         this.layout = FlowLayout()
         this.add(textField)
-        this.add(comboBox)
-        val searchButton = BGComponentButton("Lookup", this)
-        searchButton.addActionListener(listener)
-        searchButton.actionCommand = BGQueryBuilderController.ACTION_LOOKUP_NODE_URI
-        this.add(searchButton)
+
+        val searchIcon = ImageIcon(this.javaClass.classLoader.getResource("search.png"))
+        val uriSearchButton = JButton(searchIcon)
+        uriSearchButton.toolTipText = "Search for entity URIs."
+        uriSearchButton.addActionListener {
+            val lookupController = BGURILookupController(serviceManager, this) {
+                if (it != null) {
+                    textField.text = it.uri
+                    textField.toolTipText = it.description
+                }
+            }
+        }
+        this.add(uriSearchButton)
     }
 }
 
-class BGRelationQueryRow(relationTypes: Array<String>, val listener: ActionListener): JPanel() {
-    val fromNodeField = BGOptionalURIField(JTextField(), listener)
-    val toNodeField = BGOptionalURIField(JTextField(), listener)
+class BGRelationQueryRow(relationTypes: Array<String>, serviceManager: BGServiceManager): JPanel() {
+    val fromNodeField = BGOptionalURIField(JTextField(), serviceManager)
+    val toNodeField = BGOptionalURIField(JTextField(), serviceManager)
     val comboBox: JComboBox<String>
     init {
         this.layout = FlowLayout()
@@ -81,7 +91,7 @@ class BGRelationTypeField(val combobox: JComboBox<String>): JPanel() {
     }
 }
 
-private abstract class BGResultRow()
+private abstract class BGResultRow
 
 private class BGNodeResultRow(val node: BGNode): BGResultRow()
 private class BGRelationResultRow(val relation: BGRelation): BGResultRow()
@@ -105,7 +115,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
     private var  queries = HashMap<String, QueryTemplate>()
 
     init {
-        this.view = BGQueryBuilderView(this)
+        this.view = BGQueryBuilderView(this, serviceManager)
         this.queries = serviceManager.server.cache.queryTemplates
         updateUIAfterXMLLoad()
     }
@@ -204,14 +214,6 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         }
     }
 
-    private fun openXMLFile() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    private fun createQuery() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
     private fun runQuery() {
         val errorText = validatePropertyFields(currentQuery!!.parameters, view.parameterComponents)
         if (errorText != null) {
@@ -237,9 +239,6 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                     throw Exception("Unexpected query type: "+queryType.toString())
                 }
             }
-
-
-            //query = BGGenericQuery(SERVER_PATH, queryString, serviceManager.server.parser, queryType)
 
             query.addCompletion {
 
@@ -361,14 +360,6 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                     optionalUriField.textField.text = "?" + parameter.id
                 } else if (uri.startsWith("?")) {
                     optionalUriField.textField.text = uri.sanitizeParameter()
-                } else {
-                    // TODO: Should have a "validate" button instead, letting the user choose to check.
-                    // Validate the URI.
-//                        val validated = Utility.validateURI(uri) // UGLY HACK! Should be asynchronous:
-//                        if (!validated) {
-//                            return "Unknown URI!"
-//                        }
-
                 }
             } else if (component is JTextField) {
                 val field = component
@@ -403,32 +394,6 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
             if (!toUri.startsWith("?") && !toUri.startsWith("<http://")) return "The To URI is invalid."
         }
         return null
-    }
-
-    fun lookupNodeUri(button: BGComponentButton) {
-        val component = button.associatedComponent as? BGOptionalURIField
-        component?.let {
-            val optionalUriComponent = it
-            val searchString = optionalUriComponent.textField.text
-            val nodeType = when (optionalUriComponent.comboBox.selectedItem) {
-                "Protein" -> BGNodeType.Protein
-                "Gene" -> BGNodeType.Gene
-                else -> {
-                    throw Exception("Invalid node type selected in combobox!")
-                }
-            }
-            val query = BGQuickFetchNodeQuery(serviceManager, searchString, nodeType, serviceManager.server.parser)
-            query.addCompletion {
-                val results = query.returnData as? BGReturnNodeData ?: throw Exception("Invalid return data!")
-                val nodeSelectionViewController = BGQuickSearchResultsController(serviceManager, results.nodeData, {
-                    val node = it
-                    // Set the value of the field to the uri of the node found and selected.
-                    optionalUriComponent.textField.text = node.uri
-                    Utility.fightForFocus(view.mainFrame)
-                })
-            }
-            serviceManager.taskManager.execute(TaskIterator(query))
-        }
     }
 
     private fun filterRelationsToNodesInCurrentNetwork(filterOn: Boolean) {
@@ -622,18 +587,12 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         }
     }
 
-    private fun removeMultiQueryLine() {
-        view.removeLastMultiQueryLine()
-    }
-
     private fun addMultiQueryLine() {
-        view.addMultiQueryLine();
+        view.addMultiQueryLine()
     }
 
     override fun actionPerformed(e: ActionEvent) {
         when (e.actionCommand) {
-            ACTION_OPEN_XML_FILE -> openXMLFile()
-            ACTION_CREATE_QUERY -> createQuery()
             ACTION_RUN_QUERY -> runQuery()
             ACTION_CHANGED_QUERY -> updateSelectedQuery()
             ACTION_IMPORT_TO_SELECTED -> {
@@ -649,10 +608,6 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
             ACTION_PARSE_SPARQL -> parseSPARQLCode()
             ACTION_WRITE_SPARQL -> saveSPARQLToFile()
             ACTION_LOAD_SPARQL -> loadSPARQLFromFile()
-            ACTION_LOOKUP_NODE_URI -> {
-                val button = e.source as? BGComponentButton ?: throw Exception("Expected BGComponentButton")
-                lookupNodeUri(button)
-            }
             ACTION_FILTER_EDGES_TO_EXISTING -> {
                 val box = e.source as? JCheckBox ?: throw Exception("Expected JCheckBox!")
                 filterRelationsToNodesInCurrentNetwork(box.isSelected)
@@ -664,25 +619,19 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
 
 
     companion object {
-        public val SERVER_PATH = "http://www.semantic-systems-biology.org/biogateway/endpoint"
-        public val ACTION_OPEN_XML_FILE = "openXMLFile"
-        public val ACTION_PARSE_XML = "parseXML"
-        public val ACTION_CREATE_QUERY = "crateQuery"
-        public val ACTION_CHANGED_QUERY = "changedQueryComboBox"
-        public val ACTION_RUN_QUERY = "runBiogwQuery"
-        public val ACTION_IMPORT_TO_SELECTED = "importToSelectedNetwork"
-        public val ACTION_IMPORT_TO_NEW = "importToNewNetwork"
-        public val ACTION_GENERATE_SPARQL = "generateSPARQL"
-        public val ACTION_PARSE_SPARQL = "parseSPARQL"
-        public val ACTION_LOAD_SPARQL = "loadSPARQLFromFile"
-        public val ACTION_WRITE_SPARQL = "writeSPARQLToFile"
-        public val ACTION_RUN_MULTIQUERY = "runMultiQuery"
-        public val ACTION_ADD_MULTIQUERY_LINE = "addMultiRelation"
-        public val CHANGE_TAB_CHANGED = "tabbedPaneHasChanged"
-        public val UNIPROT_PREFIX = "http://identifiers.org/uniprot/"
-        public val ONTOLOGY_PREFIX = "http://purl.obolibrary.org/obo/"
-        public val ACTION_LOOKUP_NODE_URI = "Lookup Node Uri from name"
-        public val ACTION_FILTER_EDGES_TO_EXISTING = "filter relations to exsisting nodes"
+        val ACTION_CHANGED_QUERY = "changedQueryComboBox"
+        val ACTION_RUN_QUERY = "runBiogwQuery"
+        val ACTION_IMPORT_TO_SELECTED = "importToSelectedNetwork"
+        val ACTION_IMPORT_TO_NEW = "importToNewNetwork"
+        val ACTION_GENERATE_SPARQL = "generateSPARQL"
+        val ACTION_PARSE_SPARQL = "parseSPARQL"
+        val ACTION_LOAD_SPARQL = "loadSPARQLFromFile"
+        val ACTION_WRITE_SPARQL = "writeSPARQLToFile"
+        val ACTION_RUN_MULTIQUERY = "runMultiQuery"
+        val ACTION_ADD_MULTIQUERY_LINE = "addMultiRelation"
+        val UNIPROT_PREFIX = "http://identifiers.org/uniprot/"
+        val ONTOLOGY_PREFIX = "http://purl.obolibrary.org/obo/"
+        val ACTION_FILTER_EDGES_TO_EXISTING = "filter relations to exsisting nodes"
         val TAB_PANEL_BUILD_QUERY_INDEX = 0
         val TAB_PANEL_PREDEFINED_INDEX = 1
         val TAB_PANEL_SPARQL_INDEX = 2
