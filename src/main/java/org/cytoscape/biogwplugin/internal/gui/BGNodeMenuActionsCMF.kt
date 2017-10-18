@@ -11,6 +11,8 @@ import org.cytoscape.view.model.CyNetworkView
 import org.cytoscape.view.model.View
 import org.cytoscape.work.TaskIterator
 import java.awt.Desktop
+import java.awt.Toolkit
+import java.awt.datatransfer.StringSelection
 import java.awt.event.ActionListener
 import java.net.URI
 import javax.swing.JMenu
@@ -21,7 +23,7 @@ import javax.swing.JOptionPane
  * Created by sholmas on 06/07/2017.
  */
 
-class BGRelationSearchCMF(val gravity: Float, val serviceManager: BGServiceManager): CyNodeViewContextMenuFactory {
+class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceManager): CyNodeViewContextMenuFactory {
 
     override fun createMenuItem(netView: CyNetworkView?, nodeView: View<CyNode>?): CyMenuItem {
         val nodeUri = netView?.model?.defaultNodeTable?.getRow(nodeView?.model?.suid)?.get(Constants.BG_FIELD_IDENTIFIER_URI, String::class.java) ?: throw Exception("Node URI not found in CyNetwork table. Are you sure you are querying a node created with this plugin?")
@@ -44,10 +46,17 @@ class BGRelationSearchCMF(val gravity: Float, val serviceManager: BGServiceManag
             parentMenu.addSeparator()
             parentMenu.add(createFetchAssociatedGeneOrProteinMenuItem(netView, BGNodeType.Protein, nodeUri))
         }
+
+        createCopyURIMenu(nodeUri)?.let {
+            parentMenu.addSeparator()
+            parentMenu.add(it)
+        }
+
         createOpenURIMenu(nodeUri)?.let {
             parentMenu.addSeparator()
             parentMenu.add(it)
         }
+
 
         return CyMenuItem(parentMenu, gravity)
     }
@@ -185,6 +194,18 @@ class BGRelationSearchCMF(val gravity: Float, val serviceManager: BGServiceManag
             serviceManager.taskManager.execute(TaskIterator(query))
         }
         return searchTFTG
+    }
+
+    fun createCopyURIMenu(nodeUri: String): JMenuItem? {
+        if (nodeUri.isEmpty()) return null
+
+        val menuItem = JMenuItem("Copy node URI to clipboard")
+        menuItem.addActionListener {
+            val selection = StringSelection(nodeUri)
+            val clipboard = Toolkit.getDefaultToolkit().systemClipboard
+            clipboard.setContents(selection, selection)
+        }
+        return menuItem
     }
 
     fun createOpenURIMenu(nodeUri: String): JMenuItem? {

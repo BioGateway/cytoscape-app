@@ -88,6 +88,7 @@ class BGServer(private val serviceManager: BGServiceManager) {
             if (!node.uri.startsWith("http")) {
                 return
             }
+
             getNodeFromServer(node.uri) {
                 if (it != null) {
                     println("Cache miss: "+it.name)

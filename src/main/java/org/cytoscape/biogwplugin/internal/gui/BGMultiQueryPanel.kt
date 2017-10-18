@@ -354,7 +354,7 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager): JPanel() {
             true -> uri.removePrefix("?")
             false -> {
                 if (uri.startsWith("<http://")) {
-                    uri.replace("<", "").replace(">", "").replace("http://", "").replace("/", "_").replace(".", "_")
+                    uri.replace("<", "").replace(">", "").replace("http://", "").replace("/", "_").replace(".", "_").replace("-", "_")
                 } else {
                     throw Exception("Invalid from URI value.")
                 }

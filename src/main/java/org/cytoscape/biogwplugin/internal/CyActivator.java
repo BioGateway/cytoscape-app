@@ -7,7 +7,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.biogwplugin.internal.gui.BGChangeEdgeTypeCMF;
 import org.cytoscape.biogwplugin.internal.gui.BGOpenEdgeSourceViewCMF;
-import org.cytoscape.biogwplugin.internal.gui.BGRelationSearchCMF;
+import org.cytoscape.biogwplugin.internal.gui.BGNodeMenuActionsCMF;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
@@ -49,7 +49,7 @@ public class CyActivator extends AbstractCyActivator {
         //BGRelationPostSearchCMF postSearchCMF = new BGRelationPostSearchCMF(serviceManager);
         //BGRelationPreSearchCMF preSearchCMF = new BGRelationPreSearchCMF(serviceManager);
 
-        BGRelationSearchCMF relationSearchFromCMF = new BGRelationSearchCMF(0F, serviceManager);
+        BGNodeMenuActionsCMF relationSearchFromCMF = new BGNodeMenuActionsCMF(0F, serviceManager);
         registerAllServices(bundleContext, relationSearchFromCMF, ezProps("preferredMenu", "BioGateway"));
 
         BGChangeEdgeTypeCMF changeEdgeTypeCMF = new BGChangeEdgeTypeCMF(0F, serviceManager);
@@ -60,8 +60,8 @@ public class CyActivator extends AbstractCyActivator {
 
 
         /*
-        BGRelationSearchCMF postSearchCMF = new BGRelationSearchCMF(serviceManager, BGRelationsQuery.Direction.POST, "Fetch relations from this node");
-        BGRelationSearchCMF preSearchCMF = new BGRelationSearchCMF(serviceManager, BGRelationsQuery.Direction.PRE, "Fetch relations to this node");
+        BGNodeMenuActionsCMF postSearchCMF = new BGNodeMenuActionsCMF(serviceManager, BGRelationsQuery.Direction.POST, "Fetch relations from this node");
+        BGNodeMenuActionsCMF preSearchCMF = new BGNodeMenuActionsCMF(serviceManager, BGRelationsQuery.Direction.PRE, "Fetch relations to this node");
         BGMultiRelationSearchCMF multiPostSearchCMF = new BGMultiRelationSearchCMF(serviceManager, BGRelationsQuery.Direction.POST, "Get relations from selected nodes");
         BGMultiRelationSearchCMF multiPreSearchCMF = new BGMultiRelationSearchCMF(serviceManager, BGRelationsQuery.Direction.PRE, "Get relations to selected nodes");
 

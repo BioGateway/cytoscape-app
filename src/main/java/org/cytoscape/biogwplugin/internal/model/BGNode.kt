@@ -50,6 +50,16 @@ open class BGNode {
         this.taxon = taxon
     }
 
+    fun generateName(): String {
+
+        if (uri.startsWith("http://")) {
+            val suffix = uri.substringAfterLast("/")
+            return suffix
+        }
+
+        return "Unnamed"
+    }
+
     fun nameStringArray(): Array<String> {
         return arrayOf(this.uri, this.name ?: "", this.description ?: "", this.taxon ?: "")
     }

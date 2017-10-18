@@ -82,7 +82,10 @@ class BGParser(private val serviceManager: BGServiceManager) {
         val server = serviceManager.server
 
         val columnNames = when (returnType) {
-            BGReturnType.RELATION_MULTIPART_NAMED -> arrayOf("From node", "Relation Uri", "To node")
+            BGReturnType.RELATION_MULTIPART_NAMED -> {
+                reader.readLine() // Read the first line and throw it away, so it won't get muddled in with the relations.
+                arrayOf("From node", "Relation Uri", "To node")
+            }
             else -> reader.readLine().split("\t").dropLastWhile { it.isEmpty() }.map { it.replace("\"", "") }.toTypedArray()
         }
 

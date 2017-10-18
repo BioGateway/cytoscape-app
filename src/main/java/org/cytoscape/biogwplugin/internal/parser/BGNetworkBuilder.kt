@@ -123,7 +123,13 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
     fun addNodeToNetwork(node: BGNode, network: CyNetwork, table: CyTable): CyNode {
         val cyNode = network.addNode()
         cyNode.setUri(node.uri, network)
-        node.name?.let { cyNode.setName(it, network) }
+        val name = node.name
+        if (name != null) {
+            cyNode.setName(name, network)
+        } else {
+            cyNode.setName(node.generateName(), network)
+        }
+
         node.description?.let { cyNode.setDescription(it, network)}
         // TODO: WARNING: Unknown behaviour if the CyNodes CyNetwork is deleted!
         node.cyNodes.add(cyNode)
