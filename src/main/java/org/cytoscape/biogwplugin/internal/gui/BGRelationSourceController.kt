@@ -1,6 +1,6 @@
 package org.cytoscape.biogwplugin.internal.gui
 
-import org.cytoscape.biogwplugin.internal.model.BGNode
+import org.cytoscape.biogwplugin.internal.model.BGRelation
 import org.cytoscape.biogwplugin.internal.model.BGRelationMetadata
 import java.awt.Desktop
 import java.awt.event.ActionEvent
@@ -15,6 +15,9 @@ class BGRelationSourceController(val metadata: BGRelationMetadata): ActionListen
     init {
         val model = view.sourceInformationTable.model as DefaultTableModel
         model.setColumnIdentifiers(arrayOf("Source", "Values"))
+
+        model.addRow(arrayOf("Edge URI:", metadata.relationTypeUri))
+
         for (uri in metadata.pubmedUris) {
             model.addRow(arrayOf("Pubmed URI:", uri))
         }
@@ -47,7 +50,7 @@ class BGRelationSourceController(val metadata: BGRelationMetadata): ActionListen
     }
 
     override fun actionPerformed(e: ActionEvent?) {
-        if (e?.source == view.openPubmedURLButton)
+        if (e?.source == view.openSelectedURLButton)
         openSelectedPubmedId()
     }
 }

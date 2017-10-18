@@ -12,10 +12,10 @@
         <properties/>
         <border type="none"/>
         <children>
-          <component id="6fa1c" class="javax.swing.JButton" binding="openPubmedURLButton" default-binding="true">
+          <component id="6fa1c" class="javax.swing.JButton" binding="openSelectedURLButton">
             <constraints border-constraint="East"/>
             <properties>
-              <text value="Open Pubmed URL"/>
+              <text value="Open Selected URL"/>
             </properties>
           </component>
         </children>

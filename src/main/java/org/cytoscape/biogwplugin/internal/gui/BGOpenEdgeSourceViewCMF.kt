@@ -29,7 +29,7 @@ class BGOpenEdgeSourceViewCMF(val gravity: Float, val serviceManager: BGServiceM
         item.addActionListener {
             val query = BGFetchPubmedIdQuery(serviceManager, fromNodeUri, edgeUri, toNodeUri)
                 query.addCompletion {
-                    val metadata = BGRelationMetadata()
+                    val metadata = BGRelationMetadata(edgeUri)
                     metadata.sourceGraph = sourceGraph
                     val data = it as? BGReturnPubmedIds ?: throw Exception("Invalid return data!")
                     metadata.pubmedUris.addAll(data.pubmedIDlist)

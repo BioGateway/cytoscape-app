@@ -2,7 +2,7 @@ package org.cytoscape.biogwplugin.internal.model
 
 class BGRelation(var fromNode: BGNode, val relationType: BGRelationType, var toNode: BGNode) {
 
-    val metadata = BGRelationMetadata()
+    val metadata = BGRelationMetadata(relationType.uri)
 
     fun stringArray(): Array<String> {
         return arrayOf(fromNode.uri, relationType.uri, toNode.uri)
@@ -33,7 +33,7 @@ class BGRelation(var fromNode: BGNode, val relationType: BGRelationType, var toN
     }
 }
 
-class BGRelationMetadata() {
+class BGRelationMetadata(val relationTypeUri: String) {
     var sourceGraph: String? = null
     var pubmedUris = HashSet<String>()
     val confidence: Double? = null
