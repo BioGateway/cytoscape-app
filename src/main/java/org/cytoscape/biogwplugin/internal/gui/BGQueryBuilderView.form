@@ -166,7 +166,7 @@
                     <properties/>
                     <border type="none"/>
                     <children>
-                      <component id="c341a" class="javax.swing.JTable" binding="resultTable">
+                      <component id="c341a" class="javax.swing.JTable" binding="resultTable" custom-create="true">
                         <constraints/>
                         <properties>
                           <autoCreateRowSorter value="false"/>

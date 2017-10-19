@@ -27,6 +27,9 @@ import kotlin.collections.HashMap
 import kotlin.collections.set
 import javax.swing.JFileChooser
 
+interface BGRelationResultViewTooltipDataSource {
+    fun getTooltipForResultRowAndColumn(row: Int, column: Int): String?
+}
 
 class BGOptionalURIField(val textField: JTextField, val serviceManager: BGServiceManager): JPanel() {
     val comboBox: JComboBox<String>
@@ -93,7 +96,19 @@ private class BGRelationResultRow(val relation: BGRelation): BGResultRow()
 
 class BGComponentButton(label: String, val associatedComponent: JComponent): JButton(label)
 
-class BGQueryBuilderController(private val serviceManager: BGServiceManager) : ActionListener, ChangeListener {
+class BGQueryBuilderController(private val serviceManager: BGServiceManager) : ActionListener, ChangeListener, BGRelationResultViewTooltipDataSource {
+
+    override fun getTooltipForResultRowAndColumn(row: Int, column: Int): String? {
+        val modelRow = view.resultTable.convertRowIndexToModel(row)
+        val relationRow = currentResultsInTable.get(modelRow)
+        val relation = (relationRow as? BGRelationResultRow)?.relation
+        relation?.let {
+            if (column == 0) return it.fromNode.description
+            if (column == 1) return it.relationType.description
+            if (column == 2) return it.toNode.description
+        }
+        return null
+    }
 
     private var preferences = Preferences.userRoot().node(javaClass.name)
 
@@ -110,7 +125,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
     private var  queries = HashMap<String, QueryTemplate>()
 
     init {
-        this.view = BGQueryBuilderView(this, serviceManager)
+        this.view = BGQueryBuilderView(this, this, serviceManager)
         this.queries = serviceManager.server.cache.queryTemplates
         updateUIAfterXMLLoad()
     }

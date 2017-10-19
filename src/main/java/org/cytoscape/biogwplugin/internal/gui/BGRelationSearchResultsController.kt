@@ -12,9 +12,20 @@ import javax.swing.RowFilter
 import javax.swing.table.DefaultTableModel
 import javax.swing.table.TableRowSorter
 
-class BGRelationSearchResultsController(val serviceManager: BGServiceManager, private val relationsFound: ArrayList<BGRelation>, val columnNames: Array<String>, val network: CyNetwork) : ActionListener {
+class BGRelationSearchResultsController(val serviceManager: BGServiceManager, private val relationsFound: ArrayList<BGRelation>, val columnNames: Array<String>, val network: CyNetwork) : ActionListener, BGRelationResultViewTooltipDataSource {
 
-    private val view: BGRelationSearchResultsView = BGRelationSearchResultsView(this)
+    override fun getTooltipForResultRowAndColumn(row: Int, column: Int): String? {
+        val modelRow = view.resultTable.convertRowIndexToModel(row)
+        val relation = relationsFound[modelRow]
+        if (column == 0) return relation.fromNode.description
+        if (column == 1) return relation.relationType.description
+        if (column == 2) return relation.toNode.description
+        return null
+    }
+
+
+
+    private val view: BGRelationSearchResultsView = BGRelationSearchResultsView(this, this)
 
     init {
         val model = view.resultTable.model as DefaultTableModel
