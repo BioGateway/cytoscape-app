@@ -4,6 +4,7 @@ import net.miginfocom.swing.MigLayout;
 import org.cytoscape.biogwplugin.internal.BGServiceManager;
 import org.cytoscape.biogwplugin.internal.query.BGQueryParameter;
 import org.cytoscape.biogwplugin.internal.query.QueryTemplate;
+import org.cytoscape.biogwplugin.internal.util.Constants;
 import org.cytoscape.biogwplugin.internal.util.Utility;
 
 import javax.swing.*;
@@ -60,6 +61,8 @@ public class BGQueryBuilderView implements ChangeListener {
     private JButton loadQueryButton;
     private JButton saveQueryButton;
     private JTextField filterResultsTextField;
+    private JButton selectUpstreamRelationsButton;
+    private JCheckBox filterSelectedCheckBox;
     private TableRowSorter<TableModel> sorter;
 
 
@@ -105,6 +108,8 @@ public class BGQueryBuilderView implements ChangeListener {
         loadQueryButton.setActionCommand(Companion.getACTION_LOAD_SPARQL());
         saveQueryButton.addActionListener(listener);
         saveQueryButton.setActionCommand(Companion.getACTION_WRITE_SPARQL());
+        selectUpstreamRelationsButton.addActionListener(listener);
+        selectUpstreamRelationsButton.setActionCommand(Companion.getACTION_SELECT_UPSTREAM_RELATIONS());
 
         DefaultTableModel tableModel = new DefaultTableModel() {
             @Override
@@ -115,7 +120,7 @@ public class BGQueryBuilderView implements ChangeListener {
         sorter = new TableRowSorter<TableModel>(tableModel);
         resultTable.setModel(tableModel);
         resultTable.setRowSorter(sorter);
-        filterResultsTextField.setPreferredSize(new Dimension(200, Utility.INSTANCE.getJTextFieldHeight()));
+        //filterResultsTextField.setPreferredSize(new Dimension(200, Utility.INSTANCE.getJTextFieldHeight()));
         filterResultsTextField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
@@ -133,6 +138,10 @@ public class BGQueryBuilderView implements ChangeListener {
             }
         });
 
+    }
+
+    public void clearFilterField() {
+        filterResultsTextField.setText("");
     }
 
     private void filterResultRows() {
@@ -157,7 +166,8 @@ public class BGQueryBuilderView implements ChangeListener {
             switch (parameter.getType()) {
                 case OPTIONAL_URI:
                     JTextField optionalField = new JTextField();
-                    optionalField.setPreferredSize(new Dimension(280, Utility.INSTANCE.getJTextFieldHeight()));
+                    //optionalField.setPreferredSize(new Dimension(280, Utility.INSTANCE.getJTextFieldHeight()));
+                    optionalField.setColumns(Constants.INSTANCE.getBG_QUERY_BUILDER_URI_FIELD_COLUMNS());
                     //component = optionalField;
                     component = new BGOptionalURIField(optionalField, serviceManager);
                     break;
@@ -165,7 +175,8 @@ public class BGQueryBuilderView implements ChangeListener {
                 case TEXT:
                 case UNIPROT_ID:
                     JTextField field = new JTextField();
-                    field.setPreferredSize(new Dimension(280, Utility.INSTANCE.getJTextFieldHeight()));
+                    field.setColumns(Constants.INSTANCE.getBG_QUERY_BUILDER_URI_FIELD_COLUMNS());
+                    //field.setPreferredSize(new Dimension(280, Utility.INSTANCE.getJTextFieldHeight()));
                     component = field;
                     break;
                 case CHECKBOX:
@@ -500,16 +511,32 @@ public class BGQueryBuilderView implements ChangeListener {
         filterRelationsToExistingCheckBox.setText("Only show relations to nodes in current network");
         panel7.add(filterRelationsToExistingCheckBox);
         final JPanel panel8 = new JPanel();
-        panel8.setLayout(new FlowLayout(FlowLayout.RIGHT, 5, 5));
+        panel8.setLayout(new BorderLayout(0, 0));
         panel6.add(panel8, BorderLayout.NORTH);
-        final JLabel label1 = new JLabel();
-        label1.setText("Filter results:");
-        panel8.add(label1);
-        filterResultsTextField = new JTextField();
-        panel8.add(filterResultsTextField);
         final JPanel panel9 = new JPanel();
         panel9.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        mainPanel.add(panel9, BorderLayout.NORTH);
+        panel8.add(panel9, BorderLayout.WEST);
+        selectUpstreamRelationsButton = new JButton();
+        selectUpstreamRelationsButton.setHorizontalTextPosition(11);
+        selectUpstreamRelationsButton.setText("Select upstream relations");
+        selectUpstreamRelationsButton.setToolTipText("Select all relations leading to the relations currently selected.");
+        panel9.add(selectUpstreamRelationsButton);
+        filterSelectedCheckBox = new JCheckBox();
+        filterSelectedCheckBox.setText("Filter selected");
+        filterSelectedCheckBox.setToolTipText("Only show currently selected relations.");
+        panel9.add(filterSelectedCheckBox);
+        final JPanel panel10 = new JPanel();
+        panel10.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        panel8.add(panel10, BorderLayout.EAST);
+        final JLabel label1 = new JLabel();
+        label1.setText("Filter results:");
+        panel10.add(label1);
+        filterResultsTextField = new JTextField();
+        filterResultsTextField.setColumns(10);
+        panel10.add(filterResultsTextField);
+        final JPanel panel11 = new JPanel();
+        panel11.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        mainPanel.add(panel11, BorderLayout.NORTH);
     }
 
     /**

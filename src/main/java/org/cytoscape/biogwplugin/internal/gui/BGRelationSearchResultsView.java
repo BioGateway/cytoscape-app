@@ -25,6 +25,8 @@ public class BGRelationSearchResultsView {
     private JTable resultTable;
     private JButton importToExisting;
     private JTextField filterTextField;
+    private JButton selectUpstreamRelationsButton;
+    private JCheckBox filterSelectedCheckBox;
     private TableRowSorter<TableModel> sorter;
 
     public BGRelationSearchResultsView(ActionListener listener) {
@@ -53,7 +55,7 @@ public class BGRelationSearchResultsView {
         sorter = new TableRowSorter<TableModel>(tableModel);
         resultTable.setModel(tableModel);
         resultTable.setRowSorter(sorter);
-        filterTextField.setPreferredSize(new Dimension(200, Utility.INSTANCE.getJTextFieldHeight()));
+        //filterTextField.setPreferredSize(new Dimension(200, Utility.INSTANCE.getJTextFieldHeight()));
         filterTextField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
@@ -125,13 +127,29 @@ public class BGRelationSearchResultsView {
         resultTable.setAutoCreateRowSorter(false);
         scrollPane1.setViewportView(resultTable);
         final JPanel panel3 = new JPanel();
-        panel3.setLayout(new FlowLayout(FlowLayout.RIGHT, 5, 5));
+        panel3.setLayout(new BorderLayout(0, 0));
         panel1.add(panel3, BorderLayout.NORTH);
+        final JPanel panel4 = new JPanel();
+        panel4.setLayout(new FlowLayout(FlowLayout.RIGHT, 5, 5));
+        panel3.add(panel4, BorderLayout.EAST);
         final JLabel label1 = new JLabel();
         label1.setText("Filter results:");
-        panel3.add(label1);
+        panel4.add(label1);
         filterTextField = new JTextField();
-        panel3.add(filterTextField);
+        filterTextField.setColumns(10);
+        panel4.add(filterTextField);
+        final JPanel panel5 = new JPanel();
+        panel5.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        panel3.add(panel5, BorderLayout.WEST);
+        selectUpstreamRelationsButton = new JButton();
+        selectUpstreamRelationsButton.setHorizontalTextPosition(11);
+        selectUpstreamRelationsButton.setText("Select upstream relations");
+        selectUpstreamRelationsButton.setToolTipText("Select all relations leading to the relations currently selected.");
+        panel5.add(selectUpstreamRelationsButton);
+        filterSelectedCheckBox = new JCheckBox();
+        filterSelectedCheckBox.setText("Filter selected");
+        filterSelectedCheckBox.setToolTipText("Only show currently selected relations.");
+        panel5.add(filterSelectedCheckBox);
     }
 
     /**

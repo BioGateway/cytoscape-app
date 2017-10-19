@@ -2,7 +2,7 @@
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="org.cytoscape.biogwplugin.internal.gui.BGRelationSearchResultsView">
   <grid id="27dc6" binding="panel1" default-binding="true" layout-manager="BorderLayout" hgap="0" vgap="0">
     <constraints>
-      <xy x="20" y="20" width="500" height="400"/>
+      <xy x="20" y="20" width="632" height="400"/>
     </constraints>
     <properties/>
     <border type="none"/>
@@ -40,21 +40,52 @@
           </component>
         </children>
       </scrollpane>
-      <grid id="2d654" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="2">
+      <grid id="cd7c2" layout-manager="BorderLayout" hgap="0" vgap="0">
         <constraints border-constraint="North"/>
         <properties/>
         <border type="none"/>
         <children>
-          <component id="e9026" class="javax.swing.JLabel">
-            <constraints/>
-            <properties>
-              <text value="Filter results:"/>
-            </properties>
-          </component>
-          <component id="2fb43" class="javax.swing.JTextField" binding="filterTextField">
-            <constraints/>
+          <grid id="2d654" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="2">
+            <constraints border-constraint="East"/>
             <properties/>
-          </component>
+            <border type="none"/>
+            <children>
+              <component id="e9026" class="javax.swing.JLabel">
+                <constraints/>
+                <properties>
+                  <text value="Filter results:"/>
+                </properties>
+              </component>
+              <component id="2fb43" class="javax.swing.JTextField" binding="filterTextField">
+                <constraints/>
+                <properties>
+                  <columns value="10"/>
+                </properties>
+              </component>
+            </children>
+          </grid>
+          <grid id="1f954" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+            <constraints border-constraint="West"/>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <component id="c5baf" class="javax.swing.JButton" binding="selectUpstreamRelationsButton" default-binding="true">
+                <constraints/>
+                <properties>
+                  <horizontalTextPosition value="11"/>
+                  <text value="Select upstream relations"/>
+                  <toolTipText value="Select all relations leading to the relations currently selected."/>
+                </properties>
+              </component>
+              <component id="b5cf9" class="javax.swing.JCheckBox" binding="filterSelectedCheckBox" default-binding="true">
+                <constraints/>
+                <properties>
+                  <text value="Filter selected"/>
+                  <toolTipText value="Only show currently selected relations."/>
+                </properties>
+              </component>
+            </children>
+          </grid>
         </children>
       </grid>
     </children>

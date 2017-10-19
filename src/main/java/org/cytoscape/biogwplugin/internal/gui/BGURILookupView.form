@@ -12,10 +12,6 @@
         <properties/>
         <border type="none"/>
         <children>
-          <component id="4b15a" class="javax.swing.JTextField" binding="searchField">
-            <constraints border-constraint="Center"/>
-            <properties/>
-          </component>
           <grid id="7fda6" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="2">
             <constraints border-constraint="East"/>
             <properties/>
@@ -39,12 +35,25 @@
               </component>
             </children>
           </grid>
-          <component id="731c0" class="javax.swing.JLabel">
-            <constraints border-constraint="West"/>
-            <properties>
-              <text value="Node name:"/>
-            </properties>
-          </component>
+          <grid id="21ec" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+            <constraints border-constraint="Center"/>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <component id="731c0" class="javax.swing.JLabel">
+                <constraints/>
+                <properties>
+                  <text value="Node name:"/>
+                </properties>
+              </component>
+              <component id="4b15a" class="javax.swing.JTextField" binding="searchField">
+                <constraints/>
+                <properties>
+                  <columns value="15"/>
+                </properties>
+              </component>
+            </children>
+          </grid>
         </children>
       </grid>
       <grid id="ea04a" layout-manager="BorderLayout" hgap="0" vgap="0">
@@ -65,7 +74,9 @@
               </component>
               <component id="5ea8f" class="javax.swing.JTextField" binding="filterTextField">
                 <constraints/>
-                <properties/>
+                <properties>
+                  <columns value="10"/>
+                </properties>
               </component>
             </children>
           </grid>

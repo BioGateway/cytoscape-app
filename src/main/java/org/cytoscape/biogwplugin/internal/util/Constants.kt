@@ -16,4 +16,5 @@ object Constants {
     val BG_FILE_EXTENSION = "bgwsparql"
     val BG_PREFERENCES_LAST_FOLDER = "biogatewayPluginLastOpenedFolder"
     val BG_RELATION_COUNT_WARNING_LIMIT = 5000
+    val BG_QUERY_BUILDER_URI_FIELD_COLUMNS = 20
 }

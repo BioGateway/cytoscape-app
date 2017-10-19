@@ -3,6 +3,7 @@ package org.cytoscape.biogwplugin.internal.gui
 import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.model.BGRelationType
 import org.cytoscape.biogwplugin.internal.query.BGQuery
+import org.cytoscape.biogwplugin.internal.util.Constants
 import org.cytoscape.biogwplugin.internal.util.Utility
 import java.awt.Dimension
 import java.awt.FlowLayout
@@ -208,9 +209,11 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager): JPanel() {
 
     private fun createQueryLine(): BGMultiQueryLine {
         val fromField = JTextField()
-        fromField.preferredSize = Dimension(290, Utility.getJTextFieldHeight())
+        //fromField.preferredSize = Dimension(290, Utility.getJTextFieldHeight())
+        fromField.columns = Constants.BG_QUERY_BUILDER_URI_FIELD_COLUMNS
         val toField = JTextField()
-        toField.preferredSize = Dimension(290, Utility.getJTextFieldHeight())
+        //toField.preferredSize = Dimension(290, Utility.getJTextFieldHeight())
+        toField.columns = Constants.BG_QUERY_BUILDER_URI_FIELD_COLUMNS
 
         val relationTypeBox = JComboBox(relationTypes.keys.toTypedArray())
         val queryLine = BGMultiQueryLine(serviceManager, fromField, relationTypeBox, toField, variableManager)

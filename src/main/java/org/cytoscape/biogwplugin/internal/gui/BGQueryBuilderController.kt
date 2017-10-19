@@ -10,7 +10,6 @@ import org.cytoscape.biogwplugin.internal.util.Utility
 import org.cytoscape.biogwplugin.internal.util.sanitizeParameter
 import org.cytoscape.model.CyNetwork
 import org.cytoscape.work.TaskIterator
-import java.awt.FileDialog
 import java.awt.FlowLayout
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
@@ -26,11 +25,6 @@ import kotlin.collections.Collection
 import kotlin.collections.HashMap
 import kotlin.collections.set
 import javax.swing.JFileChooser
-import java.io.FilenameFilter
-
-
-
-
 
 
 class BGOptionalURIField(val textField: JTextField, val serviceManager: BGServiceManager): JPanel() {
@@ -591,6 +585,100 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         view.addMultiQueryLine()
     }
 
+
+    private fun selectUpstreamRelations() {
+        // Keep working with the model's indices, translate from table immediately.
+        view.clearFilterField()
+
+        val selectedRows = view.resultTable.selectedRows.map { view.resultTable.convertRowIndexToModel(it) }.toHashSet()
+
+        var upstreamRelationRows = findUpstreamsRelations(selectedRows).toHashSet()
+
+        var newRowCount = upstreamRelationRows.size
+        var infiniteLoopLimiter = 100 // In case something bad happens, it will only loop 100 times before giving up.
+
+        var newRows = upstreamRelationRows
+
+        while (newRowCount != 0 && infiniteLoopLimiter-- > 0) {
+            newRows = findUpstreamsRelations(newRows).toHashSet()
+            newRowCount = newRows.subtract(upstreamRelationRows).size
+            upstreamRelationRows = upstreamRelationRows.union(newRows).toHashSet()
+        }
+
+        for (modelRow in upstreamRelationRows) {
+            val row = view.resultTable.convertRowIndexToView(modelRow)
+            view.resultTable.addRowSelectionInterval(row, row)
+        }
+    }
+
+    private fun findUpstreamsRelations(selectedRows: Collection<Int>): Collection<Int> {
+        var matchingRows = ArrayList<Int>()
+        for (rowNumber in selectedRows) {
+            val resultRow = currentResultsInTable[rowNumber]
+            val relation = (resultRow as? BGRelationResultRow)?.relation
+            if (relation != null) {
+                val fromNodeUri = relation.fromNode.uri
+                matchingRows.addAll(getRowsWithRelationsTo(fromNodeUri))
+                }
+        }
+        return matchingRows
+    }
+
+    // These rows are in the Model space. Must be translated to use in Table space.
+    private fun getRowsWithRelationsTo(uri: String): Collection<Int> {
+        var matchingRows = ArrayList<Int>()
+        for (row in currentResultsInTable.keys) {
+            val relation = (currentResultsInTable[row] as? BGRelationResultRow)?.relation
+            if (relation != null) {
+                if (relation.toNode.uri == uri) {
+                    matchingRows.add(row)
+                }
+            }
+        }
+        return matchingRows
+    }
+
+    /*
+
+    private fun importSelectedResults(network: CyNetwork?, returnType: BGReturnType) {
+        var network = network
+        val server = serviceManager.server
+        // 1. Get the selected lines from the table.
+        val nodes = HashMap<String, BGNode>()
+        val relations = ArrayList<BGRelation>()
+        val model = view.resultTable.model as DefaultTableModel
+        for (rowNumber in view.resultTable.selectedRows) {
+
+            val resultRow = currentResultsInTable[view.resultTable.convertRowIndexToModel(rowNumber)]
+
+            when(returnType) {
+                BGReturnType.NODE_LIST, BGReturnType.NODE_LIST_DESCRIPTION, BGReturnType.NODE_LIST_DESCRIPTION_TAXON -> {
+                    val node = (resultRow as? BGNodeResultRow)?.node ?: throw Exception("Result must be a node!")
+                    nodes.put(node.uri, node)
+                }
+                BGReturnType.RELATION_TRIPLE, BGReturnType.RELATION_TRIPLE_NAMED, BGReturnType.RELATION_MULTIPART_NAMED -> {
+                    val relation = (resultRow as? BGRelationResultRow)?.relation ?: throw Exception("Result must be a relation!")
+                    nodes.put(relation.fromNode.uri, relation.fromNode)
+                    nodes.put(relation.fromNode.uri, relation.fromNode)
+                    relations.add(relation)
+                }
+            }
+
+        }
+        // 2. The nodes have already been fetched. There should be a cache storing them somewhere.
+        if (network == null) {
+            network = serviceManager.server.networkBuilder.createNetworkFromBGNodes(nodes.values)
+        } else {
+            serviceManager.server.networkBuilder.addBGNodesToNetwork(nodes.values, network)
+        }
+        server.networkBuilder.addRelationsToNetwork(network, relations)
+        serviceManager.networkManager.addNetwork(network)
+        serviceManager.server.networkBuilder.destroyAndRecreateNetworkView(network, serviceManager)
+    }
+
+
+     */
+
     override fun actionPerformed(e: ActionEvent) {
         when (e.actionCommand) {
             ACTION_RUN_QUERY -> runQuery()
@@ -612,6 +700,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                 val box = e.source as? JCheckBox ?: throw Exception("Expected JCheckBox!")
                 filterRelationsToNodesInCurrentNetwork(box.isSelected)
             }
+            ACTION_SELECT_UPSTREAM_RELATIONS -> selectUpstreamRelations()
             else -> {
             }
         }
@@ -629,6 +718,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         val ACTION_WRITE_SPARQL = "writeSPARQLToFile"
         val ACTION_RUN_MULTIQUERY = "runMultiQuery"
         val ACTION_ADD_MULTIQUERY_LINE = "addMultiRelation"
+        val ACTION_SELECT_UPSTREAM_RELATIONS = "selectUpstreamRelations"
         val UNIPROT_PREFIX = "http://identifiers.org/uniprot/"
         val ONTOLOGY_PREFIX = "http://purl.obolibrary.org/obo/"
         val ACTION_FILTER_EDGES_TO_EXISTING = "filter relations to exsisting nodes"

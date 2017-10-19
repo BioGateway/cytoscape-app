@@ -200,21 +200,52 @@
                       </component>
                     </children>
                   </grid>
-                  <grid id="11213" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="2">
+                  <grid id="11213" layout-manager="BorderLayout" hgap="0" vgap="0">
                     <constraints border-constraint="North"/>
                     <properties/>
                     <border type="none"/>
                     <children>
-                      <component id="aec48" class="javax.swing.JLabel">
-                        <constraints/>
-                        <properties>
-                          <text value="Filter results:"/>
-                        </properties>
-                      </component>
-                      <component id="f056c" class="javax.swing.JTextField" binding="filterResultsTextField">
-                        <constraints/>
+                      <grid id="2e713" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+                        <constraints border-constraint="West"/>
                         <properties/>
-                      </component>
+                        <border type="none"/>
+                        <children>
+                          <component id="83b72" class="javax.swing.JButton" binding="selectUpstreamRelationsButton" default-binding="true">
+                            <constraints/>
+                            <properties>
+                              <horizontalTextPosition value="11"/>
+                              <text value="Select upstream relations"/>
+                              <toolTipText value="Select all relations leading to the relations currently selected."/>
+                            </properties>
+                          </component>
+                          <component id="a2cfd" class="javax.swing.JCheckBox" binding="filterSelectedCheckBox" default-binding="true">
+                            <constraints/>
+                            <properties>
+                              <text value="Filter selected"/>
+                              <toolTipText value="Only show currently selected relations."/>
+                            </properties>
+                          </component>
+                        </children>
+                      </grid>
+                      <grid id="fe9b2" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+                        <constraints border-constraint="East"/>
+                        <properties/>
+                        <border type="none"/>
+                        <children>
+                          <component id="aec48" class="javax.swing.JLabel">
+                            <constraints/>
+                            <properties>
+                              <text value="Filter results:"/>
+                            </properties>
+                          </component>
+                          <component id="f056c" class="javax.swing.JTextField" binding="filterResultsTextField">
+                            <constraints/>
+                            <properties>
+                              <columns value="10"/>
+                            </properties>
+                          </component>
+                        </children>
+                      </grid>
                     </children>
                   </grid>
                 </children>
