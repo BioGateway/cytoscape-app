@@ -3,6 +3,7 @@ package org.cytoscape.biogwplugin.internal.gui
 import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.model.BGNode
 import org.cytoscape.biogwplugin.internal.model.BGRelation
+import org.cytoscape.biogwplugin.internal.parser.BGNetworkBuilder
 import org.cytoscape.biogwplugin.internal.parser.BGReturnType
 import org.cytoscape.biogwplugin.internal.query.*
 import org.cytoscape.biogwplugin.internal.util.Constants
@@ -312,7 +313,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         // 1. Get the selected lines from the table.
         val nodes = HashMap<String, BGNode>()
         val relations = ArrayList<BGRelation>()
-        val model = view.resultTable.model as DefaultTableModel
+//        val model = view.resultTable.model as DefaultTableModel
         for (rowNumber in view.resultTable.selectedRows) {
 
             val resultRow = currentResultsInTable[view.resultTable.convertRowIndexToModel(rowNumber)]
@@ -329,17 +330,46 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                     relations.add(relation)
                 }
             }
+        }
 
-        }
-        // 2. The nodes have already been fetched. There should be a cache storing them somewhere.
+        var shouldCreateNetworkView = false
+
         if (network == null) {
-            network = serviceManager.server.networkBuilder.createNetworkFromBGNodes(nodes.values)
-        } else {
-            serviceManager.server.networkBuilder.addBGNodesToNetwork(nodes.values, network)
+            network = server.networkBuilder.createNetwork()
+            shouldCreateNetworkView = true
         }
-        server.networkBuilder.addRelationsToNetwork(network, relations)
-        serviceManager.networkManager.addNetwork(network)
-        serviceManager.server.networkBuilder.destroyAndRecreateNetworkView(network, serviceManager)
+
+        when (returnType) {
+            BGReturnType.NODE_LIST, BGReturnType.NODE_LIST_DESCRIPTION, BGReturnType.NODE_LIST_DESCRIPTION_TAXON -> {
+                server.networkBuilder.addBGNodesToNetwork(nodes.values, network)
+            }
+            BGReturnType.RELATION_TRIPLE, BGReturnType.RELATION_TRIPLE_NAMED, BGReturnType.RELATION_MULTIPART_NAMED -> {
+                server.networkBuilder.addRelationsToNetwork(network, relations)
+            }
+        }
+
+        if (shouldCreateNetworkView) {
+            serviceManager.networkManager.addNetwork(network)
+            server.networkBuilder.createNetworkView(network, serviceManager)
+        }
+
+//        // 2. The nodes have already been fetched. There should be a cache storing them somewhere.
+//        if (network == null) {
+//            network = serviceManager.server.networkBuilder.createNetworkFromBGNodes(nodes.values)
+//        } else {
+//            serviceManager.server.networkBuilder.addBGNodesToNetwork(nodes.values, network)
+//        }
+//
+//        server.networkBuilder.addRelationsToNetwork(network, relations)
+//
+//        server.networkBuilder.addRelationsToNetwork(network, relations)
+//        serviceManager.networkManager.addNetwork(network)
+//        serviceManager.server.networkBuilder.destroyAndRecreateNetworkView(network, serviceManager)
+
+
+
+
+
     }
 
 

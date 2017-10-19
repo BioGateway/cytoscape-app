@@ -75,7 +75,8 @@ class BGParser(private val serviceManager: BGServiceManager) {
     fun parseRelations(reader: BufferedReader, returnType: BGReturnType, taskMonitor: TaskMonitor?, completion: (BGReturnRelationsData?) -> Unit) {
         cancelled = false
 
-        val unloadedNodes = ArrayList<BGNode>()
+        val unloadedNodes = HashSet<BGNode>()
+        val unloadedUris = HashSet<String>()
 
         taskMonitor?.setTitle("Parsing relations...")
 
@@ -171,9 +172,15 @@ class BGParser(private val serviceManager: BGServiceManager) {
                     fromNodeIndex += 3
 
                     var fromNode = server.getNodeFromCacheOrNetworks(BGNode(fromNodeUri))
-                    if (!fromNode.isLoaded) unloadedNodes.add(fromNode)
+                    if (!fromNode.isLoaded) {
+                        unloadedNodes.add(fromNode)
+                        unloadedUris.add(fromNodeUri)
+                    }
                     var toNode = server.getNodeFromCacheOrNetworks(BGNode(toNodeUri))
-                    if (!toNode.isLoaded) unloadedNodes.add(toNode)
+                    if (!toNode.isLoaded) {
+                        unloadedNodes.add(toNode)
+                        unloadedUris.add(toNodeUri)
+                    }
                     val relationType = server.cache.relationTypeMap.get(relationUri)
 
                     // Note: Will ignore relation types it doesn't already know of.
@@ -193,8 +200,9 @@ class BGParser(private val serviceManager: BGServiceManager) {
         returnData.relationsData.addAll(relationSet)
 
         println(unloadedNodes.size.toString() + " nodes missing.")
+        println(unloadedUris.size.toString() + " uris missing. (should be the same as above.)")
 
-        returnData.unloadedNodes = unloadedNodes
+        returnData.unloadedNodes = unloadedNodes.toList()
         completion(returnData)
     }
 }

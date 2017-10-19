@@ -79,6 +79,8 @@ class BGServer(private val serviceManager: BGServiceManager) {
         } else {
             println("Cache hit: "+node.name)
         }
+        // The node should be added to cache even though not loaded, to avoid duplicating cache misses.
+        cache.addNode(node)
         return node
     }
 

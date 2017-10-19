@@ -194,6 +194,10 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
         for (view in serviceManager.viewManager.getNetworkViews(network)) {
             serviceManager.viewManager.destroyNetworkView(view)
         }
+       createNetworkView(network, serviceManager)
+    }
+
+    fun createNetworkView(network: CyNetwork, serviceManager: BGServiceManager) {
         val createNetworkViewTaskFactory = serviceManager.createNetworkViewTaskFactory
         val taskIterator = createNetworkViewTaskFactory.createTaskIterator(setOf(network))
         serviceManager.taskManager.execute(taskIterator)

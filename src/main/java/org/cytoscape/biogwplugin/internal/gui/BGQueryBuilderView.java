@@ -64,6 +64,22 @@ public class BGQueryBuilderView implements ChangeListener {
     private JButton selectUpstreamRelationsButton;
     private JCheckBox filterSelectedCheckBox;
     private TableRowSorter<TableModel> sorter;
+    private DocumentListener filterDocumentListener = new DocumentListener() {
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            filterResultRows();
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            filterResultRows();
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            filterResultRows();
+        }
+    };
 
 
     public BGQueryBuilderView(ActionListener listener, BGServiceManager serviceManager) {
@@ -121,22 +137,9 @@ public class BGQueryBuilderView implements ChangeListener {
         resultTable.setModel(tableModel);
         resultTable.setRowSorter(sorter);
         //filterResultsTextField.setPreferredSize(new Dimension(200, Utility.INSTANCE.getJTextFieldHeight()));
-        filterResultsTextField.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                filterResultRows();
-            }
+        filterResultsTextField.getDocument().addDocumentListener(filterDocumentListener);
 
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                filterResultRows();
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                filterResultRows();
-            }
-        });
+        filterSelectedCheckBox.addActionListener(e -> updateFilterBySelectedRows());
 
     }
 
@@ -146,6 +149,39 @@ public class BGQueryBuilderView implements ChangeListener {
 
     private void filterResultRows() {
         sorter.setRowFilter(RowFilter.regexFilter("(?i)" + filterResultsTextField.getText()));
+    }
+
+    private void updateFilterBySelectedRows() {
+        boolean shouldFilterBySelected = filterSelectedCheckBox.isSelected();
+
+        if (shouldFilterBySelected) {
+            filterResultsTextField.getDocument().removeDocumentListener(filterDocumentListener);
+            clearFilterField();
+            filterResultsTextField.setEnabled(false);
+            filterSelectedRows();
+        } else {
+            filterResultsTextField.getDocument().addDocumentListener(filterDocumentListener);
+            filterResultsTextField.setEnabled(true);
+            filterResultRows();
+        }
+    }
+
+    private void filterSelectedRows() {
+        sorter.setRowFilter(new RowFilter<TableModel, Integer>() {
+            @Override
+            public boolean include(Entry<? extends TableModel, ? extends Integer> entry) {
+                // Slightly inefficient code, but should not be noticeable with normal data sets.
+                int modelRow = entry.getIdentifier();
+                int viewRow = resultTable.convertRowIndexToView(modelRow);
+                int[] selectedRows = resultTable.getSelectedRows();
+                for (int i = 0; i < selectedRows.length; i++) {
+                    if (selectedRows[i] == viewRow) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        });
     }
 
     public void generateParameterFields(QueryTemplate query) {

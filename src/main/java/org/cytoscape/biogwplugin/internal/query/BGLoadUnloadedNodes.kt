@@ -10,11 +10,11 @@ import java.awt.EventQueue
 import javax.swing.JOptionPane
 
 
-class BGLoadUnloadedNodes(val serviceManager: BGServiceManager, val unloadedNodes: ArrayList<BGNode>, private val queryCompletion: (Int) -> Unit): AbstractTask(), Runnable {
+class BGLoadUnloadedNodes(val serviceManager: BGServiceManager, val unloadedNodes: List<BGNode>, private val queryCompletion: (Int) -> Unit): AbstractTask(), Runnable {
 
 
     companion object {
-        fun createAndRun(serviceManager: BGServiceManager, unloadedNodes: ArrayList<BGNode>?, completion: (Int) -> Unit) {
+        fun createAndRun(serviceManager: BGServiceManager, unloadedNodes: List<BGNode>?, completion: (Int) -> Unit) {
             if (unloadedNodes != null) {
                 EventQueue.invokeLater {
                     val query = BGLoadUnloadedNodes(serviceManager, unloadedNodes, completion)
@@ -25,7 +25,8 @@ class BGLoadUnloadedNodes(val serviceManager: BGServiceManager, val unloadedNode
                             serviceManager.taskManager.execute(TaskIterator(query))
                         }
                     } else {
-                        query.run()
+                        //query.run()
+                        serviceManager.taskManager.execute(TaskIterator(query))
                     }
                 }
             }
