@@ -117,6 +117,9 @@ class BGServer(private val serviceManager: BGServiceManager) {
 
     private fun getNodeDataFromNetworks(uri: String): BGNode? {
         for (network in serviceManager.networkManager.networkSet) {
+            if (network.defaultNodeTable.getColumn(Constants.BG_FIELD_IDENTIFIER_URI) == null) {
+                continue
+            }
             val node = getNodeFromCyNetwork(uri, network)
             if (node != null) {
                 cache.addNode(node)

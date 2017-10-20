@@ -90,16 +90,6 @@ public class BGQueryBuilderView implements ChangeListener {
         JFrame frame = new JFrame("Biogateway Query Builder");
         this.mainFrame = frame;
 
-        resultTable = new JTable() {
-            //Implement table cell tool tips.
-            public String getToolTipText(MouseEvent e) {
-                Point p = e.getPoint();
-                int rowIndex = rowAtPoint(p);
-                int colIndex = columnAtPoint(p);
-                return tableTooltipDataSource.getTooltipForResultRowAndColumn(rowIndex, colIndex);
-            }
-        };
-
         $$$setupUI$$$();
         frame.setPreferredSize(new Dimension(1200, 480));
         frame.setContentPane(this.mainPanel);

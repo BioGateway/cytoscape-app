@@ -367,24 +367,6 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
             serviceManager.networkManager.addNetwork(network)
             server.networkBuilder.createNetworkView(network, serviceManager)
         }
-
-//        // 2. The nodes have already been fetched. There should be a cache storing them somewhere.
-//        if (network == null) {
-//            network = serviceManager.server.networkBuilder.createNetworkFromBGNodes(nodes.values)
-//        } else {
-//            serviceManager.server.networkBuilder.addBGNodesToNetwork(nodes.values, network)
-//        }
-//
-//        server.networkBuilder.addRelationsToNetwork(network, relations)
-//
-//        server.networkBuilder.addRelationsToNetwork(network, relations)
-//        serviceManager.networkManager.addNetwork(network)
-//        serviceManager.server.networkBuilder.destroyAndRecreateNetworkView(network, serviceManager)
-
-
-
-
-
     }
 
 
