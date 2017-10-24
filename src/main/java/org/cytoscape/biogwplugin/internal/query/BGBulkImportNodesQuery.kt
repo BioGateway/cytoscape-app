@@ -6,7 +6,7 @@ import org.cytoscape.biogwplugin.internal.parser.BGReturnType
 import java.io.BufferedReader
 import java.io.InputStreamReader
 
-class BGNodeURILookupQuery(serviceManager: BGServiceManager, val searchString: String, val useRegex: Boolean, val nodeType: BGNodeType): BGQuery(serviceManager, BGReturnType.NODE_LIST_DESCRIPTION_TAXON, serviceManager.server.parser) {
+class BGBulkImportNodesQuery(serviceManager: BGServiceManager, val nodeList: Collection<String>, val nodeType: BGNodeType): BGQuery(serviceManager, BGReturnType.NODE_LIST_DESCRIPTION_TAXON, serviceManager.server.parser) {
     override var queryString: String
         get() = generateQueryString()
         set(value) {}
@@ -25,7 +25,6 @@ class BGNodeURILookupQuery(serviceManager: BGServiceManager, val searchString: S
         }
     }
 
-
     fun generateQueryString(): String {
         val nodeTypeGraph = when (nodeType) {
             BGNodeType.Gene -> "<refseq>"
@@ -34,9 +33,13 @@ class BGNodeURILookupQuery(serviceManager: BGServiceManager, val searchString: S
             BGNodeType.Taxon -> "<cco>"
             BGNodeType.Any -> "?anyGraph"
         }
-        val filter = when (useRegex) {
-            true -> "FILTER regex ( ?name, '"+searchString+"','i' ) .\n"
-            false -> "FILTER ( ?name = '"+searchString+"') .\n"
+        fun  getFilter(): String {
+            var namesString = ""
+            for (nodeName in nodeList) {
+                namesString += "?name = '"+nodeName+"' || "
+            }
+            namesString = namesString.removeSuffix(" || ") // Remove the last OR operator.
+            return "FILTER ("+namesString+") .\n"
         }
 
         val taxaGraph = when (nodeType) {
@@ -54,31 +57,13 @@ class BGNodeURILookupQuery(serviceManager: BGServiceManager, val searchString: S
             }
         }
 
-        if (nodeType == BGNodeType.Taxon) {
-            val queryString = "BASE   <http://www.semantic-systems-biology.org/>  \n" +
-                    "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n" +
-                    "PREFIX sio:  <http://semanticscience.org/resource/>  \n" +
-                    "PREFIX graph: <cco>  \n" +
-                    "SELECT DISTINCT ?uri ?definition ?name "+taxaName+"\n"+
-                    "WHERE {  \n" +
-                    " FILTER regex ( ?name, '"+searchString+"', 'i') .\n" +
-                    " GRAPH graph: {  \n" +
-                    " ?uri rdfs:subClassOf sio:SIO_010000 .  \n" +
-                    " ?uri skos:prefLabel ?name .  \n" +
-                    " ?uri skos:definition ?definition . \n" +
-                    " }  \n" +
-                    "}  \n" +
-                    "ORDER BY ?name"
-            return queryString
-        }
-
         val queryString = "BASE <http://www.semantic-systems-biology.org/>\n" +
+                "PREFIX sio:  <http://semanticscience.org/resource/>  \n" +
                 "PREFIX taxaGraph: <cco>\n" +
                 "PREFIX inheres_in: <http://purl.obolibrary.org/obo/RO_0000052>\n" +
-                "PREFIX sio:  <http://semanticscience.org/resource/>  \n" +
-                "SELECT DISTINCT ?uri ?definition ?name "+taxaName+"\n" +
+                "SELECT DISTINCT ?uri ?name ?definition "+taxaName+"\n" +
                 "WHERE {  \n" +
-                filter +
+                getFilter() +
                 "GRAPH "+nodeTypeGraph+" { \n" +
                 "?uri skos:prefLabel|skos:altLabel ?name . \n" +
                 "?uri skos:definition ?definition .\n" +
@@ -88,4 +73,3 @@ class BGNodeURILookupQuery(serviceManager: BGServiceManager, val searchString: S
     }
 
 }
-

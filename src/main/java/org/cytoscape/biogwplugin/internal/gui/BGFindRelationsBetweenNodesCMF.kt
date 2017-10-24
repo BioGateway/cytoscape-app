@@ -4,12 +4,12 @@ import org.cytoscape.application.swing.CyMenuItem
 import org.cytoscape.application.swing.CyNetworkViewContextMenuFactory
 import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.parser.BGReturnType
-import org.cytoscape.biogwplugin.internal.query.BGQuery
 import org.cytoscape.biogwplugin.internal.query.BGRelationsQuery
 import org.cytoscape.biogwplugin.internal.util.Constants
 import org.cytoscape.model.CyTableUtil
 import org.cytoscape.view.model.CyNetworkView
 import javax.swing.JMenuItem
+
 
 class BGFindRelationsBetweenNodesCMF(val gravity: Float, val serviceManager: BGServiceManager): CyNetworkViewContextMenuFactory {
     override fun createMenuItem(netView: CyNetworkView?): CyMenuItem {

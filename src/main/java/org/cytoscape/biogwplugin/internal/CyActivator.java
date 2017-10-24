@@ -6,8 +6,13 @@ import org.cytoscape.biogwplugin.BiogwPlugin;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.biogwplugin.internal.gui.BGChangeEdgeTypeCMF;
+import org.cytoscape.biogwplugin.internal.gui.BGMultiNodeQueryCMF;
 import org.cytoscape.biogwplugin.internal.gui.BGOpenEdgeSourceViewCMF;
 import org.cytoscape.biogwplugin.internal.gui.BGNodeMenuActionsCMF;
+import org.cytoscape.biogwplugin.internal.model.BGRelation;
+import org.cytoscape.biogwplugin.internal.query.BGMultiNodeRelationQuery;
+import org.cytoscape.biogwplugin.internal.query.BGRelationDirection;
+import org.cytoscape.biogwplugin.internal.query.BGRelationsQuery;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
@@ -58,6 +63,10 @@ public class CyActivator extends AbstractCyActivator {
         BGOpenEdgeSourceViewCMF openPumedIdCMF = new BGOpenEdgeSourceViewCMF(1F, serviceManager);
         registerAllServices(bundleContext, openPumedIdCMF, ezProps("preferredMenu", "BioGateway"));
 
+        BGMultiNodeQueryCMF multiNodeFromQueryCMF = new BGMultiNodeQueryCMF(0F, "Fetch relations FROM selected", BGRelationDirection.FROM, serviceManager);
+        BGMultiNodeQueryCMF multiNodeToQueryCMF = new BGMultiNodeQueryCMF(0F, "Fetch relations TO selected", BGRelationDirection.TO, serviceManager);
+        registerAllServices(bundleContext, multiNodeFromQueryCMF, ezProps("preferredMenu", "BioGateway"));
+        registerAllServices(bundleContext, multiNodeToQueryCMF, ezProps("preferredMenu", "BioGateway"));
 
         /*
         BGNodeMenuActionsCMF postSearchCMF = new BGNodeMenuActionsCMF(serviceManager, BGRelationsQuery.Direction.POST, "Fetch relations from this node");

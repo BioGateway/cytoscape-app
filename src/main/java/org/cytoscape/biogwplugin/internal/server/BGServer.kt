@@ -77,7 +77,7 @@ class BGServer(private val serviceManager: BGServiceManager) {
                 }
             }
         } else {
-            println("Cache hit: "+node.name)
+            //println("Cache hit: "+node.name)
         }
         // The node should be added to cache even though not loaded, to avoid duplicating cache misses.
         cache.addNode(node)
@@ -93,7 +93,7 @@ class BGServer(private val serviceManager: BGServiceManager) {
 
             getNodeFromServer(node.uri) {
                 if (it != null) {
-                    println("Cache miss: "+it.name)
+                    //println("Cache miss: "+it.name)
                     node.name = it.name
                     node.description = it.description
                     node.isLoaded = true

@@ -24,12 +24,12 @@ class BGRelation(var fromNode: BGNode, val relationType: BGRelationType, var toN
     }
 
     override fun equals(other: Any?): Boolean {
-        val equal = this.toString().equals(other.toString())
+        val equal = this.edgeIdentifier.equals(other.toString())
         return equal
     }
 
     override fun hashCode(): Int {
-        return this.toString().hashCode()
+        return this.edgeIdentifier.hashCode()
     }
 }
 

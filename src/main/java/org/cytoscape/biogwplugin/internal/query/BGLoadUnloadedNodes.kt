@@ -15,7 +15,7 @@ class BGLoadUnloadedNodes(val serviceManager: BGServiceManager, val unloadedNode
 
     companion object {
         fun createAndRun(serviceManager: BGServiceManager, unloadedNodes: List<BGNode>?, completion: (Int) -> Unit) {
-            if (unloadedNodes != null) {
+            if (unloadedNodes != null && unloadedNodes.isNotEmpty()) {
                 EventQueue.invokeLater {
                     val query = BGLoadUnloadedNodes(serviceManager, unloadedNodes, completion)
                     if (unloadedNodes.size > Constants.BG_LOAD_NODE_WARNING_LIMIT) {
@@ -29,6 +29,8 @@ class BGLoadUnloadedNodes(val serviceManager: BGServiceManager, val unloadedNode
                         serviceManager.taskManager.execute(TaskIterator(query))
                     }
                 }
+            } else {
+                completion(0)
             }
         }
     }

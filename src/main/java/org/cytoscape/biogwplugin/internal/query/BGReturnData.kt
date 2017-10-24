@@ -9,11 +9,11 @@ import org.cytoscape.biogwplugin.internal.parser.BGReturnType
  */
 
 abstract class BGReturnData {
-    val columnNames: Array<String>
+    var columnNames: Array<String>
 
     constructor(returnType: BGReturnType, columnNames: Array<String>) {
 
-        if (returnType != BGReturnType.RELATION_MULTIPART_NAMED && columnNames.size != returnType.paremeterCount) throw Exception("Parameter count must match column name count!")
+        if (returnType != BGReturnType.RELATION_MULTIPART && columnNames.size != returnType.paremeterCount) throw Exception("Parameter count must match column name count!")
         this.columnNames = columnNames
     }
 
@@ -29,8 +29,6 @@ class BGReturnPubmedIds(columnNames: Array<String>): BGReturnData(BGReturnType.P
 class BGReturnNodeData(val returnType: BGReturnType, columnNames: Array<String>): BGReturnData(returnType, columnNames) {
 
     val nodeData = HashMap<String, BGNode>()
-
-    // TODO: Is this overkill? Where should the abstraction of different return types lie?
 
 
     fun addEntry(line: Array<String>) {

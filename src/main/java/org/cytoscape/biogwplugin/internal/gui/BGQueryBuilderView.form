@@ -64,6 +64,115 @@
               </grid>
             </children>
           </grid>
+          <grid id="f0eaf" layout-manager="BorderLayout" hgap="0" vgap="0">
+            <constraints>
+              <tabbedpane title="Bulk Import"/>
+            </constraints>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <grid id="b54ad" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+                <constraints border-constraint="South"/>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="95491" class="javax.swing.JButton" binding="bulkSearchButton" default-binding="true">
+                    <constraints/>
+                    <properties>
+                      <text value="Bulk Search"/>
+                    </properties>
+                  </component>
+                  <component id="b2116" class="javax.swing.JButton" binding="bulkImportSelectedNodesNewButton">
+                    <constraints/>
+                    <properties>
+                      <text value="Import selected nodes to new network"/>
+                    </properties>
+                  </component>
+                  <component id="1b49c" class="javax.swing.JButton" binding="bulkImportSelectedCurrentButton">
+                    <constraints/>
+                    <properties>
+                      <text value="Import selected nodes to current network"/>
+                    </properties>
+                  </component>
+                </children>
+              </grid>
+              <grid id="14193" layout-manager="BorderLayout" hgap="0" vgap="0">
+                <constraints border-constraint="Center"/>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <grid id="53df2" layout-manager="BorderLayout" hgap="0" vgap="0">
+                    <constraints border-constraint="West"/>
+                    <properties/>
+                    <border type="none"/>
+                    <children>
+                      <scrollpane id="f6a90">
+                        <constraints border-constraint="Center"/>
+                        <properties/>
+                        <border type="none"/>
+                        <children>
+                          <component id="f1bb2" class="javax.swing.JTextArea" binding="bulkImportTextArea">
+                            <constraints/>
+                            <properties>
+                              <columns value="20"/>
+                            </properties>
+                          </component>
+                        </children>
+                      </scrollpane>
+                    </children>
+                  </grid>
+                  <grid id="a5101" layout-manager="BorderLayout" hgap="0" vgap="0">
+                    <constraints border-constraint="Center"/>
+                    <properties/>
+                    <border type="none"/>
+                    <children>
+                      <scrollpane id="53706">
+                        <constraints border-constraint="Center"/>
+                        <properties/>
+                        <border type="none"/>
+                        <children>
+                          <component id="a1b57" class="javax.swing.JTable" binding="bulkImportResultTable">
+                            <constraints/>
+                            <properties>
+                              <autoCreateRowSorter value="true"/>
+                            </properties>
+                          </component>
+                        </children>
+                      </scrollpane>
+                    </children>
+                  </grid>
+                </children>
+              </grid>
+              <grid id="2f44a" layout-manager="BorderLayout" hgap="0" vgap="0">
+                <constraints border-constraint="East"/>
+                <properties/>
+                <border type="none"/>
+                <children/>
+              </grid>
+              <grid id="3b64e" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="0">
+                <constraints border-constraint="North"/>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="64d82" class="javax.swing.JComboBox" binding="bulkImportTypeComboBox">
+                    <constraints/>
+                    <properties>
+                      <model>
+                        <item value="Genes"/>
+                        <item value="Proteins"/>
+                      </model>
+                    </properties>
+                  </component>
+                  <component id="f8085" class="javax.swing.JLabel">
+                    <constraints/>
+                    <properties>
+                      <text value="to import:"/>
+                    </properties>
+                  </component>
+                </children>
+              </grid>
+            </children>
+          </grid>
           <grid id="b3611" binding="queryPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
             <constraints>
               <tabbedpane title="Predefined Queries"/>

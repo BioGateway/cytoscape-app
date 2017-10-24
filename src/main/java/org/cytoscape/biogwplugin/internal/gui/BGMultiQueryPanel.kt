@@ -350,8 +350,6 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager): JPanel() {
     }
 
 
-
-
     private fun getSafeString(uri: String): String {
         return when (uri.startsWith("?")) {
             true -> uri.removePrefix("?")

@@ -2,8 +2,8 @@ package org.cytoscape.biogwplugin.internal.gui
 
 import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.model.BGNode
+import org.cytoscape.biogwplugin.internal.model.BGNodeType
 import org.cytoscape.biogwplugin.internal.model.BGRelation
-import org.cytoscape.biogwplugin.internal.parser.BGNetworkBuilder
 import org.cytoscape.biogwplugin.internal.parser.BGReturnType
 import org.cytoscape.biogwplugin.internal.query.*
 import org.cytoscape.biogwplugin.internal.util.Constants
@@ -11,6 +11,7 @@ import org.cytoscape.biogwplugin.internal.util.Utility
 import org.cytoscape.biogwplugin.internal.util.sanitizeParameter
 import org.cytoscape.model.CyNetwork
 import org.cytoscape.work.TaskIterator
+import java.awt.EventQueue
 import java.awt.FlowLayout
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
@@ -121,6 +122,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
     private var currentReturnData: BGReturnData? = null
     //private var currentResultsInTable = HashMap<String, BGResultRow>()
     private var currentResultsInTable = HashMap<Int, BGResultRow>()
+    private var currentBulkImportNodes = HashMap<Int, BGNode>()
 
     private var  queries = HashMap<String, QueryTemplate>()
 
@@ -143,20 +145,6 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         panel.addQueryLine()
         view.setUpMultiQueryPanel(panel)
     }
-
-    /*
-    private fun setupChainedQuery() {
-        val firstNode = BGQueryParameter("parameter0", "Node URI", BGQueryParameter.ParameterType.OPTIONAL_URI)
-        chainedQuery.addParameter(firstNode)
-        view.addChainedParameterField(firstNode)
-        addMultiQueryLine()
-//        val firstRow = BGQueryParameter("row1", "", BGQueryParameter.ParameterType.RELATION_QUERY_ROW)
-//        for (relation in serviceManager.server.cache.relationTypeMap.values) {
-//            firstRow.addOption(relation.name, relation.uri)
-//        }
-//        view.addChainedParameterField(firstRow)
-    }
-    */
 
     private fun readParameterComponents(parameters: Collection<BGQueryParameter>, parameterComponents: HashMap<String, JComponent>) {
         for (parameter in parameters) {
@@ -338,7 +326,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                     val node = (resultRow as? BGNodeResultRow)?.node ?: throw Exception("Result must be a node!")
                     nodes.put(node.uri, node)
                 }
-                BGReturnType.RELATION_TRIPLE, BGReturnType.RELATION_TRIPLE_NAMED, BGReturnType.RELATION_MULTIPART_NAMED -> {
+                BGReturnType.RELATION_TRIPLE, BGReturnType.RELATION_TRIPLE_NAMED, BGReturnType.RELATION_MULTIPART -> {
                     val relation = (resultRow as? BGRelationResultRow)?.relation ?: throw Exception("Result must be a relation!")
                     nodes.put(relation.fromNode.uri, relation.fromNode)
                     nodes.put(relation.fromNode.uri, relation.fromNode)
@@ -346,6 +334,8 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                 }
             }
         }
+
+        if (nodes.isEmpty()) return
 
         var shouldCreateNetworkView = false
 
@@ -358,17 +348,20 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
             BGReturnType.NODE_LIST, BGReturnType.NODE_LIST_DESCRIPTION, BGReturnType.NODE_LIST_DESCRIPTION_TAXON -> {
                 server.networkBuilder.addBGNodesToNetwork(nodes.values, network)
             }
-            BGReturnType.RELATION_TRIPLE, BGReturnType.RELATION_TRIPLE_NAMED, BGReturnType.RELATION_MULTIPART_NAMED -> {
+            BGReturnType.RELATION_TRIPLE, BGReturnType.RELATION_TRIPLE_NAMED, BGReturnType.RELATION_MULTIPART -> {
                 server.networkBuilder.addRelationsToNetwork(network, relations)
             }
         }
 
         if (shouldCreateNetworkView) {
             serviceManager.networkManager.addNetwork(network)
-            server.networkBuilder.createNetworkView(network, serviceManager)
+            EventQueue.invokeLater {
+                network?.let {
+                    server.networkBuilder.createNetworkView(it, serviceManager)
+                }
+            }
         }
     }
-
 
     private fun validatePropertyFields(parameters: Collection<BGQueryParameter>, parameterComponents: HashMap<String, JComponent>): String? {
         for (parameter in parameters) {
@@ -533,7 +526,6 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         return null
     }
 
-
     private fun openFileChooser(): File? {
         val lastDir = preferences.get(Constants.BG_PREFERENCES_LAST_FOLDER, File(".").absolutePath)
 
@@ -562,8 +554,96 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         return null
     }
 
+    private fun runBulkImport() {
+        var nodeList = view.bulkImportTextArea.text.split("\n")
+        nodeList = nodeList.map { Utility.sanitizeParameter(it) }
+
+        if (nodeList.size > Constants.BG_BULK_IMPORT_WARNING_LIMIT) {
+            val message = "Bulk importing this many nodes at once might take a long time, or not succeed. \n Consider to import fewer nodes in each step. \n\nAre you sure you want to continue?"
+            val response = JOptionPane.showOptionDialog(null, message, "Proceed with bulk import?", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, null, null, null)
+            if (response != JOptionPane.OK_OPTION) {
+                return
+            }
+        }
+
+        val selectedType = view.bulkImportTypeComboBox.selectedItem as? String
+
+        val nodeType = when (selectedType) {
+            "Genes" -> {
+                BGNodeType.Gene
+            }
+            "Proteins" -> {
+                BGNodeType.Protein
+            }
+            else -> {
+                //BGNodeType.Any
+                throw Exception("Node Type must be Protein or Gene!")
+            }
+        }
+
+        val query = BGBulkImportNodesQuery(serviceManager,nodeList, nodeType)
+        query.addCompletion {
+            val data = it as? BGReturnNodeData ?: throw Exception("Expected Node Data in return!")
+            val nodes = data.nodeData.values
+            setBulkImportTableData(nodes)
+            Utility.fightForFocus(view.mainFrame)
+        }
+        serviceManager.taskManager.execute(TaskIterator(query))
+    }
+
+    private fun bulkImportToNetwork(currentNetwork: CyNetwork? = null) {
+        var network = currentNetwork
+
+        val nodes = HashMap<String, BGNode>()
+        for (rowNumber in view.bulkImportResultTable.selectedRows) {
+            val node = currentBulkImportNodes.get(view.bulkImportResultTable.convertRowIndexToModel(rowNumber))
+            if (node != null) {
+                nodes.put(node.uri, node)
+            }
+        }
+
+        if (nodes.isEmpty()) return
+
+        var shouldCreateNetworkView = false
+
+        if (network == null) {
+            network = serviceManager.server.networkBuilder.createNetwork()
+            shouldCreateNetworkView = true
+        }
 
 
+
+        serviceManager.server.networkBuilder.addBGNodesToNetwork(nodes.values, network)
+
+        if (shouldCreateNetworkView) {
+            serviceManager.networkManager.addNetwork(network)
+            EventQueue.invokeLater {
+                network?.let {
+                    serviceManager.server.networkBuilder.createNetworkView(it, serviceManager)
+                }
+            }
+        }
+    }
+
+    private fun setBulkImportTableData(nodes: Collection<BGNode>) {
+        val tableModel = view.bulkImportResultTable.model as DefaultTableModel
+        tableModel.setColumnIdentifiers(arrayOf("Node Name", "Description", "Taxon"))
+
+        currentBulkImportNodes.clear()
+        for (i in tableModel.rowCount -1 downTo 0) {
+            tableModel.removeRow(i)
+        }
+        for (node in nodes) {
+            val nodeName = node.name ?: node.uri
+            val description = node.description ?: ""
+            val taxon = node.taxon ?: ""
+            val row = arrayOf(nodeName, description, taxon)
+            tableModel.addRow(row)
+            currentBulkImportNodes[tableModel.rowCount-1] = node
+        }
+
+
+    }
 
     private fun runMultiQuery() {
 
@@ -585,7 +665,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
             val queryString = view.multiQueryPanel.generateSPARQLQuery()
             view.sparqlTextArea.text = queryString
 
-            val queryType = BGReturnType.RELATION_MULTIPART_NAMED
+            val queryType = BGReturnType.RELATION_MULTIPART
 
             val query = BGMultiRelationsQuery(serviceManager, queryString, serviceManager.server.parser, queryType)
 
@@ -611,7 +691,6 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
     private fun addMultiQueryLine() {
         view.addMultiQueryLine()
     }
-
 
     private fun selectUpstreamRelations() {
         // Keep working with the model's indices, translate from table immediately.
@@ -665,47 +744,6 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         return matchingRows
     }
 
-    /*
-
-    private fun importSelectedResults(network: CyNetwork?, returnType: BGReturnType) {
-        var network = network
-        val server = serviceManager.server
-        // 1. Get the selected lines from the table.
-        val nodes = HashMap<String, BGNode>()
-        val relations = ArrayList<BGRelation>()
-        val model = view.resultTable.model as DefaultTableModel
-        for (rowNumber in view.resultTable.selectedRows) {
-
-            val resultRow = currentResultsInTable[view.resultTable.convertRowIndexToModel(rowNumber)]
-
-            when(returnType) {
-                BGReturnType.NODE_LIST, BGReturnType.NODE_LIST_DESCRIPTION, BGReturnType.NODE_LIST_DESCRIPTION_TAXON -> {
-                    val node = (resultRow as? BGNodeResultRow)?.node ?: throw Exception("Result must be a node!")
-                    nodes.put(node.uri, node)
-                }
-                BGReturnType.RELATION_TRIPLE, BGReturnType.RELATION_TRIPLE_NAMED, BGReturnType.RELATION_MULTIPART_NAMED -> {
-                    val relation = (resultRow as? BGRelationResultRow)?.relation ?: throw Exception("Result must be a relation!")
-                    nodes.put(relation.fromNode.uri, relation.fromNode)
-                    nodes.put(relation.fromNode.uri, relation.fromNode)
-                    relations.add(relation)
-                }
-            }
-
-        }
-        // 2. The nodes have already been fetched. There should be a cache storing them somewhere.
-        if (network == null) {
-            network = serviceManager.server.networkBuilder.createNetworkFromBGNodes(nodes.values)
-        } else {
-            serviceManager.server.networkBuilder.addBGNodesToNetwork(nodes.values, network)
-        }
-        server.networkBuilder.addRelationsToNetwork(network, relations)
-        serviceManager.networkManager.addNetwork(network)
-        serviceManager.server.networkBuilder.destroyAndRecreateNetworkView(network, serviceManager)
-    }
-
-
-     */
-
     override fun actionPerformed(e: ActionEvent) {
         when (e.actionCommand) {
             ACTION_RUN_QUERY -> runQuery()
@@ -728,11 +766,13 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                 filterRelationsToNodesInCurrentNetwork(box.isSelected)
             }
             ACTION_SELECT_UPSTREAM_RELATIONS -> selectUpstreamRelations()
+            ACTION_RUN_BULK_IMPORT -> runBulkImport()
+            ACTION_BULK_IMPORT_TO_NEW_NETWORK -> bulkImportToNetwork()
+            ACTION_BULK_IMPORT_TO_CURRENT_NETWORK -> bulkImportToNetwork(serviceManager.applicationManager.currentNetwork)
             else -> {
             }
         }
     }
-
 
     companion object {
         val ACTION_CHANGED_QUERY = "changedQueryComboBox"
@@ -740,6 +780,9 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         val ACTION_IMPORT_TO_SELECTED = "importToSelectedNetwork"
         val ACTION_IMPORT_TO_NEW = "importToNewNetwork"
         val ACTION_GENERATE_SPARQL = "generateSPARQL"
+        val ACTION_RUN_BULK_IMPORT = "runBulkImport"
+        val ACTION_BULK_IMPORT_TO_NEW_NETWORK = "importSelectedFromBulkImportToNewNetwork"
+        val ACTION_BULK_IMPORT_TO_CURRENT_NETWORK = "importSelectedFromBulkImportToCurrentNetwork"
         val ACTION_PARSE_SPARQL = "parseSPARQL"
         val ACTION_LOAD_SPARQL = "loadSPARQLFromFile"
         val ACTION_WRITE_SPARQL = "writeSPARQLToFile"
