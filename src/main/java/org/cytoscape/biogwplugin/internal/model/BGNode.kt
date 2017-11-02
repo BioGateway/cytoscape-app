@@ -63,4 +63,8 @@ open class BGNode {
     fun nameStringArray(): Array<String> {
         return arrayOf(this.uri, this.name ?: "", this.description ?: "", this.taxon ?: "")
     }
+
+    override fun hashCode(): Int {
+        return uri.hashCode()
+    }
 }

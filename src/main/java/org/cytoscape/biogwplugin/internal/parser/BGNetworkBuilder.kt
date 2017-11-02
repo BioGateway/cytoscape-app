@@ -10,6 +10,7 @@ import org.cytoscape.model.CyEdge
 import org.cytoscape.model.CyNetwork
 import org.cytoscape.model.CyNode
 import org.cytoscape.model.CyTable
+import java.awt.EventQueue
 
 fun CyNode.setUri(name: String, network: CyNetwork) {
     val table = network.defaultNodeTable
@@ -54,27 +55,52 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
         val edgeTable = network.defaultEdgeTable
 
         // Create the columns needed:
-        // TODO: Can we remove the checks, as no column would exist in a brand new table?
-        if (nodeTable.getColumn(Constants.BG_FIELD_IDENTIFIER_URI) == null) nodeTable.createColumn(Constants.BG_FIELD_IDENTIFIER_URI, String::class.java, false)
-        if (edgeTable.getColumn(Constants.BG_FIELD_IDENTIFIER_URI) == null) edgeTable.createColumn(Constants.BG_FIELD_IDENTIFIER_URI, String::class.java, false)
-        //if (edgeTable.getColumn(Constants.BG_FIELD_PUBMED_URI) == null) edgeTable.createColumn(Constants.BG_FIELD_PUBMED_URI, String::class.java, false)
-        if (edgeTable.getColumn(Constants.BG_FIELD_SOURCE_GRAPH) == null) edgeTable.createColumn(Constants.BG_FIELD_SOURCE_GRAPH, String::class.java, false)
-        if (edgeTable.getColumn(Constants.BG_FIELD_EDGE_ID) == null) edgeTable.createColumn(Constants.BG_FIELD_EDGE_ID, String::class.java, false)
+
+        checkForMissingColumns(edgeTable, nodeTable)
 
         return network
     }
 
+    private fun checkForMissingColumns(edgeTable: CyTable?, nodeTable: CyTable?) {
+        if (nodeTable?.getColumn(Constants.BG_FIELD_IDENTIFIER_URI) == null) nodeTable?.createColumn(Constants.BG_FIELD_IDENTIFIER_URI, String::class.java, false)
+        if (edgeTable?.getColumn(Constants.BG_FIELD_IDENTIFIER_URI) == null) edgeTable?.createColumn(Constants.BG_FIELD_IDENTIFIER_URI, String::class.java, false)
+        //if (edgeTable.getColumn(Constants.BG_FIELD_PUBMED_URI) == null) edgeTable.createColumn(Constants.BG_FIELD_PUBMED_URI, String::class.java, false)
+        if (edgeTable?.getColumn(Constants.BG_FIELD_SOURCE_GRAPH) == null) edgeTable?.createColumn(Constants.BG_FIELD_SOURCE_GRAPH, String::class.java, false)
+        if (edgeTable?.getColumn(Constants.BG_FIELD_EDGE_ID) == null) edgeTable?.createColumn(Constants.BG_FIELD_EDGE_ID, String::class.java, false)
+    }
+
     fun addBGNodesToNetwork(nodes: Collection<BGNode>, network: CyNetwork) {
-        var nodeTable = network.defaultNodeTable
-        if (nodeTable.getColumn(Constants.BG_FIELD_IDENTIFIER_URI) == null) nodeTable.createColumn(Constants.BG_FIELD_IDENTIFIER_URI, String::class.java, false)
-        for (node in nodes) {
-            addNodeToNetwork(node, network, nodeTable)
+        val nodeTable = network.defaultNodeTable
+
+        checkForMissingColumns(null, nodeTable)
+
+        val uniqueNodes = HashSet<BGNode>()
+        uniqueNodes.addAll(nodes)
+        //val dummyEdges = ArrayList<CyEdge>()
+
+        for (bgNode in nodes) {
+            var node = getNodeWithUri(bgNode.uri, network, nodeTable)
+            if (node == null) {
+                val cyNode = addNodeToNetwork(bgNode, network, nodeTable)
+
+                //val edge = network.addEdge(cyNode, cyNode, true)
+                //dummyEdges.add(edge)
+            }
+        }
+        // Let's see if adding and removing edges forces the view to sync.
+        //network.removeEdges(dummyEdges)
+        EventQueue.invokeLater {
+            //addAndRemoveDummyNodeToNetwork(network)
+            serviceManager.applicationManager.currentNetworkView.updateView()
+            serviceManager.eventHelper.flushPayloadEvents()
         }
     }
 
     fun addRelationsToNetwork(network: CyNetwork, relations: Collection<BGRelation>) {
         val nodeTable = network.defaultNodeTable
         val edgeTable = network.defaultEdgeTable
+
+        checkForMissingColumns(edgeTable, nodeTable)
 
         // Find the unique nodes in the set of relations. Duplicates get overwritten.
         val uniqueNodes = HashMap<String, BGNode>()
@@ -98,19 +124,37 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
         for (relation in relations) {
             val fromNode = cyNodes.get(relation.fromNode.uri) ?: throw Exception("CyNode not found!")
             val toNode = cyNodes.get(relation.toNode.uri) ?: throw Exception("CyNode not found!")
-            if (edgeTable.getColumn(Constants.BG_FIELD_EDGE_ID) == null) throw Exception(Constants.BG_FIELD_EDGE_ID+" column not found in default Edge Table for this network!")
-            val matchingRows = edgeTable.getMatchingRows(Constants.BG_FIELD_EDGE_ID, relation.edgeIdentifier)
-            if (matchingRows.size == 0) {
+            if (!checkForExistingEdges(edgeTable, relation)) {
                 val edge = addEdgeToNetwork(fromNode, toNode, network, edgeTable, relation.relationType, relation.edgeIdentifier, relation.metadata)
-            } else if (matchingRows.size > 1) {
+            } else {
                 println("WARNING: Duplicate edges!")
             }
         }
     }
 
+    private fun checkForExistingEdges(edgeTable: CyTable, relation: BGRelation): Boolean {
+        // If undirected, first check for edges the other way.
+        if (!relation.relationType.directed) {
+            val matchingRows = edgeTable.getMatchingRows(Constants.BG_FIELD_EDGE_ID, relation.reverseEdgeIdentifier)
+            if (matchingRows.size != 0) {
+                return true
+            }
+        }
+        // Check for any edges with the same nodes, type and direction.
+        val matchingRows = edgeTable.getMatchingRows(Constants.BG_FIELD_EDGE_ID, relation.edgeIdentifier)
+        if (matchingRows.size != 0) {
+            return true
+        }
+        // No edges found.
+        return false
+    }
+
 
     fun addEdgeToNetwork(from: CyNode, to: CyNode, network: CyNetwork, edgeTable: CyTable, relationType: BGRelationType, edgeId: String, metadata: BGRelationMetadata): CyEdge {
-        val edge = network.addEdge(from, to, true)
+
+
+        val edge = network.addEdge(from, to, relationType.directed)
+        checkForMissingColumns(edgeTable, null)
         edgeTable.getRow(edge.suid).set(Constants.BG_FIELD_IDENTIFIER_URI, relationType.uri)
         edgeTable.getRow(edge.suid).set(Constants.BG_FIELD_NAME, relationType.name)
         edgeTable.getRow(edge.suid).set(Constants.BG_FIELD_EDGE_ID, edgeId)
@@ -134,6 +178,15 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
         // TODO: WARNING: Unknown behaviour if the CyNodes CyNetwork is deleted!
         node.cyNodes.add(cyNode)
         return cyNode
+    }
+
+    fun addAndRemoveDummyNodeToNetwork(network: CyNetwork) {
+        EventQueue.invokeLater {
+        val cyNode = network.addNode()
+        EventQueue.invokeLater {
+            network.removeNodes(listOf(cyNode))
+        }
+        }
     }
 
     fun getNodeWithUri(uri: String, network: CyNetwork, table: CyTable): CyNode? {
@@ -202,5 +255,4 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
         val taskIterator = createNetworkViewTaskFactory.createTaskIterator(setOf(network))
         serviceManager.taskManager.execute(taskIterator)
     }
-
 }

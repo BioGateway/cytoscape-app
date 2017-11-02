@@ -50,7 +50,7 @@ class BGFindRelationForNodeQuery(serviceManager: BGServiceManager, val relationT
                 "SELECT DISTINCT fromNode: relation1: ?toNode\n" +
                 "WHERE {\n" +
                 "GRAPH "+graphName+" {\n" +
-                "fromNode: relation1: ?toNode .\n" +
+                "fromNode: "+relationType.sparqlIRI+" ?toNode .\n" +
                 "}}"
 
     }
@@ -62,7 +62,7 @@ class BGFindRelationForNodeQuery(serviceManager: BGServiceManager, val relationT
                 "SELECT DISTINCT ?fromNode relation1: toNode:\n" +
                 "WHERE {\n" +
                 "GRAPH "+graphName+" {\n" +
-                "?fromNode relation1: toNode: .\n" +
+                "?fromNode "+relationType.sparqlIRI+" toNode: .\n" +
                 "}}"
     }
 }

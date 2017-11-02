@@ -17,6 +17,10 @@ class BGRelation(var fromNode: BGNode, val relationType: BGRelationType, var toN
     val edgeIdentifier: String
         get() = fromNode.uri+"_"+relationType.uri+"_"+toNode.uri
 
+    val reverseEdgeIdentifier: String
+        get() = toNode.uri+"_"+relationType.uri+"_"+fromNode.uri
+
+
     override fun toString(): String {
         val fromNodeName = fromNode.description ?: fromNode.uri
         val toNodeName = toNode.description ?: toNode.uri

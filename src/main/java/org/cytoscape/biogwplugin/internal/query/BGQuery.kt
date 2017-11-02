@@ -27,12 +27,35 @@ abstract class BGQuery(val serviceManager: BGServiceManager, var type: BGReturnT
     var returnData: BGReturnData? = null
     var client = HttpClients.createDefault();
     var taskMonitor: TaskMonitor? = null
+    var taskMonitorText = "Searching..."
+    var parsingBlock: ((BufferedReader) -> Unit)? = null
 
     abstract var queryString: String
 
     override fun run(taskMonitor: TaskMonitor?) {
         this.taskMonitor = taskMonitor
         run()
+    }
+
+    override fun run() {
+        taskMonitor?.setTitle(taskMonitorText)
+
+        val uri = encodeUrl()?.toURI()
+        if (uri != null) {
+            val httpGet = HttpGet(uri)
+            val response = client.execute(httpGet)
+            val statusCode = response.statusLine.statusCode
+
+            val data = EntityUtils.toString(response.entity)
+            if (statusCode > 204) {
+                throw Exception("Server connection failed with code "+statusCode+": \n\n"+data)
+            }
+            //print(data)
+            val reader = BufferedReader(StringReader(data))
+            client.close()
+            taskMonitor?.setTitle("Loading results...")
+            parsingBlock?.invoke(reader)
+        }
     }
 
     override fun cancel() {
@@ -54,7 +77,6 @@ abstract class BGQuery(val serviceManager: BGServiceManager, var type: BGReturnT
     fun encodeUrl(): URL? {
         val RETURN_TYPE_TSV = "text/tab-separated-values"
         val BIOPAX_DEFAULT_OPTIONS = "timeout=0&debug=on"
-
         val queryURL = URL(serviceManager.serverPath + "?query=" + URLEncoder.encode(queryString, "UTF-8") + "&format=" + RETURN_TYPE_TSV +"&" + BIOPAX_DEFAULT_OPTIONS)
 
         return queryURL

@@ -10,7 +10,6 @@ import org.cytoscape.work.TaskMonitor
 
 class BGMultiNodeRelationQuery(val serviceManager: BGServiceManager, val nodeUris: Collection<String>, val relationType: BGRelationType, val direction: BGRelationDirection): AbstractTask(), Runnable {
     private var taskMonitor: TaskMonitor? = null
-    private var queries = ArrayList<BGFindRelationForNodeQuery>()
     private var returnData: BGReturnRelationsData? = null
     private val completionBlocks = ArrayList<(BGReturnData?) -> Unit>()
 
@@ -31,7 +30,6 @@ class BGMultiNodeRelationQuery(val serviceManager: BGServiceManager, val nodeUri
     override fun run() {
 
         var columnNames: Array<String>? = null
-
         var relations = HashSet<BGRelation>()
         var unloadedNodes = HashSet<BGNode>()
 
@@ -47,9 +45,6 @@ class BGMultiNodeRelationQuery(val serviceManager: BGServiceManager, val nodeUri
             }
             query.run()
         }
-
-        // The above should all be done synchronously, so we can assume that all the data has been fetched at this point.
-        // If not, look into using semaphores.
 
         columnNames?.let {
             returnData = BGReturnRelationsData(BGReturnType.RELATION_TRIPLE, it)

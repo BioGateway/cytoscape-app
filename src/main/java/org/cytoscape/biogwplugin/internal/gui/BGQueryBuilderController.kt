@@ -611,8 +611,6 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
             shouldCreateNetworkView = true
         }
 
-
-
         serviceManager.server.networkBuilder.addBGNodesToNetwork(nodes.values, network)
 
         if (shouldCreateNetworkView) {
@@ -793,8 +791,8 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         val ONTOLOGY_PREFIX = "http://purl.obolibrary.org/obo/"
         val ACTION_FILTER_EDGES_TO_EXISTING = "filter relations to exsisting nodes"
         val TAB_PANEL_BUILD_QUERY_INDEX = 0
-        val TAB_PANEL_PREDEFINED_INDEX = 1
-        val TAB_PANEL_SPARQL_INDEX = 2
-        val TAB_PANEL_RESULTS_INDEX = 3
+        val TAB_PANEL_PREDEFINED_INDEX = 2
+        val TAB_PANEL_SPARQL_INDEX = 3
+        val TAB_PANEL_RESULTS_INDEX = 4
     }
 }

@@ -374,9 +374,8 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager): JPanel() {
             }
         }
 
-
         return "GRAPH "+graphName+" {\n" +
-                first+" <"+relation.uri+"> "+second+" .\n" +
+                first+" "+relation.sparqlIRI+" "+second+" .\n" +
                 "}\n"
     }
 
