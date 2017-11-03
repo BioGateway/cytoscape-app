@@ -111,14 +111,18 @@
                         <properties/>
                         <border type="none"/>
                         <children>
-                          <component id="f1bb2" class="javax.swing.JTextArea" binding="bulkImportTextArea">
+                          <component id="aaa28" class="javax.swing.JTextPane" binding="bulkImportTextPane">
                             <constraints/>
-                            <properties>
-                              <columns value="20"/>
-                            </properties>
+                            <properties/>
                           </component>
                         </children>
                       </scrollpane>
+                      <component id="6651c" class="javax.swing.JLabel">
+                        <constraints border-constraint="North"/>
+                        <properties>
+                          <text value="  Paste genes/proteins here:  "/>
+                        </properties>
+                      </component>
                     </children>
                   </grid>
                   <grid id="a5101" layout-manager="BorderLayout" hgap="0" vgap="0">
@@ -187,7 +191,7 @@
                           <text value="Filter results:"/>
                         </properties>
                       </component>
-                      <component id="bf863" class="javax.swing.JTextField" binding="bulkFilterTextField">
+                      <component id="3c5b0" class="javax.swing.JTextField" binding="bulkFilterTextField">
                         <constraints/>
                         <properties>
                           <columns value="10"/>

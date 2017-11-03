@@ -14,6 +14,10 @@ import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyleContext;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -64,7 +68,7 @@ public class BGQueryBuilderView implements ChangeListener {
     private JTextField filterResultsTextField;
     private JButton selectUpstreamRelationsButton;
     private JCheckBox filterSelectedCheckBox;
-    private JTextArea bulkImportTextArea;
+    private JTextPane bulkImportTextPane;
     private JComboBox bulkImportTypeComboBox;
     private JButton bulkSearchButton;
     private JTable bulkImportResultTable;
@@ -366,6 +370,17 @@ public class BGQueryBuilderView implements ChangeListener {
         mainFrame.repaint();
     }
 
+    public void appendToPane(JTextPane tp, String msg, Color textColor)
+    {
+        StyleContext sc = StyleContext.getDefaultStyleContext();
+        AttributeSet aset = sc.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Foreground, textColor);
+
+        int len = tp.getDocument().getLength();
+        tp.setCaretPosition(len);
+        tp.setCharacterAttributes(aset, false);
+        tp.replaceSelection(msg);
+    }
+
     public BGMultiQueryPanel getMultiQueryPanel() {
         return multiQueryPanel;
     }
@@ -390,8 +405,8 @@ public class BGQueryBuilderView implements ChangeListener {
         return querySelectionBox;
     }
 
-    public JTextArea getBulkImportTextArea() {
-        return bulkImportTextArea;
+    public JTextPane getBulkImportTextPane() {
+        return bulkImportTextPane;
     }
 
     public JComboBox getBulkImportTypeComboBox() {
@@ -466,9 +481,11 @@ public class BGQueryBuilderView implements ChangeListener {
         panel5.add(panel6, BorderLayout.WEST);
         final JScrollPane scrollPane1 = new JScrollPane();
         panel6.add(scrollPane1, BorderLayout.CENTER);
-        bulkImportTextArea = new JTextArea();
-        bulkImportTextArea.setColumns(20);
-        scrollPane1.setViewportView(bulkImportTextArea);
+        bulkImportTextPane = new JTextPane();
+        scrollPane1.setViewportView(bulkImportTextPane);
+        final JLabel label1 = new JLabel();
+        label1.setText("  Paste genes/proteins here:  ");
+        panel6.add(label1, BorderLayout.NORTH);
         final JPanel panel7 = new JPanel();
         panel7.setLayout(new BorderLayout(0, 0));
         panel5.add(panel7, BorderLayout.CENTER);
@@ -492,15 +509,15 @@ public class BGQueryBuilderView implements ChangeListener {
         defaultComboBoxModel1.addElement("Proteins");
         bulkImportTypeComboBox.setModel(defaultComboBoxModel1);
         panel10.add(bulkImportTypeComboBox);
-        final JLabel label1 = new JLabel();
-        label1.setText("to import:");
-        panel10.add(label1);
+        final JLabel label2 = new JLabel();
+        label2.setText("to import:");
+        panel10.add(label2);
         final JPanel panel11 = new JPanel();
         panel11.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
         panel9.add(panel11, BorderLayout.EAST);
-        final JLabel label2 = new JLabel();
-        label2.setText("Filter results:");
-        panel11.add(label2);
+        final JLabel label3 = new JLabel();
+        label3.setText("Filter results:");
+        panel11.add(label3);
         bulkFilterTextField = new JTextField();
         bulkFilterTextField.setColumns(10);
         panel11.add(bulkFilterTextField);
@@ -581,9 +598,9 @@ public class BGQueryBuilderView implements ChangeListener {
         final JPanel panel19 = new JPanel();
         panel19.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
         panel17.add(panel19, BorderLayout.EAST);
-        final JLabel label3 = new JLabel();
-        label3.setText("Filter results:");
-        panel19.add(label3);
+        final JLabel label4 = new JLabel();
+        label4.setText("Filter results:");
+        panel19.add(label4);
         filterResultsTextField = new JTextField();
         filterResultsTextField.setColumns(10);
         panel19.add(filterResultsTextField);

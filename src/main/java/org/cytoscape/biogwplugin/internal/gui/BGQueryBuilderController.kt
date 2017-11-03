@@ -11,6 +11,7 @@ import org.cytoscape.biogwplugin.internal.util.Utility
 import org.cytoscape.biogwplugin.internal.util.sanitizeParameter
 import org.cytoscape.model.CyNetwork
 import org.cytoscape.work.TaskIterator
+import java.awt.Color
 import java.awt.EventQueue
 import java.awt.FlowLayout
 import java.awt.event.ActionEvent
@@ -27,6 +28,7 @@ import kotlin.collections.Collection
 import kotlin.collections.HashMap
 import kotlin.collections.set
 import javax.swing.JFileChooser
+import javax.swing.text.StyleConstants
 
 interface BGRelationResultViewTooltipDataSource {
     fun getTooltipForResultRowAndColumn(row: Int, column: Int): String?
@@ -555,7 +557,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
     }
 
     private fun runBulkImport() {
-        var nodeList = view.bulkImportTextArea.text.split("\n")
+        var nodeList = view.bulkImportTextPane.text.split("\n")
         nodeList = nodeList.map { Utility.sanitizeParameter(it) }
 
         if (nodeList.size > Constants.BG_BULK_IMPORT_WARNING_LIMIT) {
@@ -586,6 +588,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
             val data = it as? BGReturnNodeData ?: throw Exception("Expected Node Data in return!")
             val nodes = data.nodeData.values
             setBulkImportTableData(nodes)
+            setBulkImportInputPaneColors(nodes)
             Utility.fightForFocus(view.mainFrame)
         }
         serviceManager.taskManager.execute(TaskIterator(query))
@@ -639,8 +642,24 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
             tableModel.addRow(row)
             currentBulkImportNodes[tableModel.rowCount-1] = node
         }
+    }
 
+    private fun setBulkImportInputPaneColors(nodes: Collection<BGNode>) {
 
+        val darkGreen = Color(34,139,34)
+        val darkRed = Color(178,34,34)
+
+        val nodeNames = nodes.map { it.name ?: "" }.filter { !it.isEmpty() }.toHashSet()
+        val searchLines = view.bulkImportTextPane.text.split("\n").map { Utility.sanitizeParameter(it) }
+        view.bulkImportTextPane.text = ""
+
+        for (line in searchLines) {
+            if (nodeNames.contains(line)) {
+                view.appendToPane(view.bulkImportTextPane, line+"\n", Color.BLACK)
+            } else {
+                view.appendToPane(view.bulkImportTextPane, line+"\n", darkRed)
+            }
+        }
     }
 
     private fun runMultiQuery() {
