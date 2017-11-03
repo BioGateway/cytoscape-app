@@ -134,7 +134,7 @@
                           <component id="a1b57" class="javax.swing.JTable" binding="bulkImportResultTable">
                             <constraints/>
                             <properties>
-                              <autoCreateRowSorter value="true"/>
+                              <autoCreateRowSorter value="false"/>
                             </properties>
                           </component>
                         </children>
@@ -149,26 +149,52 @@
                 <border type="none"/>
                 <children/>
               </grid>
-              <grid id="3b64e" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="0">
+              <grid id="51bb3" layout-manager="BorderLayout" hgap="0" vgap="0">
                 <constraints border-constraint="North"/>
                 <properties/>
                 <border type="none"/>
                 <children>
-                  <component id="64d82" class="javax.swing.JComboBox" binding="bulkImportTypeComboBox">
-                    <constraints/>
-                    <properties>
-                      <model>
-                        <item value="Genes"/>
-                        <item value="Proteins"/>
-                      </model>
-                    </properties>
-                  </component>
-                  <component id="f8085" class="javax.swing.JLabel">
-                    <constraints/>
-                    <properties>
-                      <text value="to import:"/>
-                    </properties>
-                  </component>
+                  <grid id="3b64e" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="0">
+                    <constraints border-constraint="West"/>
+                    <properties/>
+                    <border type="none"/>
+                    <children>
+                      <component id="64d82" class="javax.swing.JComboBox" binding="bulkImportTypeComboBox">
+                        <constraints/>
+                        <properties>
+                          <model>
+                            <item value="Genes"/>
+                            <item value="Proteins"/>
+                          </model>
+                        </properties>
+                      </component>
+                      <component id="f8085" class="javax.swing.JLabel">
+                        <constraints/>
+                        <properties>
+                          <text value="to import:"/>
+                        </properties>
+                      </component>
+                    </children>
+                  </grid>
+                  <grid id="52667" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+                    <constraints border-constraint="East"/>
+                    <properties/>
+                    <border type="none"/>
+                    <children>
+                      <component id="5da6a" class="javax.swing.JLabel">
+                        <constraints/>
+                        <properties>
+                          <text value="Filter results:"/>
+                        </properties>
+                      </component>
+                      <component id="bf863" class="javax.swing.JTextField" binding="bulkFilterTextField">
+                        <constraints/>
+                        <properties>
+                          <columns value="10"/>
+                        </properties>
+                      </component>
+                    </children>
+                  </grid>
                 </children>
               </grid>
             </children>

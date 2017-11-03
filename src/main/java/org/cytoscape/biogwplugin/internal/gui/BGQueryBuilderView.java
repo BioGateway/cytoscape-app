@@ -70,21 +70,47 @@ public class BGQueryBuilderView implements ChangeListener {
     private JTable bulkImportResultTable;
     private JButton bulkImportSelectedNodesNewButton;
     private JButton bulkImportSelectedCurrentButton;
+    private JTextField bulkFilterTextField;
     private TableRowSorter<TableModel> sorter;
     private DocumentListener filterDocumentListener = new DocumentListener() {
+        public void filter() {
+            filterResultRows(sorter, filterResultsTextField);
+        }
+
         @Override
         public void insertUpdate(DocumentEvent e) {
-            filterResultRows();
+            filter();
         }
 
         @Override
         public void removeUpdate(DocumentEvent e) {
-            filterResultRows();
+            filter();
         }
 
         @Override
         public void changedUpdate(DocumentEvent e) {
-            filterResultRows();
+            filter();
+        }
+    };
+    private TableRowSorter<TableModel> bulkSorter;
+    private DocumentListener bulkFilterDocumentListener = new DocumentListener() {
+        public void filter() {
+            filterResultRows(bulkSorter, bulkFilterTextField);
+        }
+
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            filter();
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            filter();
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            filter();
         }
     };
 
@@ -131,11 +157,23 @@ public class BGQueryBuilderView implements ChangeListener {
                 return false;
             }
         };
-        sorter = new TableRowSorter<TableModel>(tableModel);
+        DefaultTableModel bulkTableModel = new DefaultTableModel() {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+
+        sorter = new TableRowSorter<>(tableModel);
         resultTable.setModel(tableModel);
         resultTable.setRowSorter(sorter);
-        //filterResultsTextField.setPreferredSize(new Dimension(200, Utility.INSTANCE.getJTextFieldHeight()));
         filterResultsTextField.getDocument().addDocumentListener(filterDocumentListener);
+
+        bulkSorter = new TableRowSorter<>(bulkTableModel);
+        bulkImportResultTable.setModel(bulkTableModel);
+        bulkImportResultTable.setRowSorter(bulkSorter);
+        bulkFilterTextField.getDocument().addDocumentListener(bulkFilterDocumentListener);
+
         filterSelectedCheckBox.addActionListener(e -> updateFilterBySelectedRows());
     }
 
@@ -177,9 +215,10 @@ public class BGQueryBuilderView implements ChangeListener {
         filterResultsTextField.setText("");
     }
 
-    private void filterResultRows() {
-        sorter.setRowFilter(RowFilter.regexFilter("(?i)" + filterResultsTextField.getText()));
+    private void filterResultRows(TableRowSorter<TableModel> rowSorter, JTextField textField) {
+        rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + textField.getText()));
     }
+
 
     private void updateFilterBySelectedRows() {
         boolean shouldFilterBySelected = filterSelectedCheckBox.isSelected();
@@ -192,7 +231,7 @@ public class BGQueryBuilderView implements ChangeListener {
         } else {
             filterResultsTextField.getDocument().addDocumentListener(filterDocumentListener);
             filterResultsTextField.setEnabled(true);
-            filterResultRows();
+            filterResultRows(sorter, filterResultsTextField);
         }
     }
 
@@ -300,14 +339,8 @@ public class BGQueryBuilderView implements ChangeListener {
         mainFrame.repaint();
     }
 
-    public void removeLastMultiQueryLine() {
-        int lastIndex = multiQueryPanel.getQueryLines().size() - 1;
-        if (lastIndex < 1) {
-            return;
-        }
-        BGMultiQueryLine lastLine = multiQueryPanel.getQueryLines().get(lastIndex);
-        this.multiQueryPanel.removeQueryLine(lastLine);
-        mainFrame.repaint();
+    public JTextField getBulkFilterTextField() {
+        return bulkFilterTextField;
     }
 
     @Override
@@ -442,23 +475,35 @@ public class BGQueryBuilderView implements ChangeListener {
         final JScrollPane scrollPane2 = new JScrollPane();
         panel7.add(scrollPane2, BorderLayout.CENTER);
         bulkImportResultTable = new JTable();
-        bulkImportResultTable.setAutoCreateRowSorter(true);
+        bulkImportResultTable.setAutoCreateRowSorter(false);
         scrollPane2.setViewportView(bulkImportResultTable);
         final JPanel panel8 = new JPanel();
         panel8.setLayout(new BorderLayout(0, 0));
         panel3.add(panel8, BorderLayout.EAST);
         final JPanel panel9 = new JPanel();
-        panel9.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
+        panel9.setLayout(new BorderLayout(0, 0));
         panel3.add(panel9, BorderLayout.NORTH);
+        final JPanel panel10 = new JPanel();
+        panel10.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
+        panel9.add(panel10, BorderLayout.WEST);
         bulkImportTypeComboBox = new JComboBox();
         final DefaultComboBoxModel defaultComboBoxModel1 = new DefaultComboBoxModel();
         defaultComboBoxModel1.addElement("Genes");
         defaultComboBoxModel1.addElement("Proteins");
         bulkImportTypeComboBox.setModel(defaultComboBoxModel1);
-        panel9.add(bulkImportTypeComboBox);
+        panel10.add(bulkImportTypeComboBox);
         final JLabel label1 = new JLabel();
         label1.setText("to import:");
-        panel9.add(label1);
+        panel10.add(label1);
+        final JPanel panel11 = new JPanel();
+        panel11.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        panel9.add(panel11, BorderLayout.EAST);
+        final JLabel label2 = new JLabel();
+        label2.setText("Filter results:");
+        panel11.add(label2);
+        bulkFilterTextField = new JTextField();
+        bulkFilterTextField.setColumns(10);
+        panel11.add(bulkFilterTextField);
         queryPanel = new JPanel();
         queryPanel.setLayout(new BorderLayout(0, 0));
         tabPanel.addTab("Predefined Queries", queryPanel);
@@ -468,20 +513,20 @@ public class BGQueryBuilderView implements ChangeListener {
         runQueryButton = new JButton();
         runQueryButton.setText("Run Query");
         buttonPanel.add(runQueryButton);
-        final JPanel panel10 = new JPanel();
-        panel10.setLayout(new BorderLayout(0, 0));
-        queryPanel.add(panel10, BorderLayout.CENTER);
+        final JPanel panel12 = new JPanel();
+        panel12.setLayout(new BorderLayout(0, 0));
+        queryPanel.add(panel12, BorderLayout.CENTER);
         parameterPanel = new JPanel();
         parameterPanel.setLayout(new GridBagLayout());
-        panel10.add(parameterPanel, BorderLayout.CENTER);
-        final JPanel panel11 = new JPanel();
-        panel11.setLayout(new BorderLayout(0, 0));
-        panel10.add(panel11, BorderLayout.NORTH);
+        panel12.add(parameterPanel, BorderLayout.CENTER);
+        final JPanel panel13 = new JPanel();
+        panel13.setLayout(new BorderLayout(0, 0));
+        panel12.add(panel13, BorderLayout.NORTH);
         descriptionPanel = new JPanel();
         descriptionPanel.setLayout(new BorderLayout(0, 0));
-        panel11.add(descriptionPanel, BorderLayout.SOUTH);
+        panel13.add(descriptionPanel, BorderLayout.SOUTH);
         querySelectionBox = new JComboBox();
-        panel11.add(querySelectionBox, BorderLayout.NORTH);
+        panel13.add(querySelectionBox, BorderLayout.NORTH);
         sparqlPanel = new JPanel();
         sparqlPanel.setLayout(new BorderLayout(0, 0));
         tabPanel.addTab("SPARQL Code", sparqlPanel);
@@ -489,62 +534,62 @@ public class BGQueryBuilderView implements ChangeListener {
         sparqlPanel.add(scrollPane3, BorderLayout.CENTER);
         sparqlTextArea = new JTextArea();
         scrollPane3.setViewportView(sparqlTextArea);
-        final JPanel panel12 = new JPanel();
-        panel12.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        sparqlPanel.add(panel12, BorderLayout.SOUTH);
+        final JPanel panel14 = new JPanel();
+        panel14.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        sparqlPanel.add(panel14, BorderLayout.SOUTH);
         parseSPARQLButton = new JButton();
         parseSPARQLButton.setText("Parse SPARQL to Biogateway Query");
-        panel12.add(parseSPARQLButton);
+        panel14.add(parseSPARQLButton);
         resultPanel = new JPanel();
         resultPanel.setLayout(new BorderLayout(0, 0));
         tabPanel.addTab("Query Result", resultPanel);
-        final JPanel panel13 = new JPanel();
-        panel13.setLayout(new BorderLayout(0, 0));
-        resultPanel.add(panel13, BorderLayout.CENTER);
+        final JPanel panel15 = new JPanel();
+        panel15.setLayout(new BorderLayout(0, 0));
+        resultPanel.add(panel15, BorderLayout.CENTER);
         final JScrollPane scrollPane4 = new JScrollPane();
-        panel13.add(scrollPane4, BorderLayout.CENTER);
+        panel15.add(scrollPane4, BorderLayout.CENTER);
         resultTable.setAutoCreateRowSorter(false);
         resultTable.setFillsViewportHeight(false);
         scrollPane4.setViewportView(resultTable);
-        final JPanel panel14 = new JPanel();
-        panel14.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        panel13.add(panel14, BorderLayout.SOUTH);
-        importToNewButton = new JButton();
-        importToNewButton.setText("Import to new Network");
-        panel14.add(importToNewButton);
-        importToSelectedNetworkButton = new JButton();
-        importToSelectedNetworkButton.setText("Import to selected Network");
-        panel14.add(importToSelectedNetworkButton);
-        filterRelationsToExistingCheckBox = new JCheckBox();
-        filterRelationsToExistingCheckBox.setText("Only show relations to nodes in current network");
-        panel14.add(filterRelationsToExistingCheckBox);
-        final JPanel panel15 = new JPanel();
-        panel15.setLayout(new BorderLayout(0, 0));
-        panel13.add(panel15, BorderLayout.NORTH);
         final JPanel panel16 = new JPanel();
         panel16.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        panel15.add(panel16, BorderLayout.WEST);
+        panel15.add(panel16, BorderLayout.SOUTH);
+        importToNewButton = new JButton();
+        importToNewButton.setText("Import to new Network");
+        panel16.add(importToNewButton);
+        importToSelectedNetworkButton = new JButton();
+        importToSelectedNetworkButton.setText("Import to selected Network");
+        panel16.add(importToSelectedNetworkButton);
+        filterRelationsToExistingCheckBox = new JCheckBox();
+        filterRelationsToExistingCheckBox.setText("Only show relations to nodes in current network");
+        panel16.add(filterRelationsToExistingCheckBox);
+        final JPanel panel17 = new JPanel();
+        panel17.setLayout(new BorderLayout(0, 0));
+        panel15.add(panel17, BorderLayout.NORTH);
+        final JPanel panel18 = new JPanel();
+        panel18.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        panel17.add(panel18, BorderLayout.WEST);
         selectUpstreamRelationsButton = new JButton();
         selectUpstreamRelationsButton.setHorizontalTextPosition(11);
         selectUpstreamRelationsButton.setText("Select upstream relations");
         selectUpstreamRelationsButton.setToolTipText("Select all relations leading to the relations currently selected.");
-        panel16.add(selectUpstreamRelationsButton);
+        panel18.add(selectUpstreamRelationsButton);
         filterSelectedCheckBox = new JCheckBox();
         filterSelectedCheckBox.setText("Filter selected");
         filterSelectedCheckBox.setToolTipText("Only show currently selected relations.");
-        panel16.add(filterSelectedCheckBox);
-        final JPanel panel17 = new JPanel();
-        panel17.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        panel15.add(panel17, BorderLayout.EAST);
-        final JLabel label2 = new JLabel();
-        label2.setText("Filter results:");
-        panel17.add(label2);
+        panel18.add(filterSelectedCheckBox);
+        final JPanel panel19 = new JPanel();
+        panel19.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        panel17.add(panel19, BorderLayout.EAST);
+        final JLabel label3 = new JLabel();
+        label3.setText("Filter results:");
+        panel19.add(label3);
         filterResultsTextField = new JTextField();
         filterResultsTextField.setColumns(10);
-        panel17.add(filterResultsTextField);
-        final JPanel panel18 = new JPanel();
-        panel18.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        mainPanel.add(panel18, BorderLayout.NORTH);
+        panel19.add(filterResultsTextField);
+        final JPanel panel20 = new JPanel();
+        panel20.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        mainPanel.add(panel20, BorderLayout.NORTH);
     }
 
     /**
