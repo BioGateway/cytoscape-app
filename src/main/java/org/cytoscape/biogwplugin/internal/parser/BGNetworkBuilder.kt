@@ -114,6 +114,10 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
         for ((uri, bgNode) in uniqueNodes) {
             var node = getNodeWithUri(uri, network, nodeTable)
             if (node == null) {
+                if (!bgNode.isLoaded) {
+                    // This method is synchronous, so should be completed before the next line (addNodeToNetwork)
+                    serviceManager.server.loadDataForNode(bgNode)
+                }
                 node = addNodeToNetwork(bgNode, network, nodeTable)
             }
             cyNodes.put(uri, node)
@@ -151,7 +155,6 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
 
 
     fun addEdgeToNetwork(from: CyNode, to: CyNode, network: CyNetwork, edgeTable: CyTable, relationType: BGRelationType, edgeId: String, metadata: BGRelationMetadata): CyEdge {
-
 
         val edge = network.addEdge(from, to, relationType.directed)
         checkForMissingColumns(edgeTable, null)
