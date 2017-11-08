@@ -36,8 +36,23 @@ public class CyActivator extends AbstractCyActivator {
         Properties properties = new Properties();
 		registerService(context, biogwPlugin, BiogwPlugin.class, properties);
 
-        CreateQueryAction createQueryAction = new CreateQueryAction("Create query", "always", serviceManager);
+        BGCreateAction createQueryAction = new BGCreateAction("Create query", "always", serviceManager, new BGAction() {
+            @Override
+            public void action(BGServiceManager serviceManager) {
+                BGQueryBuilderController queryBuilderController = new BGQueryBuilderController(serviceManager);
+            }
+        });
         registerService(context, createQueryAction, CyAction.class, new Properties());
+
+        BGCreateAction openSettingsAction = new BGCreateAction("Settings", "always", serviceManager, new BGAction() {
+            @Override
+            public void action(BGServiceManager serviceManager) {
+                new BGSettingsView(serviceManager);
+            }
+        });
+        registerService(context, createQueryAction, CyAction.class, new Properties());
+        registerService(context, openSettingsAction, CyAction.class, new Properties());
+
         registerContextMenuItems(context, serviceManager);
     }
 

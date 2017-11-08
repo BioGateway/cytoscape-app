@@ -54,6 +54,7 @@ class BGServer(private val serviceManager: BGServiceManager) {
     }
 
     val cache = BGCache()
+    val settings = BGSettings()
     val parser = BGParser(serviceManager)
     val networkBuilder = BGNetworkBuilder(serviceManager)
 
