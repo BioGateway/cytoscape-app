@@ -11,12 +11,13 @@ enum class BGNodeType(val paremeterType: String) {
     Gene("Gene"),
     GO("GO annotation"),
     Taxon("Taxon"),
-    Any("Undefined type") }
+    Undefined("Undefined type") }
 
 open class BGNode {
 
     val uri: String
     var isLoaded: Boolean = false
+    val type: BGNodeType
 
     constructor(uri: String) {
         this.uri = uri
@@ -24,7 +25,18 @@ open class BGNode {
         if (!uri.startsWith("http")) {
             this.name = uri
         }
+        type = when {
+            uri.contains("uniprot") -> BGNodeType.Protein
+            uri.contains("ncbigene") -> BGNodeType.Gene
+            uri.contains("GO_") -> BGNodeType.GO
+            uri.contains("NCBITaxon_") -> BGNodeType.Taxon
+
+            else -> {
+                BGNodeType.Undefined
+            }
+        }
     }
+
 
     var name: String? = null
     var description: String? = null

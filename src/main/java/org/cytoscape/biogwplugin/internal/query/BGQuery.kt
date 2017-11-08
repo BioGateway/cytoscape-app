@@ -275,7 +275,7 @@ class BGQuickFetchNodeQuery(serviceManager: BGServiceManager, val nodeName: Stri
         BGNodeType.Protein -> "<refprot>"
         BGNodeType.GO -> "<go-basic-inf>"
         BGNodeType.Taxon -> "<cco>"
-        BGNodeType.Any -> "?anyGraph"
+        BGNodeType.Undefined -> "?anyGraph"
     }
 
     override fun run() {

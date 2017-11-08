@@ -31,7 +31,7 @@ class BGBulkImportNodesQuery(serviceManager: BGServiceManager, val nodeList: Col
             BGNodeType.Protein -> "<refprot>"
             BGNodeType.GO -> "<go-basic>"
             BGNodeType.Taxon -> "<cco>"
-            BGNodeType.Any -> "?anyGraph"
+            BGNodeType.Undefined -> "?anyGraph"
         }
         fun  getFilter(): String {
             var namesString = ""

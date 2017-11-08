@@ -7,6 +7,7 @@ object Constants {
 
     val BG_FIELD_IDENTIFIER_URI = "identifier uri"
     val BG_FIELD_NAME = "name"
+    val BG_FIELD_NODE_TYPE: String = "type"
     val BG_FIELD_DESCRIPTION = "Description"
     val BG_FIELD_EDGE_ID = "Edge Id"
     val BG_FIELD_PUBMED_URI = "Pubmed uri"

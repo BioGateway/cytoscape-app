@@ -32,7 +32,7 @@ class BGNodeURILookupQuery(serviceManager: BGServiceManager, val searchString: S
             BGNodeType.Protein -> "<refprot>"
             BGNodeType.GO -> "<go-basic>"
             BGNodeType.Taxon -> "<cco>"
-            BGNodeType.Any -> "?anyGraph"
+            BGNodeType.Undefined -> "?anyGraph"
         }
         val filter = when (useRegex) {
             true -> "FILTER regex ( ?name, '"+searchString+"','i' ) .\n"

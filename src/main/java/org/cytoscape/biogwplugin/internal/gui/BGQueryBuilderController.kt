@@ -578,7 +578,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                 BGNodeType.Protein
             }
             else -> {
-                //BGNodeType.Any
+                //BGNodeType.Undefined
                 throw Exception("Node Type must be Protein or Gene!")
             }
         }

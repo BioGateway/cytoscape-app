@@ -6,6 +6,7 @@ import org.cytoscape.biogwplugin.internal.model.BGRelation
 import org.cytoscape.biogwplugin.internal.model.BGRelationMetadata
 import org.cytoscape.biogwplugin.internal.model.BGRelationType
 import org.cytoscape.biogwplugin.internal.util.Constants
+import org.cytoscape.biogwplugin.internal.util.Utility
 import org.cytoscape.model.CyEdge
 import org.cytoscape.model.CyNetwork
 import org.cytoscape.model.CyNode
@@ -41,6 +42,15 @@ fun CyNode.getDescription(network: CyNetwork): String {
     return network.defaultNodeTable.getRow(this.suid).get(Constants.BG_FIELD_DESCRIPTION, String::class.java)
 }
 
+fun CyNode.setType(type: String, network: CyNetwork) {
+    val table = network.defaultNodeTable
+    table.getRow(this.suid).set(Constants.BG_FIELD_NODE_TYPE, type)
+}
+
+fun CyNode.getType(network: CyNetwork): String {
+    return network.defaultNodeTable.getRow(this.suid).get(Constants.BG_FIELD_NODE_TYPE, String::class.java)
+}
+
 class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
 
     fun createNetworkFromBGNodes(nodes: Collection<BGNode>): CyNetwork {
@@ -62,7 +72,12 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
     }
 
     private fun checkForMissingColumns(edgeTable: CyTable?, nodeTable: CyTable?) {
+
+        // Node table
         if (nodeTable?.getColumn(Constants.BG_FIELD_IDENTIFIER_URI) == null) nodeTable?.createColumn(Constants.BG_FIELD_IDENTIFIER_URI, String::class.java, false)
+        if (nodeTable?.getColumn(Constants.BG_FIELD_NODE_TYPE) == null) nodeTable?.createColumn(Constants.BG_FIELD_NODE_TYPE, String::class.java, false)
+
+        // Edge table
         if (edgeTable?.getColumn(Constants.BG_FIELD_IDENTIFIER_URI) == null) edgeTable?.createColumn(Constants.BG_FIELD_IDENTIFIER_URI, String::class.java, false)
         //if (edgeTable.getColumn(Constants.BG_FIELD_PUBMED_URI) == null) edgeTable.createColumn(Constants.BG_FIELD_PUBMED_URI, String::class.java, false)
         if (edgeTable?.getColumn(Constants.BG_FIELD_SOURCE_GRAPH) == null) edgeTable?.createColumn(Constants.BG_FIELD_SOURCE_GRAPH, String::class.java, false)
@@ -167,7 +182,7 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
         return edge
     }
 
-    fun addNodeToNetwork(node: BGNode, network: CyNetwork, table: CyTable): CyNode {
+    private fun addNodeToNetwork(node: BGNode, network: CyNetwork, table: CyTable): CyNode {
         val cyNode = network.addNode()
         cyNode.setUri(node.uri, network)
         val name = node.name
@@ -176,6 +191,8 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
         } else {
             cyNode.setName(node.generateName(), network)
         }
+
+        cyNode.setType(node.type.paremeterType, network)
 
         node.description?.let { cyNode.setDescription(it, network)}
         // TODO: WARNING: Unknown behaviour if the CyNodes CyNetwork is deleted!
