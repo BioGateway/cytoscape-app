@@ -10,8 +10,7 @@ import org.cytoscape.model.CyTableUtil
 import org.cytoscape.view.model.CyNetworkView
 import org.cytoscape.work.TaskIterator
 import java.awt.event.ActionListener
-import javax.swing.JMenu
-import javax.swing.JMenuItem
+import javax.swing.*
 
 class BGMultiNodeQueryCMF(val gravity: Float, val serviceManager: BGServiceManager): CyNetworkViewContextMenuFactory {
     override fun createMenuItem(netView: CyNetworkView?): CyMenuItem {
@@ -30,14 +29,19 @@ class BGMultiNodeQueryCMF(val gravity: Float, val serviceManager: BGServiceManag
 
             val parentMenu = JMenu("BioGateway")
 
-            parentMenu.add(createRelationSearchMenu("Fetch relations FROM selected", netView, selectedUris, BGRelationDirection.FROM))
+            parentMenu.add(createRelationSearchMenu("Fetch relations FROM selected", netView, selectedUris, BGRelationDirection.FROM, false))
             parentMenu.addSeparator()
-            parentMenu.add(createRelationSearchMenu("Fetch relations TO selected", netView, selectedUris, BGRelationDirection.TO))
+            parentMenu.add(createRelationSearchMenu("Fetch relations TO selected", netView, selectedUris, BGRelationDirection.TO, false))
+            parentMenu.addSeparator()
+            parentMenu.add(createRelationSearchMenu("Find common relations FROM selected", netView, selectedUris, BGRelationDirection.FROM, true))
+            parentMenu.addSeparator()
+            parentMenu.add(createRelationSearchMenu("Find common relations TO selected", netView, selectedUris, BGRelationDirection.TO, true))
 
             createPPISearchMenu(network, selectedUris)?.let {
                 parentMenu.addSeparator()
                 parentMenu.add(it)
             }
+
 
             return CyMenuItem(parentMenu, gravity)
         }
@@ -69,7 +73,7 @@ class BGMultiNodeQueryCMF(val gravity: Float, val serviceManager: BGServiceManag
         return null
     }
 
-    private fun createRelationSearchMenu(description: String, netView: CyNetworkView, nodeUris: Collection<String>, direction: BGRelationDirection): JMenuItem {
+    private fun createRelationSearchMenu(description: String, netView: CyNetworkView, nodeUris: Collection<String>, direction: BGRelationDirection, onlyCommonRelations: Boolean): JMenuItem {
 
         val parentMenu = JMenu(description)
 
@@ -92,8 +96,37 @@ class BGMultiNodeQueryCMF(val gravity: Float, val serviceManager: BGServiceManag
                     }
                 }
 
-                //query.onlyFindCommonRelations = true
+                if (onlyCommonRelations) {
 
+                    val optionPanePanel = JPanel()
+                    optionPanePanel.add(JLabel("What is the minimum number\nof common relations?"))
+                    val inputTextField = JTextField(5)
+                    optionPanePanel.add(inputTextField)
+
+                    val options = arrayOf("Ok", "Cancel", "Most in common")
+
+                    val result = JOptionPane.showOptionDialog(null, optionPanePanel, "Minimum number of common relations?", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, null)
+
+                    if (result == JOptionPane.OK_OPTION) {
+                        val minCommonRelations = inputTextField.text
+                        if (minCommonRelations.matches(Regex("^\\d+$"))) {
+                            query.minCommonRelations = minCommonRelations.toInt()
+                        } else {
+                            JOptionPane.showMessageDialog(null, "Invalid integer.")
+                            return@ActionListener
+                        }
+                    }
+                    if (result == 2) {
+                        query.minCommonRelations = -1
+                    }
+
+                    //val minCommonRelations = JOptionPane.showInputDialog("Minimum number of common relations?")
+                    //val minCommonRelations = JOptionPane.showInputDialog(null, "What is the minimum number\nof common relations? Max: "+nodeUris.size.toString(), "Minimum number of common relations?", JOptionPane.QUESTION_MESSAGE)
+
+
+                } else {
+                    query.minCommonRelations = 0
+                }
                 serviceManager.taskManager.execute(TaskIterator(query))
             })
             parentMenu.add(item)

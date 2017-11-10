@@ -14,7 +14,7 @@ class BGMultiNodeRelationQuery(val serviceManager: BGServiceManager, val nodeUri
     private var returnData: BGReturnRelationsData? = null
     private val completionBlocks = ArrayList<(BGReturnData?) -> Unit>()
 
-    var onlyFindCommonRelations = false
+    var minCommonRelations = 0
 
     fun addCompletion(completion: (BGReturnData?) -> Unit) {
         completionBlocks.add(completion)
@@ -30,7 +30,8 @@ class BGMultiNodeRelationQuery(val serviceManager: BGServiceManager, val nodeUri
         run()
     }
 
-    fun findCommonRelations(relations: Collection<BGRelation>, minCommonSourceNodes: Int): HashSet<BGRelation> {
+    /// If minCommonSourceNodes is -1, it will be set to the highest value that would return some relations.
+    private fun findCommonRelations(relations: Collection<BGRelation>, minCommonSourceNodes: Int): HashSet<BGRelation> {
         var nodeMap = HashMap<BGNode, HashSet<BGNode>>()
 
         for (relation in relations) {
@@ -52,6 +53,15 @@ class BGMultiNodeRelationQuery(val serviceManager: BGServiceManager, val nodeUri
 
         var filteredRelations = HashSet<BGRelation>()
 
+        var minCommonSourceNodes = minCommonSourceNodes
+
+        if (minCommonSourceNodes == -1) {
+            val highestNumber = nodeMap.values.map { it.size }.max()
+            println("Highest number of connected: " + highestNumber)
+            highestNumber?.let {
+                minCommonSourceNodes = it
+            }
+        }
         for (relation in relations) {
             val foundNode = when (direction) {
                 BGRelationDirection.TO -> relation.fromNode
@@ -66,7 +76,7 @@ class BGMultiNodeRelationQuery(val serviceManager: BGServiceManager, val nodeUri
         return filteredRelations
     }
 
-    fun removeNodesNotInRelationSet(nodes: Collection<BGNode>, relations: Collection<BGRelation>): Collection<BGNode> {
+    private fun removeNodesNotInRelationSet(nodes: Collection<BGNode>, relations: Collection<BGRelation>): Collection<BGNode> {
         var allNodes = relations.map { it.toNode }.toHashSet().union(relations.map { it.fromNode }.toHashSet())
         return nodes.filter { allNodes.contains(it) }.toHashSet()
     }
@@ -93,10 +103,14 @@ class BGMultiNodeRelationQuery(val serviceManager: BGServiceManager, val nodeUri
         columnNames?.let {
             returnData = BGReturnRelationsData(BGReturnType.RELATION_TRIPLE, it)
 
-            if (onlyFindCommonRelations) {
+            if (minCommonRelations != 0) {
                 // It now only finds relations to nodes with ALL the searched nodes in common.
-                val minCommonRelations = nodeUris.size
-
+                //val minCommonRelations = nodeUris.size
+                val commonRelations = findCommonRelations(relations, minCommonRelations)
+                val filteredUnloadedNodes = removeNodesNotInRelationSet(unloadedNodes, commonRelations)
+                returnData?.relationsData?.addAll(commonRelations)
+                returnData?.unloadedNodes = filteredUnloadedNodes.toList()
+            } else if (minCommonRelations == -1) {
                 val commonRelations = findCommonRelations(relations, minCommonRelations)
                 val filteredUnloadedNodes = removeNodesNotInRelationSet(unloadedNodes, commonRelations)
                 returnData?.relationsData?.addAll(commonRelations)
