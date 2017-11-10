@@ -15,10 +15,7 @@ interface BGAction {
 }
 
 public class BGCreateAction extends AbstractCyAction {
-
     private final BGAction action;
-
-
 
     private BGServiceManager serviceManager;
 

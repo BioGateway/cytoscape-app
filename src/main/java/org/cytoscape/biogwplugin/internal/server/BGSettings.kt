@@ -14,7 +14,7 @@ class BGSettings {
 
     init {
         configXMLFileURL = preferences.get(PREFID_CONFIGURL, Constants.BG_CONFIG_FILE_URL)
-        useBioGatewayLayoutStyleAsDefault = preferences.get(PREFID_BIOGWSTYLEDEFAULT, "true").equals("false")
+        useBioGatewayLayoutStyleAsDefault = !preferences.get(PREFID_BIOGWSTYLEDEFAULT, "true").equals("false")
     }
 
     fun saveParameters() {

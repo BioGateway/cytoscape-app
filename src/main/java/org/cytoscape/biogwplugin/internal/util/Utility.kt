@@ -1,6 +1,7 @@
 package org.cytoscape.biogwplugin.internal.util
 
 import org.cytoscape.biogwplugin.internal.BGServiceManager
+import org.cytoscape.view.vizmap.VisualStyle
 import org.cytoscape.work.AbstractTask
 import org.cytoscape.work.TaskMonitor
 import java.awt.EventQueue
@@ -27,6 +28,20 @@ object Utility {
         return input.replace("\"".toRegex(), "")
     }
     */
+
+    fun getOrCreateBioGatewayVisualStyle(serviceManager: BGServiceManager): VisualStyle {
+        val styles = serviceManager.adapter.visualMappingManager.allVisualStyles
+
+        for (style in styles) {
+            if (style.title.equals("BioGateway")) {
+                return style
+            }
+        }
+        val style = serviceManager.visualStyleBuilder.generateStyle()
+        serviceManager.adapter.visualMappingManager.addVisualStyle(style)
+        return style
+    }
+
     fun sanitizeParameter(parameter: String): String {
         return parameter.sanitizeParameter()
     }

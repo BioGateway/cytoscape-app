@@ -44,6 +44,17 @@
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.cytoscape:io-api:3.4.0" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.cytoscape:filter-api:3.4.0" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.cytoscape:layout-api:3.4.0" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.cytoscape:swing-app-api:3.4.0" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.cytoscape:app-api:3.4.0" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.cytoscape:group-api:3.4.0" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.cytoscape:jobs-api:3.4.0" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.cytoscape:equations-api:3.4.0" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.cytoscape:webservice-api:3.4.0" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.cytoscape:datasource-api:3.4.0" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.cytoscape:command-executor-api:3.4.0" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.cytoscape:vizmap-gui-api:3.4.0" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.cytoscape:swing-util-api:3.4.0" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.cytoscape:webservice-swing-api:3.4.0" level="project" />
     <orderEntry type="library" name="Maven: org.apache.httpcomponents:httpclient:4.4.1" level="project" />
     <orderEntry type="library" name="Maven: org.apache.httpcomponents:httpcore:4.4.1" level="project" />
     <orderEntry type="library" name="Maven: commons-logging:commons-logging:1.2" level="project" />

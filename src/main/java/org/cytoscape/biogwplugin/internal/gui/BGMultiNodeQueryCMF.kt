@@ -73,8 +73,6 @@ class BGMultiNodeQueryCMF(val gravity: Float, val serviceManager: BGServiceManag
 
         val parentMenu = JMenu(description)
 
-
-
         // Will only create the menu if the config is loaded.
         for (relationType in serviceManager.cache.relationTypeMap.values.sortedBy { it.number }) {
             val item = JMenuItem(relationType.name)
@@ -93,6 +91,9 @@ class BGMultiNodeQueryCMF(val gravity: Float, val serviceManager: BGServiceManag
                         }
                     }
                 }
+
+                //query.onlyFindCommonRelations = true
+
                 serviceManager.taskManager.execute(TaskIterator(query))
             })
             parentMenu.add(item)

@@ -2,6 +2,7 @@ package org.cytoscape.biogwplugin.internal;
 
 import java.util.Properties;
 
+import org.cytoscape.app.swing.CySwingAppAdapter;
 import org.cytoscape.biogwplugin.BiogwPlugin;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CyAction;
@@ -18,6 +19,7 @@ import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.osgi.framework.BundleContext;
 
@@ -50,8 +52,19 @@ public class CyActivator extends AbstractCyActivator {
                 new BGSettingsView(serviceManager);
             }
         });
-        registerService(context, createQueryAction, CyAction.class, new Properties());
-        registerService(context, openSettingsAction, CyAction.class, new Properties());
+        // This action is disabled in the current build.
+        //registerService(context, openSettingsAction, CyAction.class, new Properties());
+
+        BGCreateAction importStyleAction = new BGCreateAction("Import the BioGateway visual style", "always", serviceManager, new BGAction() {
+            @Override
+            public void action(BGServiceManager serviceManager) {
+                VisualStyle style = serviceManager.getVisualStyleBuilder().generateStyle();
+                serviceManager.getVisualManager().addVisualStyle(style);
+            }
+        });
+        // This is disabled, as the style is imported automatically.
+        //registerService(context, importStyleAction, CyAction.class, new Properties());
+
 
         registerContextMenuItems(context, serviceManager);
     }
@@ -100,14 +113,16 @@ public class CyActivator extends AbstractCyActivator {
 
         // This will also create a BGServer object, which creates a BGCache object and loads the XML file from the server.
         // The XML file is loaded SYNCHRONOUSLY, because we actually want to wait for it to load before loading the plugin.
-        BGServiceManager bgServiceManager = new BGServiceManager(this, bundleContext);
 
+        CySwingAppAdapter adapter = getService(bundleContext, CySwingAppAdapter.class);
+
+        BGServiceManager bgServiceManager = new BGServiceManager(this, adapter, bundleContext);
         bgServiceManager.setApplicationManager(getService(bundleContext, CyApplicationManager.class));
         bgServiceManager.setViewManager(getService(bundleContext, CyNetworkViewManager.class));
         bgServiceManager.setNetworkManager(networkManager);
         bgServiceManager.setNetworkFactory(getService(bundleContext, CyNetworkFactory.class));
         bgServiceManager.setViewFactory(getService(bundleContext, CyNetworkViewFactory.class));
-        bgServiceManager.setVisualManager(getService(bundleContext, VisualMappingManager.class));
+        bgServiceManager.setVisualMappingManager(getService(bundleContext, VisualMappingManager.class));
         bgServiceManager.setVisualFunctionFactoryDiscrete(getService(bundleContext,VisualMappingFunctionFactory.class, "(mapping.type=discrete)"));
         bgServiceManager.setEventHelper(getService(bundleContext, CyEventHelper.class));
         bgServiceManager.setTaskManager(getService(bundleContext, DialogTaskManager.class));

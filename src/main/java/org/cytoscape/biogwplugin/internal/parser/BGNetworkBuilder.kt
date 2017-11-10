@@ -5,12 +5,16 @@ import org.cytoscape.biogwplugin.internal.model.BGNode
 import org.cytoscape.biogwplugin.internal.model.BGRelation
 import org.cytoscape.biogwplugin.internal.model.BGRelationMetadata
 import org.cytoscape.biogwplugin.internal.model.BGRelationType
+import org.cytoscape.biogwplugin.internal.util.BGVisualStyleBuilder
+import org.cytoscape.biogwplugin.internal.util.BGVisualStyleTask
 import org.cytoscape.biogwplugin.internal.util.Constants
 import org.cytoscape.biogwplugin.internal.util.Utility
 import org.cytoscape.model.CyEdge
 import org.cytoscape.model.CyNetwork
 import org.cytoscape.model.CyNode
 import org.cytoscape.model.CyTable
+import org.cytoscape.view.model.View
+import org.cytoscape.work.AbstractTask
 import java.awt.EventQueue
 
 fun CyNode.setUri(name: String, network: CyNetwork) {
@@ -67,6 +71,8 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
         // Create the columns needed:
 
         checkForMissingColumns(edgeTable, nodeTable)
+
+
 
         return network
     }
@@ -202,10 +208,10 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
 
     fun addAndRemoveDummyNodeToNetwork(network: CyNetwork) {
         EventQueue.invokeLater {
-        val cyNode = network.addNode()
-        EventQueue.invokeLater {
-            network.removeNodes(listOf(cyNode))
-        }
+            val cyNode = network.addNode()
+            EventQueue.invokeLater {
+                network.removeNodes(listOf(cyNode))
+            }
         }
     }
 
@@ -262,17 +268,29 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
         return edges
     }
 
-    fun destroyAndRecreateNetworkView(network: CyNetwork, serviceManager: BGServiceManager) {
-        // Destroy all views.
-        for (view in serviceManager.viewManager.getNetworkViews(network)) {
-            serviceManager.viewManager.destroyNetworkView(view)
-        }
-       createNetworkView(network, serviceManager)
-    }
-
     fun createNetworkView(network: CyNetwork, serviceManager: BGServiceManager) {
-        val createNetworkViewTaskFactory = serviceManager.createNetworkViewTaskFactory
-        val taskIterator = createNetworkViewTaskFactory.createTaskIterator(setOf(network))
-        serviceManager.taskManager.execute(taskIterator)
+
+        if (serviceManager.server.settings.useBioGatewayLayoutStyleAsDefault) {
+            val view = serviceManager.adapter.cyNetworkViewFactory.createNetworkView(network)
+
+            val visualStyle = Utility.getOrCreateBioGatewayVisualStyle(serviceManager)
+
+//            serviceManager.adapter.visualMappingManager.addVisualStyle(visualStyle)
+            visualStyle.apply(view)
+            serviceManager.viewManager.addNetworkView(view)
+
+            val layoutManager = serviceManager.adapter.cyLayoutAlgorithmManager
+            var defaultLayout = layoutManager.defaultLayout
+
+            val taskIterator = defaultLayout.createTaskIterator(view, defaultLayout.defaultLayoutContext, view.nodeViews.toHashSet(), null)
+            serviceManager.taskManager.execute(taskIterator)
+
+
+        } else {
+            val createNetworkViewTaskFactory = serviceManager.createNetworkViewTaskFactory
+            val taskIterator = createNetworkViewTaskFactory.createTaskIterator(setOf(network))
+
+            serviceManager.taskManager.execute(taskIterator)
+        }
     }
 }

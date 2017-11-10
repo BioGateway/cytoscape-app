@@ -7,11 +7,14 @@ import org.cytoscape.biogwplugin.internal.model.BGRelationType
 import org.cytoscape.biogwplugin.internal.parser.BGReturnType
 import org.cytoscape.work.AbstractTask
 import org.cytoscape.work.TaskMonitor
+import javax.management.relation.Relation
 
 class BGMultiNodeRelationQuery(val serviceManager: BGServiceManager, val nodeUris: Collection<String>, val relationType: BGRelationType, val direction: BGRelationDirection): AbstractTask(), Runnable {
     private var taskMonitor: TaskMonitor? = null
     private var returnData: BGReturnRelationsData? = null
     private val completionBlocks = ArrayList<(BGReturnData?) -> Unit>()
+
+    var onlyFindCommonRelations = false
 
     fun addCompletion(completion: (BGReturnData?) -> Unit) {
         completionBlocks.add(completion)
@@ -25,6 +28,47 @@ class BGMultiNodeRelationQuery(val serviceManager: BGServiceManager, val nodeUri
     override fun run(taskMonitor: TaskMonitor?) {
         this.taskMonitor = taskMonitor
         run()
+    }
+
+    fun findCommonRelations(relations: Collection<BGRelation>, minCommonSourceNodes: Int): HashSet<BGRelation> {
+        var nodeMap = HashMap<BGNode, HashSet<BGNode>>()
+
+        for (relation in relations) {
+            val searchNode = when (direction) {
+                BGRelationDirection.TO -> relation.toNode
+                BGRelationDirection.FROM -> relation.fromNode
+            }
+            val foundNode = when (direction) {
+                BGRelationDirection.TO -> relation.fromNode
+                BGRelationDirection.FROM -> relation.toNode
+            }
+
+            // Init the hashset so we avoid nulls.
+            if (!nodeMap.contains(foundNode)) {
+                nodeMap[foundNode] = HashSet()
+            }
+            nodeMap[foundNode]?.add(searchNode)
+        }
+
+        var filteredRelations = HashSet<BGRelation>()
+
+        for (relation in relations) {
+            val foundNode = when (direction) {
+                BGRelationDirection.TO -> relation.fromNode
+                BGRelationDirection.FROM -> relation.toNode
+            }
+            nodeMap.get(foundNode)?.let {
+                if (it.size >= minCommonSourceNodes) {
+                    filteredRelations.add(relation)
+                }
+            }
+        }
+        return filteredRelations
+    }
+
+    fun removeNodesNotInRelationSet(nodes: Collection<BGNode>, relations: Collection<BGRelation>): Collection<BGNode> {
+        var allNodes = relations.map { it.toNode }.toHashSet().union(relations.map { it.fromNode }.toHashSet())
+        return nodes.filter { allNodes.contains(it) }.toHashSet()
     }
 
     override fun run() {
@@ -48,9 +92,22 @@ class BGMultiNodeRelationQuery(val serviceManager: BGServiceManager, val nodeUri
 
         columnNames?.let {
             returnData = BGReturnRelationsData(BGReturnType.RELATION_TRIPLE, it)
-            returnData?.relationsData?.addAll(relations)
-            returnData?.unloadedNodes = unloadedNodes.toList()
+
+            if (onlyFindCommonRelations) {
+                // It now only finds relations to nodes with ALL the searched nodes in common.
+                val minCommonRelations = nodeUris.size
+
+                val commonRelations = findCommonRelations(relations, minCommonRelations)
+                val filteredUnloadedNodes = removeNodesNotInRelationSet(unloadedNodes, commonRelations)
+                returnData?.relationsData?.addAll(commonRelations)
+                returnData?.unloadedNodes = filteredUnloadedNodes.toList()
+            } else {
+                returnData?.relationsData?.addAll(relations)
+                returnData?.unloadedNodes = unloadedNodes.toList()
+            }
         }
         runCompletions()
     }
+
+
 }

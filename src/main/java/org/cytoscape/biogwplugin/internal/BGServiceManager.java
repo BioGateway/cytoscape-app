@@ -2,13 +2,16 @@ package org.cytoscape.biogwplugin.internal;
 
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.cytoscape.app.CyAppAdapter;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.biogwplugin.internal.server.BGServer;
+import org.cytoscape.biogwplugin.internal.util.BGVisualStyleBuilder;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.app.swing.*;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
@@ -30,7 +33,7 @@ public class BGServiceManager {
     public final static String SERVER_PATH = "http://www.semantic-systems-biology.org/biogateway/endpoint";
     private final BundleContext bundleContext;
     private final CyActivator activator;
-
+    private final CyAppAdapter adapter;
 
     private CyApplicationManager applicationManager;
     private CyNetworkViewManager viewManager;
@@ -53,11 +56,15 @@ public class BGServiceManager {
     private BGServer server;
     public CloseableHttpClient httpclient = HttpClients.createDefault();
 
-    public BGServiceManager(CyActivator cyActivator, BundleContext bundleContext) {
+    private BGVisualStyleBuilder visualStyleBuilder = new BGVisualStyleBuilder(this);
+
+
+    public BGServiceManager(CyActivator cyActivator, CyAppAdapter adapter, BundleContext bundleContext) {
         server = new BGServer(this);
         cache = server.getCache();
         this.bundleContext = bundleContext;
         this.activator = cyActivator;
+        this.adapter = adapter;
     }
 
     public CyApplicationManager getApplicationManager() {
@@ -116,11 +123,11 @@ public class BGServiceManager {
         this.taskManager = taskManager;
     }
 
-    public VisualMappingManager getVisualManager() {
+    public VisualMappingManager getVisualMappingManager() {
         return visualManager;
     }
 
-    public void setVisualManager(VisualMappingManager visualManager) {
+    public void setVisualMappingManager(VisualMappingManager visualManager) {
         this.visualManager = visualManager;
     }
 
@@ -201,5 +208,17 @@ public class BGServiceManager {
 
     public CloseableHttpClient getHttpclient() {
         return httpclient;
+    }
+
+    public CyAppAdapter getAdapter() {
+        return adapter;
+    }
+
+    public BGVisualStyleBuilder getVisualStyleBuilder() {
+        return visualStyleBuilder;
+    }
+
+    public VisualMappingManager getVisualManager() {
+        return visualManager;
     }
 }
