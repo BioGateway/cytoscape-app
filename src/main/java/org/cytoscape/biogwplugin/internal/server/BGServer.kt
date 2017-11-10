@@ -62,6 +62,15 @@ class BGServer(private val serviceManager: BGServiceManager) {
         loadXMLFileFromServer()
     }
 
+    fun searchForExistingNode(uri: String): BGNode? {
+        var node = cache.nodeCache[uri]
+
+        if (node == null) {
+            node = getNodeDataFromNetworks(uri)
+        }
+        return node
+    }
+
     fun getNodeFromCacheOrNetworks(newNode: BGNode): BGNode {
         // Check if the node already exists in the cache.
         var node = cache.nodeCache[newNode.uri]

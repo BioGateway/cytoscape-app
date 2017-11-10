@@ -28,7 +28,6 @@ import kotlin.collections.Collection
 import kotlin.collections.HashMap
 import kotlin.collections.set
 import javax.swing.JFileChooser
-import javax.swing.text.StyleConstants
 
 interface BGRelationResultViewTooltipDataSource {
     fun getTooltipForResultRowAndColumn(row: Int, column: Int): String?
@@ -660,6 +659,10 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                 view.appendToPane(view.bulkImportTextPane, line+"\n", darkRed)
             }
         }
+    }
+
+    fun addMultiQueryLinesForURIs(uris: Collection<String>) {
+        view.multiQueryPanel.addMultiQueryWithURIs(uris)
     }
 
     private fun runMultiQuery() {

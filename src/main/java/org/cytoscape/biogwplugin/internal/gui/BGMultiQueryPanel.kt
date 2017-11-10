@@ -10,6 +10,8 @@ import java.awt.FlowLayout
 import java.io.File
 import java.net.URI
 import javax.swing.*
+import javax.swing.event.DocumentEvent
+import javax.swing.event.DocumentListener
 import javax.swing.filechooser.FileFilter
 
 
@@ -75,6 +77,37 @@ class BGMultiQueryLine(val serviceManager: BGServiceManager, val fromTextField: 
                 }
             }
         }
+        val swapIcon = ImageIcon(this.javaClass.classLoader.getResource("swap.png"))
+        val swapButton = JButton(swapIcon)
+        swapButton.addActionListener {
+            swapToAndFromParameters()
+        }
+
+        fromTextField.document.addDocumentListener(object : DocumentListener {
+            override fun insertUpdate(e: DocumentEvent) {
+                fromTextField.toolTipText = getLabelForURI(fromTextField.text)
+            }
+
+            override fun removeUpdate(e: DocumentEvent) {
+                fromTextField.toolTipText = getLabelForURI(fromTextField.text)
+            }
+
+            override fun changedUpdate(e: DocumentEvent) {
+                fromTextField.toolTipText = getLabelForURI(fromTextField.text)
+            }})
+
+        toTextField.document.addDocumentListener(object : DocumentListener {
+            override fun insertUpdate(e: DocumentEvent) {
+                toTextField.toolTipText = getLabelForURI(toTextField.text)
+            }
+
+            override fun removeUpdate(e: DocumentEvent) {
+                toTextField.toolTipText = getLabelForURI(toTextField.text)
+            }
+
+            override fun changedUpdate(e: DocumentEvent) {
+                toTextField.toolTipText = getLabelForURI(toTextField.text)
+            }})
 
         this.add(fromComboBox)
         this.add(fromTextField)
@@ -83,6 +116,27 @@ class BGMultiQueryLine(val serviceManager: BGServiceManager, val fromTextField: 
         this.add(toComboBox)
         this.add(toTextField)
         this.add(toUriSearchButton)
+        this.add(swapButton)
+    }
+
+    private fun swapToAndFromParameters() {
+        val tmpFromUri = fromTextField.text
+        val tmpToUri = toTextField.text
+        val tmpFromItem = fromComboBox.selectedItem
+        val tmpToItem = toComboBox.selectedItem
+
+        toComboBox.selectedItem = tmpFromItem
+        fromComboBox.selectedItem = tmpToItem
+        fromUri = tmpToUri
+        toUri = tmpFromUri
+    }
+
+    private fun getLabelForURI(uri: String): String {
+        val node = serviceManager.server.searchForExistingNode(uri)
+        node?.name?.let {
+            return it
+        }
+        return ""
     }
 
     var fromUri: String?
@@ -231,13 +285,14 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager): JPanel() {
         return queryLine
     }
 
-    fun addQueryLine() {
+    fun addQueryLine(): BGMultiQueryLine {
         val queryLine = createQueryLine()
         queryLines.add(queryLine)
         this.add(queryLine)
+        return queryLine
     }
 
-    private fun addQueryLine(graph: BGSPARQLParser.BGQueryGraph) {
+    private fun addQueryLine(graph: BGSPARQLParser.BGQueryGraph): BGMultiQueryLine {
         val queryLine = createQueryLine()
 
         when (graph.from.type) {
@@ -269,6 +324,7 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager): JPanel() {
 
         queryLines.add(queryLine)
         this.add(queryLine)
+        return queryLine
     }
 
     private fun removeAllQueryLines() {
@@ -286,7 +342,15 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager): JPanel() {
         }
     }
 
-    fun removeQueryLine(queryLine: BGMultiQueryLine) {
+    fun addMultiQueryWithURIs(uris: Collection<String>) {
+        removeAllQueryLines()
+        for (uri in uris) {
+            val line = addQueryLine()
+            line.fromUri = uri
+        }
+    }
+
+    private fun removeQueryLine(queryLine: BGMultiQueryLine) {
         queryLines.remove(queryLine)
         variableManager.unRegisterUseOfVariableForComponent(queryLine.fromComboBox)
         variableManager.URIcomboBoxes.remove(queryLine.fromComboBox)
@@ -322,7 +386,7 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager): JPanel() {
     }
 
 
-    fun generateReturnValuesAndGraphQueries(): Pair<String, String> {
+    private fun generateReturnValuesAndGraphQueries(): Pair<String, String> {
         var returnValues = ""
         var graphQueries = ""
 

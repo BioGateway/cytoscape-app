@@ -9,6 +9,7 @@ import org.cytoscape.model.CyNetwork
 import org.cytoscape.model.CyTableUtil
 import org.cytoscape.view.model.CyNetworkView
 import org.cytoscape.work.TaskIterator
+import java.awt.SystemColor.menu
 import java.awt.event.ActionListener
 import javax.swing.*
 
@@ -41,6 +42,8 @@ class BGMultiNodeQueryCMF(val gravity: Float, val serviceManager: BGServiceManag
                 parentMenu.addSeparator()
                 parentMenu.add(it)
             }
+            parentMenu.addSeparator()
+            parentMenu.add(createOpenQueryBuilderWithSelectedURIsMenu(netView, selectedUris))
 
 
             return CyMenuItem(parentMenu, gravity)
@@ -71,6 +74,16 @@ class BGMultiNodeQueryCMF(val gravity: Float, val serviceManager: BGServiceManag
             return ppiItem
         }
         return null
+    }
+
+    private fun createOpenQueryBuilderWithSelectedURIsMenu(netView: CyNetworkView, nodeUris: Collection<String>): JMenuItem {
+        val item = JMenuItem("Use selected URIs in query builder")
+        item.addActionListener {
+            val queryBuilder = BGQueryBuilderController(serviceManager)
+            queryBuilder.addMultiQueryLinesForURIs(nodeUris)
+
+        }
+        return item
     }
 
     private fun createRelationSearchMenu(description: String, netView: CyNetworkView, nodeUris: Collection<String>, direction: BGRelationDirection, onlyCommonRelations: Boolean): JMenuItem {
