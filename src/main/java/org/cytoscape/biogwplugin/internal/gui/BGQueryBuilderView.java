@@ -370,8 +370,7 @@ public class BGQueryBuilderView implements ChangeListener {
         mainFrame.repaint();
     }
 
-    public void appendToPane(JTextPane tp, String msg, Color textColor)
-    {
+    public void appendToPane(JTextPane tp, String msg, Color textColor) {
         StyleContext sc = StyleContext.getDefaultStyleContext();
         AttributeSet aset = sc.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Foreground, textColor);
 
@@ -507,6 +506,7 @@ public class BGQueryBuilderView implements ChangeListener {
         final DefaultComboBoxModel defaultComboBoxModel1 = new DefaultComboBoxModel();
         defaultComboBoxModel1.addElement("Genes");
         defaultComboBoxModel1.addElement("Proteins");
+        defaultComboBoxModel1.addElement("GO term");
         bulkImportTypeComboBox.setModel(defaultComboBoxModel1);
         panel10.add(bulkImportTypeComboBox);
         final JLabel label2 = new JLabel();

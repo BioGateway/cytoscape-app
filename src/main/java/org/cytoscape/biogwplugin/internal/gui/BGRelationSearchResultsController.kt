@@ -2,17 +2,18 @@ package org.cytoscape.biogwplugin.internal.gui
 
 import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.model.BGRelation
+import org.cytoscape.biogwplugin.internal.query.BGReturnRelationsData
 import org.cytoscape.biogwplugin.internal.util.Constants
 import org.cytoscape.biogwplugin.internal.util.Utility
 import org.cytoscape.model.CyNetwork
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import java.util.*
-import javax.swing.RowFilter
 import javax.swing.table.DefaultTableModel
-import javax.swing.table.TableRowSorter
 
-class BGRelationSearchResultsController(val serviceManager: BGServiceManager, private val relationsFound: ArrayList<BGRelation>, val columnNames: Array<String>, val network: CyNetwork) : ActionListener, BGRelationResultViewTooltipDataSource {
+class BGRelationSearchResultsController(val serviceManager: BGServiceManager, private val returnData: BGReturnRelationsData, val columnNames: Array<String>, val network: CyNetwork) : ActionListener, BGRelationResultViewTooltipDataSource {
+
+    private val relationsFound = returnData.relationsData
 
     override fun getTooltipForResultRowAndColumn(row: Int, column: Int): String? {
         val modelRow = view.resultTable.convertRowIndexToModel(row)
@@ -25,9 +26,24 @@ class BGRelationSearchResultsController(val serviceManager: BGServiceManager, pr
 
 
 
-    private val view: BGRelationSearchResultsView = BGRelationSearchResultsView(this, this)
+    private val view: BGRelationSearchResultsView
 
     init {
+        val firstRow = returnData.relationsData.first().asArray()
+
+        view = BGRelationSearchResultsView(this, this, firstRow)
+
+        returnData.resultTitle?.let {
+            view.mainFrame.title = it
+        }
+
+//        val model = object : DefaultTableModel() {
+//            override fun getColumnClass(column: Int): Class<*> {
+//                return firstRow[column].javaClass
+//            }
+//        }
+//
+//        view.resultTable.model = model
         val model = view.resultTable.model as DefaultTableModel
         model.setColumnIdentifiers(columnNames)
 
@@ -38,7 +54,7 @@ class BGRelationSearchResultsController(val serviceManager: BGServiceManager, pr
     fun showAllResults() {
         val model = view.resultTable.model as DefaultTableModel
         for (result in relationsFound) {
-            model.addRow(result.nameStringArray())
+            model.addRow(result.asArray())
         }
     }
 
@@ -62,6 +78,8 @@ class BGRelationSearchResultsController(val serviceManager: BGServiceManager, pr
             }
         }
         serviceManager.server.networkBuilder.addRelationsToNetwork(network, relations)
+        serviceManager.eventHelper.flushPayloadEvents()
+        Utility.reloadCurrentVisualStyleCurrentNetworkView(serviceManager)
     }
 
     private fun filterResults() {

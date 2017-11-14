@@ -576,6 +576,9 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
             "Proteins" -> {
                 BGNodeType.Protein
             }
+            "GO term" -> {
+                BGNodeType.GO
+            }
             else -> {
                 //BGNodeType.Undefined
                 throw Exception("Node Type must be Protein or Gene!")
@@ -622,6 +625,8 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                     serviceManager.server.networkBuilder.createNetworkView(it, serviceManager)
                 }
             }
+        } else {
+            Utility.reloadCurrentVisualStyleCurrentNetworkView(serviceManager)
         }
     }
 

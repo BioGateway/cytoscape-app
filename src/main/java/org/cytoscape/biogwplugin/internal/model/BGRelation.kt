@@ -4,14 +4,20 @@ class BGRelation(var fromNode: BGNode, val relationType: BGRelationType, var toN
 
     val metadata = BGRelationMetadata(relationType.uri)
 
+    // Extra data field for helping sorting the relations in the result view.
+    var extraTableData = ArrayList<Any>()
+
     fun stringArray(): Array<String> {
         return arrayOf(fromNode.uri, relationType.uri, toNode.uri)
     }
 
-    fun nameStringArray(): Array<String> {
+    fun asArray(): Array<Any> {
         val fromNodeName = fromNode.name ?: fromNode.uri
         val toNodeName = toNode.name ?: toNode.uri
-        return arrayOf(fromNodeName, relationType.name, toNodeName)
+
+        val array = mutableListOf<Any>(fromNodeName, relationType.name, toNodeName)
+        array.addAll(extraTableData)
+        return array.toTypedArray()
     }
 
     val edgeIdentifier: String

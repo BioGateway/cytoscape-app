@@ -22,6 +22,10 @@ enum class BGRelationDirection {
     TO, FROM
 }
 
+enum class BGParsingType {
+    TO_ARRAY, RELATIONS, MULTI, PARSING_BLOCK
+}
+
 abstract class BGQuery(val serviceManager: BGServiceManager, var type: BGReturnType, val parser: BGParser): AbstractTask(), Runnable {
     var completionBlocks: ArrayList<(BGReturnData?) -> Unit> = ArrayList()
     var returnData: BGReturnData? = null
@@ -29,6 +33,7 @@ abstract class BGQuery(val serviceManager: BGServiceManager, var type: BGReturnT
     var taskMonitor: TaskMonitor? = null
     var taskMonitorText = "Searching..."
     var parsingBlock: ((BufferedReader) -> Unit)? = null
+    var parseType = BGParsingType.PARSING_BLOCK
 
     abstract var queryString: String
 
@@ -54,7 +59,19 @@ abstract class BGQuery(val serviceManager: BGServiceManager, var type: BGReturnT
             val reader = BufferedReader(StringReader(data))
             client.close()
             taskMonitor?.setTitle("Loading results...")
-            parsingBlock?.invoke(reader)
+            when (parseType) {
+                BGParsingType.TO_ARRAY -> parseToTextArray(reader)
+                BGParsingType.RELATIONS -> TODO()
+                BGParsingType.MULTI -> TODO()
+                BGParsingType.PARSING_BLOCK -> parsingBlock?.invoke(reader)
+            }
+        }
+    }
+
+    fun parseToTextArray(bufferedReader: BufferedReader) {
+        parser.parseNodesToTextArray(bufferedReader, type) { returnData ->
+            this.returnData = returnData
+            runCompletions()
         }
     }
 
@@ -191,10 +208,10 @@ class BGNodeFetchQuery(serviceManager: BGServiceManager, val nodeUri: String, pa
     override var queryString = "BASE   <http://www.semantic-systems-biology.org/> \n" +
             "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>  \n" +
             "PREFIX term_id: <"+ nodeUri +">  \n" +
-            "SELECT DISTINCT term_id: ?label ?name\n" +
+            "SELECT DISTINCT term_id: ?label ?description\n" +
             "WHERE {\n"+
             "term_id: skos:prefLabel ?label .\n" +
-            "term_id: skos:definition ?name .\n" +
+            "term_id: skos:definition ?description .\n" +
             "} \n"
 }
 
@@ -275,7 +292,9 @@ class BGQuickFetchNodeQuery(serviceManager: BGServiceManager, val nodeName: Stri
         BGNodeType.Protein -> "<refprot>"
         BGNodeType.GO -> "<go-basic-inf>"
         BGNodeType.Taxon -> "<cco>"
-        BGNodeType.Undefined -> "?anyGraph"
+        else -> {
+            "?anyGraph"
+        }
     }
 
     override fun run() {

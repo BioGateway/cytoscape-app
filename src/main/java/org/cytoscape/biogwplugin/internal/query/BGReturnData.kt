@@ -9,11 +9,15 @@ import org.cytoscape.biogwplugin.internal.parser.BGReturnType
  */
 
 abstract class BGReturnData {
+    // The column names for the result table
     var columnNames: Array<String>
+
+    // An optional title for the result window. If not null, the title of the window displaying the result can be set to this.
+    var resultTitle: String? = null
 
     constructor(returnType: BGReturnType, columnNames: Array<String>) {
 
-        if (returnType != BGReturnType.RELATION_MULTIPART && columnNames.size != returnType.paremeterCount) throw Exception("Parameter count must match column name count!")
+        //if (returnType != BGReturnType.RELATION_MULTIPART && columnNames.size != returnType.paremeterCount) throw Exception("Parameter count must match column name count!")
         this.columnNames = columnNames
     }
 

@@ -40,10 +40,13 @@
             <properties/>
             <border type="none"/>
             <children>
-              <component id="731c0" class="javax.swing.JLabel">
+              <component id="8f280" class="javax.swing.JComboBox" binding="nameOrURIComboBox">
                 <constraints/>
                 <properties>
-                  <text value="Node name:"/>
+                  <model>
+                    <item value="Name:"/>
+                    <item value="URI:"/>
+                  </model>
                 </properties>
               </component>
               <component id="4b15a" class="javax.swing.JTextField" binding="searchField">

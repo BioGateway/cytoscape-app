@@ -41,6 +41,7 @@ class BGVisualStyleBuilder(val serviceManager: BGServiceManager) {
         val nodeWhite = Color(255,255,255)
         val nodeLightYellow = Color(255, 252, 211)
         val nodeLightBlue = Color(230, 247, 253)
+        val nodeLightGray = Color(245, 245, 245)
         val edgeGreen = Color(51, 204, 0)
         val edgeDarkBlue = Color(0, 51, 204)
         val edgeTurquoise = Color(0, 153, 153)
@@ -52,14 +53,17 @@ class BGVisualStyleBuilder(val serviceManager: BGServiceManager) {
                 "Protein" to NodeShapeVisualProperty.ROUND_RECTANGLE,
                 "Gene" to NodeShapeVisualProperty.ELLIPSE,
                 "GO annotation" to NodeShapeVisualProperty.DIAMOND,
-                "Taxon" to NodeShapeVisualProperty.HEXAGON
+                "Taxon" to NodeShapeVisualProperty.HEXAGON,
+                "PPI" to NodeShapeVisualProperty.TRIANGLE
         )
         val nodeColors = hashMapOf<String, Color>(
                 "Protein" to nodeLightBlue,
-                "Gene" to nodeLightYellow
+                "Gene" to nodeLightYellow,
+                "PPI" to nodeLightGray
         )
         val edgeColors = hashMapOf<String, Color>(
                 "enables" to edgeGreen,
+                "has agent" to edgeTurquoise,
                 "encodes" to edgeDarkBlue,
                 "molecularly controls" to edgeTurquoise,
                 "molecularly interacts with" to edgeTurquoise
@@ -68,7 +72,8 @@ class BGVisualStyleBuilder(val serviceManager: BGServiceManager) {
                 "enables" to LineTypeVisualProperty.EQUAL_DASH,
                 "encodes" to LineTypeVisualProperty.DOT,
                 "involved in" to LineTypeVisualProperty.EQUAL_DASH,
-                "molecularly interacts with" to LineTypeVisualProperty.EQUAL_DASH
+                "molecularly interacts with" to LineTypeVisualProperty.EQUAL_DASH,
+                "has agent" to LineTypeVisualProperty.DOT
         )
 
         val vizMapManager = adapter.visualMappingManager

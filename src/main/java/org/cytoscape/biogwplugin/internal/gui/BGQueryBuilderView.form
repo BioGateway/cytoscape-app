@@ -169,6 +169,7 @@
                           <model>
                             <item value="Genes"/>
                             <item value="Proteins"/>
+                            <item value="GO term"/>
                           </model>
                         </properties>
                       </component>

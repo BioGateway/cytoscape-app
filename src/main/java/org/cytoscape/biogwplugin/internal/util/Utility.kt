@@ -1,6 +1,7 @@
 package org.cytoscape.biogwplugin.internal.util
 
 import org.cytoscape.biogwplugin.internal.BGServiceManager
+import org.cytoscape.model.CyNetwork
 import org.cytoscape.view.vizmap.VisualStyle
 import org.cytoscape.work.AbstractTask
 import org.cytoscape.work.TaskMonitor
@@ -40,6 +41,13 @@ object Utility {
         val style = serviceManager.visualStyleBuilder.generateStyle()
         serviceManager.adapter.visualMappingManager.addVisualStyle(style)
         return style
+    }
+
+    fun reloadCurrentVisualStyleCurrentNetworkView(serviceManager: BGServiceManager) {
+        val view = serviceManager.applicationManager.currentNetworkView
+        view?.let {
+            serviceManager.adapter.visualMappingManager.currentVisualStyle.apply(it)
+        }
     }
 
     fun sanitizeParameter(parameter: String): String {

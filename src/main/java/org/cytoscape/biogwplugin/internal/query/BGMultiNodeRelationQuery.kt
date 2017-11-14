@@ -69,6 +69,7 @@ class BGMultiNodeRelationQuery(val serviceManager: BGServiceManager, val nodeUri
             }
             nodeMap.get(foundNode)?.let {
                 if (it.size >= minCommonSourceNodes) {
+                    relation.extraTableData.add(it.size)
                     filteredRelations.add(relation)
                 }
             }
@@ -92,34 +93,34 @@ class BGMultiNodeRelationQuery(val serviceManager: BGServiceManager, val nodeUri
             query.addCompletion {
                 val returnData = it as? BGReturnRelationsData ?: throw Exception("Expected relations data!")
                 relations.addAll(returnData.relationsData)
-                columnNames = returnData.columnNames
+                //columnNames = returnData.columnNames
                 returnData.unloadedNodes?.let {
                     unloadedNodes.addAll(it)
                 }
             }
             query.run()
         }
+        columnNames = arrayOf("From Node", "Relation Type", "To Node", "Common Relations")
 
-        columnNames?.let {
-            returnData = BGReturnRelationsData(BGReturnType.RELATION_TRIPLE, it)
+        returnData = BGReturnRelationsData(BGReturnType.RELATION_TRIPLE, columnNames)
 
-            if (minCommonRelations != 0) {
-                // It now only finds relations to nodes with ALL the searched nodes in common.
-                //val minCommonRelations = nodeUris.size
-                val commonRelations = findCommonRelations(relations, minCommonRelations)
-                val filteredUnloadedNodes = removeNodesNotInRelationSet(unloadedNodes, commonRelations)
-                returnData?.relationsData?.addAll(commonRelations)
-                returnData?.unloadedNodes = filteredUnloadedNodes.toList()
-            } else if (minCommonRelations == -1) {
-                val commonRelations = findCommonRelations(relations, minCommonRelations)
-                val filteredUnloadedNodes = removeNodesNotInRelationSet(unloadedNodes, commonRelations)
-                returnData?.relationsData?.addAll(commonRelations)
-                returnData?.unloadedNodes = filteredUnloadedNodes.toList()
-            } else {
-                returnData?.relationsData?.addAll(relations)
-                returnData?.unloadedNodes = unloadedNodes.toList()
-            }
+        if (minCommonRelations != 0) {
+            // It now only finds relations to nodes with ALL the searched nodes in common.
+            //val minCommonRelations = nodeUris.size
+            val commonRelations = findCommonRelations(relations, minCommonRelations)
+            val filteredUnloadedNodes = removeNodesNotInRelationSet(unloadedNodes, commonRelations)
+            returnData?.relationsData?.addAll(commonRelations)
+            returnData?.unloadedNodes = filteredUnloadedNodes.toList()
+        } else if (minCommonRelations == -1) {
+            val commonRelations = findCommonRelations(relations, minCommonRelations)
+            val filteredUnloadedNodes = removeNodesNotInRelationSet(unloadedNodes, commonRelations)
+            returnData?.relationsData?.addAll(commonRelations)
+            returnData?.unloadedNodes = filteredUnloadedNodes.toList()
+        } else {
+            returnData?.relationsData?.addAll(relations)
+            returnData?.unloadedNodes = unloadedNodes.toList()
         }
+
         runCompletions()
     }
 

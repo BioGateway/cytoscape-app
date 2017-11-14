@@ -65,8 +65,8 @@ public class BGSettingsView {
      * @noinspection ALL
      */
     private void $$$setupUI$$$() {
-        panel2 = new JPanel();
-        panel2.setLayout(new GridBagLayout());
+        final JPanel panel1 = new JPanel();
+        panel1.setLayout(new GridBagLayout());
         useBioGatewayVisualStyleCheckBox = new JCheckBox();
         useBioGatewayVisualStyleCheckBox.setText("Use BioGateway visual style as default");
         GridBagConstraints gbc;
@@ -76,7 +76,7 @@ public class BGSettingsView {
         gbc.gridwidth = 2;
         gbc.weighty = 1.0;
         gbc.anchor = GridBagConstraints.WEST;
-        panel2.add(useBioGatewayVisualStyleCheckBox, gbc);
+        panel1.add(useBioGatewayVisualStyleCheckBox, gbc);
         final JLabel label1 = new JLabel();
         label1.setText("Config File URL:");
         gbc = new GridBagConstraints();
@@ -84,7 +84,7 @@ public class BGSettingsView {
         gbc.gridy = 1;
         gbc.weighty = 1.0;
         gbc.anchor = GridBagConstraints.WEST;
-        panel2.add(label1, gbc);
+        panel1.add(label1, gbc);
         configFileURlField = new JTextField();
         configFileURlField.setColumns(20);
         gbc = new GridBagConstraints();
@@ -94,20 +94,20 @@ public class BGSettingsView {
         gbc.weighty = 1.0;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel2.add(configFileURlField, gbc);
+        panel1.add(configFileURlField, gbc);
         cancelButton = new JButton();
         cancelButton.setText("Cancel");
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 2;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel2.add(cancelButton, gbc);
+        panel1.add(cancelButton, gbc);
         saveChangesButton = new JButton();
         saveChangesButton.setText("Save changes");
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
         gbc.gridy = 2;
         gbc.anchor = GridBagConstraints.EAST;
-        panel2.add(saveChangesButton, gbc);
+        panel1.add(saveChangesButton, gbc);
     }
 }

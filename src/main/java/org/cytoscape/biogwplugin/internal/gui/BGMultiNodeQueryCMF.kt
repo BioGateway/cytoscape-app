@@ -38,7 +38,11 @@ class BGMultiNodeQueryCMF(val gravity: Float, val serviceManager: BGServiceManag
             parentMenu.addSeparator()
             parentMenu.add(createRelationSearchMenu("Find common relations TO selected", netView, selectedUris, BGRelationDirection.TO, true))
 
-            createPPISearchMenu(network, selectedUris)?.let {
+            createPPISearchMenu("Look for binary PPIs", network, selectedUris, false)?.let {
+                parentMenu.addSeparator()
+                parentMenu.add(it)
+            }
+            createPPISearchMenu("Look for common binary PPIs", network, selectedUris, true)?.let {
                 parentMenu.addSeparator()
                 parentMenu.add(it)
             }
@@ -51,13 +55,13 @@ class BGMultiNodeQueryCMF(val gravity: Float, val serviceManager: BGServiceManag
         return CyMenuItem(null, gravity)
     }
 
-    private fun createPPISearchMenu(network: CyNetwork, nodeUris: Collection<String>): JMenuItem? {
+    private fun createPPISearchMenu(description: String, network: CyNetwork, nodeUris: Collection<String>, onlyCommonRelations: Boolean): JMenuItem? {
         var foundProteins = false
         for (uri in nodeUris) {
             if (uri.contains("uniprot")) foundProteins = true
         }
         if (foundProteins) {
-            val ppiItem = JMenuItem("Look for protein-protein interactions")
+            val ppiItem = JMenuItem(description)
             ppiItem.addActionListener {
                 val query = BGFindBinaryPPIInteractionsForMultipleNodesQuery(serviceManager, nodeUris)
                 query.addCompletion {
@@ -66,9 +70,34 @@ class BGMultiNodeQueryCMF(val gravity: Float, val serviceManager: BGServiceManag
                         if (returnData.relationsData.size == 0) throw Exception("No relations found.")
                         BGLoadUnloadedNodes.createAndRun(serviceManager, returnData.unloadedNodes) {
                             println("Loaded "+it.toString()+ " nodes.")
-                            BGRelationSearchResultsController(serviceManager, returnData.relationsData, returnData.columnNames, network)
+                            BGRelationSearchResultsController(serviceManager, returnData, returnData.columnNames, network)
                         } }}
+                if (onlyCommonRelations) {
+                    val optionPanePanel = JPanel()
+                    optionPanePanel.add(JLabel("What is the minimum number\nof common relations?"))
+                    val inputTextField = JTextField(5)
+                    optionPanePanel.add(inputTextField)
 
+                    val options = arrayOf("Ok", "Cancel", "Most in common")
+
+                    val result = JOptionPane.showOptionDialog(null, optionPanePanel, "Minimum number of common relations?", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, null)
+
+                    if (result == JOptionPane.OK_OPTION) {
+                        val minCommonRelations = inputTextField.text
+                        if (minCommonRelations.matches(Regex("^\\d+$"))) {
+                            query.minCommonRelations = minCommonRelations.toInt()
+                        } else {
+                            JOptionPane.showMessageDialog(null, "Invalid integer.")
+                            return@addActionListener
+                        }
+                    }
+                    if (result == 2) {
+                        query.minCommonRelations = -1
+                    }
+
+                } else {
+                    query.minCommonRelations = 0
+                }
                 serviceManager.taskManager.execute(TaskIterator(query))
             }
             return ppiItem
@@ -101,10 +130,9 @@ class BGMultiNodeQueryCMF(val gravity: Float, val serviceManager: BGServiceManag
                     if (returnData != null) {
                         val network = netView.model
                         if (returnData.relationsData.size == 0) throw Exception("No relations found.")
-                        val columnNames = arrayOf("from node","relation type", "to node")
                         BGLoadUnloadedNodes.createAndRun(serviceManager, returnData.unloadedNodes) {
                             println("Loaded "+it.toString()+ " nodes.")
-                            BGRelationSearchResultsController(serviceManager, returnData.relationsData, columnNames, network)
+                            BGRelationSearchResultsController(serviceManager, returnData, returnData.columnNames, network)
                         }
                     }
                 }
@@ -132,10 +160,6 @@ class BGMultiNodeQueryCMF(val gravity: Float, val serviceManager: BGServiceManag
                     if (result == 2) {
                         query.minCommonRelations = -1
                     }
-
-                    //val minCommonRelations = JOptionPane.showInputDialog("Minimum number of common relations?")
-                    //val minCommonRelations = JOptionPane.showInputDialog(null, "What is the minimum number\nof common relations? Max: "+nodeUris.size.toString(), "Minimum number of common relations?", JOptionPane.QUESTION_MESSAGE)
-
 
                 } else {
                     query.minCommonRelations = 0

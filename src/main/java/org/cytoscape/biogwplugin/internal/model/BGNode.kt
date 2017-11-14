@@ -11,6 +11,7 @@ enum class BGNodeType(val paremeterType: String) {
     Gene("Gene"),
     GO("GO annotation"),
     Taxon("Taxon"),
+    PPI("PPI"),
     Undefined("Undefined type") }
 
 open class BGNode {
@@ -30,6 +31,7 @@ open class BGNode {
             uri.contains("ncbigene") -> BGNodeType.Gene
             uri.contains("GO_") -> BGNodeType.GO
             uri.contains("NCBITaxon_") -> BGNodeType.Taxon
+            uri.contains("intact") -> BGNodeType.PPI
 
             else -> {
                 BGNodeType.Undefined

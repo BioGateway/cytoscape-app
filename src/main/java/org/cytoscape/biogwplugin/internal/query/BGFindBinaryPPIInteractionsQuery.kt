@@ -39,25 +39,14 @@ class BGFindBinaryPPIInteractionsQuery(serviceManager: BGServiceManager, val nod
                 "?ppi has_agent: ?node .\n" +
                 "?ppi has_agent: fromNode: .\n" +
                 "}}}}"
-
-//        return "BASE <http://www.semantic-systems-biology.org/>\n" +
-//                "PREFIX has_agent: <http://semanticscience.org/resource/SIO_000139>\n" +
-//                "PREFIX fromNode: <"+nodeUri+">\n" +
-//                "SELECT DISTINCT ?toNode <http://purl.obolibrary.org/obo/RO_0002436> fromNode: \n" +
-//                "WHERE {\n" +
-//                "FILTER (fromNode: != ?toNode)" +
-//                "GRAPH <intact> {\n" +
-//                "?ppi has_agent: ?toNode .\n" +
-//                "?ppi has_agent: fromNode: .\n" +
-//                "}}\n" +
-//                "GROUP BY ?toNode\n" +
-//                "HAVING (COUNT(distinct ?toNode) < 2)\n"
     }
 }
 
 class BGFindBinaryPPIInteractionsForMultipleNodesQuery(val serviceManager: BGServiceManager, val nodeUris: Collection<String>): AbstractTask() {
     private var returnData: BGReturnRelationsData? = null
     private val completionBlocks = ArrayList<(BGReturnData?) -> Unit>()
+    var minCommonRelations = 0
+
 
     fun addCompletion(completion: (BGReturnData?) -> Unit) {
         completionBlocks.add(completion)
@@ -67,6 +56,71 @@ class BGFindBinaryPPIInteractionsForMultipleNodesQuery(val serviceManager: BGSer
             completion(returnData)
         }
     }
+
+    private fun findCommonRelations(relations: Collection<BGRelation>): HashSet<BGRelation> {
+        var nodeMap = HashMap<BGNode, HashSet<BGNode>>()
+        // TODO: Update the code to remove this direction. It's just there to satisfy the copy-pasted code below. All PPI relations are bi-directional anyway.
+
+        for (relation in relations) {
+            val toNodeIsSearchNode = nodeUris.contains(relation.toNode.uri)
+            val direction = when (toNodeIsSearchNode) {
+                true -> BGRelationDirection.TO
+                false -> BGRelationDirection.FROM
+            }
+
+            val searchNode = when (direction) {
+                BGRelationDirection.TO -> relation.toNode
+                BGRelationDirection.FROM -> relation.fromNode
+            }
+            val foundNode = when (direction) {
+                BGRelationDirection.TO -> relation.fromNode
+                BGRelationDirection.FROM -> relation.toNode
+            }
+
+            // Init the hashset so we avoid nulls.
+            if (!nodeMap.contains(foundNode)) {
+                nodeMap[foundNode] = HashSet()
+            }
+            nodeMap[foundNode]?.add(searchNode)
+        }
+
+        var filteredRelations = HashSet<BGRelation>()
+
+        if (minCommonRelations == -1) {
+            val highestNumber = nodeMap.values.map { it.size }.max()
+            println("Highest number of connected: " + highestNumber)
+            highestNumber?.let {
+                minCommonRelations = it
+            }
+        }
+
+        for (relation in relations) {
+            val toNodeIsSearchNode = nodeUris.contains(relation.toNode.uri)
+            val direction = when (toNodeIsSearchNode) {
+                true -> BGRelationDirection.TO
+                false -> BGRelationDirection.FROM
+            }
+
+            val foundNode = when (direction) {
+                BGRelationDirection.TO -> relation.fromNode
+                BGRelationDirection.FROM -> relation.toNode
+            }
+
+            nodeMap.get(foundNode)?.let {
+                if (it.size >= minCommonRelations) {
+                    filteredRelations.add(relation)
+                    relation.extraTableData.add(it.size)
+                }
+            }
+        }
+        return filteredRelations
+    }
+
+    private fun removeNodesNotInRelationSet(nodes: Collection<BGNode>, relations: Collection<BGRelation>): Collection<BGNode> {
+        var allNodes = relations.map { it.toNode }.toHashSet().union(relations.map { it.fromNode }.toHashSet())
+        return nodes.filter { allNodes.contains(it) }.toHashSet()
+    }
+
 
     override fun run(taskMonitor: TaskMonitor?) {
         var relations = HashSet<BGRelation>()
@@ -84,10 +138,20 @@ class BGFindBinaryPPIInteractionsForMultipleNodesQuery(val serviceManager: BGSer
             query.run()
         }
 
-        val columnNames = arrayOf("Protein", "Relation", "Protein")
+        val columnNames = arrayOf("Protein", "Relation", "Protein", "Common Relations")
         returnData = BGReturnRelationsData(BGReturnType.RELATION_TRIPLE, columnNames)
-        returnData?.relationsData?.addAll(relations)
-        returnData?.unloadedNodes = unloadedNodes.toList()
+        if (minCommonRelations != 0) {
+            // It now only finds relations to nodes with ALL the searched nodes in common.
+            //val minCommonRelations = nodeUris.size
+            val commonRelations = findCommonRelations(relations)
+            val filteredUnloadedNodes = removeNodesNotInRelationSet(unloadedNodes, commonRelations)
+            returnData?.relationsData?.addAll(commonRelations)
+            returnData?.unloadedNodes = filteredUnloadedNodes.toList()
+            returnData?.resultTitle = "Result data for over "+minCommonRelations+" common relations."
+        } else {
+            returnData?.relationsData?.addAll(relations)
+            returnData?.unloadedNodes = unloadedNodes.toList()
+        }
 
         runCompletions()
     }

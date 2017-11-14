@@ -20,6 +20,7 @@ public class BGRelationSearchResultsView {
     public static String ACTION_FILTER_RESULTS = "filter results";
 
     private final ActionListener listener;
+    private final Object[] sampleRow;
     private JFrame mainFrame;
     private JPanel panel1;
     private JButton importButton;
@@ -31,8 +32,9 @@ public class BGRelationSearchResultsView {
     private TableRowSorter<TableModel> sorter;
     private BGRelationResultViewTooltipDataSource tooltipDataSource;
 
-    public BGRelationSearchResultsView(ActionListener listener, BGRelationResultViewTooltipDataSource tooltipDataSource) {
+    public BGRelationSearchResultsView(ActionListener listener, BGRelationResultViewTooltipDataSource tooltipDataSource, Object[] sampleRow) {
         this.listener = listener;
+        this.sampleRow = sampleRow;
         this.tooltipDataSource = tooltipDataSource;
         JFrame frame = new JFrame("Biogateway Query Results");
         this.mainFrame = frame;
@@ -54,6 +56,15 @@ public class BGRelationSearchResultsView {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
+            }
+
+            @Override
+            public Class<?> getColumnClass(int columnIndex) {
+                if (columnIndex < sampleRow.length) {
+                    return sampleRow[columnIndex].getClass();
+                }
+
+                return super.getColumnClass(columnIndex);
             }
         };
         sorter = new TableRowSorter<TableModel>(tableModel);

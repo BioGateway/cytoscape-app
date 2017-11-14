@@ -3,7 +3,10 @@ package org.cytoscape.biogwplugin.internal.gui
 import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.model.BGNode
 import org.cytoscape.biogwplugin.internal.model.BGNodeType
+import org.cytoscape.biogwplugin.internal.parser.BGReturnType
+import org.cytoscape.biogwplugin.internal.query.BGNodeFetchQuery
 import org.cytoscape.biogwplugin.internal.query.BGNodeURILookupQuery
+import org.cytoscape.biogwplugin.internal.query.BGParsingType
 import org.cytoscape.biogwplugin.internal.query.BGReturnNodeData
 import java.awt.EventQueue
 import java.awt.event.ActionEvent
@@ -51,16 +54,30 @@ class BGURILookupController(val serviceManager: BGServiceManager, parentComponen
         val useRegex = view.regexCheckBox.isSelected
         val nodeType = view.nodeTypeComboBox.selectedItem as? BGNodeType ?: throw Exception("Invalid node type!")
 
-        val query = BGNodeURILookupQuery(serviceManager, searchString, useRegex, nodeType)
-        query.addCompletion {
-            val data = it as? BGReturnNodeData ?: return@addCompletion
-            if (data.nodeData.count() == 0) {
-                JOptionPane.showMessageDialog(view.mainFrame, "No entities found.")
+        if (view.nameOrURIComboBox.selectedIndex == 0) {
+
+            val query = BGNodeURILookupQuery(serviceManager, searchString, useRegex, nodeType)
+            query.addCompletion {
+                val data = it as? BGReturnNodeData ?: return@addCompletion
+                if (data.nodeData.count() == 0) {
+                    JOptionPane.showMessageDialog(view.mainFrame, "No entities found.")
+                }
+                loadResultsIntoTable(data.nodeData)
             }
-            loadResultsIntoTable(data.nodeData)
+            // TODO: Use the built-in task manager?
+            query.run()
+        } else if (searchString.startsWith("http://")){
+            val query = BGNodeFetchQuery(serviceManager, searchString, serviceManager.server.parser, BGReturnType.NODE_LIST_DESCRIPTION)
+            query.parseType = BGParsingType.TO_ARRAY
+            query.addCompletion {
+                val data = it as? BGReturnNodeData ?: return@addCompletion
+                if (data.nodeData.count() == 0) {
+                    JOptionPane.showMessageDialog(view.mainFrame, "No entities found.")
+                }
+                loadResultsIntoTable(data.nodeData)
+            }
+            query.run()
         }
-        // TODO: Use the built-in task manager?
-        query.run()
     }
 
     private fun useSelectedNode() {

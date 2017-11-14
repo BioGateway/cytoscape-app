@@ -132,7 +132,7 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
                 val columnNames = arrayOf("from node","relation type", "to node")
 
                 BGLoadUnloadedNodes.createAndRun(serviceManager, returnData.unloadedNodes) {
-                    BGRelationSearchResultsController(serviceManager, returnData.relationsData, columnNames, network)
+                    BGRelationSearchResultsController(serviceManager, returnData, columnNames, network)
                 }
             }
             serviceManager.taskManager.execute(TaskIterator(query))
@@ -154,7 +154,7 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
 
                         BGLoadUnloadedNodes.createAndRun(serviceManager, returnData.unloadedNodes) {
                             println("Loaded "+it.toString()+ " nodes.")
-                            BGRelationSearchResultsController(serviceManager, returnData.relationsData, columnNames, network)
+                            BGRelationSearchResultsController(serviceManager, returnData, columnNames, network)
                         }
                     }
                 }
@@ -189,7 +189,7 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
                 val columnNames = arrayOf("protein", "relation", "gene")
 
                 BGLoadUnloadedNodes.createAndRun(serviceManager, returnData.unloadedNodes) {
-                    BGRelationSearchResultsController(serviceManager, returnData.relationsData, columnNames, network)
+                    BGRelationSearchResultsController(serviceManager, returnData, columnNames, network)
                 }
             }
 
@@ -210,7 +210,7 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
                 if (returnData.relationsData.isEmpty()) throw Exception("No relations found.")
                 val columnNames = arrayOf("Protein", "Relation", "Protein")
                 BGLoadUnloadedNodes.createAndRun(serviceManager, returnData.unloadedNodes) {
-                    BGRelationSearchResultsController(serviceManager, returnData.relationsData, columnNames, network)
+                    BGRelationSearchResultsController(serviceManager, returnData, columnNames, network)
                 }
             }
             serviceManager.taskManager.execute(TaskIterator(query))

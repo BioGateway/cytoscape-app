@@ -7,11 +7,9 @@ import org.cytoscape.biogwplugin.BiogwPlugin;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.biogwplugin.internal.gui.*;
+import org.cytoscape.biogwplugin.internal.util.Utility;
 import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyNetworkFactory;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.model.CyTableManager;
+import org.cytoscape.model.*;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
@@ -45,6 +43,14 @@ public class CyActivator extends AbstractCyActivator {
             }
         });
         registerService(context, createQueryAction, CyAction.class, new Properties());
+
+        BGCreateAction reloadCurrentStyleAction = new BGCreateAction("Refresh visual style", "always", serviceManager, new BGAction() {
+            @Override
+            public void action(BGServiceManager serviceManager) {
+                Utility.INSTANCE.reloadCurrentVisualStyleCurrentNetworkView(serviceManager);
+            }
+        });
+        registerService(context, reloadCurrentStyleAction, CyAction.class, new Properties());
 
         BGCreateAction openSettingsAction = new BGCreateAction("Settings", "always", serviceManager, new BGAction() {
             @Override
