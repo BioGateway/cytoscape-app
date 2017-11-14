@@ -26,24 +26,14 @@ class BGRelationSearchResultsController(val serviceManager: BGServiceManager, pr
 
 
 
-    private val view: BGRelationSearchResultsView
+    private val view = BGRelationSearchResultsView(this, this)
 
     init {
-        val firstRow = returnData.relationsData.first().asArray()
-
-        view = BGRelationSearchResultsView(this, this, firstRow)
 
         returnData.resultTitle?.let {
             view.mainFrame.title = it
         }
 
-//        val model = object : DefaultTableModel() {
-//            override fun getColumnClass(column: Int): Class<*> {
-//                return firstRow[column].javaClass
-//            }
-//        }
-//
-//        view.resultTable.model = model
         val model = view.resultTable.model as DefaultTableModel
         model.setColumnIdentifiers(columnNames)
 

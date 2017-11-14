@@ -20,7 +20,6 @@ public class BGRelationSearchResultsView {
     public static String ACTION_FILTER_RESULTS = "filter results";
 
     private final ActionListener listener;
-    private final Object[] sampleRow;
     private JFrame mainFrame;
     private JPanel panel1;
     private JButton importButton;
@@ -32,9 +31,8 @@ public class BGRelationSearchResultsView {
     private TableRowSorter<TableModel> sorter;
     private BGRelationResultViewTooltipDataSource tooltipDataSource;
 
-    public BGRelationSearchResultsView(ActionListener listener, BGRelationResultViewTooltipDataSource tooltipDataSource, Object[] sampleRow) {
+    public BGRelationSearchResultsView(ActionListener listener, BGRelationResultViewTooltipDataSource tooltipDataSource) {
         this.listener = listener;
-        this.sampleRow = sampleRow;
         this.tooltipDataSource = tooltipDataSource;
         JFrame frame = new JFrame("Biogateway Query Results");
         this.mainFrame = frame;
@@ -60,10 +58,9 @@ public class BGRelationSearchResultsView {
 
             @Override
             public Class<?> getColumnClass(int columnIndex) {
-                if (columnIndex < sampleRow.length) {
-                    return sampleRow[columnIndex].getClass();
+                if (this.getRowCount() > 0 && this.getColumnCount() > columnIndex) {
+                    return this.getValueAt(0, columnIndex).getClass();
                 }
-
                 return super.getColumnClass(columnIndex);
             }
         };
