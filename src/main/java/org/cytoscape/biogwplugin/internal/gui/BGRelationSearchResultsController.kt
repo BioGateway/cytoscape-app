@@ -55,9 +55,10 @@ class BGRelationSearchResultsController(val serviceManager: BGServiceManager, pr
             relations.add(relationsFound[view.resultTable.convertRowIndexToModel(row)])
         }
         serviceManager.server.networkBuilder.addRelationsToNetwork(network, relations)
+        Utility.reloadCurrentVisualStyleCurrentNetworkView(serviceManager)
     }
 
-    private fun importToExisting() {
+    private fun importBetweenExistingNodes() {
 
         val allNodeUris = network.defaultNodeTable.getColumn(Constants.BG_FIELD_IDENTIFIER_URI).getValues(String::class.java)
         var relations = ArrayList<BGRelation>()
@@ -68,7 +69,6 @@ class BGRelationSearchResultsController(val serviceManager: BGServiceManager, pr
             }
         }
         serviceManager.server.networkBuilder.addRelationsToNetwork(network, relations)
-        serviceManager.eventHelper.flushPayloadEvents()
         Utility.reloadCurrentVisualStyleCurrentNetworkView(serviceManager)
     }
 
@@ -83,8 +83,8 @@ class BGRelationSearchResultsController(val serviceManager: BGServiceManager, pr
             if (e.actionCommand == BGRelationSearchResultsView.ACTION_IMPORT) {
                 importSelected()
             }
-            if (e.actionCommand == BGRelationSearchResultsView.ACTION_IMPORT_TO_EXISTING) {
-                importToExisting()
+            if (e.actionCommand == BGRelationSearchResultsView.ACTION_IMPORT_BETWEEN_EXISTING) {
+                importBetweenExistingNodes()
             }
             if (e.source == view.filterTextField) {
                 filterResults()

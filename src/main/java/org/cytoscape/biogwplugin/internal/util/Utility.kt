@@ -1,6 +1,12 @@
 package org.cytoscape.biogwplugin.internal.util
 
 import org.cytoscape.biogwplugin.internal.BGServiceManager
+import org.cytoscape.biogwplugin.internal.model.BGNode
+import org.cytoscape.biogwplugin.internal.model.BGRelation
+import org.cytoscape.biogwplugin.internal.parser.getName
+import org.cytoscape.biogwplugin.internal.parser.getUri
+import org.cytoscape.group.CyGroup
+import org.cytoscape.group.CyGroupManager
 import org.cytoscape.model.CyNetwork
 import org.cytoscape.view.vizmap.VisualStyle
 import org.cytoscape.work.AbstractTask
@@ -14,6 +20,10 @@ import java.net.MalformedURLException
 import java.net.URL
 import java.net.URLEncoder
 import javax.swing.JFrame
+import org.cytoscape.model.subnetwork.CyRootNetwork
+import org.cytoscape.model.subnetwork.CySubNetwork
+import javax.swing.JComboBox
+import javax.swing.JOptionPane
 
 
 fun String.sanitizeParameter(): String {
@@ -30,6 +40,62 @@ object Utility {
     }
     */
 
+    fun removeNodesNotInRelationSet(nodes: Collection<BGNode>, relations: Collection<BGRelation>): Collection<BGNode> {
+        var allNodes = relations.map { it.toNode }.toHashSet().union(relations.map { it.fromNode }.toHashSet())
+        return nodes.filter { allNodes.contains(it) }.toHashSet()
+    }
+
+    fun getNodeURIsForGroup(group: CyGroup): ArrayList<String> {
+        val network = group.groupNetwork
+        val cyNodes = group.nodeList
+        var nodeURIs = ArrayList<String>()
+
+        for (node in cyNodes) {
+            val nodeURI = node.getUri(network)
+            nodeURIs.add(nodeURI)
+        }
+        return nodeURIs
+    }
+
+    fun selectGroupPopup(serviceManager: BGServiceManager, network: CyNetwork): CyGroup? {
+        val groups = Utility.findNodeGroupsInNetwork(serviceManager, network)
+        val groupNames = groups.keys.toTypedArray()
+
+        val comboBox = JComboBox(groupNames)
+        val options = arrayOf("Search", "Cancel")
+        val selection = JOptionPane.showOptionDialog(null, comboBox, "Select group to search to", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, options, null)
+
+        if (selection == 0) {
+            val group = groups[comboBox.selectedItem]
+            return group
+        }
+        return null
+    }
+
+    fun getGroupName(group: CyGroup): String {
+        val rootNetwork = group.rootNetwork
+        return rootNetwork.getRow(group.groupNode, CyRootNetwork.SHARED_ATTRS).get(CyRootNetwork.SHARED_NAME, String::class.java)
+    }
+
+    fun findNodeGroupsInNetwork(serviceManager: BGServiceManager,network: CyNetwork): HashMap<String, CyGroup> {
+        val groups = serviceManager.adapter.cyGroupManager.getGroupSet(network)
+        val groupMap = HashMap<String, CyGroup>()
+
+        for (group in groups) {
+            val groupName = getGroupName(group)
+            groupMap[groupName] = group
+        }
+        return groupMap
+    }
+
+    fun createRelationTypeIdentifier(uri: String, graph: String): String {
+
+        val graphName = graph.split("/").last()
+        val identifier = graphName.replace("<", "").replace(">", "") + ":" + uri
+
+        return identifier
+    }
+
     fun getOrCreateBioGatewayVisualStyle(serviceManager: BGServiceManager): VisualStyle {
         val styles = serviceManager.adapter.visualMappingManager.allVisualStyles
 
@@ -45,8 +111,10 @@ object Utility {
 
     fun reloadCurrentVisualStyleCurrentNetworkView(serviceManager: BGServiceManager) {
         val view = serviceManager.applicationManager.currentNetworkView
+        val style = serviceManager.adapter.visualMappingManager.currentVisualStyle
         view?.let {
-            serviceManager.adapter.visualMappingManager.currentVisualStyle.apply(it)
+            serviceManager.eventHelper.flushPayloadEvents()
+            style.apply(it)
         }
     }
 
@@ -70,6 +138,15 @@ object Utility {
             frame.isAlwaysOnTop = false
             frame.requestFocus()
         }
+    }
+
+    fun generateUniprotURI(uniprotId: String): String {
+        return "http://identifiers.org/uniprot/"+uniprotId
+    }
+
+    fun generateGOTermURI(goTerm: String): String {
+        val go_term = goTerm.replace(":", "_")
+        return "http://purl.obolibrary.org/obo/"+go_term
     }
 
     fun encodeUrl(serviceManager: BGServiceManager, queryString: String): URL? {

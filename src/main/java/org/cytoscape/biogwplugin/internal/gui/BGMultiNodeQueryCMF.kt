@@ -3,8 +3,12 @@ package org.cytoscape.biogwplugin.internal.gui
 import org.cytoscape.application.swing.CyMenuItem
 import org.cytoscape.application.swing.CyNetworkViewContextMenuFactory
 import org.cytoscape.biogwplugin.internal.BGServiceManager
+import org.cytoscape.biogwplugin.internal.model.BGRelation
+import org.cytoscape.biogwplugin.internal.model.BGRelationType
 import org.cytoscape.biogwplugin.internal.query.*
 import org.cytoscape.biogwplugin.internal.util.Constants
+import org.cytoscape.biogwplugin.internal.util.Utility
+import org.cytoscape.group.CyGroup
 import org.cytoscape.model.CyNetwork
 import org.cytoscape.model.CyTableUtil
 import org.cytoscape.view.model.CyNetworkView
@@ -46,16 +50,86 @@ class BGMultiNodeQueryCMF(val gravity: Float, val serviceManager: BGServiceManag
                 parentMenu.addSeparator()
                 parentMenu.add(it)
             }
+            createSearchToGroupMenu("Search to group", netView, network, selectedUris)?.let {
+                parentMenu.addSeparator()
+                parentMenu.add(it)
+            }
             parentMenu.addSeparator()
             parentMenu.add(createOpenQueryBuilderWithSelectedURIsMenu(netView, selectedUris))
-
 
             return CyMenuItem(parentMenu, gravity)
         }
         return CyMenuItem(null, gravity)
     }
 
-    private fun createPPISearchMenu(description: String, network: CyNetwork, nodeUris: Collection<String>, onlyCommonRelations: Boolean): JMenuItem? {
+
+    private fun createSearchToGroupMenu(description: String, netView: CyNetworkView, network: CyNetwork, selectedUris: Collection<String>): JMenu? {
+
+        val groupSearchMenu = JMenu(description)
+
+        groupSearchMenu.add(createRelationSearchMenu("Fetch relations FROM selected", netView, selectedUris, BGRelationDirection.FROM, false, true))
+        groupSearchMenu.add(createRelationSearchMenu("Fetch relations TO selected", netView, selectedUris, BGRelationDirection.TO, false, true))
+        groupSearchMenu.add(createRelationSearchMenu("Find common relations FROM selected", netView, selectedUris, BGRelationDirection.FROM, true, true))
+        groupSearchMenu.add(createRelationSearchMenu("Find common relations TO selected", netView, selectedUris, BGRelationDirection.TO, true, true))
+
+        createPPISearchMenu("Look for binary PPIs", network, selectedUris, false, true)?.let {
+            groupSearchMenu.add(it)
+        }
+        createPPISearchMenu("Look for common binary PPIs", network, selectedUris, true, true)?.let {
+            groupSearchMenu.add(it)
+        }
+        return groupSearchMenu
+    }
+
+
+    private fun createPPISearchQuery(nodeUris: Collection<String>, network: CyNetwork, onlyCommonRelations: Boolean = false, group: CyGroup? = null): BGFindBinaryPPIInteractionsForMultipleNodesQuery? {
+        val query = BGFindBinaryPPIInteractionsForMultipleNodesQuery(serviceManager, nodeUris)
+        query.addCompletion {
+            val returnData = it as? BGReturnRelationsData
+            if (returnData != null) {
+                if (returnData.relationsData.size == 0) throw Exception("No relations found.")
+                BGLoadUnloadedNodes.createAndRun(serviceManager, returnData.unloadedNodes) {
+                    println("Loaded "+it.toString()+ " nodes.")
+                    BGRelationSearchResultsController(serviceManager, returnData, returnData.columnNames, network)
+                } }}
+        if (group != null) {
+            val groupNodeURIs = Utility.getNodeURIsForGroup(group)
+            query.returnDataFilter = { relation ->
+                (groupNodeURIs.contains(relation.fromNode.uri) || groupNodeURIs.contains(relation.toNode.uri))
+            }
+        }
+
+        if (onlyCommonRelations) {
+            val optionPanePanel = JPanel()
+            optionPanePanel.add(JLabel("What is the minimum number\nof common relations?"))
+            val inputTextField = JTextField(5)
+            optionPanePanel.add(inputTextField)
+
+            val options = arrayOf("Ok", "Cancel", "Most in common")
+
+            val result = JOptionPane.showOptionDialog(null, optionPanePanel, "Minimum number of common relations?", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, null)
+
+            if (result == JOptionPane.OK_OPTION) {
+                val minCommonRelations = inputTextField.text
+                if (minCommonRelations.matches(Regex("^\\d+$"))) {
+                    query.minCommonRelations = minCommonRelations.toInt()
+                } else {
+                    JOptionPane.showMessageDialog(null, "Invalid integer.")
+                    return null
+                }
+            }
+            if (result == 2) {
+                query.minCommonRelations = -1
+            }
+
+        } else {
+            query.minCommonRelations = 0
+        }
+        return query
+    }
+
+
+    private fun createPPISearchMenu(description: String, network: CyNetwork, nodeUris: Collection<String>, onlyCommonRelations: Boolean, lookForGroups: Boolean = false): JMenuItem? {
         var foundProteins = false
         for (uri in nodeUris) {
             if (uri.contains("uniprot")) foundProteins = true
@@ -63,42 +137,15 @@ class BGMultiNodeQueryCMF(val gravity: Float, val serviceManager: BGServiceManag
         if (foundProteins) {
             val ppiItem = JMenuItem(description)
             ppiItem.addActionListener {
-                val query = BGFindBinaryPPIInteractionsForMultipleNodesQuery(serviceManager, nodeUris)
-                query.addCompletion {
-                    val returnData = it as? BGReturnRelationsData
-                    if (returnData != null) {
-                        if (returnData.relationsData.size == 0) throw Exception("No relations found.")
-                        BGLoadUnloadedNodes.createAndRun(serviceManager, returnData.unloadedNodes) {
-                            println("Loaded "+it.toString()+ " nodes.")
-                            BGRelationSearchResultsController(serviceManager, returnData, returnData.columnNames, network)
-                        } }}
-                if (onlyCommonRelations) {
-                    val optionPanePanel = JPanel()
-                    optionPanePanel.add(JLabel("What is the minimum number\nof common relations?"))
-                    val inputTextField = JTextField(5)
-                    optionPanePanel.add(inputTextField)
-
-                    val options = arrayOf("Ok", "Cancel", "Most in common")
-
-                    val result = JOptionPane.showOptionDialog(null, optionPanePanel, "Minimum number of common relations?", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, null)
-
-                    if (result == JOptionPane.OK_OPTION) {
-                        val minCommonRelations = inputTextField.text
-                        if (minCommonRelations.matches(Regex("^\\d+$"))) {
-                            query.minCommonRelations = minCommonRelations.toInt()
-                        } else {
-                            JOptionPane.showMessageDialog(null, "Invalid integer.")
-                            return@addActionListener
-                        }
-                    }
-                    if (result == 2) {
-                        query.minCommonRelations = -1
-                    }
-
-                } else {
-                    query.minCommonRelations = 0
+                var group: CyGroup? = null
+                if (lookForGroups) {
+                    group = Utility.selectGroupPopup(serviceManager, network)
+                    if (group == null) return@addActionListener
                 }
-                serviceManager.taskManager.execute(TaskIterator(query))
+                val query = createPPISearchQuery(nodeUris, network, onlyCommonRelations, group)
+                if (query != null) {
+                    serviceManager.taskManager.execute(TaskIterator(query))
+                }
             }
             return ppiItem
         }
@@ -115,57 +162,74 @@ class BGMultiNodeQueryCMF(val gravity: Float, val serviceManager: BGServiceManag
         return item
     }
 
-    private fun createRelationSearchMenu(description: String, netView: CyNetworkView, nodeUris: Collection<String>, direction: BGRelationDirection, onlyCommonRelations: Boolean): JMenuItem {
+    private fun createRelationSearchQuery(relationType: BGRelationType, netView: CyNetworkView, nodeUris: Collection<String>, direction: BGRelationDirection, onlyCommonRelations: Boolean, group: CyGroup? = null): BGMultiNodeRelationQuery? {
+        val query = BGMultiNodeRelationQuery(serviceManager, nodeUris, relationType, direction)
+        query.addCompletion {
+            val returnData = it as? BGReturnRelationsData
+            if (returnData != null) {
+                val network = netView.model
+                if (returnData.relationsData.size == 0) throw Exception("No relations found.")
+                BGLoadUnloadedNodes.createAndRun(serviceManager, returnData.unloadedNodes) {
+                    println("Loaded "+it.toString()+ " nodes.")
+                    BGRelationSearchResultsController(serviceManager, returnData, returnData.columnNames, network)
+                }
+            }
+        }
+
+        if (group != null) {
+            val groupNodeURIs = Utility.getNodeURIsForGroup(group)
+            query.returnDataFilter = { relation ->
+                (groupNodeURIs.contains(relation.fromNode.uri) || groupNodeURIs.contains(relation.toNode.uri))
+            }
+        }
+
+        if (onlyCommonRelations) {
+
+            val optionPanePanel = JPanel()
+            optionPanePanel.add(JLabel("What is the minimum number\nof common relations?"))
+            val inputTextField = JTextField(5)
+            optionPanePanel.add(inputTextField)
+
+            val options = arrayOf("Ok", "Cancel", "Most in common")
+
+            val result = JOptionPane.showOptionDialog(null, optionPanePanel, "Minimum number of common relations?", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, null)
+
+            if (result == JOptionPane.OK_OPTION) {
+                val minCommonRelations = inputTextField.text
+                if (minCommonRelations.matches(Regex("^\\d+$"))) {
+                    query.minCommonRelations = minCommonRelations.toInt()
+                } else {
+                    JOptionPane.showMessageDialog(null, "Invalid integer.")
+                    return null
+                }
+            }
+            if (result == 2) {
+                query.minCommonRelations = -1
+            }
+
+        } else {
+            query.minCommonRelations = 0
+        }
+        return query
+    }
+
+    private fun createRelationSearchMenu(description: String, netView: CyNetworkView, nodeUris: Collection<String>, direction: BGRelationDirection, onlyCommonRelations: Boolean, lookForGroups: Boolean = false): JMenuItem {
 
         val parentMenu = JMenu(description)
 
         // Will only create the menu if the config is loaded.
         for (relationType in serviceManager.cache.relationTypeMap.values.sortedBy { it.number }) {
-            val item = JMenuItem(relationType.name)
+            val item = JMenuItem(relationType.description)
 
-            item.addActionListener(ActionListener {
-                val query = BGMultiNodeRelationQuery(serviceManager, nodeUris, relationType, direction)
-                query.addCompletion {
-                    val returnData = it as? BGReturnRelationsData
-                    if (returnData != null) {
-                        val network = netView.model
-                        if (returnData.relationsData.size == 0) throw Exception("No relations found.")
-                        BGLoadUnloadedNodes.createAndRun(serviceManager, returnData.unloadedNodes) {
-                            println("Loaded "+it.toString()+ " nodes.")
-                            BGRelationSearchResultsController(serviceManager, returnData, returnData.columnNames, network)
-                        }
-                    }
+            item.addActionListener {
+                var group: CyGroup? = null
+                if (lookForGroups) {
+                    group = Utility.selectGroupPopup(serviceManager, netView.model)
+                    if (group == null) return@addActionListener
                 }
-
-                if (onlyCommonRelations) {
-
-                    val optionPanePanel = JPanel()
-                    optionPanePanel.add(JLabel("What is the minimum number\nof common relations?"))
-                    val inputTextField = JTextField(5)
-                    optionPanePanel.add(inputTextField)
-
-                    val options = arrayOf("Ok", "Cancel", "Most in common")
-
-                    val result = JOptionPane.showOptionDialog(null, optionPanePanel, "Minimum number of common relations?", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, null)
-
-                    if (result == JOptionPane.OK_OPTION) {
-                        val minCommonRelations = inputTextField.text
-                        if (minCommonRelations.matches(Regex("^\\d+$"))) {
-                            query.minCommonRelations = minCommonRelations.toInt()
-                        } else {
-                            JOptionPane.showMessageDialog(null, "Invalid integer.")
-                            return@ActionListener
-                        }
-                    }
-                    if (result == 2) {
-                        query.minCommonRelations = -1
-                    }
-
-                } else {
-                    query.minCommonRelations = 0
-                }
+                val query = createRelationSearchQuery(relationType, netView, nodeUris, direction, onlyCommonRelations, group)
                 serviceManager.taskManager.execute(TaskIterator(query))
-            })
+            }
             parentMenu.add(item)
         }
         return parentMenu

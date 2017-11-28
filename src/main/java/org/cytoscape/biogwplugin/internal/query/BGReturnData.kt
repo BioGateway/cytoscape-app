@@ -66,6 +66,6 @@ class BGReturnNodeData(val returnType: BGReturnType, columnNames: Array<String>)
     }
 }
 class BGReturnRelationsData(type: BGReturnType, columnNames: Array<String>) : BGReturnData(type, columnNames) {
-    val relationsData = ArrayList<BGRelation>()
+    var relationsData = ArrayList<BGRelation>()
     var unloadedNodes: List<BGNode>? = null
 }

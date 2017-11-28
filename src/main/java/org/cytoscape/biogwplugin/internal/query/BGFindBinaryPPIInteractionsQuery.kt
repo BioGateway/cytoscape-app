@@ -4,18 +4,28 @@ import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.model.BGNode
 import org.cytoscape.biogwplugin.internal.model.BGRelation
 import org.cytoscape.biogwplugin.internal.parser.BGReturnType
+import org.cytoscape.biogwplugin.internal.util.Utility
 import org.cytoscape.work.AbstractTask
 import org.cytoscape.work.TaskMonitor
 
-class BGFindBinaryPPIInteractionsQuery(serviceManager: BGServiceManager, val nodeUri: String): BGQuery(serviceManager, BGReturnType.RELATION_TRIPLE, serviceManager.server.parser) {
+class BGFindBinaryPPIInteractionsQuery(serviceManager: BGServiceManager, val nodeUri: String): BGRelationQuery(serviceManager, BGReturnType.RELATION_TRIPLE, serviceManager.server.parser) {
+
+    //var returnDataFilter: ((BGRelation) -> Boolean)? = null
 
     init {
-        parsingBlock = {
-            parser.parseRelations(it, type, taskMonitor) {
-                returnData = it as? BGReturnData ?: throw Exception("Invalid return data!")
-                runCompletions()
-            }
-        }
+//        parsingBlock = {
+//            parser.parseRelations(it, type, taskMonitor) {
+//                var returnRelationsData = it as? BGReturnRelationsData ?: throw Exception("Invalid return data!")
+//                returnDataFilter?.let {
+//                    returnRelationsData.relationsData = ArrayList(returnRelationsData.relationsData.filter(it))
+//                    returnRelationsData.unloadedNodes?.let {
+//                        returnRelationsData.unloadedNodes = Utility.removeNodesNotInRelationSet(it, returnRelationsData.relationsData).toList()
+//                    }
+//                }
+//                returnData = returnRelationsData
+//                runCompletions()
+//            }
+//        }
         taskMonitorText = "Searching for binary protein interactions..."
     }
 
@@ -27,7 +37,7 @@ class BGFindBinaryPPIInteractionsQuery(serviceManager: BGServiceManager, val nod
         return "BASE <http://www.semantic-systems-biology.org/>\n" +
                 "PREFIX has_agent: <http://semanticscience.org/resource/SIO_000139>\n" +
                 "PREFIX fromNode: <"+nodeUri+">\n" +
-                "SELECT DISTINCT ?toNode <http://purl.obolibrary.org/obo/RO_0002436> fromNode: \n" +
+                "SELECT DISTINCT ?toNode <intact> <http://purl.obolibrary.org/obo/RO_0002436> fromNode: \n" +
                 "WHERE {\n" +
                 "FILTER (?count = 2)\n" +
                 "FILTER (fromNode: != ?toNode)\n" +
@@ -46,6 +56,7 @@ class BGFindBinaryPPIInteractionsForMultipleNodesQuery(val serviceManager: BGSer
     private var returnData: BGReturnRelationsData? = null
     private val completionBlocks = ArrayList<(BGReturnData?) -> Unit>()
     var minCommonRelations = 0
+    var returnDataFilter: ((BGRelation) -> Boolean)? = null
 
 
     fun addCompletion(completion: (BGReturnData?) -> Unit) {
@@ -116,11 +127,6 @@ class BGFindBinaryPPIInteractionsForMultipleNodesQuery(val serviceManager: BGSer
         return filteredRelations
     }
 
-    private fun removeNodesNotInRelationSet(nodes: Collection<BGNode>, relations: Collection<BGRelation>): Collection<BGNode> {
-        var allNodes = relations.map { it.toNode }.toHashSet().union(relations.map { it.fromNode }.toHashSet())
-        return nodes.filter { allNodes.contains(it) }.toHashSet()
-    }
-
 
     override fun run(taskMonitor: TaskMonitor?) {
         var relations = HashSet<BGRelation>()
@@ -128,6 +134,7 @@ class BGFindBinaryPPIInteractionsForMultipleNodesQuery(val serviceManager: BGSer
 
         for (nodeUri in nodeUris) {
             val query = BGFindBinaryPPIInteractionsQuery(serviceManager, nodeUri)
+            query.returnDataFilter = returnDataFilter
             query.addCompletion {
                 val returnData = it as? BGReturnRelationsData ?: throw Exception("Expected relations data!")
                 relations.addAll(returnData.relationsData)
@@ -138,16 +145,17 @@ class BGFindBinaryPPIInteractionsForMultipleNodesQuery(val serviceManager: BGSer
             query.run()
         }
 
-        val columnNames = arrayOf("Protein", "Relation", "Protein", "Common Relations")
+        val columnNames = arrayOf("Protein", "Relation", "Protein")
         returnData = BGReturnRelationsData(BGReturnType.RELATION_TRIPLE, columnNames)
         if (minCommonRelations != 0) {
             // It now only finds relations to nodes with ALL the searched nodes in common.
             //val minCommonRelations = nodeUris.size
             val commonRelations = findCommonRelations(relations)
-            val filteredUnloadedNodes = removeNodesNotInRelationSet(unloadedNodes, commonRelations)
+            val filteredUnloadedNodes = Utility.removeNodesNotInRelationSet(unloadedNodes, commonRelations)
             returnData?.relationsData?.addAll(commonRelations)
             returnData?.unloadedNodes = filteredUnloadedNodes.toList()
             returnData?.resultTitle = "Result data for over "+minCommonRelations+" common relations."
+            returnData?.columnNames = arrayOf("From Node", "Relation Type", "To Node", "Common Relations")
         } else {
             returnData?.relationsData?.addAll(relations)
             returnData?.unloadedNodes = unloadedNodes.toList()

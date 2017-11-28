@@ -110,11 +110,11 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
         }
         // Let's see if adding and removing edges forces the view to sync.
         //network.removeEdges(dummyEdges)
-        EventQueue.invokeLater {
-            //addAndRemoveDummyNodeToNetwork(network)
-            serviceManager.applicationManager.currentNetworkView.updateView()
-            serviceManager.eventHelper.flushPayloadEvents()
-        }
+//        EventQueue.invokeLater {
+//            //addAndRemoveDummyNodeToNetwork(network)
+//            serviceManager.applicationManager.currentNetworkView.updateView()
+//            serviceManager.eventHelper.flushPayloadEvents()
+//        }
     }
 
     fun addRelationsToNetwork(network: CyNetwork, relations: Collection<BGRelation>) {
@@ -155,6 +155,9 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
                 println("WARNING: Duplicate edges!")
             }
         }
+
+//        serviceManager.eventHelper.flushPayloadEvents()
+//        Utility.reloadCurrentVisualStyleCurrentNetworkView(serviceManager)
     }
 
     private fun checkForExistingEdges(edgeTable: CyTable, relation: BGRelation): Boolean {
@@ -276,7 +279,8 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
             val visualStyle = Utility.getOrCreateBioGatewayVisualStyle(serviceManager)
 
 //            serviceManager.adapter.visualMappingManager.addVisualStyle(visualStyle)
-            visualStyle.apply(view)
+            serviceManager.adapter.visualMappingManager.setVisualStyle(visualStyle, view)
+            //visualStyle.apply(view)
             serviceManager.viewManager.addNetworkView(view)
 
             val layoutManager = serviceManager.adapter.cyLayoutAlgorithmManager

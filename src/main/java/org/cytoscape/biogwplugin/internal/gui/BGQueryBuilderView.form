@@ -167,9 +167,10 @@
                         <constraints/>
                         <properties>
                           <model>
-                            <item value="Genes"/>
-                            <item value="Proteins"/>
-                            <item value="GO term"/>
+                            <item value="Gene names"/>
+                            <item value="Protein names"/>
+                            <item value="Uniprot IDs"/>
+                            <item value="GO terms"/>
                           </model>
                         </properties>
                       </component>

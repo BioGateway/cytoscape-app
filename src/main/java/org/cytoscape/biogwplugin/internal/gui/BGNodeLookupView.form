@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="org.cytoscape.biogwplugin.internal.gui.BGURILookupView">
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="org.cytoscape.biogwplugin.internal.gui.BGNodeLookupView">
   <grid id="27dc6" binding="panel1" default-binding="true" layout-manager="BorderLayout" hgap="0" vgap="0">
     <constraints>
-      <xy x="20" y="20" width="500" height="400"/>
+      <xy x="20" y="20" width="529" height="400"/>
     </constraints>
     <properties/>
     <border type="none"/>
@@ -25,7 +25,14 @@
               </component>
               <component id="765d6" class="javax.swing.JComboBox" binding="nodeTypeComboBox">
                 <constraints/>
-                <properties/>
+                <properties>
+                  <model>
+                    <item value="Protein"/>
+                    <item value="Gene"/>
+                    <item value="GO Term"/>
+                    <item value="Taxon"/>
+                  </model>
+                </properties>
               </component>
               <component id="9cd9e" class="javax.swing.JButton" binding="searchButton" default-binding="true">
                 <constraints/>
@@ -46,6 +53,8 @@
                   <model>
                     <item value="Name:"/>
                     <item value="URI:"/>
+                    <item value="UniprotID:"/>
+                    <item value="GO-term:"/>
                   </model>
                 </properties>
               </component>
@@ -91,7 +100,7 @@
               <component id="f1da6" class="javax.swing.JButton" binding="useURIButton" default-binding="true">
                 <constraints/>
                 <properties>
-                  <text value="Use Selected URI"/>
+                  <text value="Use Selected Node"/>
                 </properties>
               </component>
             </children>

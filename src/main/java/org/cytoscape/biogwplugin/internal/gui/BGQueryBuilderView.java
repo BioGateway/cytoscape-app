@@ -504,9 +504,10 @@ public class BGQueryBuilderView implements ChangeListener {
         panel9.add(panel10, BorderLayout.WEST);
         bulkImportTypeComboBox = new JComboBox();
         final DefaultComboBoxModel defaultComboBoxModel1 = new DefaultComboBoxModel();
-        defaultComboBoxModel1.addElement("Genes");
-        defaultComboBoxModel1.addElement("Proteins");
-        defaultComboBoxModel1.addElement("GO term");
+        defaultComboBoxModel1.addElement("Gene names");
+        defaultComboBoxModel1.addElement("Protein names");
+        defaultComboBoxModel1.addElement("Uniprot IDs");
+        defaultComboBoxModel1.addElement("GO terms");
         bulkImportTypeComboBox.setModel(defaultComboBoxModel1);
         panel10.add(bulkImportTypeComboBox);
         final JLabel label2 = new JLabel();

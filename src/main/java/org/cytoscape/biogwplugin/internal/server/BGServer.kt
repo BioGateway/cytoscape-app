@@ -7,6 +7,7 @@ import org.cytoscape.biogwplugin.internal.parser.*
 import org.cytoscape.biogwplugin.internal.query.BGNodeFetchQuery
 import org.cytoscape.biogwplugin.internal.query.QueryTemplate
 import org.cytoscape.biogwplugin.internal.util.Constants
+import org.cytoscape.biogwplugin.internal.util.Utility
 import org.cytoscape.model.CyNetwork
 import java.io.BufferedReader
 import java.io.IOException
@@ -26,6 +27,21 @@ class BGServer(private val serviceManager: BGServiceManager) {
 
         var relationTypeMap = HashMap<String, BGRelationType>()
 
+        fun getRelationTypesForURI(uri: String): Collection<BGRelationType> {
+            return relationTypeMap.values.filter { it.uri == uri }
+        }
+
+        fun getRelationTypeForURIandGraph(uri: String, graph: String): BGRelationType? {
+            if (graph.startsWith("?")) {
+                val types = getRelationTypesForURI(uri)
+                return types.first()
+            }
+            val relationWithGraph = relationTypeMap.get(Utility.createRelationTypeIdentifier(uri, graph))
+            if (relationWithGraph != null) return relationWithGraph
+            val types = getRelationTypesForURI(uri)
+            return types.first()
+        }
+
         val relationTypeDescriptions: LinkedHashMap<String, BGRelationType> get() {
             val relationTypes = LinkedHashMap<String, BGRelationType>()
             val relations = relationTypeMap.values.sortedBy { it.number }
@@ -44,12 +60,8 @@ class BGServer(private val serviceManager: BGServiceManager) {
             nodeCache.set(node.uri, node)
         }
 
-        fun getRelationUriForName(name: String): String? {
-            val keys = relationTypeMap.filter { it.value.name == name }.keys.toTypedArray()
-            if (keys.size == 1) {
-                return keys.first()
-            }
-            return null
+        fun getRelationsForName(name: String): Collection<BGRelationType> {
+            return relationTypeMap.filter { it.value.name == name }.map { it.value }.toList()
         }
     }
 

@@ -2,17 +2,12 @@ package org.cytoscape.biogwplugin.internal.gui
 
 import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.model.BGRelationType
-import org.cytoscape.biogwplugin.internal.query.BGQuery
 import org.cytoscape.biogwplugin.internal.util.Constants
 import org.cytoscape.biogwplugin.internal.util.Utility
-import java.awt.Dimension
 import java.awt.FlowLayout
-import java.io.File
-import java.net.URI
 import javax.swing.*
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
-import javax.swing.filechooser.FileFilter
 
 
 class BGMultiQueryLine(val serviceManager: BGServiceManager, val fromTextField: JTextField, val relationTypeComboBox: JComboBox<String>, val toTextField: JTextField, val variableManager: BGQueryVariableManager): JPanel() {
@@ -59,7 +54,7 @@ class BGMultiQueryLine(val serviceManager: BGServiceManager, val fromTextField: 
         fromUriSearchButton.toolTipText = searchButtonTooltipText
         //fromUriSearchButton.preferredSize = Dimension(20, 20)
         fromUriSearchButton.addActionListener {
-            val lookupController = BGURILookupController(serviceManager, this) {
+            val lookupController = BGNodeLookupController(serviceManager, this) {
                 if (it != null) {
                     this.fromUri = it.uri
                     this.fromTextField.toolTipText = it.description
@@ -70,7 +65,7 @@ class BGMultiQueryLine(val serviceManager: BGServiceManager, val fromTextField: 
         toUriSearchButton.toolTipText = searchButtonTooltipText
         //toUriSearchButton.preferredSize = Dimension(20, 20)
         toUriSearchButton.addActionListener {
-            val lookupController = BGURILookupController(serviceManager, this) {
+            val lookupController = BGNodeLookupController(serviceManager, this) {
                 if (it != null) {
                     this.toUri = it.uri
                     this.toTextField.toolTipText = it.description
@@ -308,7 +303,12 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager): JPanel() {
 
         if (graph.relation.type != BGSPARQLParser.BGVariableType.URI) throw Exception("Relation type cannot be a variable!")
 
-        val relation = serviceManager.cache.relationTypeMap.get(graph.relation.value) ?: throw Exception("Relation name not found!")
+        val relationIdentifier = Utility.createRelationTypeIdentifier(graph.relation.value, graph.graph.value)
+        val relation = serviceManager.cache.relationTypeMap.get(relationIdentifier) ?: serviceManager.cache.getRelationTypesForURI(graph.relation.value).first()
+        if (relation == null){
+            throw Exception("Relation name not found!")
+        }
+
         queryLine.relationTypeComboBox.selectedItem = relation.description
 
         when (graph.to.type) {
@@ -386,6 +386,8 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager): JPanel() {
     }
 
 
+
+
     private fun generateReturnValuesAndGraphQueries(): Pair<String, String> {
         var returnValues = ""
         var graphQueries = ""
@@ -402,7 +404,9 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager): JPanel() {
             val fromName = "?name_"+getSafeString(fromUri)
             val toName = "?name_"+getSafeString(toUri)
 
-            returnValues += fromUri+" as ?"+getSafeString(fromUri)+numberOfGraphQueries+" <"+relationType.uri+"> "+toUri+" as ?"+getSafeString(toUri)+numberOfGraphQueries+" "
+            val graphName = relationType.defaultGraphName ?: generateGraphName(numberOfGraphQueries, relationType)
+
+            returnValues += fromUri+" as ?"+getSafeString(fromUri)+numberOfGraphQueries+" <"+graphName+"> <"+relationType.uri+"> "+toUri+" as ?"+getSafeString(toUri)+numberOfGraphQueries+" "
 
             //returnValues += fromUri+" as ?"+getSafeString(fromUri)+numberOfGraphQueries+" "+fromName+" as "+fromName+numberOfGraphQueries+" <"+relationUri+"> "+toUri+" as ?"+getSafeString(toUri)+numberOfGraphQueries+" "+toName+" as "+toName+numberOfGraphQueries+" "
             graphQueries += generateSparqlGraph(numberOfGraphQueries, fromUri, relationType, toUri)
@@ -427,9 +431,7 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager): JPanel() {
         }
     }
 
-
-    private fun generateSparqlGraph(graphNumber: Int, first: String, relation: BGRelationType, second: String): String {
-
+    private fun generateGraphName(graphNumber: Int, relation: BGRelationType): String {
         var graphName = "?graph"+graphNumber
 
         relation.defaultGraphName?.let {
@@ -437,6 +439,13 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager): JPanel() {
                 graphName = "<"+it+">"
             }
         }
+        return graphName
+    }
+
+
+    private fun generateSparqlGraph(graphNumber: Int, first: String, relation: BGRelationType, second: String): String {
+
+        var graphName = generateGraphName(graphNumber, relation)
 
         return "GRAPH "+graphName+" {\n" +
                 first+" "+relation.sparqlIRI+" "+second+" .\n" +

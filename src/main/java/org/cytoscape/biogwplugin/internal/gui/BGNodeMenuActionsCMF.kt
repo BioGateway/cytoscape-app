@@ -6,6 +6,8 @@ import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.model.BGNodeType
 import org.cytoscape.biogwplugin.internal.query.*
 import org.cytoscape.biogwplugin.internal.util.Constants
+import org.cytoscape.biogwplugin.internal.util.Utility
+import org.cytoscape.group.CyGroup
 import org.cytoscape.model.CyNetwork
 import org.cytoscape.model.CyNode
 import org.cytoscape.view.model.CyNetworkView
@@ -40,19 +42,23 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
         parentMenu.addSeparator() // Weird bug that doesn't show even numbered menu items, so we're adding a separator (that won't be shown) as a workaround.
         parentMenu.add(createRelationSearchMenu("Fetch relations TO node", network, nodeUri, BGRelationDirection.TO))
 
-
         if (nodeUri.contains("ncbigene")) {
             parentMenu.addSeparator()
             parentMenu.add(createTFTGSearchMenu(network, BGNodeType.Gene, nodeUri))
             parentMenu.addSeparator()
             parentMenu.add(createFetchAssociatedGeneOrProteinMenuItem(network, BGNodeType.Gene, nodeUri))
+            parentMenu.addSeparator()
+            parentMenu.add(createSearchGroupMenu("Search to group", network, BGNodeType.Gene, nodeUri))
+
         } else if (nodeUri.contains("uniprot")) {
             parentMenu.addSeparator()
             parentMenu.add(createTFTGSearchMenu(network, BGNodeType.Protein, nodeUri))
             parentMenu.addSeparator()
             parentMenu.add(createFetchAssociatedGeneOrProteinMenuItem(network, BGNodeType.Protein, nodeUri))
             parentMenu.addSeparator()
-            parentMenu.add(createPPIearchMenu(network, nodeUri))
+            parentMenu.add(createPPISearchMenu(network, nodeUri))
+            parentMenu.addSeparator()
+            parentMenu.add(createSearchGroupMenu("Search to group", network, BGNodeType.Protein, nodeUri))
         }
 
         createCopyURIMenu(nodeUri)?.let {
@@ -67,7 +73,21 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
         return parentMenu
     }
 
-    fun createFetchAssociatedGeneOrProteinMenuItem(network: CyNetwork, nodeType: BGNodeType, nodeUri: String): JMenuItem {
+    fun createSearchGroupMenu(description: String, network: CyNetwork, nodeType: BGNodeType, nodeUri: String): JMenu {
+        val parentMenu = JMenu(description)
+        parentMenu.add(createRelationSearchMenu("Fetch relations FROM node", network, nodeUri, BGRelationDirection.FROM, true))
+        parentMenu.add(createRelationSearchMenu("Fetch relations TO node", network, nodeUri, BGRelationDirection.TO, true))
+
+        if (nodeUri.contains("ncbigene")) {
+            parentMenu.add(createTFTGSearchMenu(network, BGNodeType.Gene, nodeUri, true))
+        } else if (nodeUri.contains("uniprot")) {
+            parentMenu.add(createTFTGSearchMenu(network, BGNodeType.Protein, nodeUri, true))
+            parentMenu.add(createPPISearchMenu(network, nodeUri, true))
+        }
+        return parentMenu
+    }
+
+    private fun createFetchAssociatedGeneOrProteinMenuItem(network: CyNetwork, nodeType: BGNodeType, nodeUri: String): JMenuItem {
         var menuItemText = when (nodeType) {
             BGNodeType.Gene -> "Get associated proteins"
             BGNodeType.Protein -> "Get associated genes"
@@ -82,8 +102,8 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
                 throw Exception("Must be gene or protein!")
             }
         }
-        val encodesUri = "http://semanticscience.org/resource/SIO_010078"
-        val relationType = serviceManager.server.cache.relationTypeMap.get(encodesUri) ?: throw Exception("Relation type with uri: "+encodesUri+" not found in cache.")
+        val encodesIdentifier = Utility.createRelationTypeIdentifier("http://semanticscience.org/resource/SIO_010078", "refseq")
+        val relationType = serviceManager.server.cache.relationTypeMap.get(encodesIdentifier) ?: throw Exception("Relation type with identifier: "+encodesIdentifier+" not found in cache.")
         val menuItem = JMenuItem(menuItemText)
 
         menuItem.addActionListener {
@@ -109,6 +129,7 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
                     }
                     BGLoadUnloadedNodes.createAndRun(serviceManager, returnData.unloadedNodes) {
                         serviceManager.server.networkBuilder.addRelationsToNetwork(network, relationsData)
+                        Utility.reloadCurrentVisualStyleCurrentNetworkView(serviceManager)
                     }
                 }
             }
@@ -118,7 +139,7 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
     }
 
 
-    fun createRelationSearchMenu(description: String, network: CyNetwork, nodeUri: String, direction: BGRelationDirection): JMenu {
+    private fun createRelationSearchMenu(description: String, network: CyNetwork, nodeUri: String, direction: BGRelationDirection, lookForGroups: Boolean = false): JMenu {
 
         val parentMenu = JMenu(description)
 
@@ -135,15 +156,23 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
                     BGRelationSearchResultsController(serviceManager, returnData, columnNames, network)
                 }
             }
+            if (lookForGroups) {
+                val group = Utility.selectGroupPopup(serviceManager, network) ?: return@addActionListener
+                val groupNodeURIs = Utility.getNodeURIsForGroup(group)
+                query.returnDataFilter = { relation ->
+                    (groupNodeURIs.contains(relation.fromNode.uri) || groupNodeURIs.contains(relation.toNode.uri))
+                }
+            }
+
             serviceManager.taskManager.execute(TaskIterator(query))
         }
         parentMenu.add(searchAllItem)
 
         // Will only create the menu if the config is loaded.
         for (relationType in serviceManager.cache.relationTypeMap.values.sortedBy { it.number }) {
-            val item = JMenuItem(relationType.name)
+            val item = JMenuItem(relationType.description)
 
-            item.addActionListener(ActionListener {
+            item.addActionListener {
                 val query = BGFindRelationForNodeQuery(serviceManager, relationType, nodeUri, direction)
                 query.addCompletion {
                     val returnData = it as? BGReturnRelationsData
@@ -158,15 +187,23 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
                         }
                     }
                 }
+                if (lookForGroups) {
+                    val group = Utility.selectGroupPopup(serviceManager, network) ?: return@addActionListener
+                    val groupNodeURIs = Utility.getNodeURIsForGroup(group)
+                    query.returnDataFilter = { relation ->
+                        (groupNodeURIs.contains(relation.fromNode.uri) || groupNodeURIs.contains(relation.toNode.uri))
+                    }
+                }
+
                 serviceManager.taskManager.execute(TaskIterator(query))
-            })
+            }
 
             parentMenu.add(item)
         }
         return parentMenu
     }
 
-    fun createTFTGSearchMenu(network: CyNetwork, nodeType: BGNodeType, nodeUri: String): JMenuItem {
+    private fun createTFTGSearchMenu(network: CyNetwork, nodeType: BGNodeType, nodeUri: String, lookForGroups: Boolean = false): JMenuItem {
 
         var menuItemText = ""
 
@@ -192,13 +229,19 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
                     BGRelationSearchResultsController(serviceManager, returnData, columnNames, network)
                 }
             }
-
+            if (lookForGroups) {
+                val group = Utility.selectGroupPopup(serviceManager, network) ?: return@addActionListener
+                val groupNodeURIs = Utility.getNodeURIsForGroup(group)
+                query.returnDataFilter = { relation ->
+                    (groupNodeURIs.contains(relation.fromNode.uri) || groupNodeURIs.contains(relation.toNode.uri))
+                }
+            }
             serviceManager.taskManager.execute(TaskIterator(query))
         }
         return searchTFTG
     }
 
-    fun createPPIearchMenu(network: CyNetwork, nodeUri: String): JMenuItem {
+    private fun createPPISearchMenu(network: CyNetwork, nodeUri: String, lookForGroups: Boolean = false): JMenuItem {
 
         var menuItemText = "Find binary protein interactions"
 
@@ -213,12 +256,19 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
                     BGRelationSearchResultsController(serviceManager, returnData, columnNames, network)
                 }
             }
+            if (lookForGroups) {
+                val group = Utility.selectGroupPopup(serviceManager, network) ?: return@addActionListener
+                val groupNodeURIs = Utility.getNodeURIsForGroup(group)
+                query.returnDataFilter = { relation ->
+                    (groupNodeURIs.contains(relation.fromNode.uri) || groupNodeURIs.contains(relation.toNode.uri))
+                }
+            }
             serviceManager.taskManager.execute(TaskIterator(query))
         }
         return searchTFTG
     }
 
-    fun createCopyURIMenu(nodeUri: String): JMenuItem? {
+    private fun createCopyURIMenu(nodeUri: String): JMenuItem? {
         if (nodeUri.isEmpty()) return null
 
         val menuItem = JMenuItem("Copy node URI to clipboard")
@@ -230,7 +280,7 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
         return menuItem
     }
 
-    fun createOpenURIMenu(nodeUri: String): JMenuItem? {
+    private fun createOpenURIMenu(nodeUri: String): JMenuItem? {
 
         if (nodeUri.startsWith("http")) {
             val menuItem = JMenuItem("Open resource URI")

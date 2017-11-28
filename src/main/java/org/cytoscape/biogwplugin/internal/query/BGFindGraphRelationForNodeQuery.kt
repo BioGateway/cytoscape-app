@@ -9,7 +9,7 @@ import java.io.BufferedReader
 import java.io.StringReader
 
 
-class BGFindGraphRelationForNodeQuery(serviceManager: BGServiceManager, val nodeType: BGNodeType, val nodeUri: String): BGQuery(serviceManager, BGReturnType.RELATION_TRIPLE, serviceManager.server.parser) {
+class BGFindGraphRelationForNodeQuery(serviceManager: BGServiceManager, val nodeType: BGNodeType, val nodeUri: String): BGRelationQuery(serviceManager, BGReturnType.RELATION_TRIPLE, serviceManager.server.parser) {
     override var queryString: String
         get() = when (nodeType) {
             BGNodeType.Gene -> generateFindProteinsRegluatingGeneQueryString()
@@ -20,24 +20,24 @@ class BGFindGraphRelationForNodeQuery(serviceManager: BGServiceManager, val node
         }
         set(value) {}
 
-    override fun run() {
-        taskMonitor?.setTitle("Searching for relations...")
-        val uri = encodeUrl()?.toURI()
-        if (uri != null) {
-            val httpGet = HttpGet(uri)
-            val response = client.execute(httpGet)
-            val statusCode = response.statusLine.statusCode
-            val data = EntityUtils.toString(response.entity)
-            if (statusCode < 200 || statusCode > 399) throw Exception("Server error "+statusCode+": \n"+data)
-            val reader = BufferedReader(StringReader(data))
-            client.close()
-            taskMonitor?.setTitle("Loading results...")
-            parser.parseRelations(reader, type, taskMonitor) {
-                returnData = it as? BGReturnData ?: throw Exception("Invalid return data!")
-                runCompletions()
-            }
-        }
-    }
+//    override fun run() {
+//        taskMonitor?.setTitle("Searching for relations...")
+//        val uri = encodeUrl()?.toURI()
+//        if (uri != null) {
+//            val httpGet = HttpGet(uri)
+//            val response = client.execute(httpGet)
+//            val statusCode = response.statusLine.statusCode
+//            val data = EntityUtils.toString(response.entity)
+//            if (statusCode < 200 || statusCode > 399) throw Exception("Server error "+statusCode+": \n"+data)
+//            val reader = BufferedReader(StringReader(data))
+//            client.close()
+//            taskMonitor?.setTitle("Loading results...")
+//            parser.parseRelations(reader, type, taskMonitor) {
+//                returnData = it as? BGReturnData ?: throw Exception("Invalid return data!")
+//                runCompletions()
+//            }
+//        }
+//    }
 
 
     private fun generateFindProteinsRegluatingGeneQueryString(): String {
@@ -45,7 +45,7 @@ class BGFindGraphRelationForNodeQuery(serviceManager: BGServiceManager, val node
                 "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n" +
                 "PREFIX molecularly_controls: <http://purl.obolibrary.org/obo/RO_0002448>\n" +
                 "PREFIX geneUri: <" + nodeUri + ">\n" +
-                "SELECT DISTINCT ?proteinUri molecularly_controls: geneUri: \n" +
+                "SELECT DISTINCT ?proteinUri <tf-tg> molecularly_controls: geneUri: \n" +
                 "WHERE {  \n" +
                 "GRAPH <tf-tg> {\n" +
                 "?proteinUri molecularly_controls: geneUri: .\n" +
@@ -58,7 +58,7 @@ class BGFindGraphRelationForNodeQuery(serviceManager: BGServiceManager, val node
                 "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n" +
                 "PREFIX molecularly_controls: <http://purl.obolibrary.org/obo/RO_0002448>\n" +
                 "PREFIX proteinUri: <" + nodeUri + ">\n" +
-                "SELECT DISTINCT proteinUri: molecularly_controls: ?geneUri \n" +
+                "SELECT DISTINCT proteinUri: <tf-tg> molecularly_controls: ?geneUri \n" +
                 "WHERE {  \n" +
                 "GRAPH <tf-tg> {\n" +
                 "proteinUri: molecularly_controls: ?geneUri .\n" +

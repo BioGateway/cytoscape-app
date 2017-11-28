@@ -10,9 +10,10 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class BGURILookupView {
+public class BGNodeLookupView {
 
     private final ActionListener listener;
     private final JFrame mainFrame;
@@ -32,10 +33,10 @@ public class BGURILookupView {
     public static final String ACTION_SEARCH = "Search for URIs";
 
 
-    public BGURILookupView(ActionListener listener, JComponent parentComponent) {
+    public BGNodeLookupView(ActionListener listener, JComponent parentComponent) {
         this.listener = listener;
-        mainFrame = new JFrame("URI Lookup");
-        mainFrame.setPreferredSize(new Dimension(600, 400));
+        mainFrame = new JFrame("BioGateway Node Lookup");
+        mainFrame.setPreferredSize(new Dimension(650, 400));
         mainFrame.setContentPane(this.panel1);
         setupUI();
         mainFrame.getRootPane().setDefaultButton(searchButton);
@@ -55,7 +56,7 @@ public class BGURILookupView {
 
     private void setupUI() {
         BGNodeType.values();
-        nodeTypeComboBox.setModel(new DefaultComboBoxModel(BGNodeType.values()));
+        //nodeTypeComboBox.setModel(new DefaultComboBoxModel(BGNodeType.values()));
         searchButton.addActionListener(listener);
         searchButton.setActionCommand(ACTION_SEARCH);
         useURIButton.setActionCommand(ACTION_SELECT_NODE);
@@ -75,6 +76,30 @@ public class BGURILookupView {
             @Override
             public void changedUpdate(DocumentEvent e) {
                 filterRows();
+            }
+        });
+        nameOrURIComboBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (nameOrURIComboBox.getSelectedIndex() == 0) {
+                    if (!nodeTypeComboBox.getSelectedItem().equals("Taxon")) {
+                        regexCheckBox.setEnabled(true);
+                    }
+                    nodeTypeComboBox.setEnabled(true);
+                } else {
+                    regexCheckBox.setEnabled(false);
+                    nodeTypeComboBox.setEnabled(false);
+                }
+            }
+        });
+        nodeTypeComboBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (nodeTypeComboBox.getSelectedItem().equals("Taxon")) {
+                    regexCheckBox.setEnabled(false);
+                } else {
+                    regexCheckBox.setEnabled(true);
+                }
             }
         });
     }
@@ -134,6 +159,12 @@ public class BGURILookupView {
         regexCheckBox.setText("Regex");
         panel3.add(regexCheckBox);
         nodeTypeComboBox = new JComboBox();
+        final DefaultComboBoxModel defaultComboBoxModel1 = new DefaultComboBoxModel();
+        defaultComboBoxModel1.addElement("Protein");
+        defaultComboBoxModel1.addElement("Gene");
+        defaultComboBoxModel1.addElement("GO Term");
+        defaultComboBoxModel1.addElement("Taxon");
+        nodeTypeComboBox.setModel(defaultComboBoxModel1);
         panel3.add(nodeTypeComboBox);
         searchButton = new JButton();
         searchButton.setText("Search");
@@ -142,10 +173,12 @@ public class BGURILookupView {
         panel4.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
         panel2.add(panel4, BorderLayout.CENTER);
         nameOrURIComboBox = new JComboBox();
-        final DefaultComboBoxModel defaultComboBoxModel1 = new DefaultComboBoxModel();
-        defaultComboBoxModel1.addElement("Name:");
-        defaultComboBoxModel1.addElement("URI:");
-        nameOrURIComboBox.setModel(defaultComboBoxModel1);
+        final DefaultComboBoxModel defaultComboBoxModel2 = new DefaultComboBoxModel();
+        defaultComboBoxModel2.addElement("Name:");
+        defaultComboBoxModel2.addElement("URI:");
+        defaultComboBoxModel2.addElement("UniprotID:");
+        defaultComboBoxModel2.addElement("GO-term:");
+        nameOrURIComboBox.setModel(defaultComboBoxModel2);
         panel4.add(nameOrURIComboBox);
         searchField = new JTextField();
         searchField.setColumns(15);
@@ -166,7 +199,7 @@ public class BGURILookupView {
         panel7.setLayout(new FlowLayout(FlowLayout.RIGHT, 5, 5));
         panel5.add(panel7, BorderLayout.EAST);
         useURIButton = new JButton();
-        useURIButton.setText("Use Selected URI");
+        useURIButton.setText("Use Selected Node");
         panel7.add(useURIButton);
         final JPanel panel8 = new JPanel();
         panel8.setLayout(new BorderLayout(0, 0));

@@ -1,6 +1,7 @@
 package org.cytoscape.biogwplugin.internal.gui
 
 import org.cytoscape.biogwplugin.internal.model.BGRelationType
+import org.cytoscape.biogwplugin.internal.util.Utility
 import java.io.File
 import java.util.ArrayList
 import javax.swing.JComponent
@@ -42,11 +43,19 @@ object BGSPARQLParser {
         return null
     }
 
-    private fun validateRelation(edge: BGGraphParameter, validRelationTypeMap: Map<String, BGRelationType>): Boolean {
+    private fun validateRelation(edge: BGGraphParameter, validRelationTypeMap: Map<String, BGRelationType>, graph: String): Boolean {
         // TODO: Add support for relation types as variables.
         // TODO: Also add support for relation types not in the XML file.
         if (edge.type == BGVariableType.Variable) return false
+
+        val identifier = Utility.createRelationTypeIdentifier(edge.value, graph)
+
+        if (validRelationTypeMap.containsKey(Utility.createRelationTypeIdentifier(edge.value, graph))) return true
         if (validRelationTypeMap.containsKey(edge.value)) return true
+
+//        val relationTypeURIs = validRelationTypeMap.values.map { it.uri }
+//        if (relationTypeURIs.contains(edge.value)) return true
+
         println("WARNING: Attempted to parse an edge with an URI not found among the supported edges.")
         return false
     }
@@ -80,7 +89,7 @@ object BGSPARQLParser {
                 val relationParameter = parseParameter(triple[1]) ?: continue
                 val toParameter = parseParameter(triple[2]) ?: continue
 
-                if (!validateRelation(relationParameter, validRelationTypeMap)) continue
+                if (!validateRelation(relationParameter, validRelationTypeMap, graphName)) continue
 
                 val queryGraph = BGQueryGraph(fromParameter, relationParameter, toParameter, graphParameter)
                 queryGraphs.add(queryGraph)

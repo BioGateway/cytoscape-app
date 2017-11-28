@@ -61,7 +61,7 @@ class BGNodeURILookupQuery(serviceManager: BGServiceManager, val searchString: S
                     "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n" +
                     "PREFIX sio:  <http://semanticscience.org/resource/>  \n" +
                     "PREFIX graph: <cco>  \n" +
-                    "SELECT DISTINCT ?uri ?definition ?name "+taxaName+"\n"+
+                    "SELECT DISTINCT ?uri ?name ?definition "+taxaName+"\n"+
                     "WHERE {  \n" +
                     " FILTER regex ( ?name, '"+searchString+"', 'i') .\n" +
                     " GRAPH graph: {  \n" +
@@ -78,7 +78,7 @@ class BGNodeURILookupQuery(serviceManager: BGServiceManager, val searchString: S
                 "PREFIX taxaGraph: <cco>\n" +
                 "PREFIX inheres_in: <http://purl.obolibrary.org/obo/RO_0000052>\n" +
                 "PREFIX sio:  <http://semanticscience.org/resource/>  \n" +
-                "SELECT DISTINCT ?uri ?definition ?name "+taxaName+"\n" +
+                "SELECT DISTINCT ?uri ?name ?definition "+taxaName+"\n" +
                 "WHERE {  \n" +
                 filter +
                 "GRAPH "+nodeTypeGraph+" { \n" +

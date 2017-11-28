@@ -1,9 +1,9 @@
-package org.cytoscape.biogwplugin.internal.server
+package org.cytoscape.biogwplugin.internal.parser
 
 import org.cytoscape.biogwplugin.internal.model.BGRelationType
-import org.cytoscape.biogwplugin.internal.parser.BGReturnType
 import org.cytoscape.biogwplugin.internal.query.BGQueryParameter
 import org.cytoscape.biogwplugin.internal.query.QueryTemplate
+import org.cytoscape.biogwplugin.internal.server.BGServer
 import org.w3c.dom.Element
 import org.w3c.dom.Node
 import java.io.InputStream
@@ -33,9 +33,10 @@ object BGConfigParser {
 
                 if (name != null && uri != null) {
                     val relationType = BGRelationType(uri, name, index, defaultGraph, arbitraryLength, directed)
-                    relationTypes.put(uri, relationType)
+                    relationTypes.put(relationType.identifier, relationType)
                 }
             }
+
             cache.relationTypeMap = relationTypes
 
             // Will crash if the queryList tag isn't present.

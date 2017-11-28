@@ -50,7 +50,7 @@ public class CyActivator extends AbstractCyActivator {
                 Utility.INSTANCE.reloadCurrentVisualStyleCurrentNetworkView(serviceManager);
             }
         });
-        registerService(context, reloadCurrentStyleAction, CyAction.class, new Properties());
+        //registerService(context, reloadCurrentStyleAction, CyAction.class, new Properties());
 
         BGCreateAction openSettingsAction = new BGCreateAction("Settings", "always", serviceManager, new BGAction() {
             @Override
@@ -102,10 +102,10 @@ public class CyActivator extends AbstractCyActivator {
 //        registerAllServices(bundleContext, multiNodeToQueryCMF, ezProps("preferredMenu", "BioGateway"));
 
         /*
-        BGNodeMenuActionsCMF postSearchCMF = new BGNodeMenuActionsCMF(serviceManager, BGRelationsQuery.Direction.POST, "Fetch relations from this node");
-        BGNodeMenuActionsCMF preSearchCMF = new BGNodeMenuActionsCMF(serviceManager, BGRelationsQuery.Direction.PRE, "Fetch relations to this node");
-        BGMultiRelationSearchCMF multiPostSearchCMF = new BGMultiRelationSearchCMF(serviceManager, BGRelationsQuery.Direction.POST, "Get relations from selected nodes");
-        BGMultiRelationSearchCMF multiPreSearchCMF = new BGMultiRelationSearchCMF(serviceManager, BGRelationsQuery.Direction.PRE, "Get relations to selected nodes");
+        BGNodeMenuActionsCMF postSearchCMF = new BGNodeMenuActionsCMF(serviceManager, BGRelationQueryImplementation.Direction.POST, "Fetch relations from this node");
+        BGNodeMenuActionsCMF preSearchCMF = new BGNodeMenuActionsCMF(serviceManager, BGRelationQueryImplementation.Direction.PRE, "Fetch relations to this node");
+        BGMultiRelationSearchCMF multiPostSearchCMF = new BGMultiRelationSearchCMF(serviceManager, BGRelationQueryImplementation.Direction.POST, "Get relations from selected nodes");
+        BGMultiRelationSearchCMF multiPreSearchCMF = new BGMultiRelationSearchCMF(serviceManager, BGRelationQueryImplementation.Direction.PRE, "Get relations to selected nodes");
 
         registerAllServices(bundleContext, postSearchCMF, ezProps("preferredMenu", "Apps"));
         registerAllServices(bundleContext, preSearchCMF, ezProps("preferredMenu", "Apps"));

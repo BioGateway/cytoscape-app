@@ -3,13 +3,10 @@ package org.cytoscape.biogwplugin.internal.gui
 import org.cytoscape.application.swing.CyMenuItem
 import org.cytoscape.application.swing.CyNetworkViewContextMenuFactory
 import org.cytoscape.biogwplugin.internal.BGServiceManager
-import org.cytoscape.biogwplugin.internal.query.BGFindBinaryPPIInteractionsForMultipleNodesQuery
-import org.cytoscape.biogwplugin.internal.query.BGLoadUnloadedNodes
-import org.cytoscape.biogwplugin.internal.query.BGReturnRelationsData
+import org.cytoscape.biogwplugin.internal.util.Utility
 import org.cytoscape.model.CyNetwork
 import org.cytoscape.model.CyTableUtil
 import org.cytoscape.view.model.CyNetworkView
-import org.cytoscape.work.TaskIterator
 import javax.swing.JMenuItem
 
 class BGNetworkViewCMF(val gravity: Float, val serviceManager: BGServiceManager): CyNetworkViewContextMenuFactory {
@@ -40,12 +37,10 @@ class BGNetworkViewCMF(val gravity: Float, val serviceManager: BGServiceManager)
     private fun createLookupNodeMenu(network: CyNetwork, netView: CyNetworkView): JMenuItem {
         val item = JMenuItem("Add BioGateway node")
         item.addActionListener {
-            BGURILookupController(serviceManager, null) { node ->
+            BGNodeLookupController(serviceManager, null) { node ->
                 if (node != null) {
                     serviceManager.server.networkBuilder.addBGNodesToNetwork(arrayListOf(node), network)
-                    serviceManager.eventHelper.flushPayloadEvents()
-                    //netView.updateView()
-                    serviceManager.adapter.visualMappingManager.currentVisualStyle.apply(netView)
+                    Utility.reloadCurrentVisualStyleCurrentNetworkView(serviceManager)
                 }
             }
         }

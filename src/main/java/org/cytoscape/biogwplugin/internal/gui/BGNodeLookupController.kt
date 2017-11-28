@@ -8,6 +8,7 @@ import org.cytoscape.biogwplugin.internal.query.BGNodeFetchQuery
 import org.cytoscape.biogwplugin.internal.query.BGNodeURILookupQuery
 import org.cytoscape.biogwplugin.internal.query.BGParsingType
 import org.cytoscape.biogwplugin.internal.query.BGReturnNodeData
+import org.cytoscape.biogwplugin.internal.util.Utility
 import java.awt.EventQueue
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
@@ -16,13 +17,17 @@ import javax.swing.JComponent
 import javax.swing.JOptionPane
 import javax.swing.table.DefaultTableModel
 
-class BGURILookupController(val serviceManager: BGServiceManager, parentComponent: JComponent?, val completion: (BGNode?) -> Unit): ActionListener {
+class BGNodeLookupController(val serviceManager: BGServiceManager, parentComponent: JComponent?, defaultURI: String? = null, val completion: (BGNode?) -> Unit): ActionListener {
 
-    private val view = BGURILookupView(this, parentComponent)
+    private val view = BGNodeLookupView(this, parentComponent)
     private var nodesFound = HashMap<String, BGNode>()
 
     init {
         val table = view.resultTable.model as DefaultTableModel
+        defaultURI?.let {
+            view.searchField.text = it
+            view.nameOrURIComboBox.selectedIndex = 1
+        }
         val columnNames = arrayOf("Node URI", "Common Name", "Description", "Taxon")
         table.setColumnIdentifiers(columnNames)
     }
@@ -52,32 +57,61 @@ class BGURILookupController(val serviceManager: BGServiceManager, parentComponen
 
         val searchString = view.searchField.text
         val useRegex = view.regexCheckBox.isSelected
-        val nodeType = view.nodeTypeComboBox.selectedItem as? BGNodeType ?: throw Exception("Invalid node type!")
+        //val nodeType = view.nodeTypeComboBox.selectedItem as? BGNodeType ?:
 
-        if (view.nameOrURIComboBox.selectedIndex == 0) {
-
-            val query = BGNodeURILookupQuery(serviceManager, searchString, useRegex, nodeType)
-            query.addCompletion {
-                val data = it as? BGReturnNodeData ?: return@addCompletion
-                if (data.nodeData.count() == 0) {
-                    JOptionPane.showMessageDialog(view.mainFrame, "No entities found.")
-                }
-                loadResultsIntoTable(data.nodeData)
-            }
-            // TODO: Use the built-in task manager?
-            query.run()
-        } else if (searchString.startsWith("http://")){
-            val query = BGNodeFetchQuery(serviceManager, searchString, serviceManager.server.parser, BGReturnType.NODE_LIST_DESCRIPTION)
-            query.parseType = BGParsingType.TO_ARRAY
-            query.addCompletion {
-                val data = it as? BGReturnNodeData ?: return@addCompletion
-                if (data.nodeData.count() == 0) {
-                    JOptionPane.showMessageDialog(view.mainFrame, "No entities found.")
-                }
-                loadResultsIntoTable(data.nodeData)
-            }
-            query.run()
+        val nodeType = when (view.nodeTypeComboBox.selectedItem as String) {
+            "Protein" -> BGNodeType.Protein
+            "Gene" -> BGNodeType.Gene
+            "GO Term" -> BGNodeType.GO
+            "Taxon" -> BGNodeType.Taxon
+            else -> BGNodeType.Undefined
         }
+
+        when (view.nameOrURIComboBox.selectedIndex) {
+            0 -> {
+                // Label search
+                val query = BGNodeURILookupQuery(serviceManager, searchString, useRegex, nodeType)
+                query.addCompletion {
+                    val data = it as? BGReturnNodeData ?: return@addCompletion
+                    if (data.nodeData.count() == 0) {
+                        JOptionPane.showMessageDialog(view.mainFrame, "No entities found.")
+                    }
+                    loadResultsIntoTable(data.nodeData)
+                }
+                // TODO: Use the built-in task manager?
+                query.run()
+            }
+            1 -> {
+                // URI Lookup
+                if (searchString.startsWith("http://")){
+                    lookupURIString(searchString)
+                } else {
+                    JOptionPane.showMessageDialog(view.mainFrame, "Invalid URI!")
+                }
+            }
+            2 -> {
+                // UniprotID lookup:
+                lookupURIString(Utility.generateUniprotURI(searchString))
+            }
+            3 -> {
+                // GO term lookup:
+                lookupURIString(Utility.generateGOTermURI(searchString))
+            }
+            else -> {}
+        }
+    }
+
+    private fun lookupURIString(searchString: String) {
+        val query = BGNodeFetchQuery(serviceManager, searchString, serviceManager.server.parser, BGReturnType.NODE_LIST_DESCRIPTION)
+        query.parseType = BGParsingType.TO_ARRAY
+        query.addCompletion {
+            val data = it as? BGReturnNodeData ?: return@addCompletion
+            if (data.nodeData.count() == 0) {
+                JOptionPane.showMessageDialog(view.mainFrame, "No entities found.")
+            }
+            loadResultsIntoTable(data.nodeData)
+        }
+        query.run()
     }
 
     private fun useSelectedNode() {
@@ -99,10 +133,10 @@ class BGURILookupController(val serviceManager: BGServiceManager, parentComponen
 
     override fun actionPerformed(e: ActionEvent?) {
         if (e != null) {
-            if (e.actionCommand == BGURILookupView.ACTION_SELECT_NODE) {
+            if (e.actionCommand == BGNodeLookupView.ACTION_SELECT_NODE) {
                 useSelectedNode()
             }
-            if (e.actionCommand == BGURILookupView.ACTION_SEARCH) {
+            if (e.actionCommand == BGNodeLookupView.ACTION_SEARCH) {
                 searchForNodes()
             }
         }

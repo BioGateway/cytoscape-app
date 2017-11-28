@@ -45,7 +45,7 @@ class BGOptionalURIField(val textField: JTextField, val serviceManager: BGServic
         val uriSearchButton = JButton(searchIcon)
         uriSearchButton.toolTipText = "Search for entity URIs."
         uriSearchButton.addActionListener {
-            val lookupController = BGURILookupController(serviceManager, this) {
+            val lookupController = BGNodeLookupController(serviceManager, this) {
                 if (it != null) {
                     textField.text = it.uri
                     textField.toolTipText = it.description
@@ -232,7 +232,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                     BGNodeSearchQuery(serviceManager, queryString, queryType, serviceManager.server.parser)
                 }
                 BGReturnType.RELATION_TRIPLE, BGReturnType.RELATION_TRIPLE_NAMED -> {
-                    BGRelationsQuery(serviceManager, queryString, serviceManager.server.parser, queryType)
+                    BGRelationQueryImplementation(serviceManager, queryString, serviceManager.server.parser, queryType)
                 }
                 else -> {
                     throw Exception("Unexpected query type: "+queryType.toString())
@@ -361,6 +361,8 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                     server.networkBuilder.createNetworkView(it, serviceManager)
                 }
             }
+        } else {
+            Utility.reloadCurrentVisualStyleCurrentNetworkView(serviceManager)
         }
     }
 
@@ -555,7 +557,16 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         return null
     }
 
+    private enum class QueryType {
+        NAME_SEARCH,
+        UNIPROT_LOOKUP,
+        GO_LOOKUP,
+        NOT_SET
+    }
+
     private fun runBulkImport() {
+        var queryType = QueryType.NOT_SET
+
         var nodeList = view.bulkImportTextPane.text.split("\n")
         nodeList = nodeList.map { Utility.sanitizeParameter(it) }
 
@@ -570,30 +581,58 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         val selectedType = view.bulkImportTypeComboBox.selectedItem as? String
 
         val nodeType = when (selectedType) {
-            "Genes" -> {
+            "Gene names" -> {
+                queryType = QueryType.NAME_SEARCH
                 BGNodeType.Gene
             }
-            "Proteins" -> {
+            "Protein names" -> {
+                queryType = QueryType.NAME_SEARCH
                 BGNodeType.Protein
             }
-            "GO term" -> {
+            "Uniprot IDs" -> {
+                queryType = QueryType.UNIPROT_LOOKUP
+                BGNodeType.Protein
+            }
+            "GO terms" -> {
+                queryType = QueryType.GO_LOOKUP
                 BGNodeType.GO
             }
             else -> {
                 //BGNodeType.Undefined
-                throw Exception("Node Type must be Protein or Gene!")
+                throw Exception("Invalid node type!")
             }
         }
 
-        val query = BGBulkImportNodesQuery(serviceManager,nodeList, nodeType)
-        query.addCompletion {
+        val queryCompletion: (BGReturnData?) -> Unit = {
             val data = it as? BGReturnNodeData ?: throw Exception("Expected Node Data in return!")
             val nodes = data.nodeData.values
             setBulkImportTableData(nodes)
-            setBulkImportInputPaneColors(nodes)
+            setBulkImportInputPaneColors(nodes, queryType)
             Utility.fightForFocus(view.mainFrame)
         }
-        serviceManager.taskManager.execute(TaskIterator(query))
+
+        when (queryType) {
+            QueryType.NAME_SEARCH -> {
+                val query = BGBulkImportNodesQuery(serviceManager, nodeList, nodeType)
+                query.addCompletion(queryCompletion)
+                serviceManager.taskManager.execute(TaskIterator(query))
+            }
+            BGQueryBuilderController.QueryType.UNIPROT_LOOKUP -> {
+                val uniprotNodeList = nodeList.map { Utility.generateUniprotURI(it) }
+                val query = BGBulkFetchNodesFromURIs(serviceManager, nodeType, uniprotNodeList)
+                query.addCompletion(queryCompletion)
+                serviceManager.taskManager.execute(TaskIterator(query))
+            }
+            BGQueryBuilderController.QueryType.GO_LOOKUP -> {
+                val goNodeList = nodeList.map { Utility.generateGOTermURI(it) }
+                val query = BGBulkFetchNodesFromURIs(serviceManager, nodeType, goNodeList)
+                query.addCompletion(queryCompletion)
+                serviceManager.taskManager.execute(TaskIterator(query))
+            }
+            BGQueryBuilderController.QueryType.NOT_SET -> {
+                throw Exception("Invalid query type!")
+            }
+        }
     }
 
     private fun bulkImportToNetwork(currentNetwork: CyNetwork? = null) {
@@ -648,17 +687,25 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         }
     }
 
-    private fun setBulkImportInputPaneColors(nodes: Collection<BGNode>) {
+    private fun setBulkImportInputPaneColors(nodes: Collection<BGNode>, queryType: QueryType) {
 
         val darkGreen = Color(34,139,34)
         val darkRed = Color(178,34,34)
 
         val nodeNames = nodes.map { it.name ?: "" }.filter { !it.isEmpty() }.toHashSet()
+        val nodeUris = nodes.map { it.uri }.toHashSet()
         val searchLines = view.bulkImportTextPane.text.split("\n").map { Utility.sanitizeParameter(it) }
         view.bulkImportTextPane.text = ""
 
         for (line in searchLines) {
-            if (nodeNames.contains(line)) {
+            val match = when (queryType) {
+                BGQueryBuilderController.QueryType.NAME_SEARCH -> nodeNames.contains(line)
+                BGQueryBuilderController.QueryType.UNIPROT_LOOKUP -> nodeUris.contains(Utility.generateUniprotURI(line))
+                BGQueryBuilderController.QueryType.GO_LOOKUP -> nodeUris.contains(Utility.generateGOTermURI(line))
+                BGQueryBuilderController.QueryType.NOT_SET -> false
+            }
+
+            if (match) {
                 view.appendToPane(view.bulkImportTextPane, line+"\n", Color.BLACK)
             } else {
                 view.appendToPane(view.bulkImportTextPane, line+"\n", darkRed)

@@ -7,9 +7,9 @@ class BGRelation(var fromNode: BGNode, val relationType: BGRelationType, var toN
     // Extra data field for helping sorting the relations in the result view.
     var extraTableData = ArrayList<Any>()
 
-    fun stringArray(): Array<String> {
-        return arrayOf(fromNode.uri, relationType.uri, toNode.uri)
-    }
+//    fun stringArray(): Array<String> {
+//        return arrayOf(fromNode.uri, relationType.uri, toNode.uri)
+//    }
 
     fun asArray(): Array<Any> {
         val fromNodeName = fromNode.name ?: fromNode.uri
@@ -21,10 +21,10 @@ class BGRelation(var fromNode: BGNode, val relationType: BGRelationType, var toN
     }
 
     val edgeIdentifier: String
-        get() = fromNode.uri+"_"+relationType.uri+"_"+toNode.uri
+        get() = fromNode.uri+"_"+relationType.identifier+"_"+toNode.uri
 
     val reverseEdgeIdentifier: String
-        get() = toNode.uri+"_"+relationType.uri+"_"+fromNode.uri
+        get() = toNode.uri+"_"+relationType.identifier+"_"+fromNode.uri
 
 
     override fun toString(): String {
@@ -39,6 +39,7 @@ class BGRelation(var fromNode: BGNode, val relationType: BGRelationType, var toN
     }
 
     override fun hashCode(): Int {
+        val hashCode = this.edgeIdentifier.hashCode()
         return this.edgeIdentifier.hashCode()
     }
 }

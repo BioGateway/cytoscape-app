@@ -13,21 +13,17 @@ class BGRelationType(val uri: String, val name: String, val number: Int, val def
         }
     }
 
+    val identifier: String get() {
+        return when (defaultGraphName.isNullOrEmpty()) {
+            true -> uri
+            false -> defaultGraphName+":"+uri
+        }
+    }
+
     val sparqlIRI: String get() {
         return when (arbitraryLength) {
             true -> "<"+uri+">*"
             false -> "<"+uri+">"
-        }
-    }
-
-    companion object {
-        fun createRelationTypeHashMapFromArrayList(list: ArrayList<BGRelationType>): HashMap<String, BGRelationType> {
-            var map = list.fold(HashMap<String, BGRelationType>(), {
-                acc, bgRelationType ->
-                acc.put(bgRelationType.uri, bgRelationType)
-                return acc
-            })
-            return map
         }
     }
 }

@@ -3,8 +3,10 @@ package org.cytoscape.biogwplugin.internal.query
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.util.EntityUtils
 import org.cytoscape.biogwplugin.internal.BGServiceManager
+import org.cytoscape.biogwplugin.internal.model.BGRelation
 import org.cytoscape.biogwplugin.internal.model.BGRelationType
 import org.cytoscape.biogwplugin.internal.parser.BGReturnType
+import org.cytoscape.biogwplugin.internal.util.Utility
 import java.io.BufferedReader
 import java.io.StringReader
 
@@ -15,6 +17,31 @@ class BGFindRelationForNodeQuery(serviceManager: BGServiceManager, val relationT
                 BGRelationDirection.FROM -> generateFromQueryString()
         } //To change initializer of created properties use File | Settings | File Templates.
         set(value) {}
+
+    var returnDataFilter: ((BGRelation) -> Boolean)? = null
+
+
+    /*
+
+    var returnDataFilter: ((BGRelation) -> Boolean)? = null
+
+    init {
+        parsingBlock = {
+            parser.parseRelations(it, type, taskMonitor) {
+                var returnRelationsData = it as? BGReturnRelationsData ?: throw Exception("Invalid return data!")
+                returnDataFilter?.let {
+                    returnRelationsData.relationsData = ArrayList(returnRelationsData.relationsData.filter(it))
+                    returnRelationsData.unloadedNodes?.let {
+                        returnRelationsData.unloadedNodes = Utility.removeNodesNotInRelationSet(it, returnRelationsData.relationsData).toList()
+                    }
+                }
+
+                runCompletions()
+            }
+        }
+        taskMonitorText = "Searching for binary protein interactions..."
+    }
+     */
 
     override fun run() {
         taskMonitor?.setTitle("Searching for relations...")
@@ -29,7 +56,17 @@ class BGFindRelationForNodeQuery(serviceManager: BGServiceManager, val relationT
             client.close()
             taskMonitor?.setTitle("Loading results...")
             parser.parseRelations(reader, type, taskMonitor) {
-                returnData = it as? BGReturnData ?: throw Exception("Invalid return data!")
+//                returnData = it as? BGReturnData ?: throw Exception("Invalid return data!")
+//                runCompletions()
+                var returnRelationsData = it as? BGReturnRelationsData ?: throw Exception("Invalid return data!")
+                val filter = returnDataFilter
+                if (filter != null) {
+                    returnRelationsData.relationsData = ArrayList(returnRelationsData.relationsData.filter(filter))
+                    returnRelationsData.unloadedNodes?.let {
+                        returnRelationsData.unloadedNodes = Utility.removeNodesNotInRelationSet(it, returnRelationsData.relationsData).toList()
+                    }
+                }
+                returnData = returnRelationsData
                 runCompletions()
             }
         }
@@ -37,7 +74,7 @@ class BGFindRelationForNodeQuery(serviceManager: BGServiceManager, val relationT
 
     val graphName: String get() {
         relationType.defaultGraphName?.let {
-            return "<"+it+">"
+            if (it.isNotEmpty()) return "<"+it+">"
         }
         return "?graph"
     }
@@ -47,7 +84,7 @@ class BGFindRelationForNodeQuery(serviceManager: BGServiceManager, val relationT
         return "BASE <http://www.semantic-systems-biology.org/>\n" +
                 "PREFIX relation1: <" + relationType.uri + ">\n" +
                 "PREFIX fromNode: <" + nodeUri + ">\n" +
-                "SELECT DISTINCT fromNode: relation1: ?toNode\n" +
+                "SELECT DISTINCT fromNode: "+graphName+" relation1: ?toNode\n" +
                 "WHERE {\n" +
                 "GRAPH "+graphName+" {\n" +
                 "fromNode: "+relationType.sparqlIRI+" ?toNode .\n" +
@@ -59,7 +96,7 @@ class BGFindRelationForNodeQuery(serviceManager: BGServiceManager, val relationT
         return "BASE <http://www.semantic-systems-biology.org/>\n" +
                 "PREFIX relation1: <" + relationType.uri + ">\n" +
                 "PREFIX toNode: <" + nodeUri + ">\n" +
-                "SELECT DISTINCT ?fromNode relation1: toNode:\n" +
+                "SELECT DISTINCT ?fromNode "+graphName+" relation1: toNode:\n" +
                 "WHERE {\n" +
                 "GRAPH "+graphName+" {\n" +
                 "?fromNode "+relationType.sparqlIRI+" toNode: .\n" +

@@ -5,6 +5,7 @@ import org.cytoscape.biogwplugin.internal.model.BGNode
 import org.cytoscape.biogwplugin.internal.model.BGRelation
 import org.cytoscape.biogwplugin.internal.model.BGRelationType
 import org.cytoscape.biogwplugin.internal.parser.BGReturnType
+import org.cytoscape.biogwplugin.internal.util.Utility
 import org.cytoscape.work.AbstractTask
 import org.cytoscape.work.TaskMonitor
 import javax.management.relation.Relation
@@ -13,6 +14,7 @@ class BGMultiNodeRelationQuery(val serviceManager: BGServiceManager, val nodeUri
     private var taskMonitor: TaskMonitor? = null
     private var returnData: BGReturnRelationsData? = null
     private val completionBlocks = ArrayList<(BGReturnData?) -> Unit>()
+    var returnDataFilter: ((BGRelation) -> Boolean)? = null
 
     var minCommonRelations = 0
 
@@ -77,19 +79,15 @@ class BGMultiNodeRelationQuery(val serviceManager: BGServiceManager, val nodeUri
         return filteredRelations
     }
 
-    private fun removeNodesNotInRelationSet(nodes: Collection<BGNode>, relations: Collection<BGRelation>): Collection<BGNode> {
-        var allNodes = relations.map { it.toNode }.toHashSet().union(relations.map { it.fromNode }.toHashSet())
-        return nodes.filter { allNodes.contains(it) }.toHashSet()
-    }
 
     override fun run() {
 
-        var columnNames: Array<String>? = null
         var relations = HashSet<BGRelation>()
         var unloadedNodes = HashSet<BGNode>()
 
         for (nodeUri in nodeUris) {
             val query = BGFindRelationForNodeQuery(serviceManager, relationType, nodeUri, direction)
+            query.returnDataFilter = returnDataFilter
             query.addCompletion {
                 val returnData = it as? BGReturnRelationsData ?: throw Exception("Expected relations data!")
                 relations.addAll(returnData.relationsData)
@@ -100,22 +98,24 @@ class BGMultiNodeRelationQuery(val serviceManager: BGServiceManager, val nodeUri
             }
             query.run()
         }
-        columnNames = arrayOf("From Node", "Relation Type", "To Node", "Common Relations")
-
+        var columnNames = arrayOf("From Node", "Relation Type", "To Node")
         returnData = BGReturnRelationsData(BGReturnType.RELATION_TRIPLE, columnNames)
 
         if (minCommonRelations != 0) {
             // It now only finds relations to nodes with ALL the searched nodes in common.
             //val minCommonRelations = nodeUris.size
             val commonRelations = findCommonRelations(relations, minCommonRelations)
-            val filteredUnloadedNodes = removeNodesNotInRelationSet(unloadedNodes, commonRelations)
+            val filteredUnloadedNodes = Utility.removeNodesNotInRelationSet(unloadedNodes, commonRelations)
             returnData?.relationsData?.addAll(commonRelations)
             returnData?.unloadedNodes = filteredUnloadedNodes.toList()
+            returnData?.columnNames = arrayOf("From Node", "Relation Type", "To Node", "Common Relations")
+
         } else if (minCommonRelations == -1) {
             val commonRelations = findCommonRelations(relations, minCommonRelations)
-            val filteredUnloadedNodes = removeNodesNotInRelationSet(unloadedNodes, commonRelations)
+            val filteredUnloadedNodes = Utility.removeNodesNotInRelationSet(unloadedNodes, commonRelations)
             returnData?.relationsData?.addAll(commonRelations)
             returnData?.unloadedNodes = filteredUnloadedNodes.toList()
+            returnData?.columnNames = arrayOf("From Node", "Relation Type", "To Node", "Common Relations")
         } else {
             returnData?.relationsData?.addAll(relations)
             returnData?.unloadedNodes = unloadedNodes.toList()
@@ -123,6 +123,4 @@ class BGMultiNodeRelationQuery(val serviceManager: BGServiceManager, val nodeUri
 
         runCompletions()
     }
-
-
 }
