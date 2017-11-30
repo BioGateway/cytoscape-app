@@ -1,19 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <configuration>
 	<relationTypes>
-		<relationType name="part of">http://purl.obolibrary.org/obo/BFO_0000050</relationType>
-		<relationType name="molecularly controls">http://purl.obolibrary.org/obo/RO_0002448</relationType>
+		<relationType name="molecularly controls" defaultGraph="tf-tg">http://purl.obolibrary.org/obo/RO_0002448</relationType>
+		<relationType name="encodes" defaultGraph="refseq">http://semanticscience.org/resource/SIO_010078</relationType>
 		<relationType name="inheres in">http://purl.obolibrary.org/obo/RO_0000052</relationType>
+		<relationType name="enables" defaultGraph="goa">http://purl.obolibrary.org/obo/RO_0002327</relationType>
+		<relationType name="involved in" defaultGraph="goa">http://purl.obolibrary.org/obo/RO_0002331</relationType>
+		<relationType name="involved in" defaultGraph="refprot">http://purl.obolibrary.org/obo/RO_0002331</relationType>
+		<relationType name="is subclass of" defaultGraph="go-basic-inf" arbitraryLength="false">http://www.w3.org/2000/01/rdf-schema#subClassOf</relationType>
+		<relationType name="part of" defaultGraph="go-basic-inf">http://purl.obolibrary.org/obo/BFO_0000050</relationType>
+		<relationType name="has agent" defaultGraph="intact">http://semanticscience.org/resource/SIO_000139</relationType>
 		<relationType name="bearer of">http://purl.obolibrary.org/obo/RO_0000053</relationType>
 		<relationType name="regulates">http://purl.obolibrary.org/obo/RO_0002211</relationType>
 		<relationType name="negatively regulates">http://purl.obolibrary.org/obo/RO_0002212</relationType>
 		<relationType name="positively regulates">http://purl.obolibrary.org/obo/RO_0002213</relationType>
-		<relationType name="enables">http://purl.obolibrary.org/obo/RO_0002327</relationType>
-		<relationType name="involved in">http://purl.obolibrary.org/obo/RO_0002331</relationType>
-		<relationType name="has agent">http://semanticscience.org/resource/SIO_000139</relationType>
 		<relationType name="is orthologous to">http://semanticscience.org/resource/SIO_000558</relationType>
 		<relationType name="is paralogous to">http://semanticscience.org/resource/SIO_000630</relationType>
-		<relationType name="encodes">http://semanticscience.org/resource/SIO_010078</relationType>
+		<relationType name="molecularly interacts with" directed="false">http://purl.obolibrary.org/obo/RO_0002436</relationType>
 	</relationTypes>
 	<queryList>
 		<query name="Find genes regulated by protein" returnType="nodeListDescription">
@@ -100,8 +103,8 @@
 				}
 			</sparql>
 		</query>
-		<query name="Find genes involved in disease" returnType="nodeListDescription">
-			<description>Find genes involved in diseases matching the search term.</description>
+		<query name="Find entities involved in disease" returnType="nodeListDescription">
+			<description>Find proteins or genes involved in diseases matching the search term.</description>
 			<parameter id="diseaseName" type="text">
 				<name>Disease search term</name>
 			</parameter>
@@ -158,64 +161,6 @@
 					ORDER BY ?protein
 			</sparql>
 		</query>
-		<query name="A to B to C query" returnType="relationTriple">
-			<description>Search for nodes A related to C through B.</description>
-			<parameter id="nodeA" type="optionalUri">
-				<name>Node A URI (optional)</name>
-			</parameter>
-			<parameter id="relationType1" type="combobox">
-				<name>A to B relation type</name>
-				<option name="part of">http://purl.obolibrary.org/obo/BFO_0000050</option>
-				<option name="inheres in">http://purl.obolibrary.org/obo/RO_0000052</option>
-				<option name="bearer of">http://purl.obolibrary.org/obo/RO_0000053</option>
-				<option name="regulates">http://purl.obolibrary.org/obo/RO_0002211</option>
-				<option name="negatively regulates">http://purl.obolibrary.org/obo/RO_0002212</option>
-				<option name="positively regulates">http://purl.obolibrary.org/obo/RO_0002213</option>
-				<option name="enables">http://purl.obolibrary.org/obo/RO_0002327</option>
-				<option name="involved in">http://purl.obolibrary.org/obo/RO_0002331</option>
-				<option name="has agent">http://semanticscience.org/resource/SIO_000139</option>
-				<option name="is orthologous to">http://semanticscience.org/resource/SIO_000558</option>
-				<option name="is paralogous to">http://semanticscience.org/resource/SIO_000630</option>
-				<option name="encodes">http://semanticscience.org/resource/SIO_010078</option>
-				<option name="molecularly controls">http://purl.obolibrary.org/obo/RO_0002448</option>
-				
-			</parameter>
-			<parameter id="nodeB" type="optionalUri">
-				<name>Node B URI (optional)</name>
-			</parameter>
-			<parameter id="relationType2" type="combobox">
-				<name>B to C relation type</name>
-				<option name="part of">http://purl.obolibrary.org/obo/BFO_0000050</option>
-				<option name="inheres in">http://purl.obolibrary.org/obo/RO_0000052</option>
-				<option name="bearer of">http://purl.obolibrary.org/obo/RO_0000053</option>
-				<option name="regulates">http://purl.obolibrary.org/obo/RO_0002211</option>
-				<option name="negatively regulates">http://purl.obolibrary.org/obo/RO_0002212</option>
-				<option name="positively regulates">http://purl.obolibrary.org/obo/RO_0002213</option>
-				<option name="enables">http://purl.obolibrary.org/obo/RO_0002327</option>
-				<option name="involved in">http://purl.obolibrary.org/obo/RO_0002331</option>
-				<option name="has agent">http://semanticscience.org/resource/SIO_000139</option>
-				<option name="is orthologous to">http://semanticscience.org/resource/SIO_000558</option>
-				<option name="is paralogous to">http://semanticscience.org/resource/SIO_000630</option>
-				<option name="encodes">http://semanticscience.org/resource/SIO_010078</option>
-				<option name="molecularly controls">http://purl.obolibrary.org/obo/RO_0002448</option>
-				
-			</parameter>
-			<parameter id="nodeC" type="optionalUri">
-				<name>Node C URI (optional)</name>
-			</parameter>
-			<sparql>
-		BASE &lt;http://www.semantic-systems-biology.org/&gt;
-			SELECT DISTINCT @nodeA @nodeB  @nodeC
-			WHERE {
-				GRAPH ?graph {
-					@nodeA &lt;@relationType1&gt; @nodeB .
-					}
-					GRAPH ?graph2 {
-					@nodeB &lt;@relationType2&gt; @nodeC .
-					}
-				}
-		</sparql>
-		</query>
 		<query name="All relations from a node" returnType="relationTriple">
 			<description>Search for relations from node A</description>
 			<parameter id="nodeA" type="optionalUri">
@@ -226,116 +171,13 @@
 			</parameter>
 			<sparql>
 		BASE &lt;http://www.semantic-systems-biology.org/&gt;
-			SELECT DISTINCT @nodeA ?relation1 @nodeB
+			SELECT DISTINCT @nodeA ?graph ?relation1 @nodeB
 			WHERE {
 				GRAPH ?graph {
 					@nodeA ?relation1 @nodeB .
 				}
 			}
 		</sparql>
-		</query>
-		<query name="Find relations between two nodes" returnType="relationTriple">
-			<description>Search for nodes A to B. Note: Both nodes cannot be wildcards!</description>
-			<parameter id="nodeA" type="optionalUri">
-				<name>Node A URI (optional)</name>
-			</parameter>
-			<parameter id="relationType1" type="combobox">
-				<name>A to B relation type</name>
-				<option name="part of">http://purl.obolibrary.org/obo/BFO_0000050</option>
-				<option name="inheres in">http://purl.obolibrary.org/obo/RO_0000052</option>
-				<option name="bearer of">http://purl.obolibrary.org/obo/RO_0000053</option>
-				<option name="regulates">http://purl.obolibrary.org/obo/RO_0002211</option>
-				<option name="negatively regulates">http://purl.obolibrary.org/obo/RO_0002212</option>
-				<option name="positively regulates">http://purl.obolibrary.org/obo/RO_0002213</option>
-				<option name="enables">http://purl.obolibrary.org/obo/RO_0002327</option>
-				<option name="involved in">http://purl.obolibrary.org/obo/RO_0002331</option>
-				<option name="has agent">http://semanticscience.org/resource/SIO_000139</option>
-				<option name="is orthologous to">http://semanticscience.org/resource/SIO_000558</option>
-				<option name="is paralogous to">http://semanticscience.org/resource/SIO_000630</option>
-				<option name="encodes">http://semanticscience.org/resource/SIO_010078</option>
-				<option name="molecularly controls">http://purl.obolibrary.org/obo/RO_0002448</option>
-			</parameter>
-			<parameter id="nodeB" type="optionalUri">
-				<name>Node B URI (optional)</name>
-			</parameter>
-			<parameter id="limitToTaxon" type="checkbox" default="true">
-				<name>Limit to specific taxon</name>
-				<option name="false"> </option>
-				<option name="true">@nodeB inheres_in: taxon: .</option>
-			</parameter>
-			<parameter id="taxon" type="combobox">
-				<name>Taxon</name>
-				<enabled-dependency parameterId="limitToTaxon" isEnabled="true" forParameterValue="true"></enabled-dependency>
-				<option name="Homo Sapiens">http://purl.obolibrary.org/obo/NCBITaxon_9606</option>
-				<option name="Mus Musculus">http://purl.obolibrary.org/obo/NCBITaxon_10090</option>
-				<option name="Saccharomyces Cerevisiae">http://purl.obolibrary.org/obo/NCBITaxon_559292</option>
-				<option name="Schizosaccharomyces Pombe">http://purl.obolibrary.org/obo/NCBITaxon_284812</option>
-				<option name="Arabidopsis Thaliana">http://purl.obolibrary.org/obo/NCBITaxon_3702</option>
-				<option name="Caenorhabditis Elegans">http://purl.obolibrary.org/obo/NCBITaxon_6239</option>
-				<option name="Drosophila Melanogaster">http://purl.obolibrary.org/obo/NCBITaxon_7227</option>
-				<option name="Xenopus Tropicalis">http://purl.obolibrary.org/obo/NCBITaxon_8364</option>
-			</parameter>
-			<sparql>
-		BASE &lt;http://www.semantic-systems-biology.org/&gt;
-		PREFIX inheres_in: &lt;http://purl.obolibrary.org/obo/RO_0000052&gt;
-        PREFIX taxon: &lt;@taxon&gt;
-		PREFIX relation1: &lt;@relationType1&gt;
-			SELECT DISTINCT @nodeA relation1: @nodeB
-			WHERE {
-				GRAPH ?graph {
-					@nodeA relation1: @nodeB .
-					@limitToTaxon
-				}
-			}
-		</sparql>
-		</query>
-		<query name="Find nodes" returnType="nodeListDescription">
-			<description>Perform a regex search for matching proteins.</description>
-			<parameter id="searchString" type="text">
-				<name>Protein name</name>
-			</parameter>
-			<parameter id="type" type="combobox">
-				<name>Type</name>
-				<option name="Proteins">PREFIX graph: &lt;refprot&gt;
-            PREFIX class: &lt;http://semanticscience.org/resource/SIO_010043&gt;</option>
-				<option name="Genes">PREFIX graph: &lt;refseq&gt;
-            PREFIX class: &lt;http://semanticscience.org/resource/SIO_010035&gt;</option>
-			</parameter>
-			<parameter id="taxon" type="combobox">
-				<name>Taxon</name>
-				<option name="Homo Sapiens">http://purl.obolibrary.org/obo/NCBITaxon_9606</option>
-				<option name="Mus Musculus">http://purl.obolibrary.org/obo/NCBITaxon_10090</option>
-				<option name="Saccharomyces Cerevisiae">http://purl.obolibrary.org/obo/NCBITaxon_559292</option>
-				<option name="Schizosaccharomyces Pombe">http://purl.obolibrary.org/obo/NCBITaxon_284812</option>
-				<option name="Arabidopsis Thaliana">http://purl.obolibrary.org/obo/NCBITaxon_3702</option>
-				<option name="Caenorhabditis Elegans">http://purl.obolibrary.org/obo/NCBITaxon_6239</option>
-				<option name="Drosophila Melanogaster">http://purl.obolibrary.org/obo/NCBITaxon_7227</option>
-				<option name="Xenopus Tropicalis">http://purl.obolibrary.org/obo/NCBITaxon_8364</option>
-			</parameter>
-			<parameter id="regexCase" type="checkbox" default="true">
-				<name>Use regex search (slower)</name>
-				<option name="false">( ?value = '@searchString' )</option>
-				<option name="true">regex ( ?value,'@searchString'@caseSensitivity)</option>
-			</parameter>
-			<parameter id="caseSensitivity" type="checkbox" default="true">
-				<name>Case sensitive (only for regex)</name>
-				<option name="false">, 'i'</option>
-				<option name="true"></option>
-				<enabled-dependency parameterId="regexCase" isEnabled="true" forParameterValue="true"></enabled-dependency>
-			</parameter>
-			<sparql>BASE &lt;http://www.semantic-systems-biology.org/&gt;
-            PREFIX inheres_in: &lt;http://purl.obolibrary.org/obo/RO_0000052&gt;
-           	@type
-            PREFIX taxon: &lt;@taxon&gt;
-            SELECT DISTINCT ?resourceUri ?value ?description WHERE {
-            FILTER @regexCase .
-            GRAPH graph: {
-            ?resourceUri skos:prefLabel|skos:altLabel ?value .
-			?resourceUri skos:definition ?description .
-            ?resourceUri rdfs:subClassOf class: . 
-			?resourceUri inheres_in: taxon: . } }
-            ORDER BY ?resourceUri
-        </sparql>
 		</query>
 		<query name="Find proteins participating in the same process" returnType="nodeList">
 			<description>Find proteins participating in the same process as the query protein.</description>
