@@ -1,6 +1,4 @@
-# README #
-
-### The BioGateway Cytoscape plugin ###
+# The BioGateway Cytoscape plugin #
 
 The BioGateway Knowledge Base, a semantic Systems Biology knowledge resource built using Semantic Web technologies, combines large datasets into an integrated repository for querying and information retrieval.
 This application is a plugin which enables querying the BioGateway server from within Cytoscape.
