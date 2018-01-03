@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>no.ntnu</groupId>
+  <artifactId>biogwplugin</artifactId>
+  <versioning>
+    <versions>
+      <version>9.0.2-SNAPSHOT</version>
+    </versions>
+    <lastUpdated>20180103152103</lastUpdated>
+  </versioning>
+</metadata>
