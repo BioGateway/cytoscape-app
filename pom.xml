@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<properties>
 						<bundle.symbolicName>org.cytoscape.biogwplugin</bundle.symbolicName>
@@ -11,10 +10,18 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>no.ntnu</groupId>
 	<artifactId>biogwplugin</artifactId>
-	<version>1.0-SNAPSHOT</version>
+	<version>1.0.0</version>
 
-	<name>biogwplugin</name>
+	<name>BioGateway Cytoscape Plugin</name>
+	<url>http://www.semantic-systems-biology.org</url>
 	<packaging>bundle</packaging>
+
+	<scm>
+		<connection>scm:git:ssh://git@bitbucket.org/druglogics/biogw_cytoscape.git</connection>
+		<developerConnection>scm:git:ssh://git@bitbucket.org/druglogics/biogw_cytoscape.git</developerConnection>
+		<url>https://bitbucket.org/druglogics/biogw_cytoscape.git</url>
+	  <tag>biogwplugin-1.0.0</tag>
+  </scm>
 
 	<build>
 		<resources>
