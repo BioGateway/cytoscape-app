@@ -17,8 +17,8 @@
 	<packaging>bundle</packaging>
 
 	<scm>
-		<connection>scm:git:ssh://git@bitbucket.org/druglogics/biogw_cytoscape.git</connection>
-		<developerConnection>scm:git:ssh://git@bitbucket.org/druglogics/biogw_cytoscape.git</developerConnection>
+		<connection>scm:git:ssh://bitbucket.org/druglogics/biogw_cytoscape.git</connection>
+		<developerConnection>scm:git:ssh://bitbucket.org/druglogics/biogw_cytoscape.git</developerConnection>
 		<url>https://bitbucket.org/druglogics/biogw_cytoscape.git</url>
 	  <tag>biogwplugin-1.0.0</tag>
   </scm>
