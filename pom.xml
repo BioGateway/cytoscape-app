@@ -10,7 +10,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>no.ntnu</groupId>
 	<artifactId>biogwplugin</artifactId>
-	<version>9.0.1</version>
+	<version>9.0.2-SNAPSHOT</version>
 
 	<name>BioGateway Cytoscape Plugin</name>
 	<url>http://www.semantic-systems-biology.org</url>
@@ -18,7 +18,7 @@
 
 	<scm>
 		<developerConnection>scm:git:https://bitbucket.org/druglogics/biogw_cytoscape.git</developerConnection>
-  	  <tag>biogwplugin-9.0.1</tag>
+  	  <tag>HEAD</tag>
   </scm>
 
 	<build>
