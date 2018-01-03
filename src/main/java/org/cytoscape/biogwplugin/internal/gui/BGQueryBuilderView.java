@@ -589,7 +589,7 @@ public class BGQueryBuilderView implements ChangeListener {
         panel17.add(panel18, BorderLayout.WEST);
         selectUpstreamRelationsButton = new JButton();
         selectUpstreamRelationsButton.setHorizontalTextPosition(11);
-        selectUpstreamRelationsButton.setText("Select upstream relations");
+        selectUpstreamRelationsButton.setText("Select relations leading to selection");
         selectUpstreamRelationsButton.setToolTipText("Select all relations leading to the relations currently selected.");
         panel18.add(selectUpstreamRelationsButton);
         filterSelectedCheckBox = new JCheckBox();

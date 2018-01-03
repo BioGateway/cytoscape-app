@@ -355,7 +355,7 @@
                             <constraints/>
                             <properties>
                               <horizontalTextPosition value="11"/>
-                              <text value="Select upstream relations"/>
+                              <text value="Select relations leading to selection"/>
                               <toolTipText value="Select all relations leading to the relations currently selected."/>
                             </properties>
                           </component>

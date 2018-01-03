@@ -21,9 +21,9 @@ public class BGRelationSearchResultsView {
     private JPanel panel1;
     private JButton importButton;
     private JTable resultTable;
-    private JButton importToExisting;
+    private JButton importRelationsBetweenExistingButton;
     private JTextField filterTextField;
-    private JButton selectUpstreamRelationsButton;
+    private JButton selectRelationsLeadingToButton;
     private JCheckBox filterSelectedCheckBox;
     private TableRowSorter<TableModel> sorter;
     private BGRelationResultViewTooltipDataSource tooltipDataSource;
@@ -45,8 +45,8 @@ public class BGRelationSearchResultsView {
     private void setupUI() {
         importButton.setActionCommand(ACTION_IMPORT);
         importButton.addActionListener(listener);
-        importToExisting.setActionCommand(ACTION_IMPORT_BETWEEN_EXISTING);
-        importToExisting.addActionListener(listener);
+        importRelationsBetweenExistingButton.setActionCommand(ACTION_IMPORT_BETWEEN_EXISTING);
+        importRelationsBetweenExistingButton.addActionListener(listener);
         DefaultTableModel tableModel = new DefaultTableModel() {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -136,10 +136,10 @@ public class BGRelationSearchResultsView {
         importButton = new JButton();
         importButton.setText("Import Selected");
         panel2.add(importButton);
-        importToExisting = new JButton();
-        importToExisting.setText("Import relations between existing nodes");
-        importToExisting.setToolTipText("Imports all the results which are between existing nodes in the network.");
-        panel2.add(importToExisting);
+        importRelationsBetweenExistingButton = new JButton();
+        importRelationsBetweenExistingButton.setText("Import relations between existing nodes");
+        importRelationsBetweenExistingButton.setToolTipText("Imports all the results which are between existing nodes in the network.");
+        panel2.add(importRelationsBetweenExistingButton);
         final JScrollPane scrollPane1 = new JScrollPane();
         panel1.add(scrollPane1, BorderLayout.CENTER);
         resultTable.setAutoCreateRowSorter(false);
@@ -159,11 +159,11 @@ public class BGRelationSearchResultsView {
         final JPanel panel5 = new JPanel();
         panel5.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
         panel3.add(panel5, BorderLayout.WEST);
-        selectUpstreamRelationsButton = new JButton();
-        selectUpstreamRelationsButton.setHorizontalTextPosition(11);
-        selectUpstreamRelationsButton.setText("Select upstream relations");
-        selectUpstreamRelationsButton.setToolTipText("Select all relations leading to the relations currently selected.");
-        panel5.add(selectUpstreamRelationsButton);
+        selectRelationsLeadingToButton = new JButton();
+        selectRelationsLeadingToButton.setHorizontalTextPosition(11);
+        selectRelationsLeadingToButton.setText("Select relations leading to selection");
+        selectRelationsLeadingToButton.setToolTipText("Select all relations leading to the relations currently selected.");
+        panel5.add(selectRelationsLeadingToButton);
         filterSelectedCheckBox = new JCheckBox();
         filterSelectedCheckBox.setText("Filter selected");
         filterSelectedCheckBox.setToolTipText("Only show currently selected relations.");

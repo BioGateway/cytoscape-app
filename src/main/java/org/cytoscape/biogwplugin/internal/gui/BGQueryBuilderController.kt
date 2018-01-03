@@ -390,14 +390,14 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
     }
 
     private fun generateSPARQLCode(): String? {
-            val errorText = validateMultiQuery()
-            if (errorText != null) {
-                JOptionPane.showMessageDialog(view.mainFrame, errorText)
-            } else {
-                val queryString = view.multiQueryPanel.generateSPARQLQuery()
-                view.sparqlTextArea.text = queryString
-                return queryString
-            }
+        val errorText = validateMultiQuery()
+        if (errorText != null) {
+            JOptionPane.showMessageDialog(view.mainFrame, errorText)
+        } else {
+            val queryString = view.multiQueryPanel.generateSPARQLQuery()
+            view.sparqlTextArea.text = queryString
+            return queryString
+        }
         return null
     }
 
@@ -428,6 +428,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                 }
             }
             setRelationTableData(relations)
+
         } else {
             setRelationTableData(relationsFound)
         }
@@ -797,7 +798,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
             if (relation != null) {
                 val fromNodeUri = relation.fromNode.uri
                 matchingRows.addAll(getRowsWithRelationsTo(fromNodeUri))
-                }
+            }
         }
         return matchingRows
     }

@@ -26,7 +26,7 @@ class BGFindBinaryPPIInteractionsQuery(serviceManager: BGServiceManager, val nod
 //                runCompletions()
 //            }
 //        }
-        taskMonitorText = "Searching for binary protein interactions..."
+        taskMonitorTitle = "Searching for binary protein interactions..."
     }
 
     override var queryString: String

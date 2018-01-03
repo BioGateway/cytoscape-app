@@ -21,28 +21,24 @@ class BGFindRelationForNodeQuery(serviceManager: BGServiceManager, val relationT
     var returnDataFilter: ((BGRelation) -> Boolean)? = null
 
 
-    /*
-
-    var returnDataFilter: ((BGRelation) -> Boolean)? = null
-
     init {
         parsingBlock = {
             parser.parseRelations(it, type, taskMonitor) {
                 var returnRelationsData = it as? BGReturnRelationsData ?: throw Exception("Invalid return data!")
-                returnDataFilter?.let {
-                    returnRelationsData.relationsData = ArrayList(returnRelationsData.relationsData.filter(it))
+                val filter = returnDataFilter
+                if (filter != null) {
+                    returnRelationsData.relationsData = ArrayList(returnRelationsData.relationsData.filter(filter))
                     returnRelationsData.unloadedNodes?.let {
                         returnRelationsData.unloadedNodes = Utility.removeNodesNotInRelationSet(it, returnRelationsData.relationsData).toList()
                     }
                 }
-
+                returnData = returnRelationsData
                 runCompletions()
             }
         }
-        taskMonitorText = "Searching for binary protein interactions..."
     }
-     */
 
+    /*
     override fun run() {
         taskMonitor?.setTitle("Searching for relations...")
         val uri = encodeUrl()?.toURI()
@@ -71,6 +67,7 @@ class BGFindRelationForNodeQuery(serviceManager: BGServiceManager, val relationT
             }
         }
     }
+    */
 
     val graphName: String get() {
         relationType.defaultGraphName?.let {

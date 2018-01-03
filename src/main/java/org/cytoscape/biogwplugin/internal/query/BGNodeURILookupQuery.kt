@@ -12,6 +12,12 @@ class BGNodeURILookupQuery(serviceManager: BGServiceManager, val searchString: S
         set(value) {}
 
 
+    init {
+        taskMonitorTitle = "Searching for nodes..."
+        parseType = BGParsingType.TO_ARRAY
+    }
+
+    /*
     override fun run() {
         taskMonitor?.setTitle("Searching for nodes...")
         val stream = encodeUrl()?.openStream()
@@ -24,6 +30,7 @@ class BGNodeURILookupQuery(serviceManager: BGServiceManager, val searchString: S
             }
         }
     }
+    */
 
 
     fun generateQueryString(): String {
@@ -88,6 +95,5 @@ class BGNodeURILookupQuery(serviceManager: BGServiceManager, val searchString: S
                 "}\n"
         return queryString
     }
-
 }
 

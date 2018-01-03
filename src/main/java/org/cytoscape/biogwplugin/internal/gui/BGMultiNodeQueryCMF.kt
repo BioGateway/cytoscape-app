@@ -50,10 +50,10 @@ class BGMultiNodeQueryCMF(val gravity: Float, val serviceManager: BGServiceManag
                 parentMenu.addSeparator()
                 parentMenu.add(it)
             }
-            createSearchToGroupMenu("Search to group", netView, network, selectedUris)?.let {
-                parentMenu.addSeparator()
-                parentMenu.add(it)
-            }
+//            createSearchToGroupMenu("Search to group", netView, network, selectedUris)?.let {
+//                parentMenu.addSeparator()
+//                parentMenu.add(it)
+//            }
             parentMenu.addSeparator()
             parentMenu.add(createOpenQueryBuilderWithSelectedURIsMenu(netView, selectedUris))
 

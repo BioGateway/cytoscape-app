@@ -11,8 +11,6 @@ import org.cytoscape.model.CyEdge
 import org.cytoscape.view.model.CyNetworkView
 import org.cytoscape.view.model.View
 import org.cytoscape.work.TaskIterator
-import java.awt.Desktop
-import java.net.URI
 import javax.swing.JMenuItem
 
 class BGOpenEdgeSourceViewCMF(val gravity: Float, val serviceManager: BGServiceManager): CyEdgeViewContextMenuFactory {

@@ -91,7 +91,7 @@ class BGMultiNodeRelationQuery(val serviceManager: BGServiceManager, val nodeUri
             query.addCompletion {
                 val returnData = it as? BGReturnRelationsData ?: throw Exception("Expected relations data!")
                 relations.addAll(returnData.relationsData)
-                //columnNames = returnData.columnNames
+
                 returnData.unloadedNodes?.let {
                     unloadedNodes.addAll(it)
                 }

@@ -47,8 +47,8 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
             parentMenu.add(createTFTGSearchMenu(network, BGNodeType.Gene, nodeUri))
             parentMenu.addSeparator()
             parentMenu.add(createFetchAssociatedGeneOrProteinMenuItem(network, BGNodeType.Gene, nodeUri))
-            parentMenu.addSeparator()
-            parentMenu.add(createSearchGroupMenu("Search to group", network, BGNodeType.Gene, nodeUri))
+//            parentMenu.addSeparator()
+//            parentMenu.add(createSearchGroupMenu("Search to group", network, BGNodeType.Gene, nodeUri))
 
         } else if (nodeUri.contains("uniprot")) {
             parentMenu.addSeparator()
@@ -57,8 +57,8 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
             parentMenu.add(createFetchAssociatedGeneOrProteinMenuItem(network, BGNodeType.Protein, nodeUri))
             parentMenu.addSeparator()
             parentMenu.add(createPPISearchMenu(network, nodeUri))
-            parentMenu.addSeparator()
-            parentMenu.add(createSearchGroupMenu("Search to group", network, BGNodeType.Protein, nodeUri))
+//            parentMenu.addSeparator()
+//            parentMenu.add(createSearchGroupMenu("Search to group", network, BGNodeType.Protein, nodeUri))
         }
 
         createCopyURIMenu(nodeUri)?.let {

@@ -18,7 +18,7 @@
               <text value="Import Selected"/>
             </properties>
           </component>
-          <component id="bf8ac" class="javax.swing.JButton" binding="importBetweenExistingNodes">
+          <component id="bf8ac" class="javax.swing.JButton" binding="importRelationsBetweenExistingButton">
             <constraints/>
             <properties>
               <text value="Import relations between existing nodes"/>
@@ -69,11 +69,11 @@
             <properties/>
             <border type="none"/>
             <children>
-              <component id="c5baf" class="javax.swing.JButton" binding="selectUpstreamRelationsButton" default-binding="true">
+              <component id="c5baf" class="javax.swing.JButton" binding="selectRelationsLeadingToButton" default-binding="true">
                 <constraints/>
                 <properties>
                   <horizontalTextPosition value="11"/>
-                  <text value="Select upstream relations"/>
+                  <text value="Select relations leading to selection"/>
                   <toolTipText value="Select all relations leading to the relations currently selected."/>
                 </properties>
               </component>

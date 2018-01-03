@@ -1,11 +1,13 @@
 package org.cytoscape.biogwplugin.internal;
 
+import jdk.nashorn.internal.runtime.regexp.joni.Config;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.cytoscape.app.CyAppAdapter;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.biogwplugin.internal.server.BGServer;
 import org.cytoscape.biogwplugin.internal.util.BGVisualStyleBuilder;
+import org.cytoscape.biogwplugin.internal.util.Constants;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
@@ -30,7 +32,6 @@ import java.net.URL;
 public class BGServiceManager {
 
     // This seems like a good place to store static properties.
-    public final static String SERVER_PATH = "http://www.semantic-systems-biology.org/biogateway/endpoint";
     private final BundleContext bundleContext;
     private final CyActivator activator;
     private final CyAppAdapter adapter;
@@ -187,7 +188,7 @@ public class BGServiceManager {
     }
 
     public String getServerPath() {
-        return SERVER_PATH;
+        return Constants.INSTANCE.getSERVER_PATH();
     }
 
     public BGServer getServer() {
