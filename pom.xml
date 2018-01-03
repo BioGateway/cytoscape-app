@@ -256,7 +256,7 @@
 	<distributionManagement>
 		<repository>
 			<id>local.build.dir</id>
-			<url>file:${basedir}/build/</url>
+			<url>file:${project.basedir}/build/</url>
 		</repository>
 	</distributionManagement>
 
