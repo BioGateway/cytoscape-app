@@ -55,12 +55,10 @@ public class BGNodeLookupView {
 
     private void setupUI() {
         BGNodeType.values();
-        //nodeTypeComboBox.setModel(new DefaultComboBoxModel(BGNodeType.values()));
         searchButton.addActionListener(listener);
         searchButton.setActionCommand(ACTION_SEARCH);
         useURIButton.setActionCommand(ACTION_SELECT_NODE);
         useURIButton.addActionListener(listener);
-        //filterTextField.setPreferredSize(new Dimension(200, Utility.INSTANCE.getJTextFieldHeight()));
         filterTextField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {

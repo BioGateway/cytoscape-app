@@ -10,7 +10,7 @@ class BGFindAllRelationsForNodeQuery(serviceManager: BGServiceManager, val nodeU
         get() = when (direction) {
             BGRelationDirection.TO -> generateToQueryString()
             BGRelationDirection.FROM -> generateFromQueryString()
-        } //To change initializer of created properties use File | Settings | File Templates.
+        }
 
     private fun generateFromQueryString(): String {
         return "BASE <http://www.semantic-systems-biology.org/>\n" +

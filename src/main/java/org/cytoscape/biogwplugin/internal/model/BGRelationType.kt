@@ -22,8 +22,8 @@ class BGRelationType(val uri: String, val name: String, val number: Int, val def
 
     val sparqlIRI: String get() {
         return when (arbitraryLength) {
-            true -> "<"+uri+">*"
-            false -> "<"+uri+">"
+            true -> "<$uri>*"
+            false -> "<$uri>"
         }
     }
 }

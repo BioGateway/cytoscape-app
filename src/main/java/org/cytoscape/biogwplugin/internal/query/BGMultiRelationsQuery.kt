@@ -17,6 +17,4 @@ class BGMultiRelationsQuery(serviceManager: BGServiceManager, override var query
         }
     }
 
-    // TODO: Verify that this override isn't needed.
-
 }

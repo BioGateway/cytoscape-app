@@ -41,7 +41,7 @@ class BGRelationSearchResultsController(val serviceManager: BGServiceManager, pr
         Utility.fightForFocus(view.mainFrame)
      }
 
-    fun showAllResults() {
+    private fun showAllResults() {
         val model = view.resultTable.model as DefaultTableModel
         for (result in relationsFound) {
             model.addRow(result.asArray())
@@ -72,12 +72,6 @@ class BGRelationSearchResultsController(val serviceManager: BGServiceManager, pr
         Utility.reloadCurrentVisualStyleCurrentNetworkView(serviceManager)
     }
 
-    private fun filterResults() {
-        val filterText = view.filterTextField.text
-        val model = view.resultTable.model as DefaultTableModel
-    }
-
-
     override fun actionPerformed(e: ActionEvent?) {
         if (e != null) {
             if (e.actionCommand == BGRelationSearchResultsView.ACTION_IMPORT) {
@@ -85,9 +79,6 @@ class BGRelationSearchResultsController(val serviceManager: BGServiceManager, pr
             }
             if (e.actionCommand == BGRelationSearchResultsView.ACTION_IMPORT_BETWEEN_EXISTING) {
                 importBetweenExistingNodes()
-            }
-            if (e.source == view.filterTextField) {
-                filterResults()
             }
         }
     }

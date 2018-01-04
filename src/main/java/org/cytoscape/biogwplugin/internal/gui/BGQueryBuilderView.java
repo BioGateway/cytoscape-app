@@ -5,6 +5,7 @@ import org.cytoscape.biogwplugin.internal.BGServiceManager;
 import org.cytoscape.biogwplugin.internal.query.BGQueryParameter;
 import org.cytoscape.biogwplugin.internal.query.QueryTemplate;
 import org.cytoscape.biogwplugin.internal.util.Constants;
+import org.cytoscape.biogwplugin.internal.util.SortedComboBoxModel;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -19,7 +20,6 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.util.HashMap;

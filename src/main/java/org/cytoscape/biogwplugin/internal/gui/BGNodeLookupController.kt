@@ -43,21 +43,14 @@ class BGNodeLookupController(val serviceManager: BGServiceManager, parentCompone
         for (result in nodesFound.values) {
             tableModel.addRow(result.nameStringArray())
         }
-
-        // GIVE ME FOREGROUND! (Can't believe Cytoscape is so difficult at this...)
-        EventQueue.invokeLater {
-            view.mainFrame.toFront()
-            view.mainFrame.isAlwaysOnTop = true
-            view.mainFrame.isAlwaysOnTop = false
-            view.mainFrame.requestFocus()
-        }
+        // Try to wrestle focus away from the TaskManager
+        Utility.fightForFocus(view.mainFrame)
     }
 
     private fun searchForNodes() {
 
         val searchString = view.searchField.text
         val useRegex = view.regexCheckBox.isSelected
-        //val nodeType = view.nodeTypeComboBox.selectedItem as? BGNodeType ?:
 
         val nodeType = when (view.nodeTypeComboBox.selectedItem as String) {
             "Protein" -> BGNodeType.Protein

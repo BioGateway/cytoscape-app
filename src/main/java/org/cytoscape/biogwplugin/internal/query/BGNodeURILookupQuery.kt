@@ -10,28 +10,10 @@ class BGNodeURILookupQuery(serviceManager: BGServiceManager, val searchString: S
     override var queryString: String = ""
         get() = generateQueryString()
 
-
-
     init {
         taskMonitorTitle = "Searching for nodes..."
         parseType = BGParsingType.TO_ARRAY
     }
-
-    /*
-    override fun run() {
-        taskMonitor?.setTitle("Searching for nodes...")
-        val stream = encodeUrl()?.openStream()
-        if (stream != null) {
-            taskMonitor?.setTitle("Loading results...")
-            val reader = BufferedReader(InputStreamReader(stream))
-            parser.parseNodesToTextArray(reader, BGReturnType.NODE_LIST_DESCRIPTION_TAXON) {
-                returnData = it as? BGReturnData ?: throw Exception("Invalid return data!")
-                runCompletions()
-            }
-        }
-    }
-    */
-
 
     fun generateQueryString(): String {
         val nodeTypeGraph = when (nodeType) {

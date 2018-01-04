@@ -99,8 +99,8 @@ class BGServer(private val serviceManager: BGServiceManager) {
                 }
             }
         } else {
-            //println("Cache hit: "+node.name)
         }
+
         // The node should be added to cache even though not loaded, to avoid duplicating cache misses.
         cache.addNode(node)
         return node
@@ -115,7 +115,6 @@ class BGServer(private val serviceManager: BGServiceManager) {
 
             getNodeFromServer(node.uri) {
                 if (it != null) {
-                    //println("Cache miss: "+it.name)
                     node.name = it.name
                     node.description = it.description
                     node.isLoaded = true
@@ -191,28 +190,9 @@ class BGServer(private val serviceManager: BGServiceManager) {
             val queryFileUrl = URL(Constants.BG_CONFIG_FILE_URL)
             val connection = queryFileUrl.openConnection()
             val inputStream = connection.getInputStream()
-            //parseXMLConfigFile(inputStream)
             BGConfigParser.parseXMLConfigFile(inputStream, cache)
         } catch (e: IOException) {
             e.printStackTrace()
         }
-    }
-
-    fun createBiopaxURL(queryData: String, returnType: String, options: String): URL? {
-        val queryURL: URL
-        try {
-            queryURL = URL(serviceManager.serverPath + "?query=" + URLEncoder.encode(queryData, "UTF-8") + "&format=" + URLEncoder.encode(returnType, "UTF-8") + "&" + options)
-
-        } catch (e: MalformedURLException) {
-            // TODO Auto-generated catch block
-            e.printStackTrace()
-            return null
-
-        } catch (e: UnsupportedEncodingException) {
-            e.printStackTrace()
-            return null
-        }
-
-        return queryURL
     }
 }

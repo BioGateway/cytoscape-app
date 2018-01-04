@@ -155,7 +155,9 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                 BGQueryParameter.ParameterType.TEXT -> parameter.value = (component as JTextField).text.sanitizeParameter()
                 BGQueryParameter.ParameterType.CHECKBOX -> parameter.value = if ((component as JCheckBox).isSelected) "true" else "false"
                 BGQueryParameter.ParameterType.COMBOBOX -> {
-                    val box = component as JComboBox<String>
+                    // This should be a checked cast, as it *SHOULD* throw an exception if the cast fails...
+                    @Suppress("UNCHECKED_CAST")
+                    val box: JComboBox<String> = component as? JComboBox<String> ?: throw Exception("Component "+component+" expected to be JComboBox<String>!")
                     val selected = box.selectedItem as String
                     parameter.value = parameter.options[selected]
                 }
@@ -311,8 +313,8 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         return queryString
     }
 
-    private fun importSelectedResults(network: CyNetwork?, returnType: BGReturnType) {
-        var network = network
+    private fun importSelectedResults(net: CyNetwork?, returnType: BGReturnType) {
+        var network = net // Need to redeclare it to make it mutable.
         val server = serviceManager.server
         // 1. Get the selected lines from the table.
         val nodes = HashMap<String, BGNode>()
@@ -333,6 +335,8 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                     nodes.put(relation.fromNode.uri, relation.fromNode)
                     relations.add(relation)
                 }
+                else -> {
+                }
             }
         }
 
@@ -351,6 +355,8 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
             }
             BGReturnType.RELATION_TRIPLE, BGReturnType.RELATION_TRIPLE_NAMED, BGReturnType.RELATION_MULTIPART -> {
                 server.networkBuilder.addRelationsToNetwork(network, relations)
+            }
+            else -> {
             }
         }
 

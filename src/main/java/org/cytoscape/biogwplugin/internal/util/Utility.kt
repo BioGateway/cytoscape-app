@@ -32,15 +32,7 @@ fun String.sanitizeParameter(): String {
     return this.replace("\"", "").trim()
 }
 
-class Tuple<X, Y>(val x: X, val y: Y)
-
 object Utility {
-    // TODO: Identify a set of legal characters.
-    /*
-    fun sanitize(input: String): String {
-        return input.replace("\"".toRegex(), "")
-    }
-    */
 
     fun removeNodesNotInRelationSet(nodes: Collection<BGNode>, relations: Collection<BGRelation>): Collection<BGNode> {
         var allNodes = relations.map { it.toNode }.toHashSet().union(relations.map { it.fromNode }.toHashSet())
@@ -162,7 +154,6 @@ object Utility {
 
 
     fun validateURI(uri: String): Boolean {
-
         try {
             val url = URL(uri.replace("http://", "https://")) // Always use HTTPS!
             val connection = url.openConnection() as HttpURLConnection

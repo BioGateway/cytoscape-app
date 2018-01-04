@@ -47,6 +47,7 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
             parentMenu.add(createTFTGSearchMenu(network, BGNodeType.Gene, nodeUri))
             parentMenu.addSeparator()
             parentMenu.add(createFetchAssociatedGeneOrProteinMenuItem(network, BGNodeType.Gene, nodeUri))
+            // Experimental functionality allowing users to search for relations to or from a CyGroup:
 //            parentMenu.addSeparator()
 //            parentMenu.add(createSearchGroupMenu("Search to group", network, BGNodeType.Gene, nodeUri))
 
@@ -57,6 +58,7 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
             parentMenu.add(createFetchAssociatedGeneOrProteinMenuItem(network, BGNodeType.Protein, nodeUri))
             parentMenu.addSeparator()
             parentMenu.add(createPPISearchMenu(network, nodeUri))
+            // Experimental functionality allowing users to search for relations to or from a CyGroup:
 //            parentMenu.addSeparator()
 //            parentMenu.add(createSearchGroupMenu("Search to group", network, BGNodeType.Protein, nodeUri))
         }
@@ -73,6 +75,7 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
         return parentMenu
     }
 
+    // Experimental functionality allowing users to search for relations to or from a CyGroup:
     fun createSearchGroupMenu(description: String, network: CyNetwork, nodeType: BGNodeType, nodeUri: String): JMenu {
         val parentMenu = JMenu(description)
         parentMenu.add(createRelationSearchMenu("Fetch relations FROM node", network, nodeUri, BGRelationDirection.FROM, true))
@@ -222,7 +225,6 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
                     if (nodeType == BGNodeType.Protein) throw Exception("No results found. Are you sure it is a transcription factor?")
                     throw Exception("No relations found.")
                 }
-                //serviceManager.server.networkBuilder.addRelationsToNetwork(network, returnData.relationsData)
                 val columnNames = arrayOf("protein", "relation", "gene")
 
                 BGLoadUnloadedNodes.createAndRun(serviceManager, returnData.unloadedNodes) {

@@ -52,7 +52,6 @@ class BGMultiQueryLine(val serviceManager: BGServiceManager, val fromTextField: 
         val searchIcon = ImageIcon(this.javaClass.classLoader.getResource("search.png"))
         val fromUriSearchButton = JButton(searchIcon)
         fromUriSearchButton.toolTipText = searchButtonTooltipText
-        //fromUriSearchButton.preferredSize = Dimension(20, 20)
         fromUriSearchButton.addActionListener {
             val lookupController = BGNodeLookupController(serviceManager, this) {
                 if (it != null) {
@@ -63,7 +62,6 @@ class BGMultiQueryLine(val serviceManager: BGServiceManager, val fromTextField: 
         }
         val toUriSearchButton = JButton(searchIcon)
         toUriSearchButton.toolTipText = searchButtonTooltipText
-        //toUriSearchButton.preferredSize = Dimension(20, 20)
         toUriSearchButton.addActionListener {
             val lookupController = BGNodeLookupController(serviceManager, this) {
                 if (it != null) {
@@ -407,8 +405,6 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager): JPanel() {
             val graphName = relationType.defaultGraphName ?: generateGraphName(numberOfGraphQueries, relationType)
 
             returnValues += fromUri+" as ?"+getSafeString(fromUri)+numberOfGraphQueries+" <"+graphName+"> <"+relationType.uri+"> "+toUri+" as ?"+getSafeString(toUri)+numberOfGraphQueries+" "
-
-            //returnValues += fromUri+" as ?"+getSafeString(fromUri)+numberOfGraphQueries+" "+fromName+" as "+fromName+numberOfGraphQueries+" <"+relationUri+"> "+toUri+" as ?"+getSafeString(toUri)+numberOfGraphQueries+" "+toName+" as "+toName+numberOfGraphQueries+" "
             graphQueries += generateSparqlGraph(numberOfGraphQueries, fromUri, relationType, toUri)
             nodeNames.add(fromUri)
             nodeNames.add(toUri)

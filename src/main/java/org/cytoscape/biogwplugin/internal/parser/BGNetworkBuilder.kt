@@ -5,17 +5,12 @@ import org.cytoscape.biogwplugin.internal.model.BGNode
 import org.cytoscape.biogwplugin.internal.model.BGRelation
 import org.cytoscape.biogwplugin.internal.model.BGRelationMetadata
 import org.cytoscape.biogwplugin.internal.model.BGRelationType
-import org.cytoscape.biogwplugin.internal.util.BGVisualStyleBuilder
-import org.cytoscape.biogwplugin.internal.util.BGVisualStyleTask
 import org.cytoscape.biogwplugin.internal.util.Constants
 import org.cytoscape.biogwplugin.internal.util.Utility
 import org.cytoscape.model.CyEdge
 import org.cytoscape.model.CyNetwork
 import org.cytoscape.model.CyNode
 import org.cytoscape.model.CyTable
-import org.cytoscape.view.model.View
-import org.cytoscape.work.AbstractTask
-import java.awt.EventQueue
 
 fun CyNode.setUri(name: String, network: CyNetwork) {
     val table = network.defaultNodeTable
@@ -85,7 +80,6 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
 
         // Edge table
         if (edgeTable?.getColumn(Constants.BG_FIELD_IDENTIFIER_URI) == null) edgeTable?.createColumn(Constants.BG_FIELD_IDENTIFIER_URI, String::class.java, false)
-        //if (edgeTable.getColumn(Constants.BG_FIELD_PUBMED_URI) == null) edgeTable.createColumn(Constants.BG_FIELD_PUBMED_URI, String::class.java, false)
         if (edgeTable?.getColumn(Constants.BG_FIELD_SOURCE_GRAPH) == null) edgeTable?.createColumn(Constants.BG_FIELD_SOURCE_GRAPH, String::class.java, false)
         if (edgeTable?.getColumn(Constants.BG_FIELD_EDGE_ID) == null) edgeTable?.createColumn(Constants.BG_FIELD_EDGE_ID, String::class.java, false)
     }
@@ -97,24 +91,13 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
 
         val uniqueNodes = HashSet<BGNode>()
         uniqueNodes.addAll(nodes)
-        //val dummyEdges = ArrayList<CyEdge>()
 
         for (bgNode in nodes) {
             var node = getNodeWithUri(bgNode.uri, network, nodeTable)
             if (node == null) {
                 val cyNode = addNodeToNetwork(bgNode, network, nodeTable)
-
-                //val edge = network.addEdge(cyNode, cyNode, true)
-                //dummyEdges.add(edge)
             }
         }
-        // Let's see if adding and removing edges forces the view to sync.
-        //network.removeEdges(dummyEdges)
-//        EventQueue.invokeLater {
-//            //addAndRemoveDummyNodeToNetwork(network)
-//            serviceManager.applicationManager.currentNetworkView.updateView()
-//            serviceManager.eventHelper.flushPayloadEvents()
-//        }
     }
 
     fun addRelationsToNetwork(network: CyNetwork, relations: Collection<BGRelation>) {
@@ -155,9 +138,6 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
                 println("WARNING: Duplicate edges!")
             }
         }
-
-//        serviceManager.eventHelper.flushPayloadEvents()
-//        Utility.reloadCurrentVisualStyleCurrentNetworkView(serviceManager)
     }
 
     private fun checkForExistingEdges(edgeTable: CyTable, relation: BGRelation): Boolean {
@@ -209,29 +189,11 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
         return cyNode
     }
 
-    fun addAndRemoveDummyNodeToNetwork(network: CyNetwork) {
-        EventQueue.invokeLater {
-            val cyNode = network.addNode()
-            EventQueue.invokeLater {
-                network.removeNodes(listOf(cyNode))
-            }
-        }
-    }
-
     fun getNodeWithUri(uri: String, network: CyNetwork, table: CyTable): CyNode? {
         val nodes = getCyNodesWithValue(network, table, Constants.BG_FIELD_IDENTIFIER_URI, uri)
         if (nodes.size == 1) {
             if (nodes.size > 1) println("WARNING: Duplicate nodes!")
             return nodes.iterator().next()
-        } else {
-            return null
-        }
-    }
-
-    fun getEdgeWithEdgeId(edgeId: String, network: CyNetwork, table: CyTable): CyEdge? {
-        val edges = getCyEdgesWithValue(network, table, Constants.BG_FIELD_EDGE_ID, edgeId)
-        if (edges.size == 1) {
-            return edges.iterator().next()
         } else {
             return null
         }
@@ -243,7 +205,6 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
 
         val primaryKeyColumnName = nodeTable.primaryKey.name
         for (row in matchingRows) {
-            //val nodeId = row.get(primaryKeyColumnName, Long::class.java) ?: continue
             val nodeId = row.getRaw(primaryKeyColumnName) as? Long
             if (nodeId is Long) {
                 val node = network.getNode(nodeId) ?: continue
@@ -256,12 +217,10 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
     fun getCyEdgesWithValue(network: CyNetwork, edgeTable: CyTable, columnName: String, value: Any): Set<CyEdge> {
         val edges = HashSet<CyEdge>()
 
-        //val matchingRows = nodeTable.getMatchingRows(columnName, value)
         val matchingRows = edgeTable.getMatchingRows(columnName, value)
 
         val primaryKeyColumnName = edgeTable.primaryKey.name
         for (row in matchingRows) {
-            //val nodeId = row.get(primaryKeyColumnName, Long::class.java) ?: continue
             val edgeId = row.getRaw(primaryKeyColumnName) as? Long
             if (edgeId is Long) {
                 val node = network.getEdge(edgeId) ?: continue
@@ -272,28 +231,22 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
     }
 
     fun createNetworkView(network: CyNetwork, serviceManager: BGServiceManager) {
-
         if (serviceManager.server.settings.useBioGatewayLayoutStyleAsDefault) {
             val view = serviceManager.adapter.cyNetworkViewFactory.createNetworkView(network)
 
             val visualStyle = Utility.getOrCreateBioGatewayVisualStyle(serviceManager)
-
-//            serviceManager.adapter.visualMappingManager.addVisualStyle(visualStyle)
             serviceManager.adapter.visualMappingManager.setVisualStyle(visualStyle, view)
-            //visualStyle.apply(view)
             serviceManager.viewManager.addNetworkView(view)
 
             val layoutManager = serviceManager.adapter.cyLayoutAlgorithmManager
-            var defaultLayout = layoutManager.defaultLayout
+            val defaultLayout = layoutManager.defaultLayout
 
             val taskIterator = defaultLayout.createTaskIterator(view, defaultLayout.defaultLayoutContext, view.nodeViews.toHashSet(), null)
             serviceManager.taskManager.execute(taskIterator)
 
-
         } else {
             val createNetworkViewTaskFactory = serviceManager.createNetworkViewTaskFactory
             val taskIterator = createNetworkViewTaskFactory.createTaskIterator(setOf(network))
-
             serviceManager.taskManager.execute(taskIterator)
         }
     }

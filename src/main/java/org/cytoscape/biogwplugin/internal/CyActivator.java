@@ -30,7 +30,6 @@ public class CyActivator extends AbstractCyActivator {
 	    BGServiceManager serviceManager = createServiceManager(context);
         // After this point, we should be assured that the XML config file is loaded. Otherwise, there is a network problem.
 
-
         BiogwPlugin biogwPlugin = new BiogwPluginImpl(serviceManager);
 
 
@@ -51,6 +50,7 @@ public class CyActivator extends AbstractCyActivator {
                 Utility.INSTANCE.reloadCurrentVisualStyleCurrentNetworkView(serviceManager);
             }
         });
+        // This action is disabled in the current build.
         //registerService(context, reloadCurrentStyleAction, CyAction.class, new Properties());
 
         BGCreateAction openSettingsAction = new BGCreateAction("Settings", "always", serviceManager, new BGAction() {
@@ -78,12 +78,6 @@ public class CyActivator extends AbstractCyActivator {
 
 	private void registerContextMenuItems(BundleContext bundleContext, BGServiceManager serviceManager) {
 
-        //BGRelationPostSearchCMF postSearchCMF = new BGRelationPostSearchCMF(serviceManager);
-        //BGRelationPreSearchCMF preSearchCMF = new BGRelationPreSearchCMF(serviceManager);
-
-//        BGNodeMenuActionsCMF relationSearchFromCMF = new BGNodeMenuActionsCMF(0F, serviceManager);
-//        registerAllServices(bundleContext, relationSearchFromCMF, ezProps("preferredMenu", "BioGateway"));
-
         BGNetworkViewCMF networkViewCMF = new BGNetworkViewCMF(0F, serviceManager);
         registerAllServices(bundleContext, networkViewCMF, ezProps("preferredMenu", "BioGateway"));
 
@@ -95,22 +89,6 @@ public class CyActivator extends AbstractCyActivator {
 
         BGOpenEdgeSourceViewCMF openPumedIdCMF = new BGOpenEdgeSourceViewCMF(1F, serviceManager);
         registerAllServices(bundleContext, openPumedIdCMF, ezProps("preferredMenu", "BioGateway"));
-
-//        BGMultiNodeQueryCMF multiNodeFromQueryCMF = new BGMultiNodeQueryCMF(0F, "Fetch relations FROM selected", BGRelationDirection.FROM, serviceManager);
-//        BGMultiNodeQueryCMF multiNodeToQueryCMF = new BGMultiNodeQueryCMF(1F, "Fetch relations TO selected", BGRelationDirection.TO, serviceManager);
-//        registerAllServices(bundleContext, multiNodeFromQueryCMF, ezProps("preferredMenu", "BioGateway"));
-//        registerAllServices(bundleContext, multiNodeToQueryCMF, ezProps("preferredMenu", "BioGateway"));
-
-        /*
-        BGNodeMenuActionsCMF postSearchCMF = new BGNodeMenuActionsCMF(serviceManager, BGRelationQueryImplementation.Direction.POST, "Fetch relations from this node");
-        BGNodeMenuActionsCMF preSearchCMF = new BGNodeMenuActionsCMF(serviceManager, BGRelationQueryImplementation.Direction.PRE, "Fetch relations to this node");
-        BGMultiRelationSearchCMF multiPostSearchCMF = new BGMultiRelationSearchCMF(serviceManager, BGRelationQueryImplementation.Direction.POST, "Get relations from selected nodes");
-        BGMultiRelationSearchCMF multiPreSearchCMF = new BGMultiRelationSearchCMF(serviceManager, BGRelationQueryImplementation.Direction.PRE, "Get relations to selected nodes");
-
-        registerAllServices(bundleContext, postSearchCMF, ezProps("preferredMenu", "Apps"));
-        registerAllServices(bundleContext, preSearchCMF, ezProps("preferredMenu", "Apps"));
-        registerAllServices(bundleContext, multiPostSearchCMF, ezProps("preferredMenu", "Apps"));
-        registerAllServices(bundleContext, multiPreSearchCMF, ezProps("preferredMenu", "Apps"));*/
     }
 
 

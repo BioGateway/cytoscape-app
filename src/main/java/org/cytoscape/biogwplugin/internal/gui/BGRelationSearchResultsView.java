@@ -67,7 +67,7 @@ public class BGRelationSearchResultsView {
         sorter = new TableRowSorter<>(tableModel);
         resultTable.setModel(tableModel);
         resultTable.setRowSorter(sorter);
-        //filterTextField.setPreferredSize(new Dimension(200, Utility.INSTANCE.getJTextFieldHeight()));
+
         filterTextField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
@@ -96,10 +96,6 @@ public class BGRelationSearchResultsView {
 
     public JTable getResultTable() {
         return resultTable;
-    }
-
-    public JTextField getFilterTextField() {
-        return filterTextField;
     }
 
     private void createUIComponents() {

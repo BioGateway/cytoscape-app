@@ -15,8 +15,13 @@ class BGFindRelationForNodeQuery(serviceManager: BGServiceManager, val relationT
         get() = when (direction) {
                 BGRelationDirection.TO -> generateToQueryString()
                 BGRelationDirection.FROM -> generateFromQueryString()
-        } //To change initializer of created properties use File | Settings | File Templates.
-
+        }
+    val graphName: String get() {
+        relationType.defaultGraphName?.let {
+            if (it.isNotEmpty()) return "<"+it+">"
+        }
+        return "?graph"
+    }
     var returnDataFilter: ((BGRelation) -> Boolean)? = null
 
 
@@ -36,45 +41,6 @@ class BGFindRelationForNodeQuery(serviceManager: BGServiceManager, val relationT
             }
         }
     }
-
-    /*
-    override fun run() {
-        taskMonitor?.setTitle("Searching for relations...")
-        val uri = encodeUrl()?.toURI()
-        if (uri != null) {
-            val httpGet = HttpGet(uri)
-            val response = client.execute(httpGet)
-            val statusCode = response.statusLine.statusCode
-            val data = EntityUtils.toString(response.entity)
-            if (statusCode < 200 || statusCode > 399) throw Exception("Server error "+statusCode+": \n"+data)
-            val reader = BufferedReader(StringReader(data))
-            client.close()
-            taskMonitor?.setTitle("Loading results...")
-            parser.parseRelations(reader, type, taskMonitor) {
-//                returnData = it as? BGReturnData ?: throw Exception("Invalid return data!")
-//                runCompletions()
-                var returnRelationsData = it as? BGReturnRelationsData ?: throw Exception("Invalid return data!")
-                val filter = returnDataFilter
-                if (filter != null) {
-                    returnRelationsData.relationsData = ArrayList(returnRelationsData.relationsData.filter(filter))
-                    returnRelationsData.unloadedNodes?.let {
-                        returnRelationsData.unloadedNodes = Utility.removeNodesNotInRelationSet(it, returnRelationsData.relationsData).toList()
-                    }
-                }
-                returnData = returnRelationsData
-                runCompletions()
-            }
-        }
-    }
-    */
-
-    val graphName: String get() {
-        relationType.defaultGraphName?.let {
-            if (it.isNotEmpty()) return "<"+it+">"
-        }
-        return "?graph"
-    }
-
 
     fun generateFromQueryString(): String {
         return "BASE <http://www.semantic-systems-biology.org/>\n" +

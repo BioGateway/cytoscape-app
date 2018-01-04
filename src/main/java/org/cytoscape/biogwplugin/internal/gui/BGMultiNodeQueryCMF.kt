@@ -50,6 +50,8 @@ class BGMultiNodeQueryCMF(val gravity: Float, val serviceManager: BGServiceManag
                 parentMenu.addSeparator()
                 parentMenu.add(it)
             }
+
+            // Exmerimental functionality allowing users to search for relations to or from a CyGroup:
 //            createSearchToGroupMenu("Search to group", netView, network, selectedUris)?.let {
 //                parentMenu.addSeparator()
 //                parentMenu.add(it)
@@ -62,7 +64,7 @@ class BGMultiNodeQueryCMF(val gravity: Float, val serviceManager: BGServiceManag
         return CyMenuItem(null, gravity)
     }
 
-
+    /// Creates menu items allowing users to search for relations to or from nodes in a CyGroup.
     private fun createSearchToGroupMenu(description: String, netView: CyNetworkView, network: CyNetwork, selectedUris: Collection<String>): JMenu? {
 
         val groupSearchMenu = JMenu(description)
@@ -80,7 +82,6 @@ class BGMultiNodeQueryCMF(val gravity: Float, val serviceManager: BGServiceManag
         }
         return groupSearchMenu
     }
-
 
     private fun createPPISearchQuery(nodeUris: Collection<String>, network: CyNetwork, onlyCommonRelations: Boolean = false, group: CyGroup? = null): BGFindBinaryPPIInteractionsForMultipleNodesQuery? {
         val query = BGFindBinaryPPIInteractionsForMultipleNodesQuery(serviceManager, nodeUris)

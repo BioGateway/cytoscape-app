@@ -27,6 +27,5 @@ public class BGCreateAction extends AbstractCyAction {
     @Override
     public void actionPerformed(ActionEvent e) {
         action.action(serviceManager);
-        //BGQueryBuilderController queryBuilderController = new BGQueryBuilderController(serviceManager);
     }
 }

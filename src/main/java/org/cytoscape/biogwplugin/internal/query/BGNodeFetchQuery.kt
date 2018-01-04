@@ -8,6 +8,7 @@ import java.io.InputStreamReader
 
 class BGNodeFetchQuery(serviceManager: BGServiceManager, val nodeUri: String, parser: BGParser, type: BGReturnType): BGQuery(serviceManager, type, parser) {
 
+    /// This is running synchronously and without the main HTTPClient.
     override fun run() {
         taskMonitor?.setTitle("Searching for nodes...")
         val stream = encodeUrl()?.openStream()

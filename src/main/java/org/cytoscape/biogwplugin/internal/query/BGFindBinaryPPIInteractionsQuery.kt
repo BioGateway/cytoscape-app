@@ -10,22 +10,7 @@ import org.cytoscape.work.TaskMonitor
 
 class BGFindBinaryPPIInteractionsQuery(serviceManager: BGServiceManager, val nodeUri: String): BGRelationQuery(serviceManager, BGReturnType.RELATION_TRIPLE, serviceManager.server.parser) {
 
-    //var returnDataFilter: ((BGRelation) -> Boolean)? = null
-
     init {
-//        parsingBlock = {
-//            parser.parseRelations(it, type, taskMonitor) {
-//                var returnRelationsData = it as? BGReturnRelationsData ?: throw Exception("Invalid return data!")
-//                returnDataFilter?.let {
-//                    returnRelationsData.relationsData = ArrayList(returnRelationsData.relationsData.filter(it))
-//                    returnRelationsData.unloadedNodes?.let {
-//                        returnRelationsData.unloadedNodes = Utility.removeNodesNotInRelationSet(it, returnRelationsData.relationsData).toList()
-//                    }
-//                }
-//                returnData = returnRelationsData
-//                runCompletions()
-//            }
-//        }
         taskMonitorTitle = "Searching for binary protein interactions..."
     }
 
@@ -148,7 +133,7 @@ class BGFindBinaryPPIInteractionsForMultipleNodesQuery(val serviceManager: BGSer
         returnData = BGReturnRelationsData(BGReturnType.RELATION_TRIPLE, columnNames)
         if (minCommonRelations != 0) {
             // It now only finds relations to nodes with ALL the searched nodes in common.
-            //val minCommonRelations = nodeUris.size
+
             val commonRelations = findCommonRelations(relations)
             val filteredUnloadedNodes = Utility.removeNodesNotInRelationSet(unloadedNodes, commonRelations)
             returnData?.relationsData?.addAll(commonRelations)

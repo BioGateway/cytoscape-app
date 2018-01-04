@@ -13,22 +13,17 @@ class BGNetworkViewCMF(val gravity: Float, val serviceManager: BGServiceManager)
     override fun createMenuItem(netView: CyNetworkView?): CyMenuItem {
 
         if (netView != null) {
-
-
-            //val selectedNodes = ArrayList<String>()
             val network = netView.model ?: throw Exception("Network model not found!")
             val selectedNodes = CyTableUtil.getNodesInState(network, "selected", true)
 
             if (selectedNodes.size < 1) {
                 return CyMenuItem(createLookupNodeMenu(network, netView), gravity)
             }
-
             if (selectedNodes.size == 1) {
                 val node = selectedNodes[0]
                 val view = serviceManager.applicationManager.currentNetworkView.getNodeView(node)
                 return BGNodeMenuActionsCMF(gravity, serviceManager).createMenuItem(netView, view)
             }
-
             return BGMultiNodeQueryCMF(gravity, serviceManager).createMenuItem(netView)
         }
         return CyMenuItem(null, gravity)

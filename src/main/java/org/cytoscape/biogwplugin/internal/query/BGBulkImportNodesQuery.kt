@@ -11,7 +11,6 @@ class BGBulkImportNodesQuery(serviceManager: BGServiceManager, val nodeList: Col
     override var queryString: String = ""
         get() = generateQueryString()
 
-
     init {
         parseType = BGParsingType.TO_ARRAY
     }
@@ -64,5 +63,4 @@ class BGBulkImportNodesQuery(serviceManager: BGServiceManager, val nodeList: Col
                 "}\n"
         return queryString
     }
-
 }

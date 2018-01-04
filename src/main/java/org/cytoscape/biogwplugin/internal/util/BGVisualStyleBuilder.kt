@@ -18,23 +18,11 @@ import java.awt.Color
 import java.awt.Font
 import java.awt.Paint
 
-
-class BGVisualStyleTask(val style: VisualStyle, val network: CyNetwork): AbstractTask() {
-
-    override fun run(taskMonitor: TaskMonitor?) {
-//        style.apply(view)
-//        view.updateView()
-    }
-}
-
 class BGVisualStyleBuilder(val serviceManager: BGServiceManager) {
-
-
 
     fun generateStyle(): VisualStyle {
 
         val adapter = serviceManager.adapter
-
 
         // Colors
         val textBlue = Color(0, 153, 204)

@@ -31,32 +31,5 @@ abstract class BGRelationQuery(serviceManager: BGServiceManager, type: BGReturnT
             }
         }
     }
-
-    /*
-    override fun run() {
-        taskMonitor?.setTitle("Searching for relations...")
-        val uri = encodeUrl()?.toURI()
-        if (uri != null) {
-            val httpGet = HttpGet(uri)
-            val response = client.execute(httpGet)
-            val statusCode = response.statusLine.statusCode
-            val data = EntityUtils.toString(response.entity)
-            if (statusCode < 200 || statusCode > 399) throw Exception("Server error "+statusCode+": \n"+data)
-            val reader = BufferedReader(StringReader(data))
-            client.close()
-            taskMonitor?.setTitle("Loading results...")
-            parser.parseRelations(reader, type, taskMonitor) {
-                val returnRelationsData = it as? BGReturnRelationsData ?: throw Exception("Invalid return data!")
-                returnDataFilter?.let {
-                    returnRelationsData.relationsData = ArrayList(returnRelationsData.relationsData.filter(it))
-                    returnRelationsData.unloadedNodes?.let {
-                        returnRelationsData.unloadedNodes = Utility.removeNodesNotInRelationSet(it, returnRelationsData.relationsData).toList()
-                    }
-                }
-                returnData = returnRelationsData
-                runCompletions()
-            }
-        }
-    }*/
 }
 

@@ -17,37 +17,6 @@ class BGFetchPubmedIdQuery(serviceManager: BGServiceManager, val fromNodeUri: St
         }
     }
 
-    /*
-    override fun run() {
-        val stream = encodeUrl()?.openStream()
-        if (stream != null) {
-
-        }
-        val uri = encodeUrl()?.toURI()
-        if (uri != null) {
-            val httpGet = HttpGet(uri)
-            val response = client.execute(httpGet)
-            val statusCode = response.statusLine.statusCode
-
-            val data = EntityUtils.toString(response.entity)
-            if (statusCode > 204) {
-                throw Exception("Server connection failed with code "+statusCode+": \n\n"+data)
-            }
-            //print(data)
-            val reader = BufferedReader(StringReader(data))
-            client.close()
-
-
-            taskMonitor?.setTitle("Loading results...")
-            parser.parsePubmedIdsToTextArray(reader, type) {
-                taskMonitor?.setTitle("Loading results...")
-                returnData = it
-                runCompletions()
-            }
-        }
-    }
-    */
-
     fun generateQueryString(fromNodeUri: String, relationUri: String, toNodeUri: String): String {
         return "BASE <http://www.semantic-systems-biology.org/>  \n" +
                 "PREFIX has_source: <http://semanticscience.org/resource/SIO_000253> \n" +

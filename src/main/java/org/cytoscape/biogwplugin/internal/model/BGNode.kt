@@ -19,6 +19,12 @@ open class BGNode {
     val uri: String
     var isLoaded: Boolean = false
     val type: BGNodeType
+    var name: String? = null
+    var description: String? = null
+    var taxon: String? = null
+
+    // This is used to keep track of the CyNodes using data from this BGNode, so they can be updated if needed.
+    var cyNodes: ArrayList<CyNode>
 
     constructor(uri: String) {
         this.uri = uri
@@ -38,20 +44,6 @@ open class BGNode {
             }
         }
     }
-
-
-    var name: String? = null
-    var description: String? = null
-    var taxon: String? = null
-
-
-    // This is used to keep track of the CyNodes using data from this BGNode, so they can be updated if needed.
-    var cyNodes: ArrayList<CyNode>
-
-    fun syncWithCyNodes() {
-
-    }
-
 
     constructor(uri: String, name: String): this(uri) {
         this.name = name

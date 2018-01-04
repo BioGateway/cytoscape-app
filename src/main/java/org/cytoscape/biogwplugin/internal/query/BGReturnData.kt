@@ -16,8 +16,6 @@ abstract class BGReturnData {
     var resultTitle: String? = null
 
     constructor(returnType: BGReturnType, columnNames: Array<String>) {
-
-        //if (returnType != BGReturnType.RELATION_MULTIPART && columnNames.size != returnType.paremeterCount) throw Exception("Parameter count must match column name count!")
         this.columnNames = columnNames
     }
 

@@ -1,15 +1,18 @@
-package org.cytoscape.biogwplugin.internal.gui;
+package org.cytoscape.biogwplugin.internal.util;
 
 import javax.swing.*;
 import java.util.Comparator;
 import java.util.Vector;
 
 /*
+ *  Author: Rom Camick.
+ *  URL: http://www.camick.com/java/source/SortedComboBoxModel.java
+ *
  *  Custom model to make sure the items are stored in a sorted order.
  *  The default is to sort in the natural order of the item, but a
  *  Comparator can be used to customize the sort order.
  */
-//class SortedComboBoxModel extends DefaultComboBoxModel
+
 public class SortedComboBoxModel<E> extends DefaultComboBoxModel<E>
 {
 	private Comparator comparator;
