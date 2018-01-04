@@ -6,10 +6,10 @@ import org.cytoscape.biogwplugin.internal.model.BGRelation
  * Created by sholmas on 23/05/2017.
  */
 
-enum class ResultType() {
+enum class ResultType {
     NODE_DATA, RELATION_DATA, NODE_EDGE_NODE, NODE_EDGE_NODE_EDGE_NODE
 }
-enum class ResultStatus() {
+enum class ResultStatus {
     OK, ERROR, CANCELLED
 }
 

@@ -172,7 +172,7 @@ class BGMultiQueryLine(val serviceManager: BGServiceManager, val fromTextField: 
         }()
 }
 
-class BGQueryVariableManager() {
+class BGQueryVariableManager {
     val possibleVariables = "ABCDEFGHIJKLMNOPQRST".toCharArray().map { it.toString() }
     var usedVariables = HashMap<JComboBox<String>, String>()
     var URIcomboBoxes = HashSet<JComboBox<String>>()
@@ -209,7 +209,7 @@ class BGQueryVariableManager() {
         for (comboBox in comboBoxes) {
             val model = comboBox.model as DefaultComboBoxModel<String>
             val selected = model.selectedItem
-            val lastIndex = model.getSize()-1
+            val lastIndex = model.size -1
             var containsNextVariable = false
             if (lastIndex < 1) {
                 return
@@ -235,7 +235,7 @@ class BGQueryVariableManager() {
         var usedVariables = getUsedVariables().map { it.toString() }.toTypedArray()
         var nextFreeChar = getNextFreeVariable().toString()
         var shownVariables = arrayOf("URI:") + usedVariables
-        nextFreeChar?.let {
+        nextFreeChar.let {
             shownVariables += it
         }
         return shownVariables

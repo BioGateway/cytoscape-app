@@ -19,7 +19,7 @@ abstract class BGRelationQuery(serviceManager: BGServiceManager, type: BGReturnT
         taskMonitorTitle = "Searching for relations..."
         parsingBlock = {
             parser.parseRelations(it, type, taskMonitor) {
-                val returnRelationsData = it as? BGReturnRelationsData ?: throw Exception("Invalid return data!")
+                val returnRelationsData = it ?: throw Exception("Invalid return data!")
                 returnDataFilter?.let {
                     returnRelationsData.relationsData = ArrayList(returnRelationsData.relationsData.filter(it))
                     returnRelationsData.unloadedNodes?.let {

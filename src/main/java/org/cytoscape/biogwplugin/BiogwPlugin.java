@@ -3,9 +3,7 @@ package org.cytoscape.biogwplugin;
 
 
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
 
-import java.util.Collection;
 
 /**
  * APIs in Cytoscape 3.x are defined by their interfaces. Java interfaces

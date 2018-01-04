@@ -10,7 +10,7 @@ import java.io.StringReader
 
 
 class BGFindGraphRelationForNodeQuery(serviceManager: BGServiceManager, val nodeType: BGNodeType, val nodeUri: String): BGRelationQuery(serviceManager, BGReturnType.RELATION_TRIPLE, serviceManager.server.parser) {
-    override var queryString: String
+    override var queryString: String = ""
         get() = when (nodeType) {
             BGNodeType.Gene -> generateFindProteinsRegluatingGeneQueryString()
             BGNodeType.Protein -> generateFindGenesRegulatedByProteinQueryString()
@@ -18,7 +18,6 @@ class BGFindGraphRelationForNodeQuery(serviceManager: BGServiceManager, val node
                 throw Exception("TG-TF search is only available for genes and proteins!")
             }
         }
-        set(value) {}
 
 //    override fun run() {
 //        taskMonitor?.setTitle("Searching for relations...")

@@ -6,12 +6,11 @@ import org.cytoscape.biogwplugin.internal.parser.BGReturnType
 class BGFindAllRelationsForNodeQuery(serviceManager: BGServiceManager, val nodeUri: String, val direction: BGRelationDirection): BGRelationQuery(serviceManager, BGReturnType.RELATION_TRIPLE_NAMED, serviceManager.server.parser) {
 
 
-    override var queryString: String
+    override var queryString: String = ""
         get() = when (direction) {
             BGRelationDirection.TO -> generateToQueryString()
             BGRelationDirection.FROM -> generateFromQueryString()
         } //To change initializer of created properties use File | Settings | File Templates.
-        set(value) {}
 
     private fun generateFromQueryString(): String {
         return "BASE <http://www.semantic-systems-biology.org/>\n" +

@@ -29,9 +29,8 @@ class BGFindBinaryPPIInteractionsQuery(serviceManager: BGServiceManager, val nod
         taskMonitorTitle = "Searching for binary protein interactions..."
     }
 
-    override var queryString: String
+    override var queryString: String = ""
         get() = generateQueryString(nodeUri)
-        set(value) {}
 
     private fun generateQueryString(nodeUri: String): String {
         return "BASE <http://www.semantic-systems-biology.org/>\n" +

@@ -29,6 +29,7 @@ import static org.cytoscape.biogwplugin.internal.gui.BGQueryBuilderController.*;
 /**
  * Created by sholmas on 14/03/2017.
  */
+@SuppressWarnings("FieldCanBeLocal")
 public class BGQueryBuilderView implements ChangeListener {
     private final ActionListener listener;
     private final BGRelationResultViewTooltipDataSource tableTooltipDataSource;
@@ -36,10 +37,7 @@ public class BGQueryBuilderView implements ChangeListener {
 
     public HashMap<String, JComponent> parameterComponents = new HashMap<>();
 
-    private int numberOfChainedParameters = 0;
-
-
-    private JFrame mainFrame;
+    private final JFrame mainFrame;
     private JTabbedPane tabPanel;
     private JPanel mainPanel;
     private JPanel queryPanel;
@@ -47,12 +45,10 @@ public class BGQueryBuilderView implements ChangeListener {
     private JPanel resultPanel;
     private JPanel buttonPanel;
     private JPanel parameterPanel;
-    private JButton openXMLFileButton;
-    private JButton createQueryButton;
     private JButton runQueryButton;
     private JTextArea sparqlTextArea;
     private JTable resultTable;
-    private JComboBox querySelectionBox;
+    private JComboBox<String> querySelectionBox;
     private JButton importToNewButton;
     private JButton importToSelectedNetworkButton;
     private JPanel descriptionPanel;
@@ -76,8 +72,8 @@ public class BGQueryBuilderView implements ChangeListener {
     private JButton bulkImportSelectedCurrentButton;
     private JTextField bulkFilterTextField;
     private TableRowSorter<TableModel> sorter;
-    private DocumentListener filterDocumentListener = new DocumentListener() {
-        public void filter() {
+    private final DocumentListener filterDocumentListener = new DocumentListener() {
+        void filter() {
             filterResultRows(sorter, filterResultsTextField);
         }
 
@@ -97,8 +93,8 @@ public class BGQueryBuilderView implements ChangeListener {
         }
     };
     private TableRowSorter<TableModel> bulkSorter;
-    private DocumentListener bulkFilterDocumentListener = new DocumentListener() {
-        public void filter() {
+    private final DocumentListener bulkFilterDocumentListener = new DocumentListener() {
+        void filter() {
             filterResultRows(bulkSorter, bulkFilterTextField);
         }
 
@@ -247,8 +243,8 @@ public class BGQueryBuilderView implements ChangeListener {
                 int modelRow = entry.getIdentifier();
                 int viewRow = resultTable.convertRowIndexToView(modelRow);
                 int[] selectedRows = resultTable.getSelectedRows();
-                for (int i = 0; i < selectedRows.length; i++) {
-                    if (selectedRows[i] == viewRow) {
+                for (int selectedRow : selectedRows) {
+                    if (selectedRow == viewRow) {
                         return true;
                     }
                 }
@@ -295,7 +291,7 @@ public class BGQueryBuilderView implements ChangeListener {
                     component = new JComboBox<>(parameter.getOptions().keySet().toArray());
                     break;
                 case RELATION_COMBOBOX:
-                    JComboBox comboBox = new JComboBox<>((String[]) parameter.getOptions().keySet().toArray());
+                    JComboBox<String> comboBox = new JComboBox<>((String[]) parameter.getOptions().keySet().toArray());
                     component = new BGRelationTypeField(comboBox);
                     break;
                 case RELATION_QUERY_ROW:
@@ -313,14 +309,11 @@ public class BGQueryBuilderView implements ChangeListener {
                 JComponent dependingComponent = parameterComponents.get(dependency.getDependingParameter());
                 if (dependingComponent != null && dependingComponent instanceof JCheckBox) {
                     JCheckBox checkBox = (JCheckBox) dependingComponent;
-                    checkBox.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            if (checkBox.isSelected()) {
-                                component.setEnabled(dependency.isEnabled());
-                            } else {
-                                component.setEnabled(!dependency.isEnabled());
-                            }
+                    checkBox.addActionListener(e -> {
+                        if (checkBox.isSelected()) {
+                            component.setEnabled(dependency.isEnabled());
+                        } else {
+                            component.setEnabled(!dependency.isEnabled());
                         }
                     });
                     if (checkBox.isSelected()) {
@@ -341,10 +334,6 @@ public class BGQueryBuilderView implements ChangeListener {
     public void addMultiQueryLine() {
         this.multiQueryPanel.addQueryLine();
         mainFrame.repaint();
-    }
-
-    public JTextField getBulkFilterTextField() {
-        return bulkFilterTextField;
     }
 
     @Override
@@ -416,9 +405,6 @@ public class BGQueryBuilderView implements ChangeListener {
         return bulkImportResultTable;
     }
 
-    public JButton getBulkImportSelectedNodesNewButton() {
-        return bulkImportSelectedNodesNewButton;
-    }
 
     /**
      * Method generated by IntelliJ IDEA GUI Designer

@@ -24,10 +24,11 @@ enum class BGParsingType {
     TO_ARRAY, RELATIONS, MULTI, PARSING_BLOCK
 }
 
+@Suppress("LocalVariableName")
 abstract class BGQuery(val serviceManager: BGServiceManager, var type: BGReturnType, val parser: BGParser): AbstractTask(), Runnable {
     var completionBlocks: ArrayList<(BGReturnData?) -> Unit> = ArrayList()
     var returnData: BGReturnData? = null
-    var client = HttpClients.createDefault();
+    var client = HttpClients.createDefault()!!
     var taskMonitor: TaskMonitor? = null
     open var taskMonitorTitle = "Searching..."
     var parsingBlock: ((BufferedReader) -> Unit)? = null
@@ -65,6 +66,8 @@ abstract class BGQuery(val serviceManager: BGServiceManager, var type: BGReturnT
                     runCompletions()
                 }}
                 BGParsingType.PARSING_BLOCK -> parsingBlock?.invoke(reader)
+                else -> {
+                }
             }
         }
     }
@@ -96,7 +99,6 @@ abstract class BGQuery(val serviceManager: BGServiceManager, var type: BGReturnT
         val RETURN_TYPE_TSV = "text/tab-separated-values"
         val BIOPAX_DEFAULT_OPTIONS = "timeout=0&debug=on"
         val queryURL = URL(serviceManager.serverPath + "?query=" + URLEncoder.encode(queryString, "UTF-8") + "&format=" + RETURN_TYPE_TSV +"&" + BIOPAX_DEFAULT_OPTIONS)
-
         return queryURL
     }
 }

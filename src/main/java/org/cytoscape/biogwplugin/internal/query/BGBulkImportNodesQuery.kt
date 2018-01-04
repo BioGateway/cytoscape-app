@@ -8,9 +8,8 @@ import java.io.InputStreamReader
 
 
 class BGBulkImportNodesQuery(serviceManager: BGServiceManager, val nodeList: Collection<String>, val nodeType: BGNodeType): BGQuery(serviceManager, BGReturnType.NODE_LIST_DESCRIPTION_TAXON, serviceManager.server.parser) {
-    override var queryString: String
+    override var queryString: String = ""
         get() = generateQueryString()
-        set(value) {}
 
 
     init {

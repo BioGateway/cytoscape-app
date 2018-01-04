@@ -41,7 +41,7 @@ class BGRelationSourceController(val metadata: BGRelationMetadata): ActionListen
             if (it.startsWith("http")) {
                 // Probably a pubmed id?
                 if (Desktop.isDesktopSupported()) {
-                    Desktop.getDesktop().browse(URI(it));
+                    Desktop.getDesktop().browse(URI(it))
                 }
             }
         }

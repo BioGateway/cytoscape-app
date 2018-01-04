@@ -20,7 +20,7 @@ import java.net.URLEncoder
 
 class BGServer(private val serviceManager: BGServiceManager) {
 
-    class BGCache() {
+    class BGCache {
         // A cache of BGNodes, which are a local representation of the node found on the server.
         // Note that this cache is independent of the CyNodes and CyNetworks.
         var nodeCache = HashMap<String, BGNode>()

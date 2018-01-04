@@ -2,10 +2,6 @@ package org.cytoscape.biogwplugin.internal;
 
 
 import org.cytoscape.biogwplugin.BiogwPlugin;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-
-import java.util.Collection;
 
 /**
  * This is an implementation of the BiogwPlugin interface.
@@ -28,7 +24,7 @@ import java.util.Collection;
  */
 public class BiogwPluginImpl implements BiogwPlugin {
 
-    BGServiceManager serviceManager;
+    private final BGServiceManager serviceManager;
 
 	public BiogwPluginImpl(BGServiceManager serviceManager) {
 	    this.serviceManager = serviceManager;

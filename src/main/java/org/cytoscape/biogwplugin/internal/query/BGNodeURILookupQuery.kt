@@ -7,9 +7,9 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 
 class BGNodeURILookupQuery(serviceManager: BGServiceManager, val searchString: String, val useRegex: Boolean, val nodeType: BGNodeType): BGQuery(serviceManager, BGReturnType.NODE_LIST_DESCRIPTION_TAXON, serviceManager.server.parser) {
-    override var queryString: String
+    override var queryString: String = ""
         get() = generateQueryString()
-        set(value) {}
+
 
 
     init {

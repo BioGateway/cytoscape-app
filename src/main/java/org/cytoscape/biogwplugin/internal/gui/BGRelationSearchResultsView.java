@@ -10,11 +10,11 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 
+@SuppressWarnings("FieldCanBeLocal")
 public class BGRelationSearchResultsView {
 
-    public static String ACTION_IMPORT = "import nodes";
-    public static String ACTION_IMPORT_BETWEEN_EXISTING = "import relations to exsisting nodes";
-    public static String ACTION_FILTER_RESULTS = "filter results";
+    public static final String ACTION_IMPORT = "import nodes";
+    public static final String ACTION_IMPORT_BETWEEN_EXISTING = "import relations to exsisting nodes";
 
     private final ActionListener listener;
     private JFrame mainFrame;
@@ -26,7 +26,7 @@ public class BGRelationSearchResultsView {
     private JButton selectRelationsLeadingToButton;
     private JCheckBox filterSelectedCheckBox;
     private TableRowSorter<TableModel> sorter;
-    private BGRelationResultViewTooltipDataSource tooltipDataSource;
+    private final BGRelationResultViewTooltipDataSource tooltipDataSource;
 
     public BGRelationSearchResultsView(ActionListener listener, BGRelationResultViewTooltipDataSource tooltipDataSource) {
         this.listener = listener;
@@ -64,7 +64,7 @@ public class BGRelationSearchResultsView {
                 return super.getColumnClass(columnIndex);
             }
         };
-        sorter = new TableRowSorter<TableModel>(tableModel);
+        sorter = new TableRowSorter<>(tableModel);
         resultTable.setModel(tableModel);
         resultTable.setRowSorter(sorter);
         //filterTextField.setPreferredSize(new Dimension(200, Utility.INSTANCE.getJTextFieldHeight()));
@@ -92,10 +92,6 @@ public class BGRelationSearchResultsView {
 
     public JFrame getMainFrame() {
         return mainFrame;
-    }
-
-    public JButton getImportButton() {
-        return importButton;
     }
 
     public JTable getResultTable() {

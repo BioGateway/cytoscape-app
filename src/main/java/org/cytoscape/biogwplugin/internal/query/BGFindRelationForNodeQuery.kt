@@ -11,12 +11,11 @@ import java.io.BufferedReader
 import java.io.StringReader
 
 class BGFindRelationForNodeQuery(serviceManager: BGServiceManager, val relationType: BGRelationType, val nodeUri: String, val direction: BGRelationDirection): BGQuery(serviceManager, BGReturnType.RELATION_TRIPLE, serviceManager.server.parser) {
-    override var queryString: String
+    override var queryString: String = ""
         get() = when (direction) {
                 BGRelationDirection.TO -> generateToQueryString()
                 BGRelationDirection.FROM -> generateFromQueryString()
         } //To change initializer of created properties use File | Settings | File Templates.
-        set(value) {}
 
     var returnDataFilter: ((BGRelation) -> Boolean)? = null
 
@@ -24,7 +23,7 @@ class BGFindRelationForNodeQuery(serviceManager: BGServiceManager, val relationT
     init {
         parsingBlock = {
             parser.parseRelations(it, type, taskMonitor) {
-                var returnRelationsData = it as? BGReturnRelationsData ?: throw Exception("Invalid return data!")
+                var returnRelationsData = it ?: throw Exception("Invalid return data!")
                 val filter = returnDataFilter
                 if (filter != null) {
                     returnRelationsData.relationsData = ArrayList(returnRelationsData.relationsData.filter(filter))

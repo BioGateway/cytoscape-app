@@ -215,7 +215,7 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
 
         val searchTFTG = JMenuItem(menuItemText)
         searchTFTG.addActionListener {
-            val query = BGFindGraphRelationForNodeQuery(serviceManager, nodeType!!, nodeUri)
+            val query = BGFindGraphRelationForNodeQuery(serviceManager, nodeType, nodeUri)
             query.addCompletion {
                 val returnData = it as? BGReturnRelationsData ?: throw Exception("Invalid return data!")
                 if (returnData.relationsData.size == 0)  {
@@ -287,7 +287,7 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
             menuItem.addActionListener {
                 // Probably a pubmed id?
                 if (Desktop.isDesktopSupported()) {
-                    Desktop.getDesktop().browse(URI(nodeUri));
+                    Desktop.getDesktop().browse(URI(nodeUri))
                 }
             }
             return menuItem

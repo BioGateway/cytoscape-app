@@ -1,3 +1,5 @@
+@file:Suppress("LocalVariableName")
+
 package org.cytoscape.biogwplugin.internal.util
 
 import org.cytoscape.biogwplugin.internal.BGServiceManager
@@ -145,8 +147,8 @@ object Utility {
     }
 
     fun generateGOTermURI(goTerm: String): String {
-        val go_term = goTerm.replace(":", "_")
-        return "http://purl.obolibrary.org/obo/"+go_term
+        val goTerm = goTerm.replace(":", "_")
+        return "http://purl.obolibrary.org/obo/"+goTerm
     }
 
     fun encodeUrl(serviceManager: BGServiceManager, queryString: String): URL? {

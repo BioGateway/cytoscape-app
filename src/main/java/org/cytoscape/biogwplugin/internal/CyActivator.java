@@ -21,10 +21,11 @@ import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.osgi.framework.BundleContext;
 
+@SuppressWarnings("Convert2Lambda")
 public class CyActivator extends AbstractCyActivator {
 
 	@Override
-	public void start(BundleContext context) throws Exception {
+	public void start(BundleContext context) {
 
 	    BGServiceManager serviceManager = createServiceManager(context);
         // After this point, we should be assured that the XML config file is loaded. Otherwise, there is a network problem.
@@ -70,7 +71,6 @@ public class CyActivator extends AbstractCyActivator {
         });
         // This is disabled, as the style is imported automatically.
         //registerService(context, importStyleAction, CyAction.class, new Properties());
-
 
         registerContextMenuItems(context, serviceManager);
     }

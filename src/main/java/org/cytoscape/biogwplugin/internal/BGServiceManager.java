@@ -1,6 +1,5 @@
 package org.cytoscape.biogwplugin.internal;
 
-import jdk.nashorn.internal.runtime.regexp.joni.Config;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.cytoscape.app.CyAppAdapter;
@@ -13,7 +12,6 @@ import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
-import org.cytoscape.app.swing.*;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
@@ -23,8 +21,7 @@ import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.osgi.framework.BundleContext;
 
-import javax.swing.*;
-import java.net.URL;
+
 
 /**
  * Created by sholmas on 23/03/2017.
@@ -51,13 +48,12 @@ public class BGServiceManager {
     private CyLayoutAlgorithmManager layoutAlgorithmManager;
     private CyTableFactory tableFactory;
     private CyTableManager tableManager;
-    private CloseableHttpClient httpClient;
 
     private BGServer.BGCache cache;
     private BGServer server;
-    public CloseableHttpClient httpclient = HttpClients.createDefault();
+    private CloseableHttpClient httpClient = HttpClients.createDefault();
 
-    private BGVisualStyleBuilder visualStyleBuilder = new BGVisualStyleBuilder(this);
+    private final BGVisualStyleBuilder visualStyleBuilder = new BGVisualStyleBuilder(this);
 
 
     public BGServiceManager(CyActivator cyActivator, CyAppAdapter adapter, BundleContext bundleContext) {
@@ -205,10 +201,6 @@ public class BGServiceManager {
 
     public CyActivator getActivator() {
         return activator;
-    }
-
-    public CloseableHttpClient getHttpclient() {
-        return httpclient;
     }
 
     public CyAppAdapter getAdapter() {

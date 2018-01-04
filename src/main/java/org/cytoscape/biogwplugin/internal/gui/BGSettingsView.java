@@ -5,9 +5,8 @@ import org.cytoscape.biogwplugin.internal.server.BGSettings;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
+@SuppressWarnings("FieldCanBeLocal")
 public class BGSettingsView {
     private final JFrame mainFrame;
     private final BGServiceManager serviceManager;

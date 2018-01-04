@@ -1,7 +1,6 @@
 package org.cytoscape.biogwplugin.internal.gui;
 
 import org.cytoscape.biogwplugin.internal.model.BGNodeType;
-import org.cytoscape.biogwplugin.internal.util.Utility;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -49,7 +48,7 @@ public class BGNodeLookupView {
                 return false;
             }
         };
-        sorter = new TableRowSorter<TableModel>(tableModel);
+        sorter = new TableRowSorter<>(tableModel);
         resultTable.setModel(tableModel);
         resultTable.setRowSorter(sorter);
     }
@@ -78,28 +77,22 @@ public class BGNodeLookupView {
                 filterRows();
             }
         });
-        nameOrURIComboBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (nameOrURIComboBox.getSelectedIndex() == 0) {
-                    if (!nodeTypeComboBox.getSelectedItem().equals("Taxon")) {
-                        regexCheckBox.setEnabled(true);
-                    }
-                    nodeTypeComboBox.setEnabled(true);
-                } else {
-                    regexCheckBox.setEnabled(false);
-                    nodeTypeComboBox.setEnabled(false);
-                }
-            }
-        });
-        nodeTypeComboBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (nodeTypeComboBox.getSelectedItem().equals("Taxon")) {
-                    regexCheckBox.setEnabled(false);
-                } else {
+        nameOrURIComboBox.addActionListener(e -> {
+            if (nameOrURIComboBox.getSelectedIndex() == 0) {
+                if (!nodeTypeComboBox.getSelectedItem().equals("Taxon")) {
                     regexCheckBox.setEnabled(true);
                 }
+                nodeTypeComboBox.setEnabled(true);
+            } else {
+                regexCheckBox.setEnabled(false);
+                nodeTypeComboBox.setEnabled(false);
+            }
+        });
+        nodeTypeComboBox.addActionListener(e -> {
+            if (nodeTypeComboBox.getSelectedItem().equals("Taxon")) {
+                regexCheckBox.setEnabled(false);
+            } else {
+                regexCheckBox.setEnabled(true);
             }
         });
     }

@@ -15,7 +15,7 @@ class BGNodeFetchQuery(serviceManager: BGServiceManager, val nodeUri: String, pa
             taskMonitor?.setTitle("Loading results...")
             val reader = BufferedReader(InputStreamReader(stream))
             parser.parseNodesToTextArray(reader, type) {
-                returnData = it as? BGReturnNodeData ?: throw Exception("Invalid return data!")
+                returnData = it ?: throw Exception("Invalid return data!")
                 runCompletions()
             }
         }

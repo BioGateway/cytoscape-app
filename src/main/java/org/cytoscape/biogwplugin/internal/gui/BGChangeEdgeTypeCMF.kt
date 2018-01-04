@@ -26,14 +26,14 @@ class BGChangeEdgeTypeCMF(val gravity: Float, val serviceManager: BGServiceManag
                         return@addActionListener
                     }
                     // Change the relation in the edge table:
-                    val edgeId = edgeTable?.getRow(edgeSuid)?.get(Constants.BG_FIELD_EDGE_ID, String::class.java)
+                    val edgeId = edgeTable.getRow(edgeSuid)?.get(Constants.BG_FIELD_EDGE_ID, String::class.java)
                     if (edgeId != null) {
-                        edgeTable?.getRow(edgeSuid)?.set(Constants.BG_FIELD_EDGE_ID,  edgeId.replace(edgeUri, relationType.uri))
+                        edgeTable.getRow(edgeSuid)?.set(Constants.BG_FIELD_EDGE_ID,  edgeId.replace(edgeUri, relationType.uri))
                     }
 
-                    edgeTable?.getRow(edgeSuid)?.set(Constants.BG_FIELD_NAME, relationType.name)
-                    edgeTable?.getRow(edgeSuid)?.set("shared name", relationType.name)
-                    edgeTable?.getRow(edgeSuid)?.set(Constants.BG_FIELD_IDENTIFIER_URI, relationType.uri)
+                    edgeTable.getRow(edgeSuid)?.set(Constants.BG_FIELD_NAME, relationType.name)
+                    edgeTable.getRow(edgeSuid)?.set("shared name", relationType.name)
+                    edgeTable.getRow(edgeSuid)?.set(Constants.BG_FIELD_IDENTIFIER_URI, relationType.uri)
 
                 }
                 parentMenu.add(item)
