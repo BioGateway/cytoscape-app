@@ -115,6 +115,11 @@ public class BGQueryBuilderView implements ChangeListener {
     };
 
 
+    /**
+     * @param listener
+     * @param tableTooltipDataSource
+     * @param serviceManager
+     */
     public BGQueryBuilderView(ActionListener listener, BGRelationResultViewTooltipDataSource tableTooltipDataSource, BGServiceManager serviceManager) {
         this.listener = listener;
         this.tableTooltipDataSource = tableTooltipDataSource;
