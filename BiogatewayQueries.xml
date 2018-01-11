@@ -17,6 +17,8 @@
 		<relationType name="is orthologous to">http://semanticscience.org/resource/SIO_000558</relationType>
 		<relationType name="is paralogous to">http://semanticscience.org/resource/SIO_000630</relationType>
 		<relationType name="molecularly interacts with" directed="false">http://purl.obolibrary.org/obo/RO_0002436</relationType>
+		<relationType name="consensus sequence" defaultGraph="tfclass">http://purl.obolibrary.org/obo/RO_0002436</relationType>
+		
 	</relationTypes>
 	<queryList>
 		<query name="Find genes regulated by protein" returnType="nodeListDescription">
