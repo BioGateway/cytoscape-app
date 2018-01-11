@@ -65,7 +65,7 @@
 					</execution>
 				</executions>
 				<configuration>
-					<executable>updateCurrentVersionSymlink.sh</executable>
+					<executable>updateCurrentVersion.sh</executable>
 					<arguments>
 						<argument>${version}</argument>
 					</arguments>
