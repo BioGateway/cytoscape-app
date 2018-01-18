@@ -7,10 +7,7 @@ import org.cytoscape.biogwplugin.BiogwPlugin;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.biogwplugin.internal.gui.*;
-import org.cytoscape.biogwplugin.internal.gui.cmfs.BGChangeEdgeTypeCMF;
-import org.cytoscape.biogwplugin.internal.gui.cmfs.BGNetworkViewCMF;
-import org.cytoscape.biogwplugin.internal.gui.cmfs.BGNodeViewCMF;
-import org.cytoscape.biogwplugin.internal.gui.cmfs.BGOpenEdgeSourceViewCMF;
+import org.cytoscape.biogwplugin.internal.gui.cmfs.*;
 import org.cytoscape.biogwplugin.internal.util.Utility;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.*;
@@ -66,6 +63,14 @@ public class CyActivator extends AbstractCyActivator {
         // This action is disabled in the current build.
         //registerService(context, openSettingsAction, CyAction.class, new Properties());
 
+        BGCreateAction reloadXMLAction = new BGCreateAction("Reload Config", "always", serviceManager, new BGAction() {
+            @Override
+            public void action(BGServiceManager serviceManager) {
+                serviceManager.getServer().loadXMLFileFromServer();
+            }
+        });
+        registerService(context, reloadXMLAction, CyAction.class, new Properties());
+
         BGCreateAction importStyleAction = new BGCreateAction("Import the BioGateway visual style", "always", serviceManager, new BGAction() {
             @Override
             public void action(BGServiceManager serviceManager) {
@@ -93,7 +98,11 @@ public class CyActivator extends AbstractCyActivator {
 
         BGOpenEdgeSourceViewCMF openPumedIdCMF = new BGOpenEdgeSourceViewCMF(1F, serviceManager);
         registerAllServices(bundleContext, openPumedIdCMF, ezProps("preferredMenu", "BioGateway"));
-    }
+
+        BGExpandEdgeCMF expandEdgeCMF = new BGExpandEdgeCMF(0F, serviceManager);
+        registerAllServices(bundleContext, expandEdgeCMF, ezProps("preferredMenu", "BioGateway"));
+
+	}
 
 
 	private BGServiceManager createServiceManager(BundleContext bundleContext) {

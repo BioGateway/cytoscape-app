@@ -12,6 +12,7 @@ import org.cytoscape.model.CyEdge
 import org.cytoscape.view.model.CyNetworkView
 import org.cytoscape.view.model.View
 import org.cytoscape.work.TaskIterator
+import java.awt.EventQueue
 import javax.swing.JMenuItem
 
 class BGOpenEdgeSourceViewCMF(val gravity: Float, val serviceManager: BGServiceManager): CyEdgeViewContextMenuFactory {
@@ -32,7 +33,9 @@ class BGOpenEdgeSourceViewCMF(val gravity: Float, val serviceManager: BGServiceM
                     metadata.sourceGraph = sourceGraph
                     val data = it as? BGReturnPubmedIds ?: throw Exception("Invalid return data!")
                     metadata.pubmedUris.addAll(data.pubmedIDlist)
-                    BGRelationSourceController(metadata)
+                    EventQueue.invokeLater {
+                        BGRelationSourceController(metadata)
+                    }
                 }
                 serviceManager.taskManager.execute(TaskIterator(query))
             }

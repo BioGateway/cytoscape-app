@@ -20,13 +20,14 @@ class BGFetchPubmedIdQuery(serviceManager: BGServiceManager, val fromNodeUri: St
     fun generateQueryString(fromNodeUri: String, relationUri: String, toNodeUri: String): String {
         return "BASE <http://www.semantic-systems-biology.org/>  \n" +
                 "PREFIX has_source: <http://semanticscience.org/resource/SIO_000253> \n" +
+                "PREFIX relatedMatch: <http://www.w3.org/2004/02/skos/core#relatedMatch> \n" +
                 "SELECT DISTINCT ?pubmedId\n" +
                 "WHERE {\n" +
                 "GRAPH ?graph {  \n" +
                 "?triple rdf:subject <"+fromNodeUri+"> .  \n" +
                 "?triple rdf:predicate <"+relationUri+"> .  \n" +
                 "?triple rdf:object <"+toNodeUri+"> . \n" +
-                "?triple has_source: ?pubmedId .\n" +
+                "?triple has_source:|relatedMatch: ?pubmedId .\n" +
                 "}}"
     }
 }

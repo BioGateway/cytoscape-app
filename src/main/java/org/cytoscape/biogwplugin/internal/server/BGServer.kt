@@ -185,7 +185,7 @@ class BGServer(private val serviceManager: BGServiceManager) {
     }
 
 
-    private fun loadXMLFileFromServer() {
+    fun loadXMLFileFromServer() {
         try {
             val queryFileUrl = URL(Constants.BG_CONFIG_FILE_URL)
             val connection = queryFileUrl.openConnection()

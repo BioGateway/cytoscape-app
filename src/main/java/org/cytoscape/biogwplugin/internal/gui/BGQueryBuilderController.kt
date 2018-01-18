@@ -5,6 +5,7 @@ import org.cytoscape.biogwplugin.internal.model.BGNode
 import org.cytoscape.biogwplugin.internal.model.BGNodeType
 import org.cytoscape.biogwplugin.internal.model.BGRelation
 import org.cytoscape.biogwplugin.internal.parser.BGReturnType
+import org.cytoscape.biogwplugin.internal.parser.BGSPARQLParser
 import org.cytoscape.biogwplugin.internal.query.*
 import org.cytoscape.biogwplugin.internal.util.Constants
 import org.cytoscape.biogwplugin.internal.util.Utility
