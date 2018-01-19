@@ -14,6 +14,7 @@ import org.cytoscape.model.CyEdge
 import org.cytoscape.task.EdgeViewTaskFactory
 import org.cytoscape.view.model.CyNetworkView
 import org.cytoscape.view.model.View
+import org.cytoscape.view.presentation.property.BasicVisualLexicon
 import org.cytoscape.work.TaskIterator
 import javax.swing.JMenuItem
 

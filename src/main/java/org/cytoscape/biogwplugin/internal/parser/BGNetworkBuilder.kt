@@ -15,6 +15,7 @@ import org.cytoscape.view.model.CyNetworkView
 import org.cytoscape.view.model.View
 import org.cytoscape.view.presentation.property.BasicVisualLexicon
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D
+import java.awt.EventQueue
 import java.lang.Math.*
 
 fun Vector2D.getPerpendicular(): Vector2D {
@@ -155,10 +156,7 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
 
         val coordinates = calculateNodeCoordinates()
 
-        // 3. Hide the original edge
-        initialEdgeView.setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, false)
-
-        // 4. Add the new nodes
+        // 3. Add the new nodes
         val addedNodes = ArrayList<CyNode>()
         for ((index, node) in nodes.withIndex()) {
             node.collapsableToEdgeID = initialEdgeView.model.getId(network)
@@ -166,13 +164,19 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
             addedNodes.add(cyNode)
         }
 
-        // 5. Add new edges
+        // 4. Add new edges
 
         addRelationsToNetwork(network, relations)
 
 
+        // 5. Hide the original edge
+        //initialEdgeView.setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, false)
+        //netView.model.removeEdges(arrayListOf(initialEdgeView.model))
+
+        //netView.updateView()
+
         // 6. Set the positions of the new nodes
-        netView.updateView()
+        //netView.updateView()
         serviceManager.eventHelper.flushPayloadEvents()
 
         val addedNodeViews = HashSet<View<CyNode>>()
@@ -184,9 +188,19 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
             addedNodeViews.add(view)
         }
 
+        //netView.getEdgeView(model).setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, false)
         netView.updateView()
-
         Utility.reloadCurrentVisualStyleCurrentNetworkView(serviceManager)
+
+
+        // Hide the original edge in the end, as it seems it get re-added for some reason...
+
+        EventQueue.invokeLater {
+            initialEdgeView.setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, false);
+            netView.updateView();
+            serviceManager.eventHelper.flushPayloadEvents()
+        }
+
     }
 
 
