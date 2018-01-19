@@ -92,7 +92,6 @@
 						<Export-Package>${bundle.namespace}</Export-Package>
 						<Private-Package>${bundle.namespace}.internal.*</Private-Package>
 						<Bundle-Activator>${bundle.namespace}.internal.CyActivator</Bundle-Activator>
-
 						<Embed-Dependency>*;scope=!provided;|test;groupId=!org.cytoscape</Embed-Dependency>
 						<Embed-Transitive>true</Embed-Transitive>
 						<Import-Package>*;resolution:=optional</Import-Package>
@@ -181,6 +180,11 @@
 
 	<!-- Links to the Cytoscape Maven repositories. -->
 	<repositories>
+		<repository>
+			<id>mvnrepository</id>
+			<name>mvnrepository</name>
+			<url>http://mvnrepository.com</url>
+		</repository>
 		<repository>
 			<id>cytoscape_snapshots</id>
 			<snapshots>
@@ -296,6 +300,12 @@
             <version>${kotlin.version}</version>
             <scope>test</scope>
         </dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-math3</artifactId>
+			<version>3.6</version>
+			<scope>compile</scope>
+		</dependency>
     </dependencies>
 
 	<distributionManagement>

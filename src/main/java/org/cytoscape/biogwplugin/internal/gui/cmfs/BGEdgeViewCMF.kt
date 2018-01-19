@@ -3,7 +3,6 @@ package org.cytoscape.biogwplugin.internal.gui.cmfs
 import org.cytoscape.application.swing.CyEdgeViewContextMenuFactory
 import org.cytoscape.application.swing.CyMenuItem
 import org.cytoscape.biogwplugin.internal.BGServiceManager
-import org.cytoscape.biogwplugin.internal.gui.BGRelationSearchResultsController
 import org.cytoscape.biogwplugin.internal.gui.BGRelationSourceController
 import org.cytoscape.biogwplugin.internal.model.BGRelationMetadata
 import org.cytoscape.biogwplugin.internal.query.*
@@ -11,52 +10,11 @@ import org.cytoscape.biogwplugin.internal.util.Constants
 import org.cytoscape.model.CyEdge
 import org.cytoscape.view.model.CyNetworkView
 import org.cytoscape.view.model.View
-import org.cytoscape.work.Task
 import org.cytoscape.work.TaskIterator
 import java.awt.EventQueue
 import javax.swing.JMenu
 import javax.swing.JMenuItem
 
-
-class BGExpandEdgeCMF(val gravity: Float, val serviceManager: BGServiceManager): CyEdgeViewContextMenuFactory {
-
-    val MOLECULARLY_INTERACTS_WITH_URI = "http://purl.obolibrary.org/obo/RO_0002436"
-
-    override fun createMenuItem(netView: CyNetworkView?, edgeView: View<CyEdge>?): CyMenuItem {
-
-        val edgeSuid = edgeView?.model?.suid
-        val edgeTable = netView?.model?.defaultEdgeTable
-        val nodeTable = netView?.model?.defaultNodeTable
-        val edgeUri = edgeTable?.getRow(edgeSuid)?.get(Constants.BG_FIELD_IDENTIFIER_URI, String::class.java) ?: throw Exception("Edge URI not found in CyNetwork")
-        val fromNodeUri = nodeTable?.getRow(edgeView?.model?.source?.suid)?.get(Constants.BG_FIELD_IDENTIFIER_URI, String::class.java) ?: throw Exception("From node URI not found in CyNetwork!")
-        val toNodeUri = nodeTable.getRow(edgeView?.model?.target?.suid)?.get(Constants.BG_FIELD_IDENTIFIER_URI, String::class.java) ?: throw Exception("To node URI not found in CyNetwork!")
-
-
-        if (edgeUri == MOLECULARLY_INTERACTS_WITH_URI) {
-            val item = JMenuItem("Expand")
-            item.addActionListener {
-                val query = BGFindDiscretePPIsBetweenNodesQuery(serviceManager, fromNodeUri, toNodeUri)
-                query.addCompletion {
-                    val returnData = it as? BGReturnRelationsData
-                    if (returnData != null) {
-                        val network = netView.model
-                        if (returnData.relationsData.size == 0) throw Exception("No relations found.")
-                        BGLoadUnloadedNodes.createAndRun(serviceManager, returnData.unloadedNodes) {
-                            println("Loaded "+it.toString()+ " nodes.")
-                            BGRelationSearchResultsController(serviceManager, returnData, returnData.columnNames, network)
-                        }
-                    }
-                }
-                serviceManager.taskManager.execute(TaskIterator(query))
-            }
-            return CyMenuItem(item, gravity)
-        }
-
-        return CyMenuItem(null, gravity)
-    }
-
-
-}
 
 class BGEdgeViewCMF(val gravity: Float, val serviceManager: BGServiceManager): CyEdgeViewContextMenuFactory {
     override fun createMenuItem(netView: CyNetworkView?, edgeView: View<CyEdge>?): CyMenuItem {

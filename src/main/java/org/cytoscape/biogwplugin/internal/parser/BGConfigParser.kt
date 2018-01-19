@@ -29,13 +29,15 @@ object BGConfigParser {
                 val defaultGraph = element?.getAttribute("defaultGraph")
                 val arbitraryLength = element?.getAttribute("arbitraryLength").equals("true")
                 val directed = !element?.getAttribute("directed").equals("false")
+                val expandable = element?.getAttribute("expandable").equals("true")
                 val uri = element?.textContent
 
                 if (name != null && uri != null) {
-                    val relationType = BGRelationType(uri, name, index, defaultGraph, arbitraryLength, directed)
+                    val relationType = BGRelationType(uri, name, index, defaultGraph, arbitraryLength, directed, expandable)
                     relationTypes.put(relationType.identifier, relationType)
                 }
             }
+
 
             cache.relationTypeMap = relationTypes
 

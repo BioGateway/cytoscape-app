@@ -12,6 +12,7 @@ import org.cytoscape.biogwplugin.internal.util.Utility;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.*;
 import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.task.NodeViewTaskFactory;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
@@ -21,6 +22,10 @@ import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.osgi.framework.BundleContext;
+
+import static org.cytoscape.work.ServiceProperties.PREFERRED_ACTION;
+import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
+import static org.cytoscape.work.ServiceProperties.TITLE;
 
 @SuppressWarnings("Convert2Lambda")
 public class CyActivator extends AbstractCyActivator {
@@ -88,21 +93,34 @@ public class CyActivator extends AbstractCyActivator {
 	private void registerContextMenuItems(BundleContext bundleContext, BGServiceManager serviceManager) {
 
         BGNetworkViewCMF networkViewCMF = new BGNetworkViewCMF(0F, serviceManager);
-        registerAllServices(bundleContext, networkViewCMF, ezProps("preferredMenu", "BioGateway"));
+        registerAllServices(bundleContext, networkViewCMF, ezProps(PREFERRED_MENU, "BioGateway"));
 
         BGNodeViewCMF nodeViewCMF = new BGNodeViewCMF(0F, serviceManager);
-        registerAllServices(bundleContext, nodeViewCMF, ezProps("preferredMenu", "BioGateway"));
+        registerAllServices(bundleContext, nodeViewCMF, ezProps(PREFERRED_MENU, "BioGateway"));
 
         BGChangeEdgeTypeCMF changeEdgeTypeCMF = new BGChangeEdgeTypeCMF(0F, serviceManager);
-        registerAllServices(bundleContext, changeEdgeTypeCMF, ezProps("preferredMenu", "BioGateway"));
+        registerAllServices(bundleContext, changeEdgeTypeCMF, ezProps(PREFERRED_MENU, "BioGateway"));
 
         BGOpenEdgeSourceViewCMF openPumedIdCMF = new BGOpenEdgeSourceViewCMF(1F, serviceManager);
-        registerAllServices(bundleContext, openPumedIdCMF, ezProps("preferredMenu", "BioGateway"));
+        registerAllServices(bundleContext, openPumedIdCMF, ezProps(PREFERRED_MENU, "BioGateway"));
 
         BGExpandEdgeCMF expandEdgeCMF = new BGExpandEdgeCMF(0F, serviceManager);
-        registerAllServices(bundleContext, expandEdgeCMF, ezProps("preferredMenu", "BioGateway"));
+        registerAllServices(bundleContext, expandEdgeCMF, ezProps(PREFERRED_MENU, "BioGateway"));
 
-	}
+        BGNodeDoubleClickNVTF doubleClickNVTF = new BGNodeDoubleClickNVTF(serviceManager);
+        //registerAllServices(bundleContext, doubleClickNVTF, ezProps("PREFERRED_ACTION", "OPEN", "TITLE", "Expand/Collapse"));
+
+        Properties doubleClickProperties = new Properties();
+        doubleClickProperties.setProperty(PREFERRED_ACTION, "OPEN");
+        doubleClickProperties.setProperty(TITLE, "Expand/Collapse Group");
+        registerService(bundleContext, doubleClickNVTF, NodeViewTaskFactory.class, doubleClickProperties);
+
+        BGExpandEdgeDoubleClickEVTF edgeDoubleClickEVTF = new BGExpandEdgeDoubleClickEVTF(serviceManager);
+        registerAllServices(bundleContext, edgeDoubleClickEVTF, ezProps(PREFERRED_ACTION, "OPEN"));
+
+    }
+
+
 
 
 	private BGServiceManager createServiceManager(BundleContext bundleContext) {
