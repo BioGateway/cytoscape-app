@@ -63,6 +63,9 @@ class BGVisualStyleBuilder(val serviceManager: BGServiceManager) {
                 "molecularly interacts with" to LineTypeVisualProperty.EQUAL_DASH,
                 "has agent" to LineTypeVisualProperty.DOT
         )
+        val edgeLineWidths = hashMapOf<String, Double>(
+                "molecularly interacts with" to 4.0
+        )
 
         val vizMapManager = adapter.visualMappingManager
         val visualStyleFactory = adapter.visualStyleFactory
@@ -106,6 +109,7 @@ class BGVisualStyleBuilder(val serviceManager: BGServiceManager) {
         val edgeColorMapping = discreteMappingFactory.createVisualMappingFunction("name", String::class.java, BasicVisualLexicon.EDGE_UNSELECTED_PAINT) as DiscreteMapping<String, Paint>
         val edgeLineTypeMapping = discreteMappingFactory.createVisualMappingFunction("name", String::class.java, BasicVisualLexicon.EDGE_LINE_TYPE) as DiscreteMapping<String, LineType>
         val edgeTooltipMapping = passthroughMappingFactory.createVisualMappingFunction("name", String::class.java, BasicVisualLexicon.EDGE_TOOLTIP) as PassthroughMapping<String, String>
+        val edgeWidthMapping = discreteMappingFactory.createVisualMappingFunction("name", String::class.java, BasicVisualLexicon.EDGE_WIDTH) as DiscreteMapping<String, Double>
 
         val edgeSourceArrowMapping = discreteMappingFactory.createVisualMappingFunction("name", String::class.java, BasicVisualLexicon.EDGE_SOURCE_ARROW_SHAPE) as DiscreteMapping<String, ArrowShape>
         edgeSourceArrowMapping.putMapValue("molecularly interacts with", ArrowShapeVisualProperty.ARROW)
@@ -115,6 +119,9 @@ class BGVisualStyleBuilder(val serviceManager: BGServiceManager) {
         }
         for ((name, type) in edgeLineTypes) {
             edgeLineTypeMapping.putMapValue(name, type)
+        }
+        for ((name, width) in edgeLineWidths) {
+            edgeWidthMapping.putMapValue(name, width)
         }
         vs.addVisualMappingFunction(edgeColorMapping)
         vs.addVisualMappingFunction(edgeLineTypeMapping)

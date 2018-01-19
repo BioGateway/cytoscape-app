@@ -23,9 +23,6 @@ open class BGNode {
     var description: String? = null
     var taxon: String? = null
 
-    // Set if this node is a relation expansion, and can be collapsed to a relation.
-    var collapsableToEdgeID: String? = null
-
     // This is used to keep track of the CyNodes using data from this BGNode, so they can be updated if needed.
     var cyNodes: ArrayList<CyNode>
 

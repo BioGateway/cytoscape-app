@@ -66,6 +66,13 @@ fun CyNode.getType(network: CyNetwork): String {
     return network.defaultNodeTable.getRow(this.suid).get(Constants.BG_FIELD_NODE_TYPE, String::class.java)
 }
 
+fun CyNode.setParentEdgeId(edgeId: String, network: CyNetwork) {
+    network.defaultNodeTable.getRow(this.suid).set(Constants.BG_FIELD_NODE_PARENT_EDGE_ID, edgeId)
+}
+fun CyNode.getParentEdgeId(network: CyNetwork): String {
+    return network.defaultNodeTable.getRow(this.suid).get(Constants.BG_FIELD_NODE_PARENT_EDGE_ID, String::class.java)
+}
+
 fun CyEdge.setExpandable(expandable: Boolean, network: CyNetwork) {
     network.defaultEdgeTable.getRow(this.suid).set(Constants.BG_FIELD_EDGE_EXPANDABLE, if (expandable) "true" else "false")
 }
@@ -78,7 +85,7 @@ fun CyEdge.getId(network: CyNetwork): String {
     return network.defaultEdgeTable.getRow(this.suid).get(Constants.BG_FIELD_EDGE_ID, String::class.java)
 }
 fun CyEdge.getUri(network: CyNetwork): String {
-    return network.defaultEdgeTable.getRow(this.suid).get(Constants.BG_FIELD_EDGE_ID, String::class.java)
+    return network.defaultEdgeTable.getRow(this.suid).get(Constants.BG_FIELD_IDENTIFIER_URI, String::class.java)
 }
 
 class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
@@ -159,8 +166,10 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
         // 3. Add the new nodes
         val addedNodes = ArrayList<CyNode>()
         for ((index, node) in nodes.withIndex()) {
-            node.collapsableToEdgeID = initialEdgeView.model.getId(network)
+
+            //node.collapsableToEdgeID = initialEdgeView.model.getId(network)
             val cyNode = addNodeToNetwork(node, network, network.defaultNodeTable)
+            cyNode.setParentEdgeId(initialEdgeView.model.getId(network), network)
             addedNodes.add(cyNode)
         }
 
@@ -204,14 +213,15 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
     }
 
 
-    fun collapseEdgeWithNodes(netView: CyNetworkView, nodeView: View<CyNode>, nodeUri: String, relationTypeUri: String) {
+    fun collapseEdgeWithNodes(netView: CyNetworkView, nodeView: View<CyNode>, relationTypeUri: String) {
 
         val network = netView.model
         val edgeTable = network.defaultEdgeTable
+        val nodeUri = nodeView.model.getUri(network)
 
         // Get the edge SUID
         val node = serviceManager.server.searchForExistingNode(nodeUri)
-        val edgeID = node?.collapsableToEdgeID
+        val edgeID = nodeView.model.getParentEdgeId(network)
 
         if (edgeID == null) return
 
@@ -233,7 +243,7 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
         val fromNode = edge.source
         val toNode = edge.target
 
-        val nodes = findNodesWithEdgesToNodes(fromNode, toNode, relationTypeUri)
+        val nodes = findNodesWithEdgesToNodes(network, fromNode, toNode, relationTypeUri)
 
         // Show the hidden edge.
         edgeView.setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, true)
@@ -245,17 +255,17 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
     }
 
     /// Finds nodes with relations of the given type to both nodes provided.
-    private fun findNodesWithEdgesToNodes(firstNode: CyNode, secondNode: CyNode, relationTypeUri: String): Set<CyNode> {
+    private fun findNodesWithEdgesToNodes(network: CyNetwork, firstNode: CyNode, secondNode: CyNode, relationTypeUri: String): Set<CyNode> {
 
-        val network = firstNode.networkPointer
-        if (secondNode.networkPointer != network) throw Exception("Cannot find edges between nodes in different networks!")
-        if (firstNode == secondNode) throw Exception("This method is not ment to find self-pointing edges!")
+        //if (secondNode.networkPointer != network) throw Exception("Cannot find edges between nodes in different networks!")
+        //if (firstNode == secondNode) throw Exception("This method is not ment to find self-pointing edges!")
 
         val nodesPointingToFirst = HashSet<CyNode>()
         val nodesPointingToSecond = HashSet<CyNode>()
 
         for (edge in network.edgeList) {
-            if (edge.getUri(network) == relationTypeUri) {
+            val uri = edge.getUri(network)
+            if (uri == relationTypeUri) {
                 if (edge.target == firstNode) nodesPointingToFirst.add(edge.source)
                 if (edge.target == secondNode) nodesPointingToSecond.add(edge.source)
             }
