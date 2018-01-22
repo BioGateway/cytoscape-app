@@ -12,16 +12,23 @@ class BGFindDiscretePPIsBetweenNodesQuery(serviceManager: BGServiceManager, val 
     }
 
     private fun generateQueryString(fromNode: String, toNode: String): String {
+
         return "BASE <http://www.semantic-systems-biology.org/> \n" +
-                "PREFIX has_agent: <http://semanticscience.org/resource/SIO_000139>\n" +
-                "SELECT distinct ?ppi <intact> has_agent: ?node\n" +
+                "PREFIX has_agent: <http://semanticscience.org/resource/SIO_000139>\n"+
+                "SELECT DISTINCT ?ppi <intact> has_agent: ?node \n" +
+                "WHERE {\n" +
+                "FILTER (?count = 2)\n" +
+                "GRAPH <intact> {\n" +
+                "?ppi has_agent: ?node . }\n" +
+                "{\n" +
+                "SELECT ?ppi count(?node) as ?count\n" +
                 "WHERE {  \n" +
-                " GRAPH <intact> {  \n" +
-                "  ?ppi has_agent: <" + fromNode + "> .\n" +
-                "  ?ppi has_agent: <" + toNode + "> .\n" +
-                "  ?ppi has_agent: ?node .\n" +
-                " }  \n" +
-                "}"
+                "GRAPH <intact> {  \n" +
+                "?ppi has_agent: <" + fromNode + "> .\n" +
+                "?ppi has_agent: <" + toNode + "> .\n" +
+                "?ppi has_agent: ?node .\n" +
+                "}}}}"
+
     }
 
 }
