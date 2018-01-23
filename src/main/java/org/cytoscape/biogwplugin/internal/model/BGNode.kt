@@ -12,6 +12,8 @@ enum class BGNodeType(val paremeterType: String) {
     GO("GO annotation"),
     Taxon("Taxon"),
     PPI("PPI"),
+    GOA("GO Annotation"),
+    TFTG("TF-TG Statement"),
     Undefined("Undefined type") }
 
 open class BGNode {
@@ -38,7 +40,8 @@ open class BGNode {
             uri.contains("GO_") -> BGNodeType.GO
             uri.contains("NCBITaxon_") -> BGNodeType.Taxon
             uri.contains("intact") -> BGNodeType.PPI
-
+            uri.contains("GOA_") -> BGNodeType.GOA
+            uri.contains("semantic-systems-biology.org/") -> BGNodeType.TFTG // TODO: Need a better identifier!
             else -> {
                 BGNodeType.Undefined
             }

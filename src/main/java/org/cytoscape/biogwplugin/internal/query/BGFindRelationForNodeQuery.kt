@@ -10,7 +10,7 @@ import org.cytoscape.biogwplugin.internal.util.Utility
 import java.io.BufferedReader
 import java.io.StringReader
 
-class BGFindRelationForNodeQuery(serviceManager: BGServiceManager, val relationType: BGRelationType, val nodeUri: String, val direction: BGRelationDirection): BGQuery(serviceManager, BGReturnType.RELATION_TRIPLE, serviceManager.server.parser) {
+class BGFindRelationForNodeQuery(serviceManager: BGServiceManager, val relationType: BGRelationType, val nodeUri: String, val direction: BGRelationDirection): BGQuery(serviceManager, BGReturnType.RELATION_TRIPLE) {
     override var queryString: String = ""
         get() = when (direction) {
                 BGRelationDirection.TO -> generateToQueryString()

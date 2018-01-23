@@ -4,7 +4,7 @@ import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.model.BGNodeType
 import org.cytoscape.biogwplugin.internal.parser.BGReturnType
 
-class BGBulkFetchNodesFromURIs(serviceManager: BGServiceManager, val nodeType: BGNodeType, val nodeUris: Collection<String>): BGQuery(serviceManager, BGReturnType.NODE_LIST_DESCRIPTION_TAXON, serviceManager.server.parser) {
+class BGBulkFetchNodesFromURIs(serviceManager: BGServiceManager, val nodeType: BGNodeType, val nodeUris: Collection<String>): BGQuery(serviceManager, BGReturnType.NODE_LIST_DESCRIPTION_TAXON) {
     override var queryString: String = ""
         get() = generateQueryString()
 

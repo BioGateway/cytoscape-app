@@ -24,6 +24,9 @@ abstract class BGReturnData {
     }
 }
 
+class BGReturnMetadata(columnName: String, val values: ArrayList<String>): BGReturnData(BGReturnType.METADATA_FIELD, arrayOf(columnName))
+
+
 class BGReturnPubmedIds(columnNames: Array<String>): BGReturnData(BGReturnType.PUBMED_ID, columnNames) {
     var pubmedIDlist = ArrayList<String>()
 }

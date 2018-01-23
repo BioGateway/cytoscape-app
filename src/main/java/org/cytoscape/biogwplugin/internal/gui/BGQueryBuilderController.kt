@@ -232,10 +232,10 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
 
             query = when(queryType){
                 BGReturnType.NODE_LIST, BGReturnType.NODE_LIST_DESCRIPTION -> {
-                    BGNodeSearchQuery(serviceManager, queryString, queryType, serviceManager.server.parser)
+                    BGNodeSearchQuery(serviceManager, queryString, queryType)
                 }
                 BGReturnType.RELATION_TRIPLE, BGReturnType.RELATION_TRIPLE_NAMED -> {
-                    BGRelationQueryImplementation(serviceManager, queryString, serviceManager.server.parser, queryType)
+                    BGRelationQueryImplementation(serviceManager, queryString, queryType)
                 }
                 else -> {
                     throw Exception("Unexpected query type: "+queryType.toString())
@@ -746,8 +746,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
             view.sparqlTextArea.text = queryString
 
             val queryType = BGReturnType.RELATION_MULTIPART
-
-            val query = BGMultiRelationsQuery(serviceManager, queryString, serviceManager.server.parser, queryType)
+            val query = BGMultiRelationsQuery(serviceManager, queryString, queryType)
 
             query.addCompletion {
                 val data = it as? BGReturnRelationsData ?: throw Exception("Expected Relation Data in return!")

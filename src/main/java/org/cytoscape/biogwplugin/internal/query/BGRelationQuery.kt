@@ -10,9 +10,9 @@ import org.cytoscape.biogwplugin.internal.util.Utility
 import java.io.BufferedReader
 import java.io.StringReader
 
-class BGRelationQueryImplementation(serviceManager: BGServiceManager, override var queryString: String, parser: BGParser, var returnType: BGReturnType): BGRelationQuery(serviceManager, returnType, parser)
+class BGRelationQueryImplementation(serviceManager: BGServiceManager, override var queryString: String, var returnType: BGReturnType): BGRelationQuery(serviceManager, returnType)
 
-abstract class BGRelationQuery(serviceManager: BGServiceManager, type: BGReturnType, parser: BGParser): BGQuery(serviceManager, type, parser) {
+abstract class BGRelationQuery(serviceManager: BGServiceManager, type: BGReturnType): BGQuery(serviceManager, type) {
     var returnDataFilter: ((BGRelation) -> Boolean)? = null
 
     init {

@@ -3,7 +3,8 @@ package org.cytoscape.biogwplugin.internal.query
 import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.parser.BGReturnType
 
-class BGFindDiscretePPIsBetweenNodesQuery(serviceManager: BGServiceManager, val fromNode: String, val toNode: String): BGRelationQuery(serviceManager, BGReturnType.RELATION_TRIPLE, serviceManager.server.parser) {
+
+class BGFindDiscretePPIsBetweenNodesQuery(serviceManager: BGServiceManager, val fromNode: String, val toNode: String): BGRelationQuery(serviceManager, BGReturnType.RELATION_TRIPLE) {
     override var queryString: String = ""
 
     init {

@@ -8,7 +8,7 @@ import org.cytoscape.biogwplugin.internal.util.Utility
 import org.cytoscape.work.AbstractTask
 import org.cytoscape.work.TaskMonitor
 
-class BGFindBinaryPPIInteractionsQuery(serviceManager: BGServiceManager, val nodeUri: String): BGRelationQuery(serviceManager, BGReturnType.RELATION_TRIPLE, serviceManager.server.parser) {
+class BGFindBinaryPPIInteractionsQuery(serviceManager: BGServiceManager, val nodeUri: String): BGRelationQuery(serviceManager, BGReturnType.RELATION_TRIPLE) {
 
     init {
         taskMonitorTitle = "Searching for binary protein interactions..."

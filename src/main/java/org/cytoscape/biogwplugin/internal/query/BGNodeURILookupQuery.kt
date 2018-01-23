@@ -6,7 +6,7 @@ import org.cytoscape.biogwplugin.internal.parser.BGReturnType
 import java.io.BufferedReader
 import java.io.InputStreamReader
 
-class BGNodeURILookupQuery(serviceManager: BGServiceManager, val searchString: String, val useRegex: Boolean, val nodeType: BGNodeType): BGQuery(serviceManager, BGReturnType.NODE_LIST_DESCRIPTION_TAXON, serviceManager.server.parser) {
+class BGNodeURILookupQuery(serviceManager: BGServiceManager, val searchString: String, val useRegex: Boolean, val nodeType: BGNodeType): BGQuery(serviceManager, BGReturnType.NODE_LIST_DESCRIPTION_TAXON) {
     override var queryString: String = ""
         get() = generateQueryString()
 

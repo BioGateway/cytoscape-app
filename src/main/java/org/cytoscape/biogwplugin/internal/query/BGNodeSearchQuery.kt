@@ -8,7 +8,7 @@ import org.cytoscape.biogwplugin.internal.parser.BGReturnType
 import java.io.BufferedReader
 import java.io.StringReader
 
-class BGNodeSearchQuery(serviceManager: BGServiceManager, override var queryString: String, returnType: BGReturnType, parser: BGParser): BGQuery(serviceManager, returnType, parser) {
+class BGNodeSearchQuery(serviceManager: BGServiceManager, override var queryString: String, returnType: BGReturnType): BGQuery(serviceManager, returnType) {
 
     init {
         taskMonitorTitle = "Searching for nodes..."

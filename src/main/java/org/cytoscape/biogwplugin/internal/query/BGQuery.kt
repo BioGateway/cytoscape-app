@@ -25,7 +25,7 @@ enum class BGParsingType {
 }
 
 @Suppress("LocalVariableName")
-abstract class BGQuery(val serviceManager: BGServiceManager, var type: BGReturnType, val parser: BGParser): AbstractTask(), Runnable {
+abstract class BGQuery(val serviceManager: BGServiceManager, var type: BGReturnType): AbstractTask(), Runnable {
     var completionBlocks: ArrayList<(BGReturnData?) -> Unit> = ArrayList()
     var returnData: BGReturnData? = null
     var client = HttpClients.createDefault()!!
@@ -33,6 +33,7 @@ abstract class BGQuery(val serviceManager: BGServiceManager, var type: BGReturnT
     open var taskMonitorTitle = "Searching..."
     var parsingBlock: ((BufferedReader) -> Unit)? = null
     var parseType = BGParsingType.PARSING_BLOCK
+    val parser = serviceManager.server.parser
 
     abstract var queryString: String
 

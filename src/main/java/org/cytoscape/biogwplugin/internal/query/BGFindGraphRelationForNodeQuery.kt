@@ -9,7 +9,7 @@ import java.io.BufferedReader
 import java.io.StringReader
 
 
-class BGFindGraphRelationForNodeQuery(serviceManager: BGServiceManager, val nodeType: BGNodeType, val nodeUri: String): BGRelationQuery(serviceManager, BGReturnType.RELATION_TRIPLE, serviceManager.server.parser) {
+class BGFindGraphRelationForNodeQuery(serviceManager: BGServiceManager, val nodeType: BGNodeType, val nodeUri: String): BGRelationQuery(serviceManager, BGReturnType.RELATION_TRIPLE) {
     override var queryString: String = ""
         get() = when (nodeType) {
             BGNodeType.Gene -> generateFindProteinsRegluatingGeneQueryString()

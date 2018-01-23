@@ -2,9 +2,12 @@ package org.cytoscape.biogwplugin.internal.server
 
 import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.model.BGNode
+import org.cytoscape.biogwplugin.internal.model.BGRelation
 import org.cytoscape.biogwplugin.internal.model.BGRelationType
 import org.cytoscape.biogwplugin.internal.parser.*
+import org.cytoscape.biogwplugin.internal.query.BGFetchPubmedIdQuery
 import org.cytoscape.biogwplugin.internal.query.BGNodeFetchQuery
+import org.cytoscape.biogwplugin.internal.query.BGReturnPubmedIds
 import org.cytoscape.biogwplugin.internal.query.QueryTemplate
 import org.cytoscape.biogwplugin.internal.util.Constants
 import org.cytoscape.biogwplugin.internal.util.Utility
@@ -83,6 +86,18 @@ class BGServer(private val serviceManager: BGServiceManager) {
         return node
     }
 
+
+
+    fun getSourceDataForRelations(relations: Collection<BGRelation>, graph: String) {
+        for (relation in relations) {
+            var query = BGFetchPubmedIdQuery(serviceManager, relation.fromNode.uri, relation.relationType.uri, relation.toNode.uri)
+            query.addCompletion {
+                val data = it as? BGReturnPubmedIds ?: throw Exception("Invalid return data!")
+
+            }
+        }
+    }
+
     fun getNodeFromCacheOrNetworks(newNode: BGNode): BGNode {
         // Check if the node already exists in the cache.
         var node = cache.nodeCache[newNode.uri]
@@ -156,7 +171,7 @@ class BGServer(private val serviceManager: BGServiceManager) {
             completion(null)
             return
         }
-        val query = BGNodeFetchQuery(serviceManager, uri, serviceManager.server.parser, BGReturnType.NODE_LIST_DESCRIPTION)
+        val query = BGNodeFetchQuery(serviceManager, uri, BGReturnType.NODE_LIST_DESCRIPTION)
         // TODO: Use the CloseableHttpClient. Because this might cause things to take a looooong time.
         val stream = query.encodeUrl()?.openStream()
         if (stream != null) {

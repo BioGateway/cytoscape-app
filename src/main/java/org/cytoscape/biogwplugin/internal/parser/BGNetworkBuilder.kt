@@ -1,20 +1,18 @@
 package org.cytoscape.biogwplugin.internal.parser
 
 import org.cytoscape.biogwplugin.internal.BGServiceManager
-import org.cytoscape.biogwplugin.internal.model.BGNode
-import org.cytoscape.biogwplugin.internal.model.BGRelation
-import org.cytoscape.biogwplugin.internal.model.BGRelationMetadata
-import org.cytoscape.biogwplugin.internal.model.BGRelationType
 import org.cytoscape.biogwplugin.internal.util.Constants
 import org.cytoscape.biogwplugin.internal.util.Utility
-import org.cytoscape.model.CyEdge
-import org.cytoscape.model.CyNetwork
-import org.cytoscape.model.CyNode
-import org.cytoscape.model.CyTable
 import org.cytoscape.view.model.CyNetworkView
 import org.cytoscape.view.model.View
 import org.cytoscape.view.presentation.property.BasicVisualLexicon
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D
+import org.cytoscape.biogwplugin.internal.model.*
+import org.cytoscape.biogwplugin.internal.query.BGFetchAggregatedPPIRelationForNodeQuery
+import org.cytoscape.biogwplugin.internal.query.BGFetchAggregatedRelationForNodeQuery
+import org.cytoscape.biogwplugin.internal.query.BGRelationQuery
+import org.cytoscape.biogwplugin.internal.query.BGReturnRelationsData
+import org.cytoscape.model.*
 import java.awt.EventQueue
 import java.lang.Math.*
 
@@ -65,13 +63,13 @@ fun CyNode.setType(type: String, network: CyNetwork) {
 fun CyNode.getType(network: CyNetwork): String {
     return network.defaultNodeTable.getRow(this.suid).get(Constants.BG_FIELD_NODE_TYPE, String::class.java)
 }
-
+/*
 fun CyNode.setParentEdgeId(edgeId: String, network: CyNetwork) {
     network.defaultNodeTable.getRow(this.suid).set(Constants.BG_FIELD_NODE_PARENT_EDGE_ID, edgeId)
 }
 fun CyNode.getParentEdgeId(network: CyNetwork): String {
     return network.defaultNodeTable.getRow(this.suid).get(Constants.BG_FIELD_NODE_PARENT_EDGE_ID, String::class.java)
-}
+}*/
 
 fun CyEdge.setExpandable(expandable: Boolean, network: CyNetwork) {
     network.defaultEdgeTable.getRow(this.suid).set(Constants.BG_FIELD_EDGE_EXPANDABLE, if (expandable) "true" else "false")
@@ -86,6 +84,9 @@ fun CyEdge.getId(network: CyNetwork): String {
 }
 fun CyEdge.getUri(network: CyNetwork): String {
     return network.defaultEdgeTable.getRow(this.suid).get(Constants.BG_FIELD_IDENTIFIER_URI, String::class.java)
+}
+fun CyEdge.getSourceGraph(network: CyNetwork): String {
+    return network.defaultEdgeTable.getRow(this.suid).get(Constants.BG_FIELD_SOURCE_GRAPH, String::class.java)
 }
 
 class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
@@ -169,7 +170,7 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
 
             //node.collapsableToEdgeID = initialEdgeView.model.getId(network)
             val cyNode = addNodeToNetwork(node, network, network.defaultNodeTable)
-            cyNode.setParentEdgeId(initialEdgeView.model.getId(network), network)
+            //cyNode.setParentEdgeId(initialEdgeView.model.getId(network), network)
             addedNodes.add(cyNode)
         }
 
@@ -178,7 +179,10 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
         addRelationsToNetwork(network, relations)
 
 
-        // 5. Hide the original edge
+        // 5. Delete the original edge
+
+        network.removeEdges(arrayListOf(initialEdgeView.model))
+
         //initialEdgeView.setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, false)
         //netView.model.removeEdges(arrayListOf(initialEdgeView.model))
 
@@ -186,7 +190,7 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
 
         // 6. Set the positions of the new nodes
         //netView.updateView()
-        serviceManager.eventHelper.flushPayloadEvents()
+        //serviceManager.eventHelper.flushPayloadEvents()
 
         val addedNodeViews = HashSet<View<CyNode>>()
         for ((index, node) in addedNodes.withIndex()) {
@@ -201,17 +205,43 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
         netView.updateView()
         Utility.reloadCurrentVisualStyleCurrentNetworkView(serviceManager)
 
-
-        // Hide the original edge in the end, as it seems it get re-added for some reason...
-
-        EventQueue.invokeLater {
-            initialEdgeView.setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, false);
-            netView.updateView();
-            serviceManager.eventHelper.flushPayloadEvents()
-        }
-
     }
 
+    fun createAggregatedEdgeForRelationNode(netView: CyNetworkView, nodeView: View<CyNode>) {
+        val network = netView.model
+        val nodeUri = nodeView.model.getUri(network)
+        val cyNode = nodeView.model
+
+        // Get the associated BGNode
+        val node = serviceManager.server.searchForExistingNode(nodeUri) ?: throw Exception("Node not found!")
+
+        val query: BGRelationQuery = when (node.type) {
+            BGNodeType.PPI -> BGFetchAggregatedPPIRelationForNodeQuery(serviceManager, nodeUri)
+            BGNodeType.TFTG, BGNodeType.GOA -> BGFetchAggregatedRelationForNodeQuery(serviceManager, node)
+            else -> {
+                throw Exception("Cannot collapse nodes of this type!")
+            }
+        }
+        query.addCompletion {
+                val data = it as BGReturnRelationsData
+                val relation = data.relationsData.first()
+                if (!checkForExistingEdges(network.defaultEdgeTable, relation)) {
+                    addRelationsToNetwork(network, arrayListOf(relation))
+                }
+                network.removeNodes(arrayListOf(cyNode))
+        }
+        query.run()
+
+        /*
+        val toNodes = ArrayList<CyNode>()
+        val fromNodes = ArrayList<CyNode>()
+        for (edge in network.getAdjacentEdgeList(cyNode, CyEdge.Type.OUTGOING)) {
+            toNodes.add(edge.target)
+        }
+        for (edge in network.getAdjacentEdgeList(cyNode, CyEdge.Type.INCOMING)) {
+            fromNodes.add(edge.source)
+        }*/
+    }
 
     fun collapseEdgeWithNodes(netView: CyNetworkView, nodeView: View<CyNode>, relationTypeUri: String) {
 
@@ -219,24 +249,27 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
         val edgeTable = network.defaultEdgeTable
         val nodeUri = nodeView.model.getUri(network)
 
-        // Get the edge SUID
-        val node = serviceManager.server.searchForExistingNode(nodeUri)
+        val node = serviceManager.server.searchForExistingNode(nodeUri) ?: return
+
+        createAggregatedEdgeForRelationNode(netView, nodeView)
+
+        // Fetch the relation associated with this node:
+
+        /*
         val edgeID = nodeView.model.getParentEdgeId(network)
-
         if (edgeID == null) return
-
         val edgeList = getCyEdgesWithValue(network, edgeTable, Constants.BG_FIELD_EDGE_ID, edgeID)
-
         if (edgeList.size > 1) throw Exception("Duplicate EdgeIDs in network!")
         if (edgeList.size == 0) throw Exception("Edge ID not found in network!")
-
         val edge = edgeList.first()
         val edgeView = netView.getEdgeView(edge)
-
         if (edgeView == null) {
             // TODO: Create a new CyEdge and view.
             return
         }
+        */
+
+        /*
 
         // Find the other nodes representing this edge.
 
@@ -249,8 +282,12 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
         edgeView.setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, true)
 
         network.removeNodes(nodes)
+        */
+
+
 
         Utility.reloadCurrentVisualStyleCurrentNetworkView(serviceManager)
+
 
     }
 
@@ -303,7 +340,7 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
         // Node table
         if (nodeTable?.getColumn(Constants.BG_FIELD_IDENTIFIER_URI) == null) nodeTable?.createColumn(Constants.BG_FIELD_IDENTIFIER_URI, String::class.java, false)
         if (nodeTable?.getColumn(Constants.BG_FIELD_NODE_TYPE) == null) nodeTable?.createColumn(Constants.BG_FIELD_NODE_TYPE, String::class.java, false)
-        if (nodeTable?.getColumn(Constants.BG_FIELD_NODE_PARENT_EDGE_ID) == null) nodeTable?.createColumn(Constants.BG_FIELD_NODE_PARENT_EDGE_ID, String::class.java, false)
+        //if (nodeTable?.getColumn(Constants.BG_FIELD_NODE_PARENT_EDGE_ID) == null) nodeTable?.createColumn(Constants.BG_FIELD_NODE_PARENT_EDGE_ID, String::class.java, false)
 
         // Edge table
         if (edgeTable?.getColumn(Constants.BG_FIELD_IDENTIFIER_URI) == null) edgeTable?.createColumn(Constants.BG_FIELD_IDENTIFIER_URI, String::class.java, false)

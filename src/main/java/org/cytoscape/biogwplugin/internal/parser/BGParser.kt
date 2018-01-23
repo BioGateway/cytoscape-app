@@ -3,7 +3,9 @@ package org.cytoscape.biogwplugin.internal.parser
 import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.model.BGNode
 import org.cytoscape.biogwplugin.internal.model.BGRelation
+import org.cytoscape.biogwplugin.internal.model.BGRelationMetadata
 import org.cytoscape.biogwplugin.internal.model.BGRelationType
+import org.cytoscape.biogwplugin.internal.query.BGReturnMetadata
 import org.cytoscape.biogwplugin.internal.query.BGReturnNodeData
 import org.cytoscape.biogwplugin.internal.query.BGReturnPubmedIds
 import org.cytoscape.biogwplugin.internal.query.BGReturnRelationsData
@@ -27,7 +29,8 @@ enum class BGReturnType(val paremeterCount: Int) {
     RELATION_MULTIPART_NAMED_DESCRIBED(0), // Same as above, but has names and description data for all returned nodes.
     RELATION_MULTIPART_FROM_NODE_NAMED_DESCRIBED(0), // Only has name and description data for the FROM nodes.
     RELATION_MULTIPART_TO_NODE_NAMED_DESCRIBED(0), // Only has name and description data for the TO nodes.
-    PUBMED_ID(1)
+    PUBMED_ID(1),
+    METADATA_FIELD(1)
 }
 
 
@@ -40,6 +43,21 @@ class BGParser(private val serviceManager: BGServiceManager) {
         cancelled = true
         nodeFetchThread?.stop()
         throw Exception("Cancelled.")
+    }
+
+    fun parseMetadata(reader: BufferedReader, completion: (BGReturnMetadata?) -> Unit) {
+        val returnType = BGReturnType.METADATA_FIELD
+
+        val firstLine = reader.readLine().split("\t")
+        if (firstLine.size != returnType.paremeterCount) throw Exception("Number of columns in data array must match the parameter count of the query type!")
+
+        val values = ArrayList<String>()
+        reader.forEachLine {
+            values.add(it)
+        }
+
+        val returnData = BGReturnMetadata("values", values)
+        completion(returnData)
     }
 
     fun parseNodesToTextArray(reader: BufferedReader, returnType: BGReturnType, completion: (BGReturnNodeData?) -> Unit) {

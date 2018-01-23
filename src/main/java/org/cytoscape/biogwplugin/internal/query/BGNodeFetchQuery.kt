@@ -6,7 +6,7 @@ import org.cytoscape.biogwplugin.internal.parser.BGReturnType
 import java.io.BufferedReader
 import java.io.InputStreamReader
 
-class BGNodeFetchQuery(serviceManager: BGServiceManager, val nodeUri: String, parser: BGParser, type: BGReturnType): BGQuery(serviceManager, type, parser) {
+class BGNodeFetchQuery(serviceManager: BGServiceManager, val nodeUri: String, type: BGReturnType): BGQuery(serviceManager, type) {
 
     /// This is running synchronously and without the main HTTPClient.
     override fun run() {
