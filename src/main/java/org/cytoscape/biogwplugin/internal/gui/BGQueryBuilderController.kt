@@ -414,8 +414,8 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
             val fromUri = line.fromUri ?: return "The URI can not be left blank when not using variables."
             val toUri = line.toUri ?: return "The URI can not be left blank when not using variables."
 
-            if (!fromUri.startsWith("?") && !fromUri.startsWith("<http://")) return "The From URI is invalid."
-            if (!toUri.startsWith("?") && !toUri.startsWith("<http://")) return "The To URI is invalid."
+            if (!fromUri.startsWith("?") && !fromUri.startsWith("http://")) return "The From URI is invalid."
+            if (!toUri.startsWith("?") && !toUri.startsWith("http://")) return "The To URI is invalid."
         }
         return null
     }

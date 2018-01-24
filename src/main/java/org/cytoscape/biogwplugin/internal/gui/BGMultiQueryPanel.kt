@@ -19,17 +19,20 @@ class BGMultiQueryLine(val serviceManager: BGServiceManager, val fromTextField: 
     val fromComboBox: JComboBox<String>
     val toComboBox: JComboBox<String>
 
+    var currentFromUri: String? = null
+    var currentToUri: String? = null
+
     fun updateComboBox(comboBox: JComboBox<String>, textField: JTextField) {
         val selectedVariable = comboBox.model.selectedItem as String
-        if (selectedVariable == "URI:") {
+        if (selectedVariable == Constants.BG_QUERYBUILDER_ENTITY_LABEL) {
             // Make sure that the old variable is freed up.
             variableManager.unRegisterUseOfVariableForComponent(comboBox)
             variableManager.URIcomboBoxes.add(comboBox)
-            textField.isEnabled = true
+            //textField.isEnabled = true
         } else {
             variableManager.registerUseOfVariableForComponent(selectedVariable, comboBox)
             variableManager.URIcomboBoxes.remove(comboBox)
-            textField.isEnabled = false
+            //textField.isEnabled = false
         }
     }
 
@@ -57,6 +60,7 @@ class BGMultiQueryLine(val serviceManager: BGServiceManager, val fromTextField: 
             val lookupController = BGNodeLookupController(serviceManager, this) {
                 if (it != null) {
                     this.fromUri = it.uri
+                    this.fromTextField.text = it.name
                     this.fromTextField.toolTipText = it.description
                 }
             }
@@ -67,6 +71,7 @@ class BGMultiQueryLine(val serviceManager: BGServiceManager, val fromTextField: 
             val lookupController = BGNodeLookupController(serviceManager, this) {
                 if (it != null) {
                     this.toUri = it.uri
+                    this.toTextField.text = it.name
                     this.toTextField.toolTipText = it.description
                 }
             }
@@ -76,7 +81,12 @@ class BGMultiQueryLine(val serviceManager: BGServiceManager, val fromTextField: 
         swapButton.addActionListener {
             swapToAndFromParameters()
         }
+        fromTextField.isEnabled = false
+        toTextField.isEnabled = false
 
+
+
+        /*
         fromTextField.document.addDocumentListener(object : DocumentListener {
             override fun insertUpdate(e: DocumentEvent) {
                 fromTextField.toolTipText = getLabelForURI(fromTextField.text)
@@ -102,6 +112,7 @@ class BGMultiQueryLine(val serviceManager: BGServiceManager, val fromTextField: 
             override fun changedUpdate(e: DocumentEvent) {
                 toTextField.toolTipText = getLabelForURI(toTextField.text)
             }})
+         */
 
         this.add(fromComboBox)
         this.add(fromTextField)
@@ -114,8 +125,8 @@ class BGMultiQueryLine(val serviceManager: BGServiceManager, val fromTextField: 
     }
 
     private fun swapToAndFromParameters() {
-        val tmpFromUri = fromTextField.text
-        val tmpToUri = toTextField.text
+        val tmpFromUri = fromUri
+        val tmpToUri = toUri
         val tmpFromItem = fromComboBox.selectedItem
         val tmpToItem = toComboBox.selectedItem
 
@@ -125,45 +136,62 @@ class BGMultiQueryLine(val serviceManager: BGServiceManager, val fromTextField: 
         toUri = tmpFromUri
     }
 
+    /*
     private fun getLabelForURI(uri: String): String {
         val node = serviceManager.server.searchForExistingNode(uri)
         node?.name?.let {
             return it
         }
         return ""
+    }*/
+
+    private fun updateLabelAndDescriptionForField(textField: JTextField, uri: String) {
+        val node = serviceManager.server.searchForExistingNode(uri)
+        textField.text = node?.name ?: ""
+        textField.toolTipText = node?.description ?: ""
     }
 
     var fromUri: String?
         get() = {
             val selectedItem = fromComboBox.selectedItem as String
-            if (selectedItem == "URI:") {
+            if (selectedItem == Constants.BG_QUERYBUILDER_ENTITY_LABEL) {
+                /*
                 if (this.fromTextField.text.length == 0) {
                     null
                 } else {
                     "<" + this.fromTextField.text + ">"
-                }
+                }*/
+                this.currentFromUri
                 } else {
                 "?"+selectedItem
             }
         }()
         set(value) {
-            this.fromTextField.text = value
+            //this.fromTextField.text = value
+            this.currentFromUri = value
+
+            updateLabelAndDescriptionForField(fromTextField, value ?: "")
         }
     var toUri: String?
         get() = {
             val selectedItem = toComboBox.selectedItem as String
-            if (selectedItem == "URI:") {
+            if (selectedItem == Constants.BG_QUERYBUILDER_ENTITY_LABEL) {
+                /*
                 if (this.toTextField.text.length == 0) {
                     null
                 } else {
                 "<"+this.toTextField.text+">"
-                }
+                }*/
+                this.currentToUri
             } else {
                 "?"+selectedItem
             }
         }()
         set(value) {
-            this.toTextField.text = value
+            //this.toTextField.text = value
+            this.currentToUri = value
+            toTextField.text
+            updateLabelAndDescriptionForField(toTextField, value ?: "")
         }
     val relationType: String?
         get() = {
@@ -233,7 +261,7 @@ class BGQueryVariableManager {
     fun getShownVariables(): Array<String> {
         var usedVariables = getUsedVariables().map { it.toString() }.toTypedArray()
         var nextFreeChar = getNextFreeVariable().toString()
-        var shownVariables = arrayOf("URI:") + usedVariables
+        var shownVariables = arrayOf(Constants.BG_QUERYBUILDER_ENTITY_LABEL) + usedVariables
         nextFreeChar.let {
             shownVariables += it
         }
@@ -292,7 +320,7 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager): JPanel() {
         when (graph.from.type) {
             BGSPARQLParser.BGVariableType.URI -> {
                 queryLine.fromUri = graph.from.value
-                queryLine.fromComboBox.selectedItem = "URI:"
+                queryLine.fromComboBox.selectedItem = Constants.BG_QUERYBUILDER_ENTITY_LABEL
             }
             BGSPARQLParser.BGVariableType.Variable -> {
                 queryLine.fromComboBox.selectedItem = graph.from.value
@@ -313,7 +341,7 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager): JPanel() {
         when (graph.to.type) {
             BGSPARQLParser.BGVariableType.URI -> {
                 queryLine.toUri = graph.to.value
-                queryLine.toComboBox.selectedItem = "URI:"
+                queryLine.toComboBox.selectedItem = Constants.BG_QUERYBUILDER_ENTITY_LABEL
             }
             BGSPARQLParser.BGVariableType.Variable -> {
                 queryLine.toComboBox.selectedItem = graph.to.value
@@ -399,27 +427,35 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager): JPanel() {
             val fromUri = line.fromUri ?: throw Exception("Invalid From URI!")
             var relationType = line.relationType?.let { relationTypes.get(it) } ?: throw Exception("Invalid Relation Type!")
             val toUri = line.toUri ?: throw Exception("Invalid To URI!")
+            val fromRDFUri = getRDFURI(fromUri)
+            val toRDFUri = getRDFURI(toUri)
 
             val fromName = "?name_"+getSafeString(fromUri)
             val toName = "?name_"+getSafeString(toUri)
 
             val graphName = relationType.defaultGraphName ?: generateGraphName(numberOfGraphQueries, relationType)
 
-            returnValues += fromUri+" as ?"+getSafeString(fromUri)+numberOfGraphQueries+" <"+graphName+"> <"+relationType.uri+"> "+toUri+" as ?"+getSafeString(toUri)+numberOfGraphQueries+" "
-            graphQueries += generateSparqlGraph(numberOfGraphQueries, fromUri, relationType, toUri)
-            nodeNames.add(fromUri)
-            nodeNames.add(toUri)
+            returnValues += fromRDFUri+" as ?"+getSafeString(fromUri)+numberOfGraphQueries+" <"+graphName+"> <"+relationType.uri+"> "+toRDFUri+" as ?"+getSafeString(toUri)+numberOfGraphQueries+" "
+            graphQueries += generateSparqlGraph(numberOfGraphQueries, fromRDFUri, relationType, toRDFUri)
+            nodeNames.add(fromRDFUri)
+            nodeNames.add(toRDFUri)
             numberOfGraphQueries += 1
         }
         return Pair(returnValues, graphQueries)
     }
 
+    private fun getRDFURI(uri: String): String {
+        return when (uri.startsWith("?")) {
+            true -> uri
+            false -> "<"+uri+">"
+        }
+    }
 
     private fun getSafeString(uri: String): String {
         return when (uri.startsWith("?")) {
             true -> uri.removePrefix("?")
             false -> {
-                if (uri.startsWith("<http://")) {
+                if (uri.startsWith("http://")) {
                     uri.replace("<", "").replace(">", "").replace("http://", "").replace("/", "_").replace(".", "_").replace("-", "_")
                 } else {
                     throw Exception("Invalid from URI value.")
