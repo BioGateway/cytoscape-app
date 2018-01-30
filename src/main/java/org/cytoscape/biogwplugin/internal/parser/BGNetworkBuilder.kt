@@ -120,7 +120,7 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
 
         fun middleWithOffset(offset: Double): Vector2D {
             // Calculates a point on the orthogonal, with a positive or negative offset.
-            val offsetVector = fromNodeCoords.getPerpendicular().normalize().scalarMultiply(offset)
+            val offsetVector = unitVector.getPerpendicular().normalize().scalarMultiply(offset)
             return middlePoint.add(offsetVector)
         }
 
@@ -322,7 +322,7 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
     }
 
     fun createNetwork(): CyNetwork {
-        val network = serviceManager.networkFactory.createNetwork()
+        val network = serviceManager.networkFactory?.createNetwork() ?: throw Exception("Unable to create network!")
         val nodeTable = network.defaultNodeTable
         val edgeTable = network.defaultEdgeTable
 
@@ -498,22 +498,22 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
 
     fun createNetworkView(network: CyNetwork, serviceManager: BGServiceManager) {
         if (serviceManager.server.settings.useBioGatewayLayoutStyleAsDefault) {
-            val view = serviceManager.adapter.cyNetworkViewFactory.createNetworkView(network)
+            val view = serviceManager.adapter?.cyNetworkViewFactory?.createNetworkView(network)
 
             val visualStyle = Utility.getOrCreateBioGatewayVisualStyle(serviceManager)
-            serviceManager.adapter.visualMappingManager.setVisualStyle(visualStyle, view)
-            serviceManager.viewManager.addNetworkView(view)
+            serviceManager.adapter?.visualMappingManager?.setVisualStyle(visualStyle, view)
+            serviceManager.viewManager?.addNetworkView(view)
 
-            val layoutManager = serviceManager.adapter.cyLayoutAlgorithmManager
-            val defaultLayout = layoutManager.defaultLayout
+            val layoutManager = serviceManager.adapter?.cyLayoutAlgorithmManager
+            val defaultLayout = layoutManager?.defaultLayout
 
-            val taskIterator = defaultLayout.createTaskIterator(view, defaultLayout.defaultLayoutContext, view.nodeViews.toHashSet(), null)
-            serviceManager.taskManager.execute(taskIterator)
+            val taskIterator = defaultLayout?.createTaskIterator(view, defaultLayout.defaultLayoutContext, view?.nodeViews?.toHashSet(), null)
+            serviceManager.taskManager?.execute(taskIterator)
 
         } else {
             val createNetworkViewTaskFactory = serviceManager.createNetworkViewTaskFactory
-            val taskIterator = createNetworkViewTaskFactory.createTaskIterator(setOf(network))
-            serviceManager.taskManager.execute(taskIterator)
+            val taskIterator = createNetworkViewTaskFactory?.createTaskIterator(setOf(network))
+            serviceManager.taskManager?.execute(taskIterator)
         }
     }
 }
