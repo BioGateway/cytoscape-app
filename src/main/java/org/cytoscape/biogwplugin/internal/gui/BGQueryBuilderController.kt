@@ -280,7 +280,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                 }
             }
             val iterator = TaskIterator(query)
-            serviceManager.taskManager.execute(iterator)
+            serviceManager.taskManager?.execute(iterator)
 
         }
     }
@@ -362,7 +362,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         }
 
         if (shouldCreateNetworkView) {
-            serviceManager.networkManager.addNetwork(network)
+            serviceManager.networkManager?.addNetwork(network)
             EventQueue.invokeLater {
                 network?.let {
                     server.networkBuilder.createNetworkView(it, serviceManager)
@@ -426,12 +426,14 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         val relationsFound = returnData.relationsData
 
         if (filterOn) {
-            val network = serviceManager.applicationManager.currentNetwork
-            val allNodeUris = network.defaultNodeTable.getColumn(Constants.BG_FIELD_IDENTIFIER_URI).getValues(String::class.java)
+            val network = serviceManager.applicationManager?.currentNetwork
+            val allNodeUris = network?.defaultNodeTable?.getColumn(Constants.BG_FIELD_IDENTIFIER_URI)?.getValues(String::class.java)
             var relations = ArrayList<BGRelation>()
             for (result in relationsFound) {
+                if (allNodeUris != null) {
                 if (allNodeUris.contains(result.toNode.uri) || allNodeUris.contains(result.fromNode.uri)) {
                     relations.add(result)
+                }
                 }
             }
             setRelationTableData(relations)
@@ -537,7 +539,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         return null
     }
 
-    private fun openFileChooser(): File? {
+    fun openFileChooser(): File? {
         val lastDir = preferences.get(Constants.BG_PREFERENCES_LAST_FOLDER, File(".").absolutePath)
 
         val chooser = when (lastDir != null) {
@@ -623,19 +625,19 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
             QueryType.NAME_SEARCH -> {
                 val query = BGBulkImportNodesQuery(serviceManager, nodeList, nodeType)
                 query.addCompletion(queryCompletion)
-                serviceManager.taskManager.execute(TaskIterator(query))
+                serviceManager.taskManager?.execute(TaskIterator(query))
             }
             BGQueryBuilderController.QueryType.UNIPROT_LOOKUP -> {
                 val uniprotNodeList = nodeList.map { Utility.generateUniprotURI(it) }
-                val query = BGBulkFetchNodesFromURIs(serviceManager, nodeType, uniprotNodeList)
+                val query = BGBulkImportNodesFromURIs(serviceManager, nodeType, uniprotNodeList)
                 query.addCompletion(queryCompletion)
-                serviceManager.taskManager.execute(TaskIterator(query))
+                serviceManager.taskManager?.execute(TaskIterator(query))
             }
             BGQueryBuilderController.QueryType.GO_LOOKUP -> {
                 val goNodeList = nodeList.map { Utility.generateGOTermURI(it) }
-                val query = BGBulkFetchNodesFromURIs(serviceManager, nodeType, goNodeList)
+                val query = BGBulkImportNodesFromURIs(serviceManager, nodeType, goNodeList)
                 query.addCompletion(queryCompletion)
-                serviceManager.taskManager.execute(TaskIterator(query))
+                serviceManager.taskManager?.execute(TaskIterator(query))
             }
             BGQueryBuilderController.QueryType.NOT_SET -> {
                 throw Exception("Invalid query type!")
@@ -666,7 +668,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         serviceManager.server.networkBuilder.addBGNodesToNetwork(nodes.values, network)
 
         if (shouldCreateNetworkView) {
-            serviceManager.networkManager.addNetwork(network)
+            serviceManager.networkManager?.addNetwork(network)
             EventQueue.invokeLater {
                 network?.let {
                     serviceManager.server.networkBuilder.createNetworkView(it, serviceManager)
@@ -763,7 +765,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                 }
             }
             val iterator = TaskIterator(query)
-            serviceManager.taskManager.execute(iterator)
+            serviceManager.taskManager?.execute(iterator)
         }
     }
 
@@ -828,7 +830,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
             ACTION_RUN_QUERY -> runQuery()
             ACTION_CHANGED_QUERY -> updateSelectedQuery()
             ACTION_IMPORT_TO_SELECTED -> {
-                val network = serviceManager.applicationManager.currentNetwork
+                val network = serviceManager.applicationManager?.currentNetwork
                 importSelectedResults(network, currentQuery!!.returnType)
             }
             ACTION_IMPORT_TO_NEW -> importSelectedResults(null, currentQuery!!.returnType)
@@ -847,7 +849,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
             ACTION_SELECT_UPSTREAM_RELATIONS -> selectUpstreamRelations()
             ACTION_RUN_BULK_IMPORT -> runBulkImport()
             ACTION_BULK_IMPORT_TO_NEW_NETWORK -> bulkImportToNetwork()
-            ACTION_BULK_IMPORT_TO_CURRENT_NETWORK -> bulkImportToNetwork(serviceManager.applicationManager.currentNetwork)
+            ACTION_BULK_IMPORT_TO_CURRENT_NETWORK -> bulkImportToNetwork(serviceManager.applicationManager?.currentNetwork)
             else -> {
             }
         }

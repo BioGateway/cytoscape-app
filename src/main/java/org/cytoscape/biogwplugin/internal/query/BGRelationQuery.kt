@@ -10,7 +10,11 @@ import org.cytoscape.biogwplugin.internal.util.Utility
 import java.io.BufferedReader
 import java.io.StringReader
 
-class BGRelationQueryImplementation(serviceManager: BGServiceManager, override var queryString: String, var returnType: BGReturnType): BGRelationQuery(serviceManager, returnType)
+class BGRelationQueryImplementation(serviceManager: BGServiceManager, val queryString: String, var returnType: BGReturnType): BGRelationQuery(serviceManager, returnType) {
+    override fun generateQueryString(): String {
+        return queryString
+    }
+}
 
 abstract class BGRelationQuery(serviceManager: BGServiceManager, type: BGReturnType): BGQuery(serviceManager, type) {
     var returnDataFilter: ((BGRelation) -> Boolean)? = null
@@ -18,8 +22,7 @@ abstract class BGRelationQuery(serviceManager: BGServiceManager, type: BGReturnT
     init {
         taskMonitorTitle = "Searching for relations..."
         parsingBlock = {
-            parser.parseRelations(it, type, taskMonitor) {
-                val returnRelationsData = it ?: throw Exception("Invalid return data!")
+            val returnRelationsData = parser.parseRelations(it, type, taskMonitor)
                 returnDataFilter?.let {
                     returnRelationsData.relationsData = ArrayList(returnRelationsData.relationsData.filter(it))
                     returnRelationsData.unloadedNodes?.let {
@@ -29,7 +32,6 @@ abstract class BGRelationQuery(serviceManager: BGServiceManager, type: BGReturnT
                 returnData = returnRelationsData
                 runCompletions()
             }
-        }
     }
 }
 

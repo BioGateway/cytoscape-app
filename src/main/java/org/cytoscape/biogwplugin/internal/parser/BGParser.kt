@@ -5,11 +5,9 @@ import org.cytoscape.biogwplugin.internal.model.BGNode
 import org.cytoscape.biogwplugin.internal.model.BGRelation
 import org.cytoscape.biogwplugin.internal.model.BGRelationMetadata
 import org.cytoscape.biogwplugin.internal.model.BGRelationType
-import org.cytoscape.biogwplugin.internal.query.BGReturnMetadata
-import org.cytoscape.biogwplugin.internal.query.BGReturnNodeData
-import org.cytoscape.biogwplugin.internal.query.BGReturnPubmedIds
-import org.cytoscape.biogwplugin.internal.query.BGReturnRelationsData
+import org.cytoscape.biogwplugin.internal.query.*
 import org.cytoscape.biogwplugin.internal.util.Utility
+import org.cytoscape.biogwplugin.internal.util.sanitizeParameter
 import org.cytoscape.work.TaskMonitor
 import java.io.BufferedReader
 
@@ -45,7 +43,15 @@ class BGParser(private val serviceManager: BGServiceManager) {
         throw Exception("Cancelled.")
     }
 
-    fun parseMetadata(reader: BufferedReader, completion: (BGReturnMetadata?) -> Unit) {
+    fun parseData(reader: BufferedReader, queryType: BGQueryType, taskMonitor: TaskMonitor? = null): BGReturnData {
+        when (queryType) {
+            BGQueryType.NODE -> return parseNodesToTextArray(reader, queryType.returnType)
+            BGQueryType.RELATION, BGQueryType.MULTI_RELATION -> return parseRelations(reader, queryType.returnType, taskMonitor)
+            BGQueryType.METADATA -> return parseMetadata(reader, queryType.returnType)
+        }
+    }
+
+    fun parseMetadata(reader: BufferedReader, returnType: BGReturnType): BGReturnMetadata {
         val returnType = BGReturnType.METADATA_FIELD
 
         val firstLine = reader.readLine().split("\t")
@@ -53,14 +59,13 @@ class BGParser(private val serviceManager: BGServiceManager) {
 
         val values = ArrayList<String>()
         reader.forEachLine {
-            values.add(it)
+            values.add(it.sanitizeParameter())
         }
 
-        val returnData = BGReturnMetadata("values", values)
-        completion(returnData)
+        return BGReturnMetadata("values", values)
     }
 
-    fun parseNodesToTextArray(reader: BufferedReader, returnType: BGReturnType, completion: (BGReturnNodeData?) -> Unit) {
+    fun parseNodesToTextArray(reader: BufferedReader, returnType: BGReturnType): BGReturnNodeData {
         cancelled = false
 
         val columnNames = reader.readLine().split("\t").dropLastWhile { it.isEmpty() }.map { it.replace("\"", "") }.toTypedArray()
@@ -72,10 +77,10 @@ class BGParser(private val serviceManager: BGServiceManager) {
             val lineColumns = it.split("\t").dropLastWhile({it.isEmpty()}).toTypedArray()
             returnData.addEntry(lineColumns)
         }
-        completion(returnData)
+        return returnData
     }
 
-    fun parsePubmedIdsToTextArray(reader: BufferedReader, returnType: BGReturnType, completion: (BGReturnPubmedIds?) -> Unit) {
+    fun parsePubmedIdsToTextArray(reader: BufferedReader, returnType: BGReturnType): BGReturnPubmedIds {
         cancelled = false
 
         val returnData = BGReturnPubmedIds(arrayOf("pubmedIds"))
@@ -88,10 +93,10 @@ class BGParser(private val serviceManager: BGServiceManager) {
             val uri = lineColumns[0].replace("\"", "")
             returnData.pubmedIDlist.add(uri)
         }
-        completion(returnData)
+        return returnData
     }
 
-    fun parseRelations(reader: BufferedReader, returnType: BGReturnType, taskMonitor: TaskMonitor?, completion: (BGReturnRelationsData?) -> Unit) {
+    fun parseRelations(reader: BufferedReader, returnType: BGReturnType, taskMonitor: TaskMonitor?): BGReturnRelationsData {
         cancelled = false
 
         val unloadedNodes = HashSet<BGNode>()
@@ -242,7 +247,7 @@ class BGParser(private val serviceManager: BGServiceManager) {
         println(unloadedUris.size.toString() + " uris missing. (should be the same as above.)")
         */
         returnData.unloadedNodes = unloadedNodes.toList()
-        completion(returnData)
+        return returnData
     }
 }
 

@@ -3,6 +3,8 @@ package org.cytoscape.biogwplugin.internal.query
 import org.cytoscape.biogwplugin.internal.model.BGNode
 import org.cytoscape.biogwplugin.internal.model.BGRelation
 import org.cytoscape.biogwplugin.internal.parser.BGReturnType
+import java.util.concurrent.Future
+import java.util.concurrent.TimeUnit
 
 /**
  * Created by sholmas on 26/05/2017.
@@ -69,4 +71,11 @@ class BGReturnNodeData(val returnType: BGReturnType, columnNames: Array<String>)
 class BGReturnRelationsData(type: BGReturnType, columnNames: Array<String>) : BGReturnData(type, columnNames) {
     var relationsData = ArrayList<BGRelation>()
     var unloadedNodes: List<BGNode>? = null
+}
+
+class BGReturnCompoundData(type: BGReturnType, columnNames: Array<String>) : BGReturnData(type, columnNames) {
+    var relationsData = HashSet<BGRelation>()
+    var unloadedNodes = HashSet<BGNode>()
+    var nodes = HashMap<String, BGNode>()
+    var metadata = ArrayList<String>()
 }

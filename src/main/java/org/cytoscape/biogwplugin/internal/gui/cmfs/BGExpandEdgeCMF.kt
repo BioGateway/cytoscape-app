@@ -4,7 +4,7 @@ import org.cytoscape.application.swing.CyEdgeViewContextMenuFactory
 import org.cytoscape.application.swing.CyMenuItem
 import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.model.BGNode
-import org.cytoscape.biogwplugin.internal.query.BGFindDiscretePPIsBetweenNodesQuery
+import org.cytoscape.biogwplugin.internal.query.BGFindBinaryPPIsBetweenNodesQuery
 import org.cytoscape.biogwplugin.internal.query.BGLoadUnloadedNodes
 import org.cytoscape.biogwplugin.internal.query.BGReturnRelationsData
 import org.cytoscape.biogwplugin.internal.util.Constants
@@ -35,7 +35,7 @@ class BGExpandEdgeCMF(val gravity: Float, val serviceManager: BGServiceManager):
         if (edgeUri == MOLECULARLY_INTERACTS_WITH_URI) {
             val item = JMenuItem("Expand")
             item.addActionListener {
-                val query = BGFindDiscretePPIsBetweenNodesQuery(serviceManager, fromNodeUri, toNodeUri)
+                val query = BGFindBinaryPPIsBetweenNodesQuery(serviceManager, fromNodeUri, toNodeUri)
                 query.addCompletion {
                     val returnData = it as? BGReturnRelationsData
                     if (returnData != null) {
@@ -59,7 +59,7 @@ class BGExpandEdgeCMF(val gravity: Float, val serviceManager: BGServiceManager):
                         }
                     }
                 }
-                serviceManager.taskManager.execute(TaskIterator(query))
+                serviceManager.taskManager?.execute(TaskIterator(query))
             }
             return CyMenuItem(item, gravity)
         }

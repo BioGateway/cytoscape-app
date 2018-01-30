@@ -6,10 +6,6 @@ import org.cytoscape.biogwplugin.internal.parser.BGReturnType
 
 class BGExpandRelationToNodesQuery(serviceManager: BGServiceManager, val fromNode: String, val toNode: String, val relationType: BGRelationType, returnType: BGReturnType): BGRelationQuery(serviceManager, returnType) {
 
-    override var queryString: String
-        get() = generateQueryString()
-        set(value) {}
-
     enum class GraphType(val graphName: String) {
         GOA("goa"),
         TFTG("tf-tg"),
@@ -17,7 +13,7 @@ class BGExpandRelationToNodesQuery(serviceManager: BGServiceManager, val fromNod
         INVALID("")
     }
 
-    private fun generateQueryString(): String {
+    override fun generateQueryString(): String {
         if (!relationType.expandable) throw Exception("Relation type is not expandable!")
 
         if (relationType.defaultGraphName == "goa") return generateQueryString("goa")

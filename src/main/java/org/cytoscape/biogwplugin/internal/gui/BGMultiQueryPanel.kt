@@ -331,12 +331,12 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager): JPanel() {
         if (graph.relation.type != BGSPARQLParser.BGVariableType.URI) throw Exception("Relation type cannot be a variable!")
 
         val relationIdentifier = Utility.createRelationTypeIdentifier(graph.relation.value, graph.graph.value)
-        val relation = serviceManager.cache.relationTypeMap.get(relationIdentifier) ?: serviceManager.cache.getRelationTypesForURI(graph.relation.value).first()
-        if (relation == null){
+        val relationType = serviceManager.cache.relationTypeMap.get(relationIdentifier) ?: serviceManager.cache.getRelationTypesForURI(graph.relation.value)?.first()
+        if (relationType == null){
             throw Exception("Relation name not found!")
         }
 
-        queryLine.relationTypeComboBox.selectedItem = relation.description
+        queryLine.relationTypeComboBox.selectedItem = relationType.description
 
         when (graph.to.type) {
             BGSPARQLParser.BGVariableType.URI -> {

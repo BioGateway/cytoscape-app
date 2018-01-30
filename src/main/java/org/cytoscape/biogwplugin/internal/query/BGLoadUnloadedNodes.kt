@@ -7,10 +7,24 @@ import org.cytoscape.work.AbstractTask
 import org.cytoscape.work.TaskIterator
 import org.cytoscape.work.TaskMonitor
 import java.awt.EventQueue
+import java.util.concurrent.CompletableFuture
 import javax.swing.JOptionPane
 
 
+class BGLoadUnloadedNodesFuture(val serviceManager: BGServiceManager, val unloadedNodes: List<BGNode>): AbstractTask(), Runnable {
+    override fun run(taskMonitor: TaskMonitor?) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun run() {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+}
+
 class BGLoadUnloadedNodes(val serviceManager: BGServiceManager, val unloadedNodes: List<BGNode>, private val queryCompletion: (Int) -> Unit): AbstractTask(), Runnable {
+
+    val loadedNodesFuture = CompletableFuture<Collection<BGNode>>()
 
     companion object {
         fun createAndRun(serviceManager: BGServiceManager, unloadedNodes: List<BGNode>?, completion: (Int) -> Unit) {
@@ -22,12 +36,12 @@ class BGLoadUnloadedNodes(val serviceManager: BGServiceManager, val unloadedNode
                         val optionsText = arrayOf("Ok", "Show unloaded nodes", "Cancel")
                         val response = JOptionPane.showOptionDialog(null, message, "Load nodes from server?", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, null, optionsText, null)
                         when (response) {
-                            0 -> serviceManager.taskManager.execute(TaskIterator(query))
+                            0 -> serviceManager.taskManager?.execute(TaskIterator(query))
                             1 -> completion(0)
                         }
                     } else {
                         //query.run()
-                        serviceManager.taskManager.execute(TaskIterator(query))
+                        serviceManager.taskManager?.execute(TaskIterator(query))
                     }
                 }
             } else {

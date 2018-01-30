@@ -72,8 +72,9 @@ object Utility {
     }
 
     fun findNodeGroupsInNetwork(serviceManager: BGServiceManager,network: CyNetwork): HashMap<String, CyGroup> {
-        val groups = serviceManager.adapter.cyGroupManager.getGroupSet(network)
         val groupMap = HashMap<String, CyGroup>()
+
+        val groups = serviceManager.adapter?.cyGroupManager?.getGroupSet(network) ?: return groupMap
 
         for (group in groups) {
             val groupName = getGroupName(group)
@@ -91,24 +92,25 @@ object Utility {
     }
 
     fun getOrCreateBioGatewayVisualStyle(serviceManager: BGServiceManager): VisualStyle {
-        val styles = serviceManager.adapter.visualMappingManager.allVisualStyles
-
-        for (style in styles) {
-            if (style.title.equals("BioGateway")) {
-                return style
+        val styles = serviceManager.adapter?.visualMappingManager?.allVisualStyles
+        if (styles != null) {
+            for (style in styles) {
+                if (style.title.equals("BioGateway")) {
+                    return style
+                }
             }
         }
         val style = serviceManager.visualStyleBuilder.generateStyle()
-        serviceManager.adapter.visualMappingManager.addVisualStyle(style)
+        serviceManager.adapter?.visualMappingManager?.addVisualStyle(style)
         return style
     }
 
     fun reloadCurrentVisualStyleCurrentNetworkView(serviceManager: BGServiceManager) {
-        val view = serviceManager.applicationManager.currentNetworkView
-        val style = serviceManager.adapter.visualMappingManager.currentVisualStyle
+        val view = serviceManager.applicationManager?.currentNetworkView
+        val style = serviceManager.adapter?.visualMappingManager?.currentVisualStyle
         view?.let {
-            serviceManager.eventHelper.flushPayloadEvents()
-            style.apply(it)
+            serviceManager.eventHelper?.flushPayloadEvents()
+            style?.apply(it)
         }
     }
 

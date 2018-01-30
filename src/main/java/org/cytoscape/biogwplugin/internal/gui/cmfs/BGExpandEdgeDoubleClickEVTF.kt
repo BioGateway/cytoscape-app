@@ -33,7 +33,7 @@ class BGExpandEdgeDoubleClickEVTF(val serviceManager: BGServiceManager): EdgeVie
         val edgeUri = edge.getUri(network)
         val relationType = serviceManager.cache.getRelationTypeForURIandGraph(edge.getUri(network), edge.getSourceGraph(network)) ?: throw Exception("RelationType not found in cache!")
 
-        //val query = BGFindDiscretePPIsBetweenNodesQuery(serviceManager, fromNodeUri, toNodeUri)
+        //val query = BGFindBinaryPPIsBetweenNodesQuery(serviceManager, fromNodeUri, toNodeUri)
 
         val PPI_URI = "http://purl.obolibrary.org/obo/RO_0002436"
 

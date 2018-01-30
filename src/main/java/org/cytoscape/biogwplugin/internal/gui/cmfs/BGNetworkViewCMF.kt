@@ -22,7 +22,7 @@ class BGNetworkViewCMF(val gravity: Float, val serviceManager: BGServiceManager)
             }
             if (selectedNodes.size == 1) {
                 val node = selectedNodes[0]
-                val view = serviceManager.applicationManager.currentNetworkView.getNodeView(node)
+                val view = serviceManager.applicationManager?.currentNetworkView?.getNodeView(node)
                 return BGNodeMenuActionsCMF(gravity, serviceManager).createMenuItem(netView, view)
             }
             return BGMultiNodeQueryCMF(gravity, serviceManager).createMenuItem(netView)

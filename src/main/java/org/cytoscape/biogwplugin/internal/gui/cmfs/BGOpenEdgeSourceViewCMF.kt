@@ -5,7 +5,9 @@ import org.cytoscape.application.swing.CyMenuItem
 import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.gui.BGRelationSourceController
 import org.cytoscape.biogwplugin.internal.model.BGRelationMetadata
+import org.cytoscape.biogwplugin.internal.query.BGFetchMetadataQuery
 import org.cytoscape.biogwplugin.internal.query.BGFetchPubmedIdQuery
+import org.cytoscape.biogwplugin.internal.query.BGMetadataType
 import org.cytoscape.biogwplugin.internal.query.BGReturnPubmedIds
 import org.cytoscape.biogwplugin.internal.util.Constants
 import org.cytoscape.model.CyEdge
@@ -27,6 +29,7 @@ class BGOpenEdgeSourceViewCMF(val gravity: Float, val serviceManager: BGServiceM
         val item = JMenuItem("View source data")
 
         item.addActionListener {
+            /*
             val query = BGFetchPubmedIdQuery(serviceManager, fromNodeUri, edgeUri, toNodeUri)
                 query.addCompletion {
                     val metadata = BGRelationMetadata(edgeUri)
@@ -37,8 +40,21 @@ class BGOpenEdgeSourceViewCMF(val gravity: Float, val serviceManager: BGServiceM
                         BGRelationSourceController(metadata)
                     }
                 }
-                serviceManager.taskManager.execute(TaskIterator(query))
+                */
+            val query = BGFetchMetadataQuery(serviceManager,
+                    fromNodeUri,
+                    edgeUri,
+                    toNodeUri,
+                    sourceGraph ?: "?graph",
+                    BGMetadataType.PUBMED_ID)
+
+            serviceManager.taskManager?.execute(TaskIterator(query))
+
+
+
+
             }
+
         return CyMenuItem(item, gravity)
     }
 }

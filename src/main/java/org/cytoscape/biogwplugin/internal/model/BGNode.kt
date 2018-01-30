@@ -14,6 +14,7 @@ enum class BGNodeType(val paremeterType: String) {
     PPI("PPI"),
     GOA("GO Annotation"),
     TFTG("TF-TG Statement"),
+    PUBMED("Pubmed URI"),
     Undefined("Undefined type") }
 
 open class BGNode {
@@ -28,7 +29,16 @@ open class BGNode {
     // This is used to keep track of the CyNodes using data from this BGNode, so they can be updated if needed.
     var cyNodes: ArrayList<CyNode>
 
-    constructor(uri: String) {
+    constructor(inputUri: String) {
+
+        var uri = inputUri
+
+        // TODO: THIS IS A HACK!
+        if (uri.startsWith("ECO:")) {
+            uri = "http://identifiers.org/" + inputUri
+        } else if (uri.startsWith("PubMed:")) {
+            uri = "http://identifiers.org/pubmed/"+inputUri.removePrefix("PubMed:")
+        }
         this.uri = uri
         this.cyNodes = ArrayList<CyNode>()
         if (!uri.startsWith("http")) {
@@ -40,6 +50,7 @@ open class BGNode {
             uri.contains("GO_") -> BGNodeType.GO
             uri.contains("NCBITaxon_") -> BGNodeType.Taxon
             uri.contains("intact") -> BGNodeType.PPI
+            uri.contains("pubmed") -> BGNodeType.PUBMED
             uri.contains("GOA_") -> BGNodeType.GOA
             uri.contains("semantic-systems-biology.org/") -> BGNodeType.TFTG // TODO: Need a better identifier!
             else -> {
@@ -49,6 +60,7 @@ open class BGNode {
     }
 
     constructor(uri: String, name: String): this(uri) {
+
         this.name = name
     }
 
@@ -60,6 +72,25 @@ open class BGNode {
     }
 
     fun generateName(): String {
+
+        if (type == BGNodeType.PUBMED) {
+            return "Pubmed ID "+uri.substringAfterLast("/")
+        }
+        if (type == BGNodeType.TFTG) {
+            val suffix = uri.substringAfterLast("/")
+            val parts = suffix.split("_")
+            if (parts.size == 4) {
+                val label = parts[2] + " to " + parts[3] +" from PubmedId "+parts[0]
+                return label
+            }
+        }
+        if (type == BGNodeType.GOA) {
+            val suffix = uri.substringAfterLast("GOA_")
+            val parts = suffix.split("-")
+            if (parts.size == 3) {
+                return parts[1]
+            }
+        }
 
         if (uri.startsWith("http://")) {
             val suffix = uri.substringAfterLast("/")

@@ -58,6 +58,7 @@ class BGEdgeViewCMF(val gravity: Float, val serviceManager: BGServiceManager): C
         return parentMenu
     }
 
+    @Deprecated("Should not be used.")
     fun openEdgeSourceViewMenuItem(netView: CyNetworkView?, edgeView: View<CyEdge>?): JMenuItem {
         val edgeSuid = edgeView?.model?.suid
         val edgeTable = netView?.model?.defaultEdgeTable
@@ -69,6 +70,7 @@ class BGEdgeViewCMF(val gravity: Float, val serviceManager: BGServiceManager): C
         val item = JMenuItem("View source data")
 
         item.addActionListener {
+            /*
             val query = BGFetchPubmedIdQuery(serviceManager, fromNodeUri, edgeUri, toNodeUri)
             query.addCompletion {
                 val metadata = BGRelationMetadata(edgeUri)
@@ -79,7 +81,14 @@ class BGEdgeViewCMF(val gravity: Float, val serviceManager: BGServiceManager): C
                     BGRelationSourceController(metadata)
                 }
             }
-            serviceManager.taskManager.execute(TaskIterator(query))
+            */
+            val query = BGFetchMetadataQuery(serviceManager, fromNodeUri, edgeUri, toNodeUri, sourceGraph ?: "?graph", BGMetadataType.PUBMED_ID)
+            serviceManager.taskManager?.execute(TaskIterator(query))
+            Thread(Runnable {
+                val metadata = query.returnFuture.get() as BGReturnMetadata
+                // TODO: Finish this if the method gets un-deprecated
+
+            }).start()
         }
         return item
     }

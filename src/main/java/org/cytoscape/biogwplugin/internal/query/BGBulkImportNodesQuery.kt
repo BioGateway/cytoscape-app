@@ -8,14 +8,12 @@ import java.io.InputStreamReader
 
 
 class BGBulkImportNodesQuery(serviceManager: BGServiceManager, val nodeList: Collection<String>, val nodeType: BGNodeType): BGQuery(serviceManager, BGReturnType.NODE_LIST_DESCRIPTION_TAXON) {
-    override var queryString: String = ""
-        get() = generateQueryString()
 
     init {
         parseType = BGParsingType.TO_ARRAY
     }
 
-    fun generateQueryString(): String {
+    override fun generateQueryString(): String {
         val nodeTypeGraph = when (nodeType) {
             BGNodeType.Gene -> "<refseq>"
             BGNodeType.Protein -> "<refprot>"

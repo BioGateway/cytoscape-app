@@ -95,7 +95,7 @@ class BGNodeLookupController(val serviceManager: BGServiceManager, parentCompone
     }
 
     private fun lookupURIString(searchString: String) {
-        val query = BGNodeFetchQuery(serviceManager, searchString, BGReturnType.NODE_LIST_DESCRIPTION)
+        val query = BGNodeFetchQuery(serviceManager, searchString)
         query.parseType = BGParsingType.TO_ARRAY
         query.addCompletion {
             val data = it as? BGReturnNodeData ?: return@addCompletion

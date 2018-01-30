@@ -1,5 +1,6 @@
 package org.cytoscape.biogwplugin.internal.gui.cmfs
 
+import kotlinx.coroutines.experimental.async
 import org.cytoscape.application.swing.CyMenuItem
 import org.cytoscape.application.swing.CyNetworkViewContextMenuFactory
 import org.cytoscape.biogwplugin.internal.BGServiceManager
@@ -82,8 +83,8 @@ class BGMultiNodeQueryCMF(val gravity: Float, val serviceManager: BGServiceManag
         return groupSearchMenu
     }
 
-    private fun createPPISearchQuery(nodeUris: Collection<String>, network: CyNetwork, onlyCommonRelations: Boolean = false, group: CyGroup? = null): BGFindBinaryPPIInteractionsForMultipleNodesQuery? {
-        val query = BGFindBinaryPPIInteractionsForMultipleNodesQuery(serviceManager, nodeUris)
+    private fun createPPISearchQuery(nodeUris: Collection<String>, network: CyNetwork, onlyCommonRelations: Boolean = false, group: CyGroup? = null): BGFindBinaryPPIsForMultipleNodesQuery? {
+        /*val query = BGFindBinaryPPIInteractionsForMultipleNodesQuery(serviceManager, nodeUris)
         query.addCompletion {
             val returnData = it as? BGReturnRelationsData
             if (returnData != null) {
@@ -92,12 +93,16 @@ class BGMultiNodeQueryCMF(val gravity: Float, val serviceManager: BGServiceManag
                     println("Loaded "+it.toString()+ " nodes.")
                     BGRelationSearchResultsController(serviceManager, returnData, returnData.columnNames, network)
                 } }}
+        */
+        val query = BGFindBinaryPPIsForMultipleNodesQuery(serviceManager, nodeUris) { it.run() }
+
+        /*
         if (group != null) {
             val groupNodeURIs = Utility.getNodeURIsForGroup(group)
             query.returnDataFilter = { relation ->
                 (groupNodeURIs.contains(relation.fromNode.uri) || groupNodeURIs.contains(relation.toNode.uri))
             }
-        }
+        }*/
 
         if (onlyCommonRelations) {
             val optionPanePanel = JPanel()
@@ -144,7 +149,15 @@ class BGMultiNodeQueryCMF(val gravity: Float, val serviceManager: BGServiceManag
                 }
                 val query = createPPISearchQuery(nodeUris, network, onlyCommonRelations, group)
                 if (query != null) {
-                    serviceManager.taskManager.execute(TaskIterator(query))
+                    serviceManager.taskManager?.execute(TaskIterator(query))
+                    async {
+                        val returnData = query.returnFuture.get()
+                        if (returnData.relationsData.size == 0) throw Exception("No relations found.")
+                        BGLoadUnloadedNodes.createAndRun(serviceManager, returnData.unloadedNodes) {
+                            println("Loaded "+it.toString()+ " nodes.")
+                            BGRelationSearchResultsController(serviceManager, returnData, returnData.columnNames, network)
+                        }
+                    }
                 }
             }
             return ppiItem
@@ -228,7 +241,7 @@ class BGMultiNodeQueryCMF(val gravity: Float, val serviceManager: BGServiceManag
                     if (group == null) return@addActionListener
                 }
                 val query = createRelationSearchQuery(relationType, netView, nodeUris, direction, onlyCommonRelations, group)
-                serviceManager.taskManager.execute(TaskIterator(query))
+                serviceManager.taskManager?.execute(TaskIterator(query))
             }
             parentMenu.add(item)
         }

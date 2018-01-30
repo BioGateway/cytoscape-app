@@ -30,19 +30,20 @@ class BGServer(private val serviceManager: BGServiceManager) {
 
         var relationTypeMap = HashMap<String, BGRelationType>()
 
-        fun getRelationTypesForURI(uri: String): Collection<BGRelationType> {
-            return relationTypeMap.values.filter { it.uri == uri }
+        fun getRelationTypesForURI(uri: String): Collection<BGRelationType>? {
+            val types = relationTypeMap.values.filter { it.uri == uri }
+            return if (types.size > 0) types else null
         }
 
         fun getRelationTypeForURIandGraph(uri: String, graph: String): BGRelationType? {
             if (graph.startsWith("?")) {
                 val types = getRelationTypesForURI(uri)
-                return types.first()
+                return types?.first()
             }
             val relationWithGraph = relationTypeMap.get(Utility.createRelationTypeIdentifier(uri, graph))
             if (relationWithGraph != null) return relationWithGraph
             val types = getRelationTypesForURI(uri)
-            return types.first()
+            return types?.first()
         }
 
         val relationTypeDescriptions: LinkedHashMap<String, BGRelationType> get() {
@@ -87,7 +88,7 @@ class BGServer(private val serviceManager: BGServiceManager) {
     }
 
 
-
+    @Deprecated("Should use other queries for this.")
     fun getSourceDataForRelations(relations: Collection<BGRelation>, graph: String) {
         for (relation in relations) {
             var query = BGFetchPubmedIdQuery(serviceManager, relation.fromNode.uri, relation.relationType.uri, relation.toNode.uri)
@@ -128,19 +129,18 @@ class BGServer(private val serviceManager: BGServiceManager) {
                 return
             }
 
-            getNodeFromServer(node.uri) {
-                if (it != null) {
-                    node.name = it.name
-                    node.description = it.description
-                    node.isLoaded = true
-                    cache.addNode(node)
-                    for (cyNode in node.cyNodes) {
-                        it.name?.let {
-                            cyNode.setName(it, cyNode.networkPointer)
-                        }
-                        it.description?.let {
-                            cyNode.setDescription(it, cyNode.networkPointer)
-                        }
+            val fetchedNode = getNodeFromServer(node.uri)
+            if (fetchedNode != null) {
+                node.name = fetchedNode.name
+                node.description = fetchedNode.description
+                node.isLoaded = true
+                cache.addNode(node)
+                for (cyNode in node.cyNodes) {
+                    fetchedNode.name?.let {
+                        cyNode.setName(it, cyNode.networkPointer)
+                    }
+                    fetchedNode.description?.let {
+                        cyNode.setDescription(it, cyNode.networkPointer)
                     }
                 }
             }
@@ -152,7 +152,8 @@ class BGServer(private val serviceManager: BGServiceManager) {
 
 
     private fun getNodeDataFromNetworks(uri: String): BGNode? {
-        for (network in serviceManager.networkManager.networkSet) {
+        val networks = serviceManager.networkManager?.networkSet ?: return null
+        for (network in networks) {
             if (network.defaultNodeTable.getColumn(Constants.BG_FIELD_IDENTIFIER_URI) == null) {
                 continue
             }
@@ -166,22 +167,20 @@ class BGServer(private val serviceManager: BGServiceManager) {
         return null
     }
 
-    private fun  getNodeFromServer(uri: String, completion: (BGNode?) -> Unit) {
+    private fun  getNodeFromServer(uri: String): BGNode? {
         if (!uri.startsWith("http://")) {
-            completion(null)
-            return
+            return null
         }
-        val query = BGNodeFetchQuery(serviceManager, uri, BGReturnType.NODE_LIST_DESCRIPTION)
+        val query = BGNodeFetchQuery(serviceManager, uri)
         // TODO: Use the CloseableHttpClient. Because this might cause things to take a looooong time.
         val stream = query.encodeUrl()?.openStream()
         if (stream != null) {
             val reader = BufferedReader(InputStreamReader(stream))
-            parser.parseNodesToTextArray(reader, BGReturnType.NODE_LIST_DESCRIPTION) {
-                val data = it ?: throw Exception("Invalid return data!")
-                val node = data.nodeData.get(uri)
-                completion(node)
-            }
+            val data = parser.parseNodesToTextArray(reader, BGReturnType.NODE_LIST_DESCRIPTION)
+            val node = data.nodeData.get(uri)
+            return node
         }
+        return null
     }
 
     private fun getNodeFromCyNetwork(uri: String, network: CyNetwork): BGNode? {

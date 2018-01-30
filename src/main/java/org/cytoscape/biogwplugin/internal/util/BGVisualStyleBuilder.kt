@@ -22,7 +22,7 @@ class BGVisualStyleBuilder(val serviceManager: BGServiceManager) {
 
     fun generateStyle(): VisualStyle {
 
-        val adapter = serviceManager.adapter
+        val adapter = serviceManager.adapter ?: throw Exception("CyAdapter not set!")
 
         // Colors
         val textBlue = Color(0, 153, 204)
@@ -64,16 +64,16 @@ class BGVisualStyleBuilder(val serviceManager: BGServiceManager) {
                 "has agent" to LineTypeVisualProperty.DOT
         )
         val edgeLineWidths = hashMapOf<String, Double>(
-                "molecularly interacts with" to 4.0
+                "true" to 4.0
         )
 
-        val vizMapManager = adapter.visualMappingManager
-        val visualStyleFactory = adapter.visualStyleFactory
+        val vizMapManager = adapter?.visualMappingManager
+        val visualStyleFactory = adapter?.visualStyleFactory
 
-        val discreteMappingFactory = adapter.visualMappingFunctionDiscreteFactory
-        val passthroughMappingFactory = adapter.visualMappingFunctionPassthroughFactory
+        val discreteMappingFactory = adapter?.visualMappingFunctionDiscreteFactory
+        val passthroughMappingFactory = adapter?.visualMappingFunctionPassthroughFactory
 
-        val vs = visualStyleFactory.createVisualStyle("BioGateway")
+        val vs = visualStyleFactory?.createVisualStyle("BioGateway") ?: throw Exception("Unable to create visual style!")
 
         // Default values
         vs.setDefaultValue(BasicVisualLexicon.NODE_LABEL_COLOR, textBlue)
@@ -106,10 +106,10 @@ class BGVisualStyleBuilder(val serviceManager: BGServiceManager) {
         vs.addVisualMappingFunction(nodeLabelMapping)
 
         // Edge styles
-        val edgeColorMapping = discreteMappingFactory.createVisualMappingFunction("name", String::class.java, BasicVisualLexicon.EDGE_UNSELECTED_PAINT) as DiscreteMapping<String, Paint>
+        val edgeColorMapping = discreteMappingFactory?.createVisualMappingFunction("name", String::class.java, BasicVisualLexicon.EDGE_UNSELECTED_PAINT) as DiscreteMapping<String, Paint>
         val edgeLineTypeMapping = discreteMappingFactory.createVisualMappingFunction("name", String::class.java, BasicVisualLexicon.EDGE_LINE_TYPE) as DiscreteMapping<String, LineType>
-        val edgeTooltipMapping = passthroughMappingFactory.createVisualMappingFunction("name", String::class.java, BasicVisualLexicon.EDGE_TOOLTIP) as PassthroughMapping<String, String>
-        val edgeWidthMapping = discreteMappingFactory.createVisualMappingFunction("name", String::class.java, BasicVisualLexicon.EDGE_WIDTH) as DiscreteMapping<String, Double>
+        val edgeTooltipMapping = passthroughMappingFactory?.createVisualMappingFunction("name", String::class.java, BasicVisualLexicon.EDGE_TOOLTIP) as PassthroughMapping<String, String>
+        val edgeWidthMapping = discreteMappingFactory.createVisualMappingFunction("Expandable", String::class.java, BasicVisualLexicon.EDGE_WIDTH) as DiscreteMapping<String, Double>
 
         val edgeSourceArrowMapping = discreteMappingFactory.createVisualMappingFunction("name", String::class.java, BasicVisualLexicon.EDGE_SOURCE_ARROW_SHAPE) as DiscreteMapping<String, ArrowShape>
         edgeSourceArrowMapping.putMapValue("molecularly interacts with", ArrowShapeVisualProperty.ARROW)
