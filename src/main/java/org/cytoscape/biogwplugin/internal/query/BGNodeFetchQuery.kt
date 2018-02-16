@@ -6,9 +6,10 @@ import org.cytoscape.biogwplugin.internal.parser.BGReturnType
 import java.io.BufferedReader
 import java.io.InputStreamReader
 
-class BGNodeFetchQuery(serviceManager: BGServiceManager, val nodeUri: String): BGQuery(serviceManager, BGReturnType.NODE_LIST_DESCRIPTION) {
+class BGNodeFetchQuery(serviceManager: BGServiceManager, val nodeUri: String): BGQuery(serviceManager, BGReturnType.NODE_LIST_DESCRIPTION, false) {
 
     /// This is running synchronously and without the main HTTPClient.
+
     override fun run() {
         taskMonitor?.setTitle("Searching for nodes...")
         val stream = encodeUrl()?.openStream()
@@ -19,6 +20,12 @@ class BGNodeFetchQuery(serviceManager: BGServiceManager, val nodeUri: String): B
             runCompletions()
         }
     }
+
+    /*
+    override fun generateQueryString(): String {
+        return "{ \"returnType\": \"tsv\", \"uris\": [\""+nodeUri+"\"] }"
+    }
+*/
 
     override fun generateQueryString(): String {
         return "BASE   <http://www.semantic-systems-biology.org/> \n" +

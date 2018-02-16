@@ -377,8 +377,12 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
             val menuItem = JMenuItem("Open resource URI")
             menuItem.addActionListener {
                 // Probably a pubmed id?
+
+                // TODO: THIS IS JUST A TEST. DO NOT USE!
+                val uri = nodeUri.replace("semantic-systems-biology.org", "biogateway.eu")
+
                 if (Desktop.isDesktopSupported()) {
-                    Desktop.getDesktop().browse(URI(nodeUri))
+                    Desktop.getDesktop().browse(URI(uri))
                 }
             }
             return menuItem

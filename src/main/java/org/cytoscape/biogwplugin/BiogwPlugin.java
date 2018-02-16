@@ -5,6 +5,7 @@ package org.cytoscape.biogwplugin;
 import org.cytoscape.model.CyNetwork;
 
 
+
 /**
  * APIs in Cytoscape 3.x are defined by their interfaces. Java interfaces
  * are used by OSGi to define services.  Any Java interface can define a

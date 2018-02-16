@@ -10,21 +10,7 @@ import java.awt.EventQueue
 import java.util.concurrent.CompletableFuture
 import javax.swing.JOptionPane
 
-
-class BGLoadUnloadedNodesFuture(val serviceManager: BGServiceManager, val unloadedNodes: List<BGNode>): AbstractTask(), Runnable {
-    override fun run(taskMonitor: TaskMonitor?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun run() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-}
-
 class BGLoadUnloadedNodes(val serviceManager: BGServiceManager, val unloadedNodes: List<BGNode>, private val queryCompletion: (Int) -> Unit): AbstractTask(), Runnable {
-
-    val loadedNodesFuture = CompletableFuture<Collection<BGNode>>()
 
     companion object {
         fun createAndRun(serviceManager: BGServiceManager, unloadedNodes: List<BGNode>?, completion: (Int) -> Unit) {

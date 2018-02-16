@@ -3,18 +3,13 @@ package org.cytoscape.biogwplugin.internal.gui.cmfs
 import org.cytoscape.application.swing.CyEdgeViewContextMenuFactory
 import org.cytoscape.application.swing.CyMenuItem
 import org.cytoscape.biogwplugin.internal.BGServiceManager
-import org.cytoscape.biogwplugin.internal.gui.BGRelationSourceController
-import org.cytoscape.biogwplugin.internal.model.BGRelationMetadata
 import org.cytoscape.biogwplugin.internal.query.BGFetchMetadataQuery
-import org.cytoscape.biogwplugin.internal.query.BGFetchPubmedIdQuery
 import org.cytoscape.biogwplugin.internal.query.BGMetadataType
-import org.cytoscape.biogwplugin.internal.query.BGReturnPubmedIds
 import org.cytoscape.biogwplugin.internal.util.Constants
 import org.cytoscape.model.CyEdge
 import org.cytoscape.view.model.CyNetworkView
 import org.cytoscape.view.model.View
 import org.cytoscape.work.TaskIterator
-import java.awt.EventQueue
 import javax.swing.JMenuItem
 
 class BGOpenEdgeSourceViewCMF(val gravity: Float, val serviceManager: BGServiceManager): CyEdgeViewContextMenuFactory {

@@ -128,7 +128,7 @@ public class BGQueryBuilderView implements ChangeListener {
         this.mainFrame = frame;
 
         $$$setupUI$$$();
-        frame.setPreferredSize(new Dimension(1200, 480));
+        frame.setPreferredSize(new Dimension(1440, 480));
         frame.setContentPane(this.mainPanel);
 
         setupUI();

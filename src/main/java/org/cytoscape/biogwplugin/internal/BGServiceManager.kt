@@ -1,7 +1,6 @@
 package org.cytoscape.biogwplugin.internal
 
-import com.sun.istack.internal.Nullable
-import org.apache.http.impl.client.CloseableHttpClient
+import org.cytoscape.biogwplugin.internal.server.BGDictEndpoint
 import org.apache.http.impl.client.HttpClients
 import org.cytoscape.app.CyAppAdapter
 import org.cytoscape.application.CyApplicationManager
@@ -52,12 +51,14 @@ class BGServiceManager {
     var cache: BGServer.BGCache
     var server: BGServer
     var httpClient = HttpClients.createDefault()
+    val endpoint = BGDictEndpoint("http://localhost:3002/")
 
     val visualStyleBuilder = BGVisualStyleBuilder(this)
 
     val serverPath: String
         get() = Constants.SERVER_PATH
 
+    val dictionaryServerPath: String get() = Constants.DICTIONARY_SERVER_PATH
 
     init {
         this.server = BGServer(this)

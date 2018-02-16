@@ -88,7 +88,7 @@ open class BGNode {
             val suffix = uri.substringAfterLast("GOA_")
             val parts = suffix.split("-")
             if (parts.size == 3) {
-                return parts[1]
+                return "GO: "+parts[1]
             }
         }
 

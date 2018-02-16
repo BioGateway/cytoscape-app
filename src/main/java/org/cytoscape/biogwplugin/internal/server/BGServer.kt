@@ -2,12 +2,10 @@ package org.cytoscape.biogwplugin.internal.server
 
 import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.model.BGNode
-import org.cytoscape.biogwplugin.internal.model.BGRelation
 import org.cytoscape.biogwplugin.internal.model.BGRelationType
 import org.cytoscape.biogwplugin.internal.parser.*
-import org.cytoscape.biogwplugin.internal.query.BGFetchPubmedIdQuery
 import org.cytoscape.biogwplugin.internal.query.BGNodeFetchQuery
-import org.cytoscape.biogwplugin.internal.query.BGReturnPubmedIds
+import org.cytoscape.biogwplugin.internal.query.BGReturnNodeData
 import org.cytoscape.biogwplugin.internal.query.QueryTemplate
 import org.cytoscape.biogwplugin.internal.util.Constants
 import org.cytoscape.biogwplugin.internal.util.Utility
@@ -15,10 +13,7 @@ import org.cytoscape.model.CyNetwork
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
-import java.io.UnsupportedEncodingException
-import java.net.MalformedURLException
 import java.net.URL
-import java.net.URLEncoder
 
 
 class BGServer(private val serviceManager: BGServiceManager) {
@@ -85,18 +80,6 @@ class BGServer(private val serviceManager: BGServiceManager) {
             node = getNodeDataFromNetworks(uri)
         }
         return node
-    }
-
-
-    @Deprecated("Should use other queries for this.")
-    fun getSourceDataForRelations(relations: Collection<BGRelation>, graph: String) {
-        for (relation in relations) {
-            var query = BGFetchPubmedIdQuery(serviceManager, relation.fromNode.uri, relation.relationType.uri, relation.toNode.uri)
-            query.addCompletion {
-                val data = it as? BGReturnPubmedIds ?: throw Exception("Invalid return data!")
-
-            }
-        }
     }
 
     fun getNodeFromCacheOrNetworks(newNode: BGNode): BGNode {
@@ -173,6 +156,13 @@ class BGServer(private val serviceManager: BGServiceManager) {
         }
         val query = BGNodeFetchQuery(serviceManager, uri)
         // TODO: Use the CloseableHttpClient. Because this might cause things to take a looooong time.
+
+        query.run()
+        val data = query.futureReturnData.get() as BGReturnNodeData
+        val node = data.nodeData.get(uri)
+        return node
+
+        /*
         val stream = query.encodeUrl()?.openStream()
         if (stream != null) {
             val reader = BufferedReader(InputStreamReader(stream))
@@ -181,6 +171,7 @@ class BGServer(private val serviceManager: BGServiceManager) {
             return node
         }
         return null
+        */
     }
 
     private fun getNodeFromCyNetwork(uri: String, network: CyNetwork): BGNode? {

@@ -127,6 +127,7 @@ class BGVisualStyleBuilder(val serviceManager: BGServiceManager) {
         vs.addVisualMappingFunction(edgeLineTypeMapping)
         vs.addVisualMappingFunction(edgeTooltipMapping)
         vs.addVisualMappingFunction(edgeSourceArrowMapping)
+        vs.addVisualMappingFunction(edgeWidthMapping)
 
         for (dependency in vs.allVisualPropertyDependencies) {
             if (dependency.idString.equals("arrowColorMatchesEdge")) {

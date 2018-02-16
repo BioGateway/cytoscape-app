@@ -1,6 +1,9 @@
 package org.cytoscape.biogwplugin.internal.query
 import org.apache.http.client.HttpClient
 import org.apache.http.client.methods.HttpGet
+import org.apache.http.client.methods.HttpPost
+import org.apache.http.entity.ContentType
+import org.apache.http.entity.StringEntity
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.util.EntityUtils
 import org.cytoscape.biogwplugin.internal.BGServiceManager
@@ -80,7 +83,7 @@ abstract class BGTypedQuery(val type: BGQueryType, val serviceManager: BGService
 
 
 @Suppress("LocalVariableName")
-abstract class BGQuery(val serviceManager: BGServiceManager, var type: BGReturnType): AbstractTask(), Runnable {
+abstract class BGQuery(val serviceManager: BGServiceManager, var type: BGReturnType, val useMongoDb: Boolean = false): AbstractTask(), Runnable {
     var completionBlocks: ArrayList<(BGReturnData?) -> Unit> = ArrayList()
     var returnData: BGReturnData? = null
     var client = HttpClients.createDefault()!!
@@ -88,7 +91,7 @@ abstract class BGQuery(val serviceManager: BGServiceManager, var type: BGReturnT
     var taskMonitorTitle = "Searching..."
     var parsingBlock: ((BufferedReader) -> Unit)? = null
     var parseType = when (type) {
-        BGReturnType.NODE_LIST -> BGParsingType.TO_ARRAY
+        BGReturnType.NODE_LIST, BGReturnType.NODE_LIST_DESCRIPTION -> BGParsingType.TO_ARRAY
         BGReturnType.RELATION_TRIPLE -> BGParsingType.RELATIONS
         BGReturnType.RELATION_MULTIPART -> BGParsingType.RELATIONS
         BGReturnType.PUBMED_ID -> BGParsingType.TO_ARRAY
@@ -112,8 +115,20 @@ abstract class BGQuery(val serviceManager: BGServiceManager, var type: BGReturnT
 
         val uri = encodeUrl()?.toURI()
         if (uri != null) {
-            val httpGet = HttpGet(uri)
-            val response = client.execute(httpGet)
+
+            val httpRequest = when (useMongoDb) {
+                true -> {
+                    val post = HttpPost(uri)
+                    val json = generateQueryString()
+                    post.entity = StringEntity(json)
+                    post.addHeader("Content-Type", "application/json");
+                    post
+                }
+                false -> HttpGet(uri)
+            }
+
+
+            val response = client.execute(httpRequest)
             val statusCode = response.statusLine.statusCode
 
             val data = EntityUtils.toString(response.entity)
@@ -166,10 +181,14 @@ abstract class BGQuery(val serviceManager: BGServiceManager, var type: BGReturnT
     }
 
     fun encodeUrl(): URL? {
-        val RETURN_TYPE_TSV = "text/tab-separated-values"
-        val BIOPAX_DEFAULT_OPTIONS = "timeout=0&debug=on"
-        val queryURL = URL(serviceManager.serverPath + "?query=" + URLEncoder.encode(generateQueryString(), "UTF-8") + "&format=" + RETURN_TYPE_TSV +"&" + BIOPAX_DEFAULT_OPTIONS)
-        return queryURL
+        if (useMongoDb) {
+            return URL(serviceManager.dictionaryServerPath + "fetch")
+        } else {
+            val RETURN_TYPE_TSV = "text/tab-separated-values"
+            val BIOPAX_DEFAULT_OPTIONS = "timeout=0&debug=on"
+            val queryURL = URL(serviceManager.serverPath + "?query=" + URLEncoder.encode(generateQueryString(), "UTF-8") + "&format=" + RETURN_TYPE_TSV + "&" + BIOPAX_DEFAULT_OPTIONS)
+            return queryURL
+        }
     }
 }
 
