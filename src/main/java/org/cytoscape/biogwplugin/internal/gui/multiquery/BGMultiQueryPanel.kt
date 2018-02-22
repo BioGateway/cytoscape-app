@@ -1,7 +1,6 @@
-package org.cytoscape.biogwplugin.internal.gui
+package org.cytoscape.biogwplugin.internal.gui.multiquery
 
 import org.cytoscape.biogwplugin.internal.BGServiceManager
-import org.cytoscape.biogwplugin.internal.gui.multiquery.BGMultiQueryAutocompleteLine
 import org.cytoscape.biogwplugin.internal.model.BGRelationType
 import org.cytoscape.biogwplugin.internal.parser.BGSPARQLParser
 import org.cytoscape.biogwplugin.internal.util.Constants

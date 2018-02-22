@@ -1,6 +1,7 @@
 package org.cytoscape.biogwplugin.internal.gui
 
 import org.cytoscape.biogwplugin.internal.BGServiceManager
+import org.cytoscape.biogwplugin.internal.gui.multiquery.BGMultiQueryPanel
 import org.cytoscape.biogwplugin.internal.model.BGNode
 import org.cytoscape.biogwplugin.internal.model.BGNodeType
 import org.cytoscape.biogwplugin.internal.model.BGRelation
@@ -757,7 +758,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                 val tableModel = view.resultTable.model as DefaultTableModel
                 tableModel.setColumnIdentifiers(data.columnNames)
 
-                BGLoadUnloadedNodes.createAndRun(serviceManager, data.unloadedNodes) {
+                BGLoadNodeDataFromBiogwDict.createAndRun(serviceManager, data.unloadedNodes, 100) {
                     setRelationTableData(data.relationsData)
                     view.tabPanel.selectedIndex = TAB_PANEL_RESULTS_INDEX // Open the result tab.
                     // Try the darnest to make the window appear on top!

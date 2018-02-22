@@ -1,6 +1,7 @@
-package org.cytoscape.biogwplugin.internal.gui
+package org.cytoscape.biogwplugin.internal.gui.multiquery
 
 import org.cytoscape.biogwplugin.internal.BGServiceManager
+import org.cytoscape.biogwplugin.internal.gui.BGNodeLookupController
 import org.cytoscape.biogwplugin.internal.util.Constants
 import java.awt.FlowLayout
 import javax.swing.*
@@ -59,7 +60,7 @@ class BGMultiQueryLine(val serviceManager: BGServiceManager, val relationTypeCom
         }
 
 
-        val types = arrayOf("Gene", "Protein", "GO-Term", "All")
+        val types = arrayOf("Protein", "Gene", "GO-Term", "All")
         toTypeComboBox = JComboBox(types)
         fromTypeComboBox = JComboBox(types)
 

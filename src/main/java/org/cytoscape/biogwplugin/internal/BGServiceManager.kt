@@ -4,6 +4,7 @@ import org.cytoscape.biogwplugin.internal.server.BGDictEndpoint
 import org.apache.http.impl.client.HttpClients
 import org.cytoscape.app.CyAppAdapter
 import org.cytoscape.application.CyApplicationManager
+import org.cytoscape.biogwplugin.internal.gui.BGControlPanel
 import org.cytoscape.biogwplugin.internal.server.BGServer
 import org.cytoscape.biogwplugin.internal.util.BGVisualStyleBuilder
 import org.cytoscape.biogwplugin.internal.util.Constants
@@ -48,10 +49,13 @@ class BGServiceManager {
     var tableFactory: CyTableFactory? = null
     var tableManager: CyTableManager? = null
 
+
     var cache: BGServer.BGCache
     var server: BGServer
     var httpClient = HttpClients.createDefault()
     val endpoint = BGDictEndpoint("http://localhost:3002/")
+
+    var controlPanel: BGControlPanel? = null
 
     val visualStyleBuilder = BGVisualStyleBuilder(this)
 

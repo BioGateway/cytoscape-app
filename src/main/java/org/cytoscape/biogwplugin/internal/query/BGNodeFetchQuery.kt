@@ -6,6 +6,21 @@ import org.cytoscape.biogwplugin.internal.parser.BGReturnType
 import java.io.BufferedReader
 import java.io.InputStreamReader
 
+class BGNodeFetchMongoQuery(serviceManager: BGServiceManager, val nodeUri: String): BGQuery(serviceManager, BGReturnType.NODE_LIST_DESCRIPTION, true) {
+
+    override fun generateQueryString(): String {
+        return "{ \"returnType\": \"tsv\", \"uris\": [\"" + nodeUri + "\"] }"
+    }
+}
+
+class BGMultiNodeFetchMongoQuery(serviceManager: BGServiceManager, val nodeUris: Collection<String>): BGQuery(serviceManager, BGReturnType.NODE_LIST_DESCRIPTION, true) {
+
+    override fun generateQueryString(): String {
+        val nodeUriList = nodeUris.map { "\"" + it + "\"" }.reduce { list, node -> list + ", "+node}
+        return "{ \"returnType\": \"tsv\", \"uris\": [" + nodeUriList + "]}"
+    }
+}
+
 class BGNodeFetchQuery(serviceManager: BGServiceManager, val nodeUri: String): BGQuery(serviceManager, BGReturnType.NODE_LIST_DESCRIPTION, false) {
 
     /// This is running synchronously and without the main HTTPClient.
@@ -18,6 +33,7 @@ class BGNodeFetchQuery(serviceManager: BGServiceManager, val nodeUri: String): B
             val reader = BufferedReader(InputStreamReader(stream))
             returnData = parser.parseNodesToTextArray(reader, type)
             runCompletions()
+            futureReturnData.complete(returnData)
         }
     }
 

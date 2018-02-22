@@ -5,6 +5,7 @@ package org.cytoscape.biogwplugin.internal.util
  */
 object Constants {
 
+    val BG_SHOULD_USE_BG_DICT = true
     val BG_FIELD_IDENTIFIER_URI = "identifier uri"
     val BG_FIELD_NAME = "name"
     val BG_FIELD_NODE_TYPE: String = "type"

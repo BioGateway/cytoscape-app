@@ -2,6 +2,7 @@ package org.cytoscape.biogwplugin.internal.gui;
 
 import net.miginfocom.swing.MigLayout;
 import org.cytoscape.biogwplugin.internal.BGServiceManager;
+import org.cytoscape.biogwplugin.internal.gui.multiquery.BGMultiQueryPanel;
 import org.cytoscape.biogwplugin.internal.query.BGQueryParameter;
 import org.cytoscape.biogwplugin.internal.query.QueryTemplate;
 import org.cytoscape.biogwplugin.internal.util.Constants;

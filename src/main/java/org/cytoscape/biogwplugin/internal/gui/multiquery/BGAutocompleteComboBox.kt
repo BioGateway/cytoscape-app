@@ -8,6 +8,7 @@ import javax.swing.*
 import javax.swing.text.JTextComponent
 import java.awt.event.*
 import java.util.ArrayList
+import javax.xml.stream.events.Characters
 
 class BGAutocompleteComboBox(private val typeComboBox: JComboBox<String>, private val endpoint: BGDictEndpoint) : JComboBox<Suggestion>(DefaultComboBoxModel<Suggestion>()) {
 
@@ -23,6 +24,8 @@ class BGAutocompleteComboBox(private val typeComboBox: JComboBox<String>, privat
     }
     set(value) {
         searchSuggestion.searchString = value
+        searchBoxEditorComponent.text = value
+        //this.selectedIndex = 0
     }
 
     init {
@@ -33,8 +36,16 @@ class BGAutocompleteComboBox(private val typeComboBox: JComboBox<String>, privat
         val self = this
 
         this.addActionListener {
-            val selectedSuggestion = self.selectedItem as Suggestion
-            if (selectedSuggestion !== searchSuggestion) {
+            val selectedSuggestion = self.selectedItem as? Suggestion
+
+            if ((self.selectedItem as? String).equals("")) {
+                // Empty string is selected!
+                print("Empty string is selected instead of SearchSuggestion!")
+                searchSuggestion.searchString = ""
+                this.selectedIndex = 0
+            }
+
+            if (selectedSuggestion != searchSuggestion && selectedSuggestion != null) {
                 selectSuggestion(selectedSuggestion)
             }
         }
@@ -45,11 +56,14 @@ class BGAutocompleteComboBox(private val typeComboBox: JComboBox<String>, privat
 
             override fun keyReleased(e: KeyEvent) {
                 val key = e.keyChar
-                if (!(Character.isLetterOrDigit(key) || Character.isSpaceChar(key))) return
-                val text = searchBoxEditorComponent.text
-                updateSearchComboBoxModel(text)
+                if ((Character.isLetterOrDigit(key) && !Character.isSpaceChar(key)) || e.keyCode == KeyEvent.VK_BACK_SPACE || e.keyCode == KeyEvent.VK_DELETE) {
+                    val text = searchBoxEditorComponent.text
+
+                    //self.maximumRowCount = 10
+                    updateSearchComboBoxModel(text)
 
 
+                }
                 super.keyReleased(e)
             }
         }

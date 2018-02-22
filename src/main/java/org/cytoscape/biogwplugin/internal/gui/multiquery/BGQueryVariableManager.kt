@@ -1,4 +1,4 @@
-package org.cytoscape.biogwplugin.internal.gui
+package org.cytoscape.biogwplugin.internal.gui.multiquery
 
 import org.cytoscape.biogwplugin.internal.util.Constants
 import javax.swing.DefaultComboBoxModel

@@ -37,50 +37,39 @@ open class BGNode {
         if (uri.startsWith("ECO:")) {
             uri = "http://identifiers.org/" + inputUri
         } else if (uri.startsWith("PubMed:")) {
-            uri = "http://identifiers.org/pubmed/"+inputUri.removePrefix("PubMed:")
+            uri = "http://identifiers.org/pubmed/" + inputUri.removePrefix("PubMed:")
         }
         this.uri = uri
         this.cyNodes = ArrayList<CyNode>()
         if (!uri.startsWith("http")) {
             this.name = uri
         }
-        type = when {
-            uri.contains("uniprot") -> BGNodeType.Protein
-            uri.contains("ncbigene") -> BGNodeType.Gene
-            uri.contains("GO_") -> BGNodeType.GO
-            uri.contains("NCBITaxon_") -> BGNodeType.Taxon
-            uri.contains("intact") -> BGNodeType.PPI
-            uri.contains("pubmed") -> BGNodeType.PUBMED
-            uri.contains("GOA_") -> BGNodeType.GOA
-            uri.contains("semantic-systems-biology.org/") -> BGNodeType.TFTG // TODO: Need a better identifier!
-            else -> {
-                BGNodeType.Undefined
-            }
-        }
+        type = BGNode.static.nodeTypeForUri(uri)
     }
 
-    constructor(uri: String, name: String): this(uri) {
+    constructor(uri: String, name: String) : this(uri) {
 
         this.name = name
     }
 
-    constructor(uri: String, name: String, description: String): this(uri, name) {
+    constructor(uri: String, name: String, description: String) : this(uri, name) {
         this.description = description
     }
-    constructor(uri: String, name: String, description: String, taxon: String): this(uri, name, description) {
+
+    constructor(uri: String, name: String, description: String, taxon: String) : this(uri, name, description) {
         this.taxon = taxon
     }
 
     fun generateName(): String {
 
         if (type == BGNodeType.PUBMED) {
-            return "Pubmed ID "+uri.substringAfterLast("/")
+            return "Pubmed ID " + uri.substringAfterLast("/")
         }
         if (type == BGNodeType.TFTG) {
             val suffix = uri.substringAfterLast("/")
             val parts = suffix.split("_")
             if (parts.size == 4) {
-                val label = parts[2] + " to " + parts[3] +" from PubmedId "+parts[0]
+                val label = parts[2] + " to " + parts[3] + " from PubmedId " + parts[0]
                 return label
             }
         }
@@ -88,7 +77,7 @@ open class BGNode {
             val suffix = uri.substringAfterLast("GOA_")
             val parts = suffix.split("-")
             if (parts.size == 3) {
-                return "GO: "+parts[1]
+                return "GO: " + parts[1]
             }
         }
 
@@ -117,5 +106,23 @@ open class BGNode {
         if (uri.hashCode() != other.uri.hashCode()) return false
 
         return true
+    }
+
+    object static {
+        fun nodeTypeForUri(uri: String): BGNodeType {
+            return when {
+                uri.contains("uniprot") -> BGNodeType.Protein
+                uri.contains("ncbigene") -> BGNodeType.Gene
+                uri.contains("GO_") -> BGNodeType.GO
+                uri.contains("NCBITaxon_") -> BGNodeType.Taxon
+                uri.contains("intact") -> BGNodeType.PPI
+                uri.contains("pubmed") -> BGNodeType.PUBMED
+                uri.contains("GOA_") -> BGNodeType.GOA
+                uri.contains("semantic-systems-biology.org/") -> BGNodeType.TFTG // TODO: Need a better identifier!
+                else -> {
+                    BGNodeType.Undefined
+                }
+            }
+        }
     }
 }

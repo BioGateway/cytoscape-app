@@ -3,6 +3,7 @@ package org.cytoscape.biogwplugin.internal;
 import java.util.Properties;
 
 import org.cytoscape.app.swing.CySwingAppAdapter;
+import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.biogwplugin.BiogwPlugin;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CyAction;
@@ -37,7 +38,6 @@ public class CyActivator extends AbstractCyActivator {
         // After this point, we should be assured that the XML config file is loaded. Otherwise, there is a network problem.
 
         BiogwPlugin biogwPlugin = new BiogwPluginImpl(serviceManager);
-
 
         Properties properties = new Properties();
 		registerService(context, biogwPlugin, BiogwPlugin.class, properties);
@@ -85,6 +85,9 @@ public class CyActivator extends AbstractCyActivator {
         });
         // This is disabled, as the style is imported automatically.
         //registerService(context, importStyleAction, CyAction.class, new Properties());
+
+        BGControlPanel controlPanel = new BGControlPanel(serviceManager);
+        registerService(context, controlPanel, CytoPanelComponent.class, new Properties());
 
         registerContextMenuItems(context, serviceManager);
     }

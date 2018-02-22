@@ -2,7 +2,6 @@ package org.cytoscape.biogwplugin.internal.gui.multiquery
 
 import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.gui.BGNodeLookupController
-import org.cytoscape.biogwplugin.internal.gui.BGQueryVariableManager
 import org.cytoscape.biogwplugin.internal.util.Constants
 import java.awt.FlowLayout
 import javax.swing.*
@@ -32,17 +31,19 @@ class BGMultiQueryAutocompleteLine(val serviceManager: BGServiceManager, val rel
         toSearchBox.selectedUri = value
     }
 
-    fun updateComboBox(comboBox: JComboBox<String>, textField: JTextField) {
+    fun updateComboBox(comboBox: JComboBox<String>, typeComboBox: JComponent, searchComboBox: JComponent) {
         val selectedVariable = comboBox.model.selectedItem as String
         if (selectedVariable == Constants.BG_QUERYBUILDER_ENTITY_LABEL) {
             // Make sure that the old variable is freed up.
             variableManager.unRegisterUseOfVariableForComponent(comboBox)
             variableManager.URIcomboBoxes.add(comboBox)
-            //textField.isEnabled = true
+            typeComboBox.isEnabled = true
+            //searchComboBox.isEnabled = true
         } else {
             variableManager.registerUseOfVariableForComponent(selectedVariable, comboBox)
             variableManager.URIcomboBoxes.remove(comboBox)
-            //textField.isEnabled = false
+            typeComboBox.isEnabled = false
+            //searchComboBox.isEnabled = false
         }
     }
 
@@ -52,27 +53,24 @@ class BGMultiQueryAutocompleteLine(val serviceManager: BGServiceManager, val rel
         fromComboBox = JComboBox(variableManager.getShownVariables())
         fromComboBox.toolTipText = variablesTooltipText
 
-//        updateComboBox(fromComboBox, fromSearchBox)
-//        fromComboBox.addActionListener {
-//            updateComboBox(fromComboBox, fromSearchBox)
-//        }
-
-
         toComboBox = JComboBox(variableManager.getShownVariables())
         toComboBox.toolTipText = variablesTooltipText
-//        updateComboBox(toComboBox, toSearchBox)
-//        toComboBox.addActionListener {
-//            updateComboBox(toComboBox, toSearchBox)
-//        }
 
-
-        val types = arrayOf("Gene", "Protein", "GO-Term", "All")
+        val types = arrayOf("Protein", "Gene", "GO-Term", "All")
         toTypeComboBox = JComboBox(types)
         fromTypeComboBox = JComboBox(types)
 
         fromSearchBox = BGAutocompleteComboBox(fromTypeComboBox, serviceManager.endpoint)
         toSearchBox = BGAutocompleteComboBox(toTypeComboBox, serviceManager.endpoint)
 
+        updateComboBox(fromComboBox, fromTypeComboBox, fromSearchBox)
+        fromComboBox.addActionListener {
+            updateComboBox(fromComboBox, fromTypeComboBox, fromSearchBox)
+        }
+        updateComboBox(toComboBox, toTypeComboBox, toSearchBox)
+        toComboBox.addActionListener {
+            updateComboBox(toComboBox, toTypeComboBox, toSearchBox)
+        }
 
         val searchIcon = ImageIcon(this.javaClass.classLoader.getResource("search.png"))
         val fromUriSearchButton = JButton(searchIcon)
@@ -126,11 +124,19 @@ class BGMultiQueryAutocompleteLine(val serviceManager: BGServiceManager, val rel
         val tmpToUri = toUri
         val tmpFromItem = fromComboBox.selectedItem
         val tmpToItem = toComboBox.selectedItem
+        val tmpFromTypeBoxItem = fromTypeComboBox.selectedItem
+        val tmpToTypeBoxItem = toTypeComboBox.selectedItem
+        val tmpFromSearchBoxText = fromSearchBox.text
+        val tmpToSearchBoxText = toSearchBox.text
 
         toComboBox.selectedItem = tmpFromItem
         fromComboBox.selectedItem = tmpToItem
         fromUri = tmpToUri
         toUri = tmpFromUri
+        toTypeComboBox.selectedItem = tmpFromTypeBoxItem
+        fromTypeComboBox.selectedItem = tmpToTypeBoxItem
+        fromSearchBox.text = tmpToSearchBoxText
+        toSearchBox.text = tmpFromSearchBoxText
     }
 
     /*

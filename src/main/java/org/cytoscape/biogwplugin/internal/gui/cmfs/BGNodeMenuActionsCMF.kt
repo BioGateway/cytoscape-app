@@ -239,7 +239,8 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
         parentMenu.add(searchAllItem)
 
         // Will only create the menu if the config is loaded.
-        for (relationType in serviceManager.cache.relationTypeMap.values.sortedBy { it.number }) {
+        //for (relationType in serviceManager.cache.relationTypeMap.values.sortedBy { it.number }) {
+        for (relationType in serviceManager.cache.filteredRelationTypeMap.values.sortedBy { it.number }) {
             val item = JMenuItem(relationType.description)
 
             item.addActionListener {
