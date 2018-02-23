@@ -10,28 +10,55 @@ import org.cytoscape.biogwplugin.internal.util.Constants
 import org.cytoscape.biogwplugin.internal.util.Constants.BG_SHOULD_USE_BG_DICT
 import org.cytoscape.biogwplugin.internal.util.Utility
 import org.cytoscape.model.CyNetwork
-import java.io.BufferedReader
 import java.io.IOException
-import java.io.InputStreamReader
 import java.net.URL
 import java.util.concurrent.TimeUnit
+import javax.swing.tree.DefaultMutableTreeNode
+import javax.swing.tree.DefaultTreeModel
+import javax.swing.tree.MutableTreeNode
+import javax.swing.tree.TreePath
+
+class RelationTypeTreeNode(val relationType: BGRelationType): DefaultMutableTreeNode(relationType.name)
 
 
 class BGServer(private val serviceManager: BGServiceManager) {
 
+
+
     class BGCache {
+
+        fun findNodeWithName(root: DefaultMutableTreeNode, name: String): MutableTreeNode? {
+            val e = root.depthFirstEnumeration()
+            while (e.hasMoreElements()) {
+                val node = e.nextElement() as DefaultMutableTreeNode
+                if (node.toString().equals(name)) {
+                    return node
+                }
+            }
+            return null
+        }
+
+        var availableGraphs: DefaultTreeModel = DefaultTreeModel(DefaultMutableTreeNode("Graphs"))
+
         // A cache of BGNodes, which are a local representation of the node found on the server.
         // Note that this cache is independent of the CyNodes and CyNetworks.
         var nodeCache = HashMap<String, BGNode>()
 
         var relationTypeMap = HashMap<String, BGRelationType>()
-        var activeGraphs = arrayOf("intact", "tf-tg", "goa", "refprot").toHashSet()
+        var relationTypesForGraphs = HashMap<String, HashMap<String, BGRelationType>>()
+
+        //var activeGraphs = arrayOf("intact", "tf-tg", "goa", "refprot").toHashSet()
+
+        var activeRelationTypes = HashSet<BGRelationType>()
 
         val filteredRelationTypeMap: Map<String, BGRelationType> get() {
-            return relationTypeMap.filter { activeGraphs.contains(it.key.split(":").first()) }
+            return relationTypeMap.filter { activeRelationTypes.contains(it.value) }
         }
 
-
+        fun addGraphToModel(graph: DefaultMutableTreeNode) {
+            val root = availableGraphs.root as DefaultMutableTreeNode
+           root.insert(graph, root.childCount)
+        }
 
         fun getRelationTypesForURI(uri: String): Collection<BGRelationType>? {
             val types = relationTypeMap.values.filter { it.uri == uri }
@@ -69,6 +96,17 @@ class BGServer(private val serviceManager: BGServiceManager) {
             nodeCache.set(node.uri, node)
         }
 
+        fun addRelationType(relationType: BGRelationType) {
+            relationTypeMap.put(relationType.identifier, relationType)
+            relationType.defaultGraphName?.let {
+                if (relationTypesForGraphs.containsKey(it)) {
+                    relationTypesForGraphs[it]!![relationType.identifier] = relationType
+                } else {
+                    relationTypesForGraphs[it] = hashMapOf(relationType.identifier to relationType)
+                }
+            }
+        }
+
         fun getRelationsForName(name: String): Collection<BGRelationType> {
             return relationTypeMap.filter { it.value.name == name }.map { it.value }.toList()
         }
@@ -81,13 +119,49 @@ class BGServer(private val serviceManager: BGServiceManager) {
 
     init {
         loadXMLFileFromServer()
+        createGraphTreeRootnode()
     }
 
-    fun addGraphFilter(graph: String) {
-        cache.activeGraphs.add(graph)
+    fun createGraphTreeRootnode() {
+
+        for (graph in cache.relationTypesForGraphs.keys) {
+            val graphNode = DefaultMutableTreeNode(graph)
+            cache.relationTypesForGraphs[graph]?.let {
+                for (child in it.values) {
+                    val childNode = RelationTypeTreeNode(child)
+                    graphNode.insert(childNode, graphNode.childCount)
+                }
+            }
+            cache.addGraphToModel(graphNode)
+        }
     }
-    fun removeGraphFilter(graph: String) {
-        cache.activeGraphs.remove(graph)
+
+    fun setActiveRelationsForPaths(paths: Array<TreePath>) {
+        val set = HashSet<BGRelationType>()
+        for (path in paths) {
+            val leaf = path.lastPathComponent as? RelationTypeTreeNode ?: continue
+            set.add(leaf.relationType)
+        }
+        cache.activeRelationTypes = set
+    }
+
+    fun setActivationForRelationType(graphName: String, relationTypeName: String, isActive: Boolean) {
+        val relationTypes = cache.relationTypesForGraphs.get(graphName)?.map { it.value }?.filter { it.name.equals(relationTypeName) }
+        if (relationTypes?.size == 1) {
+            if (isActive) {
+                activateRelationType(relationTypes.first())
+            } else {
+                deactivateRelationType(relationTypes.first())
+            }
+        }
+    }
+
+    fun activateRelationType(relationType: BGRelationType) {
+        cache.activeRelationTypes.add(relationType)
+    }
+
+    fun deactivateRelationType(relationType: BGRelationType) {
+        cache.activeRelationTypes.remove(relationType)
     }
 
     fun searchForExistingNode(uri: String): BGNode? {

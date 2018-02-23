@@ -21,7 +21,7 @@ object BGConfigParser {
             val relationTypesNode = (doc.getElementsByTagName("relationTypes").item(0) as? Element) ?: throw Exception("relationTypes element not found in XML file!")
             val rList = relationTypesNode.getElementsByTagName("relationType") ?: throw Exception()
 
-            var relationTypes = HashMap<String, BGRelationType>()
+            //var relationTypes = HashMap<String, BGRelationType>()
 
             for (index in 0..rList.length -1) {
                 val element = rList.item(index) as? Element
@@ -34,12 +34,13 @@ object BGConfigParser {
 
                 if (name != null && uri != null) {
                     val relationType = BGRelationType(uri, name, index, defaultGraph, arbitraryLength, directed, expandable)
-                    relationTypes.put(relationType.identifier, relationType)
+                    //relationTypes.put(relationType.identifier, relationType)
+                    cache.addRelationType(relationType)
                 }
             }
 
 
-            cache.relationTypeMap = relationTypes
+            //cache.relationTypeMap = relationTypes
 
             // Will crash if the queryList tag isn't present.
             val queryList = (doc.getElementsByTagName("queryList").item(0) as? Element) ?: throw Exception("queryList element not found in XML file!")

@@ -1,43 +1,74 @@
 package org.cytoscape.biogwplugin.internal.gui;
 
-import com.intellij.uiDesigner.core.GridConstraints;
-import com.intellij.uiDesigner.core.GridLayoutManager;
-import javafx.scene.control.cell.CheckBoxTreeCell;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.biogwplugin.internal.libs.JCheckBoxTree;
 import org.cytoscape.biogwplugin.internal.BGServiceManager;
-import org.scijava.swing.checkboxtree.CheckBoxNodeData;
-import org.scijava.swing.checkboxtree.CheckBoxNodeEditor;
 
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 public class BGControlPanel extends JPanel implements CytoPanelComponent {
     private BGServiceManager serviceManager;
     private JPanel mainPanel;
     private JComboBox comboBox1;
-    private JCheckBox intActCheckBox;
-    private JCheckBox TFTGCheckBox;
-    private JCheckBox GOACheckBox;
-    private JCheckBox refprotCheckBox;
     private JPanel treePanel;
 
 
     public BGControlPanel(BGServiceManager serviceManager) {
         this.serviceManager = serviceManager;
-
-        serviceManager.setControlPanel(this);
         this.add(mainPanel);
-        addActionListenerToGraphCheckbox(this.intActCheckBox, "intact");
-        addActionListenerToGraphCheckbox(this.TFTGCheckBox, "tf-tg");
-        addActionListenerToGraphCheckbox(this.GOACheckBox, "goa");
-        addActionListenerToGraphCheckbox(this.refprotCheckBox, "refprot");
+
+        setupTreePanel();
     }
 
+
+    private void setupTreePanel() {
+        DefaultTreeModel model = serviceManager.getCache().getAvailableGraphs();
+        JCheckBoxTree tree = new JCheckBoxTree(model);
+        //tree.expandRow(0);
+        tree.setRootVisible(false);
+        tree.setShowsRootHandles(true);
+        treePanel.add(tree);
+
+        tree.addCheckChangeEventListener(new JCheckBoxTree.CheckChangeEventListener() {
+            public void checkStateChanged(JCheckBoxTree.CheckChangeEvent event) {
+
+                serviceManager.getServer().setActiveRelationsForPaths(tree.getCheckedPaths());
+
+/*                System.out.println(event.getSource());
+                TreePath path = (TreePath) event.getSource();
+                DefaultMutableTreeNode graph = (DefaultMutableTreeNode) path.getParentPath().getLastPathComponent();
+                String graphName = (String) graph.getUserObject();
+                String relationName = (String) ((DefaultMutableTreeNode) path.getLastPathComponent()).getUserObject();
+                Boolean isSelected = tree.isSelectedPartially(path);
+                serviceManager.getServer().setActivationForRelationType(graphName, relationName, isSelected);*/
+                }
+        });
+    }
+
+
+
+    /*
+    System.out.println(event);
+                TreePath path = (TreePath) event.getSource();
+                System.out.println(path);
+                TreePath[] paths = cbt.getCheckedPaths();
+                for (TreePath tp : paths) {
+                    for (Object pathPart : tp.getPath()) {
+                        System.out.print(pathPart + ",");
+                    }
+                    System.out.println();
+                }
+
+     */
+
+   /*
     private void addActionListenerToGraphCheckbox(JCheckBox box, String graph) {
         box.addActionListener(new ActionListener() {
             @Override
@@ -49,7 +80,7 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent {
                 }
             }
         });
-    }
+    }*/
 
 // CytoPanel implementations:
 
@@ -108,21 +139,9 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent {
         treePanel.setLayout(new BorderLayout(0, 0));
         mainPanel.add(treePanel, BorderLayout.SOUTH);
         final JPanel panel2 = new JPanel();
-        panel2.setLayout(new GridLayoutManager(4, 1, new Insets(0, 0, 0, 0), -1, -1));
+        panel2.setLayout(new BorderLayout(0, 0));
         mainPanel.add(panel2, BorderLayout.CENTER);
         panel2.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Active Graphs"));
-        intActCheckBox = new JCheckBox();
-        intActCheckBox.setText("IntAct");
-        panel2.add(intActCheckBox, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        TFTGCheckBox = new JCheckBox();
-        TFTGCheckBox.setText("TF-TG");
-        panel2.add(TFTGCheckBox, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        GOACheckBox = new JCheckBox();
-        GOACheckBox.setText("GOA");
-        panel2.add(GOACheckBox, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        refprotCheckBox = new JCheckBox();
-        refprotCheckBox.setText("Refprot");
-        panel2.add(refprotCheckBox, new GridConstraints(3, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
     }
 
     /**
