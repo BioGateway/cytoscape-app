@@ -140,14 +140,16 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         for (queryName in queries.keys) {
             view.querySelectionBox.addItem(queryName)
         }
-        setupMultiQueryPanel()
+        view.setUpMultiQueryPanel()
     }
 
+    /*
     private fun setupMultiQueryPanel() {
         val panel = BGMultiQueryPanel(serviceManager)
         panel.addQueryLine()
         view.setUpMultiQueryPanel(panel)
     }
+    */
 
     private fun readParameterComponents(parameters: Collection<BGQueryParameter>, parameterComponents: HashMap<String, JComponent>) {
         for (parameter in parameters) {

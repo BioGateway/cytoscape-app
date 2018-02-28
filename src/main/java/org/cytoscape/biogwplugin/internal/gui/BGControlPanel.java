@@ -4,6 +4,7 @@ import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.biogwplugin.internal.libs.JCheckBoxTree;
 import org.cytoscape.biogwplugin.internal.BGServiceManager;
+import org.cytoscape.biogwplugin.internal.model.BGQueryConstraint;
 
 
 import javax.swing.*;
@@ -12,8 +13,12 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import java.awt.*;
+import java.util.ArrayList;
 
 public class BGControlPanel extends JPanel implements CytoPanelComponent {
+
+
+
     private BGServiceManager serviceManager;
     private JPanel mainPanel;
     private JComboBox comboBox1;

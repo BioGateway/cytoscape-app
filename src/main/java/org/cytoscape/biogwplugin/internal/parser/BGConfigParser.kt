@@ -55,6 +55,7 @@ object BGConfigParser {
                 val constraint = constraintList.item(index) as? Element ?: continue
                 val id = constraint.getAttribute("id") ?: continue
                 val label = constraint.getAttribute("label") ?: continue
+                val columns = constraint.getAttribute("columns").toIntOrNull()
                 val typeName = constraint.getAttribute("type") ?: continue
 
                 val type = when (typeName) {
@@ -63,7 +64,7 @@ object BGConfigParser {
                     "number" -> BGQueryConstraint.InputType.NUMBER
                     else -> null } ?: continue
 
-                val queryConstraint = BGQueryConstraint(id, label, type)
+                val queryConstraint = BGQueryConstraint(id, label, type, columns)
 
                 val actionsList = constraint.getElementsByTagName("action")
 

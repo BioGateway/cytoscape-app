@@ -3,6 +3,8 @@ package org.cytoscape.biogwplugin.internal.util
 /**
  * Created by sholmas on 12/06/2017.
  */
+
+
 object Constants {
     val BG_SELECTED_ACTIVE_RELATION_TYPES = "biogatewayPluginActiveRelationTypes"
     val BG_SHOULD_USE_BG_DICT = true

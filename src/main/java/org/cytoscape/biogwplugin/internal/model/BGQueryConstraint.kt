@@ -1,6 +1,6 @@
 package org.cytoscape.biogwplugin.internal.model
 
-class BGQueryConstraint(val id: String, val label: String, val inputType: InputType) {
+class BGQueryConstraint(val id: String, val label: String, val inputType: InputType, val columns: Int? = null) {
 
     enum class InputType {
         COMBOBOX, TEXT, NUMBER
@@ -16,6 +16,7 @@ class BGQueryConstraint(val id: String, val label: String, val inputType: InputT
 
     val options = ArrayList<ComboBoxOption>()
     val actions = ArrayList<ConstraintAction>()
+
 
     fun getOptionNames(): Array<String> {
         return options.map { it.label }.toTypedArray()

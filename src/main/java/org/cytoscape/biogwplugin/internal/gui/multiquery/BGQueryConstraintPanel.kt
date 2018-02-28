@@ -1,11 +1,18 @@
 package org.cytoscape.biogwplugin.internal.gui.multiquery
 
 import org.cytoscape.biogwplugin.internal.model.BGQueryConstraint
-import org.intellij.lang.annotations.JdkConstants
 import java.awt.FlowLayout
+import java.awt.TextField
+import java.util.ArrayList
 import javax.swing.*
 
 class BGQueryConstraintPanel(val constraints: Collection<BGQueryConstraint>): JPanel() {
+
+    class ConstraintUIComponent(val constraint: BGQueryConstraint, val component: JComponent, val checkBox: JCheckBox)
+    class ConstraintValue(val stringValue: String, val isEnabled: Boolean)
+
+    private val constraintUIComponents = ArrayList<ConstraintUIComponent>()
+
 
     init {
         this.layout = FlowLayout(FlowLayout.LEFT)
@@ -14,22 +21,57 @@ class BGQueryConstraintPanel(val constraints: Collection<BGQueryConstraint>): JP
         for (constraint in constraints) {
 
             // Create the label.
-            val label = JLabel(constraint.label)
-            this.add(label)
+            //val label = JLabel(constraint.label)
+            //this.add(label)
             // Check the type.
+            val checkBox = JCheckBox(constraint.label)
+            this.add(checkBox)
+            val columns = constraint.columns ?: 10
 
             val inputComponent: JComponent = when (constraint.inputType) {
                 BGQueryConstraint.InputType.COMBOBOX -> {
                     JComboBox(constraint.getOptionNames())
                 }
                 BGQueryConstraint.InputType.TEXT -> {
-                    JTextField(20)
+                    JTextField(columns)
                 }
                 BGQueryConstraint.InputType.NUMBER -> {
-                    JTextField(5)
+                    JTextField(columns)
                 }
             }
             this.add(inputComponent)
+
+            this.constraintUIComponents.add(ConstraintUIComponent(constraint, inputComponent, checkBox))
         }
+    }
+
+    fun getConstraintValues(): HashMap<BGQueryConstraint, ConstraintValue> {
+
+        val values = HashMap<BGQueryConstraint, ConstraintValue>()
+
+        for (constraintComponent in constraintUIComponents) {
+            val type = constraintComponent.constraint.inputType
+
+            val inputValue: String = when (type) {
+                BGQueryConstraint.InputType.COMBOBOX -> {
+                    // Get the component as JComboBox.
+                    val comboBox = constraintComponent.component as? JComboBox<*> ?: throw Exception("Invalid ComboBox component.")
+                    val selectedValueString = comboBox.selectedItem as? String ?: throw Exception("Invalid ComboBox selection.")
+                    constraintComponent.constraint.options.filter { it.label.equals(selectedValueString) }.first().value
+                }
+                BGQueryConstraint.InputType.NUMBER -> {
+                    val textField = constraintComponent.component as? JTextField ?: throw Exception()
+                    textField.text
+                }
+                BGQueryConstraint.InputType.TEXT -> {
+                    val textField = constraintComponent.component as? JTextField ?: throw Exception()
+                    "\""+textField.text+"\""
+                }
+            }
+
+            val enabled = constraintComponent.checkBox.isSelected
+            values[constraintComponent.constraint] = ConstraintValue(inputValue, enabled)
+        }
+        return values
     }
 }

@@ -1,6 +1,7 @@
 package org.cytoscape.biogwplugin.internal.gui.multiquery
 
 import org.cytoscape.biogwplugin.internal.BGServiceManager
+import org.cytoscape.biogwplugin.internal.model.BGQueryConstraint
 import org.cytoscape.biogwplugin.internal.model.BGRelationType
 import org.cytoscape.biogwplugin.internal.parser.BGSPARQLParser
 import org.cytoscape.biogwplugin.internal.util.Constants
@@ -9,12 +10,13 @@ import java.awt.FlowLayout
 import javax.swing.*
 
 
-class BGMultiQueryPanel(val serviceManager: BGServiceManager): JPanel() {
+class BGMultiQueryPanel(val serviceManager: BGServiceManager, val constraintPanel: BGQueryConstraintPanel): JPanel() {
 
     val deleteButtonTooltipText = "Delete this row."
 
     val variableManager = BGQueryVariableManager()
     val relationTypes = serviceManager.cache.relationTypeDescriptions
+
 
     init {
         layout = FlowLayout()
@@ -138,17 +140,19 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager): JPanel() {
                 "SELECT DISTINCT " + queryComponents.first + "\n" +
                 "WHERE {\n" +
                 queryComponents.second +
+                queryComponents.third +
                 "}"
 
         return query
     }
 
     fun generateSPARQLCountQuery(): String {
-        val graphQueries = generateReturnValuesAndGraphQueries().second
+        val graphQueries = generateReturnValuesAndGraphQueries()
         val query = "BASE <http://www.semantic-systems-biology.org/>\n" +
                 "SELECT COUNT (*) \n" +
                 "WHERE {\n" +
-                graphQueries +
+                graphQueries.second +
+                graphQueries.third +
                 "}"
 
         return query
@@ -157,9 +161,13 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager): JPanel() {
 
 
 
-    private fun generateReturnValuesAndGraphQueries(): Pair<String, String> {
+
+
+    private fun generateReturnValuesAndGraphQueries(): Triple<String, String, String> {
         var returnValues = ""
         var graphQueries = ""
+
+        var triples = HashSet<Triple<String, BGRelationType, String>>()
 
         var nodeNames = HashSet<String>()
 
@@ -179,11 +187,70 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager): JPanel() {
 
             returnValues += fromRDFUri+" as ?"+getSafeString(fromUri)+numberOfGraphQueries+" <"+graphName+"> <"+relationType.uri+"> "+toRDFUri+" as ?"+getSafeString(toUri)+numberOfGraphQueries+" "
             graphQueries += generateSparqlGraph(numberOfGraphQueries, fromRDFUri, relationType, toRDFUri)
+            triples.add(Triple(fromRDFUri, relationType, toRDFUri))
             nodeNames.add(fromRDFUri)
             nodeNames.add(toRDFUri)
             numberOfGraphQueries += 1
         }
-        return Pair(returnValues, graphQueries)
+
+        val constraints = generateConstraintQueries(triples)
+
+        return Triple(returnValues, graphQueries, constraints)
+    }
+
+    private fun generateConstraintQueries(triples: Collection<Triple<String, BGRelationType, String>>): String {
+
+        // Graphs are key, then all the queries on the graphs.
+        val constraintQueries = HashMap<String, HashSet<String>>()
+        fun addToQueries(key: String, sparql: String) {
+            if (!constraintQueries.containsKey(key)) {
+                constraintQueries[key] = HashSet()
+            }
+            constraintQueries[key]?.add(sparql)
+        }
+
+        val constraintValues = constraintPanel.getConstraintValues()
+
+        for ((constraint, value) in constraintValues) {
+            // Skip this if it's disabled.
+            if (!value.isEnabled) continue
+
+            for (triple in triples) {
+                for (action in constraint.actions) {
+                    if (!action.relationTypes.contains(triple.second)) continue
+                    val sparql = action.sparqlTemplate
+                            .replace("@first", triple.first)
+                            .replace("@last", triple.third)
+                            .replace("@value", value.stringValue)
+
+                    if (action.parameter == BGQueryConstraint.ActionParameter.FIRST && triple.first.startsWith("?")) {
+                        addToQueries(action.graph, sparql)
+                    }
+                    if (action.parameter == BGQueryConstraint.ActionParameter.LAST && triple.third.startsWith("?")) {
+                        addToQueries(action.graph, sparql)
+                    }
+                    if (action.parameter == BGQueryConstraint.ActionParameter.BOTH &&
+                            (triple.third.startsWith("?") || triple.first.startsWith("?"))) {
+                        addToQueries(action.graph, sparql)
+                    }
+                }
+            }
+        }
+
+        var constraintQueryString = ""
+
+        for (graph in constraintQueries.keys) {
+
+            val lines = constraintQueries[graph] ?: continue
+
+            constraintQueryString += "\n" +
+                    "GRAPH <"+graph+"> { \n"
+            for (line in lines) {
+                constraintQueryString += line+"\n"
+            }
+            constraintQueryString += "}\n"
+        }
+        return constraintQueryString
     }
 
     private fun getRDFURI(uri: String): String {
