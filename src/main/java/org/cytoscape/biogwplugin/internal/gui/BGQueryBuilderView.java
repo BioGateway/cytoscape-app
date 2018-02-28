@@ -6,6 +6,7 @@ import com.intellij.uiDesigner.core.Spacer;
 import net.miginfocom.swing.MigLayout;
 import org.cytoscape.biogwplugin.internal.BGServiceManager;
 import org.cytoscape.biogwplugin.internal.gui.multiquery.BGMultiQueryPanel;
+import org.cytoscape.biogwplugin.internal.gui.multiquery.BGQueryConstraintPanel;
 import org.cytoscape.biogwplugin.internal.query.BGQueryParameter;
 import org.cytoscape.biogwplugin.internal.query.QueryTemplate;
 import org.cytoscape.biogwplugin.internal.util.Constants;
@@ -76,9 +77,6 @@ public class BGQueryBuilderView implements ChangeListener {
     private JButton bulkImportSelectedCurrentButton;
     private JTextField bulkFilterTextField;
     private JPanel queryConstraintsPanel;
-    private JComboBox comboBox1;
-    private JTextField textField1;
-    private JComboBox comboBox2;
     private TableRowSorter<TableModel> sorter;
     private final DocumentListener filterDocumentListener = new DocumentListener() {
         void filter() {
@@ -188,6 +186,9 @@ public class BGQueryBuilderView implements ChangeListener {
         bulkFilterTextField.getDocument().addDocumentListener(bulkFilterDocumentListener);
 
         filterSelectedCheckBox.addActionListener(e -> updateFilterBySelectedRows());
+
+
+        queryConstraintsPanel.add(new BGQueryConstraintPanel(serviceManager.getCache().getQueryConstraints()));
     }
 
     private void setUpActionListeners() {
@@ -457,41 +458,9 @@ public class BGQueryBuilderView implements ChangeListener {
         multiQueryContainer.setLayout(new BorderLayout(0, 0));
         panel1.add(multiQueryContainer, BorderLayout.CENTER);
         queryConstraintsPanel = new JPanel();
-        queryConstraintsPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
+        queryConstraintsPanel.setLayout(new BorderLayout(0, 0));
         panel1.add(queryConstraintsPanel, BorderLayout.NORTH);
         queryConstraintsPanel.setBorder(BorderFactory.createTitledBorder("Query Constraints"));
-        final JLabel label1 = new JLabel();
-        label1.setText("Taxon");
-        queryConstraintsPanel.add(label1);
-        comboBox1 = new JComboBox();
-        final DefaultComboBoxModel defaultComboBoxModel1 = new DefaultComboBoxModel();
-        defaultComboBoxModel1.addElement("Any");
-        defaultComboBoxModel1.addElement("Homo sapiens");
-        defaultComboBoxModel1.addElement("Mus musculus");
-        defaultComboBoxModel1.addElement("Schizosaccharomyces pombe");
-        defaultComboBoxModel1.addElement("Saccharomyces cerevisiae");
-        defaultComboBoxModel1.addElement("Rattus Norvegicus");
-        defaultComboBoxModel1.addElement("Arabidopsis thaliana");
-        defaultComboBoxModel1.addElement("Caenorhabditis elegans");
-        defaultComboBoxModel1.addElement("Drosophila melanogaster");
-        defaultComboBoxModel1.addElement("Xenopus tropicalis");
-        comboBox1.setModel(defaultComboBoxModel1);
-        queryConstraintsPanel.add(comboBox1);
-        final JLabel label2 = new JLabel();
-        label2.setText("Minimum Score:");
-        queryConstraintsPanel.add(label2);
-        textField1 = new JTextField();
-        textField1.setColumns(3);
-        queryConstraintsPanel.add(textField1);
-        final JLabel label3 = new JLabel();
-        label3.setText("Experiment Type:");
-        queryConstraintsPanel.add(label3);
-        comboBox2 = new JComboBox();
-        final DefaultComboBoxModel defaultComboBoxModel2 = new DefaultComboBoxModel();
-        defaultComboBoxModel2.addElement("Y2H");
-        defaultComboBoxModel2.addElement("Immunoprecipitation");
-        comboBox2.setModel(defaultComboBoxModel2);
-        queryConstraintsPanel.add(comboBox2);
         final JPanel panel3 = new JPanel();
         panel3.setLayout(new BorderLayout(0, 0));
         tabPanel.addTab("Bulk Import", panel3);
@@ -517,9 +486,9 @@ public class BGQueryBuilderView implements ChangeListener {
         panel6.add(scrollPane1, BorderLayout.CENTER);
         bulkImportTextPane = new JTextPane();
         scrollPane1.setViewportView(bulkImportTextPane);
-        final JLabel label4 = new JLabel();
-        label4.setText("  Paste genes/proteins here:  ");
-        panel6.add(label4, BorderLayout.NORTH);
+        final JLabel label1 = new JLabel();
+        label1.setText("  Paste genes/proteins here:  ");
+        panel6.add(label1, BorderLayout.NORTH);
         final JPanel panel7 = new JPanel();
         panel7.setLayout(new BorderLayout(0, 0));
         panel5.add(panel7, BorderLayout.CENTER);
@@ -538,22 +507,22 @@ public class BGQueryBuilderView implements ChangeListener {
         panel10.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
         panel9.add(panel10, BorderLayout.WEST);
         bulkImportTypeComboBox = new JComboBox();
-        final DefaultComboBoxModel defaultComboBoxModel3 = new DefaultComboBoxModel();
-        defaultComboBoxModel3.addElement("Gene names");
-        defaultComboBoxModel3.addElement("Protein names");
-        defaultComboBoxModel3.addElement("Uniprot IDs");
-        defaultComboBoxModel3.addElement("GO terms");
-        bulkImportTypeComboBox.setModel(defaultComboBoxModel3);
+        final DefaultComboBoxModel defaultComboBoxModel1 = new DefaultComboBoxModel();
+        defaultComboBoxModel1.addElement("Gene names");
+        defaultComboBoxModel1.addElement("Protein names");
+        defaultComboBoxModel1.addElement("Uniprot IDs");
+        defaultComboBoxModel1.addElement("GO terms");
+        bulkImportTypeComboBox.setModel(defaultComboBoxModel1);
         panel10.add(bulkImportTypeComboBox);
-        final JLabel label5 = new JLabel();
-        label5.setText("to import:");
-        panel10.add(label5);
+        final JLabel label2 = new JLabel();
+        label2.setText("to import:");
+        panel10.add(label2);
         final JPanel panel11 = new JPanel();
         panel11.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
         panel9.add(panel11, BorderLayout.EAST);
-        final JLabel label6 = new JLabel();
-        label6.setText("Filter results:");
-        panel11.add(label6);
+        final JLabel label3 = new JLabel();
+        label3.setText("Filter results:");
+        panel11.add(label3);
         bulkFilterTextField = new JTextField();
         bulkFilterTextField.setColumns(10);
         panel11.add(bulkFilterTextField);
@@ -634,9 +603,9 @@ public class BGQueryBuilderView implements ChangeListener {
         final JPanel panel19 = new JPanel();
         panel19.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
         panel17.add(panel19, BorderLayout.EAST);
-        final JLabel label7 = new JLabel();
-        label7.setText("Filter results:");
-        panel19.add(label7);
+        final JLabel label4 = new JLabel();
+        label4.setText("Filter results:");
+        panel19.add(label4);
         filterResultsTextField = new JTextField();
         filterResultsTextField.setColumns(10);
         panel19.add(filterResultsTextField);

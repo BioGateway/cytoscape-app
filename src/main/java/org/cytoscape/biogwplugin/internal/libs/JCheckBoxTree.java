@@ -41,7 +41,7 @@ public class JCheckBoxTree extends JTree {
     // Defining a new event type for the checking mechanism and preparing event-handling mechanism
     protected EventListenerList listenerList = new EventListenerList();
 
-    public class CheckChangeEvent extends EventObject {
+    public static class CheckChangeEvent extends EventObject {
         private static final long serialVersionUID = -8100230309044193368L;
 
         public CheckChangeEvent(Object source) {
@@ -60,7 +60,7 @@ public class JCheckBoxTree extends JTree {
         listenerList.remove(CheckChangeEventListener.class, listener);
     }
 
-    void fireCheckChangeEvent(CheckChangeEvent evt) {
+    public void fireCheckChangeEvent(CheckChangeEvent evt) {
         Object[] listeners = listenerList.getListenerList();
         for (int i = 0; i < listeners.length; i++) {
             if (listeners[i] == CheckChangeEventListener.class) {
@@ -220,7 +220,7 @@ public class JCheckBoxTree extends JTree {
     }
 
     // Recursively checks/unchecks a subtree
-    protected void checkSubTree(TreePath tp, boolean check) {
+    public void checkSubTree(TreePath tp, boolean check) {
         CheckedNode cn = nodesCheckingState.get(tp);
         cn.isSelected = check;
         DefaultMutableTreeNode node = (DefaultMutableTreeNode) tp.getLastPathComponent();

@@ -34,22 +34,23 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent {
         //tree.expandRow(0);
         tree.setRootVisible(false);
         tree.setShowsRootHandles(true);
+
         treePanel.add(tree);
 
         tree.addCheckChangeEventListener(new JCheckBoxTree.CheckChangeEventListener() {
             public void checkStateChanged(JCheckBoxTree.CheckChangeEvent event) {
 
                 serviceManager.getServer().setActiveRelationsForPaths(tree.getCheckedPaths());
-
-/*                System.out.println(event.getSource());
-                TreePath path = (TreePath) event.getSource();
-                DefaultMutableTreeNode graph = (DefaultMutableTreeNode) path.getParentPath().getLastPathComponent();
-                String graphName = (String) graph.getUserObject();
-                String relationName = (String) ((DefaultMutableTreeNode) path.getLastPathComponent()).getUserObject();
-                Boolean isSelected = tree.isSelectedPartially(path);
-                serviceManager.getServer().setActivationForRelationType(graphName, relationName, isSelected);*/
             }
         });
+
+        // Set the selected nodes. Currently selects all.
+        // TODO: Store this in a Preferences object and retrieve it.
+        DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
+        TreePath path = new TreePath(root.getPath());
+        tree.checkSubTree(path, true);
+        tree.fireCheckChangeEvent(new JCheckBoxTree.CheckChangeEvent(path));
+
     }
 
 

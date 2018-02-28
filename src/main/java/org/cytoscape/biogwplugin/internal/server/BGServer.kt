@@ -3,6 +3,7 @@ package org.cytoscape.biogwplugin.internal.server
 import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.model.BGNode
 import org.cytoscape.biogwplugin.internal.model.BGNodeType
+import org.cytoscape.biogwplugin.internal.model.BGQueryConstraint
 import org.cytoscape.biogwplugin.internal.model.BGRelationType
 import org.cytoscape.biogwplugin.internal.parser.*
 import org.cytoscape.biogwplugin.internal.query.*
@@ -36,6 +37,8 @@ class BGServer(private val serviceManager: BGServiceManager) {
             }
             return null
         }
+
+        var queryConstraints = ArrayList<BGQueryConstraint>()
 
         var availableGraphs: DefaultTreeModel = DefaultTreeModel(DefaultMutableTreeNode("Graphs"))
 
