@@ -48,7 +48,7 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent {
                 String relationName = (String) ((DefaultMutableTreeNode) path.getLastPathComponent()).getUserObject();
                 Boolean isSelected = tree.isSelectedPartially(path);
                 serviceManager.getServer().setActivationForRelationType(graphName, relationName, isSelected);*/
-                }
+            }
         });
     }
 
@@ -135,13 +135,13 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent {
         defaultComboBoxModel1.addElement("Rattus Norwegicus");
         comboBox1.setModel(defaultComboBoxModel1);
         panel1.add(comboBox1);
-        treePanel = new JPanel();
-        treePanel.setLayout(new BorderLayout(0, 0));
-        mainPanel.add(treePanel, BorderLayout.SOUTH);
         final JPanel panel2 = new JPanel();
         panel2.setLayout(new BorderLayout(0, 0));
         mainPanel.add(panel2, BorderLayout.CENTER);
         panel2.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Active Graphs"));
+        treePanel = new JPanel();
+        treePanel.setLayout(new BorderLayout(0, 0));
+        panel2.add(treePanel, BorderLayout.CENTER);
     }
 
     /**

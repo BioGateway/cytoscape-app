@@ -13,6 +13,7 @@ import org.cytoscape.model.CyNetwork
 import java.io.IOException
 import java.net.URL
 import java.util.concurrent.TimeUnit
+import java.util.prefs.Preferences
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.MutableTreeNode
@@ -22,8 +23,6 @@ class RelationTypeTreeNode(val relationType: BGRelationType): DefaultMutableTree
 
 
 class BGServer(private val serviceManager: BGServiceManager) {
-
-
 
     class BGCache {
 
@@ -80,7 +79,8 @@ class BGServer(private val serviceManager: BGServiceManager) {
 
         val relationTypeDescriptions: LinkedHashMap<String, BGRelationType> get() {
             val relationTypes = LinkedHashMap<String, BGRelationType>()
-            val relations = relationTypeMap.values.sortedBy { it.number }
+            val relations = filteredRelationTypeMap.values.sortedBy { it.number }
+            //val relations = relationTypeMap.values.sortedBy { it.number }
             for (relation in relations) {
                 relationTypes.put(relation.description, relation)
             }
@@ -112,6 +112,7 @@ class BGServer(private val serviceManager: BGServiceManager) {
         }
     }
 
+    val selectedRelationTypesPrefs = Preferences.userRoot().node(Constants.BG_SELECTED_ACTIVE_RELATION_TYPES)
     val cache = BGCache()
     val settings = BGSettings()
     val parser = BGParser(serviceManager)
@@ -136,6 +137,11 @@ class BGServer(private val serviceManager: BGServiceManager) {
         }
     }
 
+    fun getActiveRelationTypes() {
+        val paths = selectedRelationTypesPrefs
+        // TODO: Store the path as a special object that implements functionality to be stored as bytes in the Preferences API.
+    }
+
     fun setActiveRelationsForPaths(paths: Array<TreePath>) {
         val set = HashSet<BGRelationType>()
         for (path in paths) {
@@ -143,6 +149,7 @@ class BGServer(private val serviceManager: BGServiceManager) {
             set.add(leaf.relationType)
         }
         cache.activeRelationTypes = set
+        //return set
     }
 
     fun setActivationForRelationType(graphName: String, relationTypeName: String, isActive: Boolean) {

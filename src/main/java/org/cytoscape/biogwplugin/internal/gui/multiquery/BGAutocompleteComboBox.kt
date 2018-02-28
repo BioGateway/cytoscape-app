@@ -97,7 +97,7 @@ class BGAutocompleteComboBox(private val typeComboBox: JComboBox<String>, privat
         // TODO: Do a better typing than just lowercasing.
         val type = (typeComboBox.selectedItem as String).toLowerCase()
 
-        return if (type == "go-term") {
+        return if (type == "go-term" || type == "taxon") {
             endpoint.searchForLabel(term, type, 10)
         } else endpoint.searchForPrefix(term, type, 10)
     }

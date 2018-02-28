@@ -32,17 +32,18 @@
           </component>
         </children>
       </grid>
-      <grid id="a9f55" binding="treePanel" layout-manager="BorderLayout" hgap="0" vgap="0">
-        <constraints border-constraint="South"/>
-        <properties/>
-        <border type="none"/>
-        <children/>
-      </grid>
       <grid id="ff7bd" layout-manager="BorderLayout" hgap="0" vgap="0">
         <constraints border-constraint="Center"/>
         <properties/>
         <border type="etched" title="Active Graphs"/>
-        <children/>
+        <children>
+          <grid id="a9f55" binding="treePanel" layout-manager="BorderLayout" hgap="0" vgap="0">
+            <constraints border-constraint="Center"/>
+            <properties/>
+            <border type="none"/>
+            <children/>
+          </grid>
+        </children>
       </grid>
     </children>
   </grid>

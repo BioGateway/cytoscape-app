@@ -2,7 +2,7 @@
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="org.cytoscape.biogwplugin.internal.gui.BGQueryBuilderView">
   <grid id="27dc6" binding="mainPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
     <constraints>
-      <xy x="20" y="20" width="736" height="400"/>
+      <xy x="20" y="20" width="1129" height="400"/>
     </constraints>
     <properties/>
     <border type="none"/>
@@ -61,6 +61,63 @@
                 <properties/>
                 <border type="none"/>
                 <children/>
+              </grid>
+              <grid id="c9fe8" binding="queryConstraintsPanel" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="0">
+                <constraints border-constraint="North"/>
+                <properties/>
+                <border type="none" title="Query Constraints"/>
+                <children>
+                  <component id="4aa01" class="javax.swing.JLabel">
+                    <constraints/>
+                    <properties>
+                      <text value="Taxon"/>
+                    </properties>
+                  </component>
+                  <component id="bea3f" class="javax.swing.JComboBox" binding="comboBox1" default-binding="true">
+                    <constraints/>
+                    <properties>
+                      <model>
+                        <item value="Any"/>
+                        <item value="Homo sapiens"/>
+                        <item value="Mus musculus"/>
+                        <item value="Schizosaccharomyces pombe"/>
+                        <item value="Saccharomyces cerevisiae"/>
+                        <item value="Rattus Norvegicus"/>
+                        <item value="Arabidopsis thaliana"/>
+                        <item value="Caenorhabditis elegans"/>
+                        <item value="Drosophila melanogaster"/>
+                        <item value="Xenopus tropicalis"/>
+                      </model>
+                    </properties>
+                  </component>
+                  <component id="7d4a5" class="javax.swing.JLabel">
+                    <constraints/>
+                    <properties>
+                      <text value="Minimum Score:"/>
+                    </properties>
+                  </component>
+                  <component id="ac245" class="javax.swing.JTextField" binding="textField1" default-binding="true">
+                    <constraints/>
+                    <properties>
+                      <columns value="3"/>
+                    </properties>
+                  </component>
+                  <component id="8e397" class="javax.swing.JLabel">
+                    <constraints/>
+                    <properties>
+                      <text value="Experiment Type:"/>
+                    </properties>
+                  </component>
+                  <component id="4983c" class="javax.swing.JComboBox" binding="comboBox2" default-binding="true">
+                    <constraints/>
+                    <properties>
+                      <model>
+                        <item value="Y2H"/>
+                        <item value="Immunoprecipitation"/>
+                      </model>
+                    </properties>
+                  </component>
+                </children>
               </grid>
             </children>
           </grid>

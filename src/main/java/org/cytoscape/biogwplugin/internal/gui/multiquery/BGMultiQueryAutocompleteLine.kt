@@ -56,7 +56,7 @@ class BGMultiQueryAutocompleteLine(val serviceManager: BGServiceManager, val rel
         toComboBox = JComboBox(variableManager.getShownVariables())
         toComboBox.toolTipText = variablesTooltipText
 
-        val types = arrayOf("Protein", "Gene", "GO-Term", "All")
+        val types = arrayOf("Protein", "Gene", "GO-Term", "Taxon", "All")
         toTypeComboBox = JComboBox(types)
         fromTypeComboBox = JComboBox(types)
 
