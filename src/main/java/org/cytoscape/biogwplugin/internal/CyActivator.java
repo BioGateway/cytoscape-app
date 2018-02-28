@@ -42,7 +42,7 @@ public class CyActivator extends AbstractCyActivator {
         Properties properties = new Properties();
 		registerService(context, biogwPlugin, BiogwPlugin.class, properties);
 
-        BGCreateAction createQueryAction = new BGCreateAction("Create query", "always", serviceManager, new BGAction() {
+        BGCreateAction createQueryAction = new BGCreateAction("BioGateway Query", "always", serviceManager, new BGAction() {
             @Override
             public void action(BGServiceManager serviceManager) {
                 BGQueryBuilderController queryBuilderController = new BGQueryBuilderController(serviceManager);
@@ -74,7 +74,7 @@ public class CyActivator extends AbstractCyActivator {
                 serviceManager.getServer().loadXMLFileFromServer();
             }
         });
-        registerService(context, reloadXMLAction, CyAction.class, new Properties());
+        //registerService(context, reloadXMLAction, CyAction.class, new Properties());
 
         BGCreateAction importStyleAction = new BGCreateAction("Import the BioGateway visual style", "always", serviceManager, new BGAction() {
             @Override
