@@ -131,7 +131,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
 
     init {
         this.view = BGQueryBuilderView(this, this, serviceManager)
-        this.queries = serviceManager.server.cache.queryTemplates
+        this.queries = serviceManager.dataModelController.cache.queryTemplates
         updateUIAfterXMLLoad()
     }
 
@@ -308,7 +308,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
 
     private fun importSelectedResults(net: CyNetwork?, returnType: BGReturnType) {
         var network = net // Need to redeclare it to make it mutable.
-        val server = serviceManager.server
+        val server = serviceManager.dataModelController
         // 1. Get the selected lines from the table.
         val nodes = HashMap<String, BGNode>()
         val relations = ArrayList<BGRelation>()
@@ -662,17 +662,17 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         var shouldCreateNetworkView = false
 
         if (network == null) {
-            network = serviceManager.server.networkBuilder.createNetwork()
+            network = serviceManager.dataModelController.networkBuilder.createNetwork()
             shouldCreateNetworkView = true
         }
 
-        serviceManager.server.networkBuilder.addBGNodesToNetwork(nodes.values, network)
+        serviceManager.dataModelController.networkBuilder.addBGNodesToNetwork(nodes.values, network)
 
         if (shouldCreateNetworkView) {
             serviceManager.networkManager?.addNetwork(network)
             EventQueue.invokeLater {
                 network?.let {
-                    serviceManager.server.networkBuilder.createNetworkView(it, serviceManager)
+                    serviceManager.dataModelController.networkBuilder.createNetworkView(it, serviceManager)
                 }
             }
         } else {

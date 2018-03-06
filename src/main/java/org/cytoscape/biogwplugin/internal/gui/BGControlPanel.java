@@ -4,7 +4,6 @@ import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.biogwplugin.internal.libs.JCheckBoxTree;
 import org.cytoscape.biogwplugin.internal.BGServiceManager;
-import org.cytoscape.biogwplugin.internal.model.BGQueryConstraint;
 
 
 import javax.swing.*;
@@ -13,7 +12,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import java.awt.*;
-import java.util.ArrayList;
 
 public class BGControlPanel extends JPanel implements CytoPanelComponent {
 
@@ -33,7 +31,8 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent {
     }
 
 
-    private void setupTreePanel() {
+    public void setupTreePanel() {
+        treePanel.removeAll();
         DefaultTreeModel model = serviceManager.getCache().getAvailableGraphs();
         JCheckBoxTree tree = new JCheckBoxTree(model);
         //tree.expandRow(0);
@@ -45,7 +44,7 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent {
         tree.addCheckChangeEventListener(new JCheckBoxTree.CheckChangeEventListener() {
             public void checkStateChanged(JCheckBoxTree.CheckChangeEvent event) {
 
-                serviceManager.getServer().setActiveRelationsForPaths(tree.getCheckedPaths());
+                serviceManager.getDataModelController().setActiveRelationsForPaths(tree.getCheckedPaths());
             }
         });
 
@@ -80,9 +79,9 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (box.isSelected()) {
-                    serviceManager.getServer().addGraphFilter(graph);
+                    serviceManager.getDataModelController().addGraphFilter(graph);
                 } else {
-                    serviceManager.getServer().removeGraphFilter(graph);
+                    serviceManager.getDataModelController().removeGraphFilter(graph);
                 }
             }
         });

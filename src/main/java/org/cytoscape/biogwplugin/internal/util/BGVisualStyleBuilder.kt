@@ -1,19 +1,13 @@
 package org.cytoscape.biogwplugin.internal.util
 
 import org.cytoscape.biogwplugin.internal.BGServiceManager
-import org.cytoscape.model.CyNetwork
-import org.cytoscape.view.model.CyNetworkView
-import org.cytoscape.view.model.VisualLexicon
 import org.cytoscape.view.presentation.property.*
 import org.cytoscape.view.presentation.property.values.ArrowShape
 import org.cytoscape.view.presentation.property.values.LineType
 import org.cytoscape.view.presentation.property.values.NodeShape
-import org.cytoscape.view.vizmap.VisualPropertyDependency
 import org.cytoscape.view.vizmap.VisualStyle
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping
 import org.cytoscape.view.vizmap.mappings.PassthroughMapping
-import org.cytoscape.work.AbstractTask
-import org.cytoscape.work.TaskMonitor
 import java.awt.Color
 import java.awt.Font
 import java.awt.Paint

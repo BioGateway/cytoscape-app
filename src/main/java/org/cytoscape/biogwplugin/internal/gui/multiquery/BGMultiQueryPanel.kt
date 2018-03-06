@@ -1,6 +1,8 @@
 package org.cytoscape.biogwplugin.internal.gui.multiquery
 
 import org.cytoscape.biogwplugin.internal.BGServiceManager
+import org.cytoscape.biogwplugin.internal.gui.BGColorComboBoxRenderer
+import org.cytoscape.biogwplugin.internal.gui.BGColorableText
 import org.cytoscape.biogwplugin.internal.model.BGQueryConstraint
 import org.cytoscape.biogwplugin.internal.model.BGRelationType
 import org.cytoscape.biogwplugin.internal.parser.BGSPARQLParser
@@ -27,13 +29,13 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager, val constraintPane
 
     private fun createQueryLine(): BGMultiQueryAutocompleteLine {
         val fromField = JTextField()
-        //fromField.preferredSize = Dimension(290, Utility.getJTextFieldHeight())
         fromField.columns = Constants.BG_QUERY_BUILDER_URI_FIELD_COLUMNS
         val toField = JTextField()
-        //toField.preferredSize = Dimension(290, Utility.getJTextFieldHeight())
         toField.columns = Constants.BG_QUERY_BUILDER_URI_FIELD_COLUMNS
 
         val relationTypeBox = JComboBox<BGRelationType>(relationTypes.values.toTypedArray())
+        relationTypeBox.renderer = BGColorComboBoxRenderer(relationTypeBox as JComboBox<BGColorableText>)
+
         //val queryLine = BGMultiQueryLine(serviceManager, fromField, relationTypeBox, toField, variableManager)
 
         val queryLine = BGMultiQueryAutocompleteLine(serviceManager, relationTypeBox, variableManager)

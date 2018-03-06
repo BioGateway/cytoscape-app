@@ -1,10 +1,14 @@
 package org.cytoscape.biogwplugin.internal.gui.multiquery
 
 import org.cytoscape.biogwplugin.internal.BGServiceManager
+import org.cytoscape.biogwplugin.internal.gui.BGColorComboBoxRenderer
+import org.cytoscape.biogwplugin.internal.gui.BGColorableText
 import org.cytoscape.biogwplugin.internal.gui.BGNodeLookupController
+import org.cytoscape.biogwplugin.internal.gui.BGNodeTypeComboBoxRenderer
 import org.cytoscape.biogwplugin.internal.model.BGNodeType
 import org.cytoscape.biogwplugin.internal.model.BGRelationType
 import org.cytoscape.biogwplugin.internal.util.Constants
+import java.awt.Color
 import java.awt.FlowLayout
 import javax.swing.*
 
@@ -18,9 +22,13 @@ class BGMultiQueryAutocompleteLine(val serviceManager: BGServiceManager, val rel
 
     val fromTypeComboBox: JComboBox<BGNodeType>
     val toTypeComboBox: JComboBox<BGNodeType>
+    val fromTypeBoxRenderer: BGNodeTypeComboBoxRenderer
+    val toTypeBoxRenderer: BGNodeTypeComboBoxRenderer
 
     val fromSearchBox: BGAutocompleteComboBox
     val toSearchBox: BGAutocompleteComboBox
+
+
 
     var currentFromUri: String? get() {
         return fromSearchBox.selectedUri
@@ -31,6 +39,40 @@ class BGMultiQueryAutocompleteLine(val serviceManager: BGServiceManager, val rel
         return toSearchBox.selectedUri
     } set(value) {
         toSearchBox.selectedUri = value
+    }
+
+    fun updateComboBoxColor(comboBox: JComboBox<BGColorableText>) {
+        val selected = comboBox.selectedItem as? BGColorableText
+        selected?.let {
+            comboBox.foreground = selected.textColor
+        }
+    }
+
+    fun updateColorForIncorrectNodeTypes(fromType: BGNodeType?, toType: BGNodeType?) {
+
+        fromType?.let {
+            fromTypeBoxRenderer.acceptedNodeTypes = arrayListOf(it)
+        }
+
+        toType?.let {
+            toTypeBoxRenderer.acceptedNodeTypes = arrayListOf(it)
+        }
+
+        if (fromTypeComboBox.selectedItem != fromType) {
+            fromTypeComboBox.foreground = Color.RED
+        } else {
+            fromTypeComboBox.foreground = Color.BLACK
+        }
+        if (toTypeComboBox.selectedItem != toType) {
+            toTypeComboBox.foreground = Color.RED
+        } else {
+            toTypeComboBox.foreground = Color.BLACK
+        }
+    }
+
+    fun updateColorForIncorrectNodeTypes() {
+        val relationType = relationTypeComboBox.selectedItem as? BGRelationType
+        updateColorForIncorrectNodeTypes(relationType?.fromType, relationType?.toType)
     }
 
     fun updateComboBox(comboBox: JComboBox<String>, typeComboBox: JComponent, searchComboBox: JComponent) {
@@ -76,6 +118,11 @@ class BGMultiQueryAutocompleteLine(val serviceManager: BGServiceManager, val rel
         val types = arrayOf(BGNodeType.Protein, BGNodeType.Gene, BGNodeType.GO, BGNodeType.Taxon, BGNodeType.Disease)
         toTypeComboBox = JComboBox(types)
         fromTypeComboBox = JComboBox(types)
+        fromTypeBoxRenderer = BGNodeTypeComboBoxRenderer(fromTypeComboBox)
+        toTypeBoxRenderer = BGNodeTypeComboBoxRenderer(toTypeComboBox)
+
+        fromTypeComboBox.renderer = fromTypeBoxRenderer
+        toTypeComboBox.renderer = toTypeBoxRenderer
 
         fromSearchBox = BGAutocompleteComboBox(serviceManager.endpoint) {
             (fromTypeComboBox.selectedItem as? BGNodeType)?.let {
@@ -99,6 +146,15 @@ class BGMultiQueryAutocompleteLine(val serviceManager: BGServiceManager, val rel
 
         relationTypeComboBox.addActionListener {
             updateNodeTypesForRelationType()
+            updateComboBoxColor(relationTypeComboBox as JComboBox<BGColorableText>)
+        }
+
+        fromTypeComboBox.addActionListener {
+            updateColorForIncorrectNodeTypes()
+        }
+
+        toTypeComboBox.addActionListener {
+            updateColorForIncorrectNodeTypes()
         }
 
         val searchIcon = ImageIcon(this.javaClass.classLoader.getResource("search.png"))
@@ -148,6 +204,7 @@ class BGMultiQueryAutocompleteLine(val serviceManager: BGServiceManager, val rel
         this.add(swapButton)
 
         updateNodeTypesForRelationType()
+        updateComboBoxColor(relationTypeComboBox as JComboBox<BGColorableText>)
     }
 
     private fun swapToAndFromParameters() {
@@ -172,7 +229,7 @@ class BGMultiQueryAutocompleteLine(val serviceManager: BGServiceManager, val rel
 
     /*
     private fun getLabelForURI(uri: String): String {
-        val node = serviceManager.server.searchForExistingNode(uri)
+        val node = serviceManager.dataModelController.searchForExistingNode(uri)
         node?.name?.let {
             return it
         }
@@ -180,7 +237,7 @@ class BGMultiQueryAutocompleteLine(val serviceManager: BGServiceManager, val rel
     }*/
 
     private fun updateLabelAndDescriptionForField(textField: JTextField, uri: String) {
-        val node = serviceManager.server.searchForExistingNode(uri)
+        val node = serviceManager.dataModelController.searchForExistingNode(uri)
         textField.text = node?.name ?: ""
         textField.toolTipText = node?.description ?: ""
     }

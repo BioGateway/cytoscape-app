@@ -4,8 +4,6 @@ import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.model.BGNode
 import org.junit.jupiter.api.Test
 
-import org.junit.jupiter.api.Assertions.*
-
 internal class BGLoadUnloadedNodesTest {
 
     val serviceManager = BGServiceManager()

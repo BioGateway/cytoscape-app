@@ -9,6 +9,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.biogwplugin.internal.gui.*;
 import org.cytoscape.biogwplugin.internal.gui.cmfs.*;
+import org.cytoscape.biogwplugin.internal.server.BGDataModelController;
 import org.cytoscape.biogwplugin.internal.util.Utility;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.*;
@@ -68,13 +69,14 @@ public class CyActivator extends AbstractCyActivator {
         // This action is disabled in the current build.
         //registerService(context, openSettingsAction, CyAction.class, new Properties());
 
-        BGCreateAction reloadXMLAction = new BGCreateAction("Reload Config", "always", serviceManager, new BGAction() {
+        BGCreateAction reloadDataModelAction = new BGCreateAction("Reload Data", "always", serviceManager, new BGAction() {
             @Override
             public void action(BGServiceManager serviceManager) {
-                serviceManager.getServer().loadXMLFileFromServer();
+                serviceManager.setDataModelController(new BGDataModelController(serviceManager));
+                serviceManager.getControlPanel().setupTreePanel();
             }
         });
-        registerService(context, reloadXMLAction, CyAction.class, new Properties());
+        registerService(context, reloadDataModelAction, CyAction.class, new Properties());
 
         BGCreateAction importStyleAction = new BGCreateAction("Import the BioGateway visual style", "always", serviceManager, new BGAction() {
             @Override
@@ -87,6 +89,7 @@ public class CyActivator extends AbstractCyActivator {
         //registerService(context, importStyleAction, CyAction.class, new Properties());
 
         BGControlPanel controlPanel = new BGControlPanel(serviceManager);
+        serviceManager.setControlPanel(controlPanel);
         registerService(context, controlPanel, CytoPanelComponent.class, new Properties());
 
         registerContextMenuItems(context, serviceManager);
@@ -129,7 +132,7 @@ public class CyActivator extends AbstractCyActivator {
 	private BGServiceManager createServiceManager(BundleContext bundleContext) {
         CyNetworkManager networkManager = getService(bundleContext, CyNetworkManager.class);
 
-        // This will also create a BGServer object, which creates a BGCache object and loads the XML file from the server.
+        // This will also create a BGDataModelController object, which creates a BGCache object and loads the XML file from the dataModelController.
         // The XML file is loaded SYNCHRONOUSLY, because we actually want to wait for it to load before loading the plugin.
 
         CySwingAppAdapter adapter = getService(bundleContext, CySwingAppAdapter.class);

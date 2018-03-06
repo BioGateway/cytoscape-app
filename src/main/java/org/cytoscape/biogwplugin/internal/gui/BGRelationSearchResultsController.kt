@@ -54,7 +54,7 @@ class BGRelationSearchResultsController(val serviceManager: BGServiceManager, pr
         for (row in view.resultTable.selectedRows) {
             relations.add(relationsFound[view.resultTable.convertRowIndexToModel(row)])
         }
-        serviceManager.server.networkBuilder.addRelationsToNetwork(network, relations)
+        serviceManager.dataModelController.networkBuilder.addRelationsToNetwork(network, relations)
         Utility.reloadCurrentVisualStyleCurrentNetworkView(serviceManager)
     }
 
@@ -68,7 +68,7 @@ class BGRelationSearchResultsController(val serviceManager: BGServiceManager, pr
                 relations.add(result)
             }
         }
-        serviceManager.server.networkBuilder.addRelationsToNetwork(network, relations)
+        serviceManager.dataModelController.networkBuilder.addRelationsToNetwork(network, relations)
         Utility.reloadCurrentVisualStyleCurrentNetworkView(serviceManager)
     }
 

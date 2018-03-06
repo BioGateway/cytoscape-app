@@ -5,14 +5,10 @@ package org.cytoscape.biogwplugin.internal.util
 import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.model.BGNode
 import org.cytoscape.biogwplugin.internal.model.BGRelation
-import org.cytoscape.biogwplugin.internal.parser.getName
 import org.cytoscape.biogwplugin.internal.parser.getUri
 import org.cytoscape.group.CyGroup
-import org.cytoscape.group.CyGroupManager
 import org.cytoscape.model.CyNetwork
 import org.cytoscape.view.vizmap.VisualStyle
-import org.cytoscape.work.AbstractTask
-import org.cytoscape.work.TaskMonitor
 import java.awt.EventQueue
 import java.io.BufferedReader
 import java.io.IOException
@@ -23,7 +19,6 @@ import java.net.URL
 import java.net.URLEncoder
 import javax.swing.JFrame
 import org.cytoscape.model.subnetwork.CyRootNetwork
-import org.cytoscape.model.subnetwork.CySubNetwork
 import javax.swing.JComboBox
 import javax.swing.JOptionPane
 
@@ -71,7 +66,7 @@ object Utility {
         return rootNetwork.getRow(group.groupNode, CyRootNetwork.SHARED_ATTRS).get(CyRootNetwork.SHARED_NAME, String::class.java)
     }
 
-    fun findNodeGroupsInNetwork(serviceManager: BGServiceManager,network: CyNetwork): HashMap<String, CyGroup> {
+    fun findNodeGroupsInNetwork(serviceManager: BGServiceManager, network: CyNetwork): HashMap<String, CyGroup> {
         val groupMap = HashMap<String, CyGroup>()
 
         val groups = serviceManager.adapter?.cyGroupManager?.getGroupSet(network) ?: return groupMap

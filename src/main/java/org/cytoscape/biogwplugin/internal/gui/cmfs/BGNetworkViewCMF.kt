@@ -35,7 +35,7 @@ class BGNetworkViewCMF(val gravity: Float, val serviceManager: BGServiceManager)
         item.addActionListener {
             BGNodeLookupController(serviceManager, null) { node ->
                 if (node != null) {
-                    serviceManager.server.networkBuilder.addBGNodesToNetwork(arrayListOf(node), network)
+                    serviceManager.dataModelController.networkBuilder.addBGNodesToNetwork(arrayListOf(node), network)
                     Utility.reloadCurrentVisualStyleCurrentNetworkView(serviceManager)
                 }
             }

@@ -2,7 +2,6 @@ package org.cytoscape.biogwplugin.internal.query
 
 import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.model.BGNodeType
-import org.cytoscape.biogwplugin.internal.parser.BGReturnType
 import org.cytoscape.biogwplugin.internal.util.Utility
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test

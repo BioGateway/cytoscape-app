@@ -21,7 +21,7 @@ public class BGSettingsView {
 
     public BGSettingsView(BGServiceManager serviceManager) {
         this.serviceManager = serviceManager;
-        this.settings = serviceManager.getServer().getSettings();
+        this.settings = serviceManager.getDataModelController().getSettings();
         $$$setupUI$$$();
         mainFrame = new JFrame("BioGateway Settings");
         mainFrame.setContentPane(this.panel2);

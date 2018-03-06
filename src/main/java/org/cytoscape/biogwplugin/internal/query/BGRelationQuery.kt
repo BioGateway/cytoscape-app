@@ -1,14 +1,9 @@
 package org.cytoscape.biogwplugin.internal.query
 
-import org.apache.http.client.methods.HttpGet
-import org.apache.http.util.EntityUtils
 import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.model.BGRelation
-import org.cytoscape.biogwplugin.internal.parser.BGParser
 import org.cytoscape.biogwplugin.internal.parser.BGReturnType
 import org.cytoscape.biogwplugin.internal.util.Utility
-import java.io.BufferedReader
-import java.io.StringReader
 
 class BGRelationQueryImplementation(serviceManager: BGServiceManager, val queryString: String, var returnType: BGReturnType): BGRelationQuery(serviceManager, returnType) {
     override fun generateQueryString(): String {

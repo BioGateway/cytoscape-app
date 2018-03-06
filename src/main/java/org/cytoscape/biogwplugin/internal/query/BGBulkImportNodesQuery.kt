@@ -3,8 +3,6 @@ package org.cytoscape.biogwplugin.internal.query
 import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.model.BGNodeType
 import org.cytoscape.biogwplugin.internal.parser.BGReturnType
-import java.io.BufferedReader
-import java.io.InputStreamReader
 
 
 class BGBulkImportNodesQuery(serviceManager: BGServiceManager, val nodeList: Collection<String>, val nodeType: BGNodeType): BGQuery(serviceManager, BGReturnType.NODE_LIST_DESCRIPTION_TAXON) {

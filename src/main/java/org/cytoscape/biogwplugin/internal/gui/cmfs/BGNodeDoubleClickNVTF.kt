@@ -1,7 +1,6 @@
 package org.cytoscape.biogwplugin.internal.gui.cmfs
 
 import org.cytoscape.biogwplugin.internal.BGServiceManager
-import org.cytoscape.biogwplugin.internal.parser.getUri
 import org.cytoscape.biogwplugin.internal.util.Constants
 import org.cytoscape.model.CyNode
 import org.cytoscape.task.NodeViewTaskFactory
@@ -26,7 +25,7 @@ class BGNodeDoubleClickNVTF(val serviceManager: BGServiceManager) : NodeViewTask
 
     override fun createTaskIterator(nodeView: View<CyNode>, networkView: CyNetworkView): TaskIterator? {
         val task = BGTask() {
-            serviceManager.server.networkBuilder.collapseEdgeWithNodes(networkView, nodeView, HAS_AGENT_URI)
+            serviceManager.dataModelController.networkBuilder.collapseEdgeWithNodes(networkView, nodeView, HAS_AGENT_URI)
         }
         return TaskIterator(task)
     }
@@ -34,7 +33,7 @@ class BGNodeDoubleClickNVTF(val serviceManager: BGServiceManager) : NodeViewTask
     override fun isReady(nodeView: View<CyNode>, networkView: CyNetworkView): Boolean {
         val network = networkView.model ?: return false
         val nodeUri = network.defaultNodeTable?.getRow(nodeView?.model?.suid)?.get(Constants.BG_FIELD_IDENTIFIER_URI, String::class.java) ?: throw Exception("Node URI not found in CyNetwork table. Are you sure you are querying a node created with this plugin?")
-        val node = serviceManager.server.searchForExistingNode(nodeUri) ?: return false
+        val node = serviceManager.dataModelController.searchForExistingNode(nodeUri) ?: return false
         return true
     }
 }

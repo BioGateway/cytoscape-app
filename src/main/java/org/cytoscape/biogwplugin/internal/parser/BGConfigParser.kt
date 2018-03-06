@@ -1,18 +1,18 @@
 package org.cytoscape.biogwplugin.internal.parser
 
-import jdk.nashorn.internal.runtime.regexp.joni.constants.NodeType
 import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.model.*
 import org.cytoscape.biogwplugin.internal.query.BGQueryParameter
 import org.cytoscape.biogwplugin.internal.query.QueryTemplate
-import org.cytoscape.biogwplugin.internal.server.BGServer
+import org.cytoscape.biogwplugin.internal.server.BGDataModelController
 import org.w3c.dom.Element
 import org.w3c.dom.Node
+import java.awt.Color
 import java.io.InputStream
 import javax.xml.parsers.DocumentBuilderFactory
 
 object BGConfigParser {
-    fun parseXMLConfigFile(stream: InputStream, serviceManager: BGServiceManager, cache: BGServer.BGCache) {
+    fun parseXMLConfigFile(stream: InputStream, serviceManager: BGServiceManager, cache: BGDataModelController.BGCache) {
 
         val queryTemplateHashMap = java.util.HashMap<String, QueryTemplate>()
         val dbFactory = DocumentBuilderFactory.newInstance()
@@ -52,9 +52,11 @@ object BGConfigParser {
                 val uri = element.textContent
                 val fromType = BGNodeType.forName(element.getAttribute("fromType"))
                 val toType = BGNodeType.forName(element.getAttribute("toType"))
+                val colorString = element.getAttribute("color")
+                val color = if (colorString.length > 0) Color.decode(colorString) else Color.BLACK
 
                 if (name != null && uri != null) {
-                    val relationType = BGRelationType(uri, name, index, defaultGraph, arbitraryLength, directed, expandable, fromType, toType)
+                    val relationType = BGRelationType(uri, name, index, color ,defaultGraph, arbitraryLength, directed, expandable, fromType, toType)
                     //relationTypes.put(relationType.identifier, relationType)
                     cache.addRelationType(relationType)
                 }

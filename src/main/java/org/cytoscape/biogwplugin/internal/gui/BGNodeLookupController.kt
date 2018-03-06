@@ -3,13 +3,11 @@ package org.cytoscape.biogwplugin.internal.gui
 import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.model.BGNode
 import org.cytoscape.biogwplugin.internal.model.BGNodeType
-import org.cytoscape.biogwplugin.internal.parser.BGReturnType
 import org.cytoscape.biogwplugin.internal.query.BGNodeFetchQuery
 import org.cytoscape.biogwplugin.internal.query.BGNodeURILookupQuery
 import org.cytoscape.biogwplugin.internal.query.BGParsingType
 import org.cytoscape.biogwplugin.internal.query.BGReturnNodeData
 import org.cytoscape.biogwplugin.internal.util.Utility
-import java.awt.EventQueue
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import java.awt.event.WindowEvent

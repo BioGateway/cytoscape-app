@@ -62,7 +62,7 @@ class BGExpandEdgeDoubleClickEVTF(val serviceManager: BGServiceManager): EdgeVie
                             }
                             .filter { it.uri != fromNodeUri }
                             .filter { it.uri != toNodeUri }
-                    serviceManager.server.networkBuilder.expandEdgeWithRelations(netView, edgeView, newNodes, relations)
+                    serviceManager.dataModelController.networkBuilder.expandEdgeWithRelations(netView, edgeView, newNodes, relations)
                 }
             }
         }

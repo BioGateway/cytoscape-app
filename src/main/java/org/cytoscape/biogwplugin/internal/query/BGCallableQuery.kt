@@ -10,7 +10,6 @@ import java.io.BufferedReader
 import java.io.StringReader
 import java.net.URL
 import java.net.URLEncoder
-import java.util.concurrent.Callable
 import java.util.concurrent.CompletableFuture
 
 abstract class BGCallableQuery(val serviceManager: BGServiceManager, var type: BGReturnType, val taskMonitorTitle: String = "Running query..."): AbstractTask(), Runnable {
@@ -22,7 +21,7 @@ abstract class BGCallableQuery(val serviceManager: BGServiceManager, var type: B
     var taskMonitor: TaskMonitor? = null
     var client = serviceManager.httpClient
     var parseType = BGParsingType.PARSE_FUNCTION
-    val parser = serviceManager.server.parser
+    val parser = serviceManager.dataModelController.parser
 
     var parseFunction: ((BufferedReader, BGReturnType) -> BGReturnData)? = null
 
@@ -73,7 +72,7 @@ abstract class BGCallableQuery(val serviceManager: BGServiceManager, var type: B
 
     override fun cancel() {
         client.close()
-        serviceManager.server.parser.cancel()
+        serviceManager.dataModelController.parser.cancel()
         super.cancel()
         throw Exception("Cancelled.")
     }

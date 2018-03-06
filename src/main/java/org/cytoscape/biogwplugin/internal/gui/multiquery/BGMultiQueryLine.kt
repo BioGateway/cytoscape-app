@@ -151,7 +151,7 @@ class BGMultiQueryLine(val serviceManager: BGServiceManager, val relationTypeCom
 
     /*
     private fun getLabelForURI(uri: String): String {
-        val node = serviceManager.server.searchForExistingNode(uri)
+        val node = serviceManager.dataModelController.searchForExistingNode(uri)
         node?.name?.let {
             return it
         }
@@ -159,7 +159,7 @@ class BGMultiQueryLine(val serviceManager: BGServiceManager, val relationTypeCom
     }*/
 
     private fun updateLabelAndDescriptionForField(textField: JTextField, uri: String) {
-        val node = serviceManager.server.searchForExistingNode(uri)
+        val node = serviceManager.dataModelController.searchForExistingNode(uri)
         textField.text = node?.name ?: ""
         textField.toolTipText = node?.description ?: ""
     }

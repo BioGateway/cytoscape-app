@@ -1,7 +1,5 @@
 package org.cytoscape.biogwplugin.internal.model
 
-import org.cytoscape.biogwplugin.internal.BGServiceManager
-
 class BGRelation(var fromNode: BGNode, val relationType: BGRelationType, var toNode: BGNode) {
 
     val metadata = BGRelationMetadata(relationType.uri)

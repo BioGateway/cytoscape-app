@@ -100,7 +100,7 @@ class BGParser(private val serviceManager: BGServiceManager) {
         val unloadedNodes = HashSet<BGNode>()
         val unloadedUris = HashSet<String>()
         taskMonitor?.setTitle("Parsing relations...")
-        val server = serviceManager.server
+        val server = serviceManager.dataModelController
 
         val columnNames = when (returnType) {
             BGReturnType.RELATION_MULTIPART -> {

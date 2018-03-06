@@ -1,10 +1,14 @@
 package org.cytoscape.biogwplugin.internal.model
 
+import org.cytoscape.biogwplugin.internal.gui.BGColorableText
+import java.awt.Color
+
 /**
  * Created by sholmas on 26/05/2017.
  */
 
-class BGRelationType(val uri: String, val name: String, val number: Int, val defaultGraphName: String? = null, val arbitraryLength: Boolean = false, val directed: Boolean = true, val expandable: Boolean = false, val fromType: BGNodeType? = null, val toType: BGNodeType? = null ) {
+class BGRelationType(val uri: String, val name: String, val number: Int, override val textColor: Color = Color.BLACK, val defaultGraphName: String? = null, val arbitraryLength: Boolean = false, val directed: Boolean = true, val expandable: Boolean = false, val fromType: BGNodeType? = null, val toType: BGNodeType? = null): BGColorableText {
+
 
     val description: String get() {
         return when (defaultGraphName != null && defaultGraphName.isNotEmpty()) {

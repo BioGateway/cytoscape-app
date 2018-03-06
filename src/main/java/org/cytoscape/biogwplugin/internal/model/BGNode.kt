@@ -1,6 +1,8 @@
 package org.cytoscape.biogwplugin.internal.model
 
+import org.cytoscape.biogwplugin.internal.gui.BGColorableText
 import org.cytoscape.model.CyNode
+import java.awt.Color
 
 /**
  * Created by sholmas on 26/05/2017.

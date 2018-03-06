@@ -13,7 +13,6 @@ import org.cytoscape.biogwplugin.internal.query.BGFetchAggregatedRelationForNode
 import org.cytoscape.biogwplugin.internal.query.BGRelationQuery
 import org.cytoscape.biogwplugin.internal.query.BGReturnRelationsData
 import org.cytoscape.model.*
-import java.awt.EventQueue
 import java.lang.Math.*
 
 fun Vector2D.getPerpendicular(): Vector2D {
@@ -221,7 +220,7 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
         val cyNode = nodeView.model
 
         // Get the associated BGNode
-        val node = serviceManager.server.searchForExistingNode(nodeUri) ?: throw Exception("Node not found!")
+        val node = serviceManager.dataModelController.searchForExistingNode(nodeUri) ?: throw Exception("Node not found!")
 
         val query: BGRelationQuery = when (node.type) {
             BGNodeType.PPI -> BGFetchAggregatedPPIRelationForNodeQuery(serviceManager, nodeUri)
@@ -267,7 +266,7 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
 
         checkForMissingColumns(network.defaultEdgeTable, network.defaultNodeTable)
 
-        val node = serviceManager.server.searchForExistingNode(nodeUri) ?: return
+        val node = serviceManager.dataModelController.searchForExistingNode(nodeUri) ?: return
 
         createAggregatedEdgeForRelationNode(netView, nodeView)
 
@@ -403,7 +402,7 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
             if (node == null) {
                 if (!bgNode.isLoaded) {
                     // This method is synchronous, so should be completed before the next line (addNodeToNetwork)
-                    serviceManager.server.loadDataForNode(bgNode)
+                    serviceManager.dataModelController.loadDataForNode(bgNode)
                 }
                 node = addNodeToNetwork(bgNode, network, nodeTable)
             }
@@ -546,7 +545,7 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
         }
 
         fun createNetworkView(network: CyNetwork, serviceManager: BGServiceManager) {
-            if (serviceManager.server.settings.useBioGatewayLayoutStyleAsDefault) {
+            if (serviceManager.dataModelController.settings.useBioGatewayLayoutStyleAsDefault) {
                 val view = serviceManager.adapter?.cyNetworkViewFactory?.createNetworkView(network)
 
                 val visualStyle = Utility.getOrCreateBioGatewayVisualStyle(serviceManager)

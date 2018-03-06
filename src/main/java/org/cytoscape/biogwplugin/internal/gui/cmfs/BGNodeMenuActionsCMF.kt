@@ -31,7 +31,7 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
     override fun createMenuItem(netView: CyNetworkView?, nodeView: View<CyNode>?): CyMenuItem {
         val network = netView?.model ?: return CyMenuItem(null, gravity)
         val nodeUri = network.defaultNodeTable?.getRow(nodeView?.model?.suid)?.get(Constants.BG_FIELD_IDENTIFIER_URI, String::class.java) ?: throw Exception("Node URI not found in CyNetwork table. Are you sure you are querying a node created with this plugin?")
-        val node = serviceManager.server.searchForExistingNode(nodeUri) ?: throw Exception("Node not found!")
+        val node = serviceManager.dataModelController.searchForExistingNode(nodeUri) ?: throw Exception("Node not found!")
 
         val nodeMenu = createNodeMenu(node, nodeUri, network)
         return CyMenuItem(nodeMenu as JMenuItem?, gravity)
@@ -122,7 +122,7 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
             query.addCompletion {
                 val data = it as? BGReturnRelationsData ?: throw Exception("Invalid return data.")
                 BGLoadUnloadedNodes.createAndRun(serviceManager, data.unloadedNodes) {
-                    serviceManager.server.networkBuilder.addRelationsToNetwork(network, data.relationsData)
+                    serviceManager.dataModelController.networkBuilder.addRelationsToNetwork(network, data.relationsData)
                     Utility.reloadCurrentVisualStyleCurrentNetworkView(serviceManager)
                 }
             }
@@ -173,7 +173,7 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
             }
         }
         val encodesIdentifier = Utility.createRelationTypeIdentifier("http://semanticscience.org/resource/SIO_010078", "refseq")
-        val relationType = serviceManager.server.cache.relationTypeMap.get(encodesIdentifier) ?: throw Exception("Relation type with identifier: "+encodesIdentifier+" not found in cache.")
+        val relationType = serviceManager.dataModelController.cache.relationTypeMap.get(encodesIdentifier) ?: throw Exception("Relation type with identifier: "+encodesIdentifier+" not found in cache.")
         val menuItem = JMenuItem(menuItemText)
 
         menuItem.addActionListener {
@@ -198,7 +198,7 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
                         }
                     }
                     BGLoadUnloadedNodes.createAndRun(serviceManager, returnData.unloadedNodes) {
-                        serviceManager.server.networkBuilder.addRelationsToNetwork(network, relationsData)
+                        serviceManager.dataModelController.networkBuilder.addRelationsToNetwork(network, relationsData)
                         Utility.reloadCurrentVisualStyleCurrentNetworkView(serviceManager)
                     }
                 }

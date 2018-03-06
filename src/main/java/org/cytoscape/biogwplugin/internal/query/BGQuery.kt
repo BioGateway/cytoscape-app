@@ -64,7 +64,7 @@ abstract class BGTypedQuery(val type: BGQueryType, val serviceManager: BGService
             val reader = BufferedReader(StringReader(data))
             client.close()
             taskMonitor?.setTitle("Loading results...")
-            val returnData = serviceManager.server.parser.parseData(reader, type)
+            val returnData = serviceManager.dataModelController.parser.parseData(reader, type)
             futureReturnData.complete(returnData)
         } else {
             futureReturnData.completeExceptionally(Exception("Invalid URI!"))
@@ -98,7 +98,7 @@ abstract class BGQuery(val serviceManager: BGServiceManager, var type: BGReturnT
             BGParsingType.PARSE_FUNCTION
         }
     }
-    val parser = serviceManager.server.parser
+    val parser = serviceManager.dataModelController.parser
     val futureReturnData = CompletableFuture<BGReturnData>()
 
     abstract fun generateQueryString(): String
@@ -164,7 +164,7 @@ abstract class BGQuery(val serviceManager: BGServiceManager, var type: BGReturnT
 
     override fun cancel() {
         client.close()
-        serviceManager.server.parser.cancel()
+        serviceManager.dataModelController.parser.cancel()
         super.cancel()
         throw Exception("Cancelled.")
     }

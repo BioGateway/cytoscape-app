@@ -53,7 +53,7 @@ class BGExpandEdgeCMF(val gravity: Float, val serviceManager: BGServiceManager):
                                     }
                                     .filter { it.uri != fromNodeUri }
                                     .filter { it.uri != toNodeUri }
-                            serviceManager.server.networkBuilder.expandEdgeWithRelations(netView, edgeView, newNodes, relations)
+                            serviceManager.dataModelController.networkBuilder.expandEdgeWithRelations(netView, edgeView, newNodes, relations)
 
                             //BGRelationSearchResultsController(serviceManager, returnData, returnData.columnNames, network)
                         }

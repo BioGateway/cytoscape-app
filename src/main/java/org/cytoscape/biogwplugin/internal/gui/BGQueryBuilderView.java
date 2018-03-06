@@ -1,21 +1,15 @@
 package org.cytoscape.biogwplugin.internal.gui;
 
-import com.intellij.uiDesigner.core.GridConstraints;
-import com.intellij.uiDesigner.core.GridLayoutManager;
-import com.intellij.uiDesigner.core.Spacer;
 import net.miginfocom.swing.MigLayout;
 import org.cytoscape.biogwplugin.internal.BGServiceManager;
 import org.cytoscape.biogwplugin.internal.gui.multiquery.BGAutocompleteComboBox;
-import org.cytoscape.biogwplugin.internal.gui.multiquery.BGAutocompleteTypeProvider;
 import org.cytoscape.biogwplugin.internal.gui.multiquery.BGMultiQueryPanel;
 import org.cytoscape.biogwplugin.internal.gui.multiquery.BGQueryConstraintPanel;
 import org.cytoscape.biogwplugin.internal.model.BGNodeType;
-import org.cytoscape.biogwplugin.internal.model.BGQueryConstraint;
 import org.cytoscape.biogwplugin.internal.query.BGQueryParameter;
 import org.cytoscape.biogwplugin.internal.query.QueryTemplate;
 import org.cytoscape.biogwplugin.internal.util.Constants;
 import org.cytoscape.biogwplugin.internal.util.SortedComboBoxModel;
-import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
