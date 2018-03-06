@@ -60,8 +60,10 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
                 parentMenu.add(createFetchAssociatedGeneOrProteinMenuItem(network, BGNodeType.Gene, nodeUri))
             }
             BGNodeType.PPI, BGNodeType.GOA, BGNodeType.TFTG -> {
-                parentMenu.addSeparator()
-                parentMenu.add(createFetchPubmedMenuItem(network, node.uri))
+                createPubmedURIMenuList(network, nodeUri)?.let {
+                    parentMenu.addSeparator()
+                    parentMenu.add(it)
+                }
             }
             else -> {
             }
@@ -105,6 +107,43 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
         }
 
         return parentMenu
+    }
+
+    fun createPubmedURIMenuList(network: CyNetwork, nodeUri: String): JMenuItem? {
+        val menu = JMenu("Open PubMed Annotations")
+
+        val RELATED_MATCH_URI = "http://www.w3.org/2004/02/skos/core#relatedMatch"
+        val HAS_SOURCE_URI = "http://semanticscience.org/resource/SIO_000253"
+
+        val query = BGFetchAttributeValuesQuery(serviceManager, nodeUri, HAS_SOURCE_URI, "?graph", BGRelationDirection.FROM)
+        query.run()
+        val data = query.returnData as? BGReturnMetadata ?: return null
+
+        if (data.values.size == 0) return null
+
+        if (data.values.size == 1) {
+            val item = JMenuItem("Open PubMed Annotation")
+            item.addActionListener {
+                if (Desktop.isDesktopSupported()) {
+                    Desktop.getDesktop().browse(URI(data.values[0]))
+                }
+            }
+            return item
+        }
+
+        val uris = data.values.map { Utility.sanitizeParameter(it) }
+
+        for ((index, uri) in uris.withIndex()) {
+            val label = "["+index+"]: "+uri
+            val item = JMenuItem(label)
+            item.addActionListener {
+                if (Desktop.isDesktopSupported()) {
+                    Desktop.getDesktop().browse(URI(uri))
+                }
+            }
+            menu.add(item)
+        }
+        return menu
     }
 
     fun createFetchPubmedMenuItem(network: CyNetwork, nodeUri: String): JMenuItem {
