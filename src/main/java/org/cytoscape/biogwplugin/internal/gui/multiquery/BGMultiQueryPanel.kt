@@ -33,7 +33,7 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager, val constraintPane
         //toField.preferredSize = Dimension(290, Utility.getJTextFieldHeight())
         toField.columns = Constants.BG_QUERY_BUILDER_URI_FIELD_COLUMNS
 
-        val relationTypeBox = JComboBox(relationTypes.keys.toTypedArray())
+        val relationTypeBox = JComboBox<BGRelationType>(relationTypes.values.toTypedArray())
         //val queryLine = BGMultiQueryLine(serviceManager, fromField, relationTypeBox, toField, variableManager)
 
         val queryLine = BGMultiQueryAutocompleteLine(serviceManager, relationTypeBox, variableManager)
@@ -175,7 +175,8 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager, val constraintPane
 
         for (line in queryLines) {
             val fromUri = line.fromUri ?: throw Exception("Invalid From URI!")
-            var relationType = line.relationType?.let { relationTypes.get(it) } ?: throw Exception("Invalid Relation Type!")
+            //var relationType = line.relationType?.let { relationTypes.get(it) } ?: throw Exception("Invalid Relation Type!")
+            val relationType = line.relationType ?: throw Exception("Invalid Relation Type!")
             val toUri = line.toUri ?: throw Exception("Invalid To URI!")
             val fromRDFUri = getRDFURI(fromUri)
             val toRDFUri = getRDFURI(toUri)

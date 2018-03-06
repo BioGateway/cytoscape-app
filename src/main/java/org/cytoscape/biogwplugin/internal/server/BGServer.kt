@@ -1,10 +1,7 @@
 package org.cytoscape.biogwplugin.internal.server
 
 import org.cytoscape.biogwplugin.internal.BGServiceManager
-import org.cytoscape.biogwplugin.internal.model.BGNode
-import org.cytoscape.biogwplugin.internal.model.BGNodeType
-import org.cytoscape.biogwplugin.internal.model.BGQueryConstraint
-import org.cytoscape.biogwplugin.internal.model.BGRelationType
+import org.cytoscape.biogwplugin.internal.model.*
 import org.cytoscape.biogwplugin.internal.parser.*
 import org.cytoscape.biogwplugin.internal.query.*
 import org.cytoscape.biogwplugin.internal.util.Constants
@@ -38,8 +35,12 @@ class BGServer(private val serviceManager: BGServiceManager) {
             return null
         }
 
-        var queryConstraints = ArrayList<BGQueryConstraint>()
+        var importNodeConversions: Collection<BGConversion>? = null
+        var exportNodeConversions: Collection<BGConversion>? = null
+        var exportEdgeConversions: Collection<BGConversion>? = null
 
+
+        var queryConstraints = ArrayList<BGQueryConstraint>()
         var availableGraphs: DefaultTreeModel = DefaultTreeModel(DefaultMutableTreeNode("Graphs"))
 
         // A cache of BGNodes, which are a local representation of the node found on the server.
@@ -336,7 +337,7 @@ class BGServer(private val serviceManager: BGServiceManager) {
             val queryFileUrl = URL(Constants.BG_CONFIG_FILE_URL)
             val connection = queryFileUrl.openConnection()
             val inputStream = connection.getInputStream()
-            BGConfigParser.parseXMLConfigFile(inputStream, cache)
+            BGConfigParser.parseXMLConfigFile(inputStream, serviceManager, cache)
         } catch (e: IOException) {
             e.printStackTrace()
         }

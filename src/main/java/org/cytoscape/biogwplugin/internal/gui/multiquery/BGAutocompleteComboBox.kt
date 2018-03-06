@@ -1,5 +1,6 @@
 package org.cytoscape.biogwplugin.internal.gui.multiquery
 
+import org.cytoscape.biogwplugin.internal.model.BGNodeType
 import org.cytoscape.biogwplugin.internal.server.BGDictEndpoint
 import org.cytoscape.biogwplugin.internal.server.SearchSuggestion
 import org.cytoscape.biogwplugin.internal.server.Suggestion
@@ -10,7 +11,11 @@ import java.awt.event.*
 import java.util.ArrayList
 import javax.xml.stream.events.Characters
 
-class BGAutocompleteComboBox(private val typeComboBox: JComboBox<String>, private val endpoint: BGDictEndpoint) : JComboBox<Suggestion>(DefaultComboBoxModel<Suggestion>()) {
+interface BGAutocompleteTypeProvider {
+    fun provideType(): BGNodeType
+}
+
+class BGAutocompleteComboBox(private val endpoint: BGDictEndpoint, private val typeSource: () -> BGNodeType?) : JComboBox<Suggestion>(DefaultComboBoxModel<Suggestion>()) {
 
     private val comboBoxModel: DefaultComboBoxModel<Suggestion>
 
@@ -94,12 +99,11 @@ class BGAutocompleteComboBox(private val typeComboBox: JComboBox<String>, privat
 
     private fun searchForTerm(term: String): ArrayList<Suggestion> {
 
-        // TODO: Do a better typing than just lowercasing.
-        val type = (typeComboBox.selectedItem as String).toLowerCase()
+        val type = typeSource() ?: return ArrayList()
 
-        return if (type == "go-term" || type == "taxon") {
-            endpoint.searchForLabel(term, type, 10)
-        } else endpoint.searchForPrefix(term, type, 10)
+        return if (type == BGNodeType.GO || type == BGNodeType.Taxon || type == BGNodeType.Disease) {
+            endpoint.searchForLabel(term, type.paremeterType.toLowerCase(), 20)
+        } else endpoint.searchForPrefix(term, type.paremeterType.toLowerCase(), 20)
     }
 
     private fun selectSuggestion(suggestion: Suggestion) {

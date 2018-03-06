@@ -2,11 +2,13 @@ package org.cytoscape.biogwplugin.internal.gui.multiquery
 
 import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.gui.BGNodeLookupController
+import org.cytoscape.biogwplugin.internal.model.BGNodeType
+import org.cytoscape.biogwplugin.internal.model.BGRelationType
 import org.cytoscape.biogwplugin.internal.util.Constants
 import java.awt.FlowLayout
 import javax.swing.*
 
-class BGMultiQueryAutocompleteLine(val serviceManager: BGServiceManager, val relationTypeComboBox: JComboBox<String>, val variableManager: BGQueryVariableManager): JPanel() {
+class BGMultiQueryAutocompleteLine(val serviceManager: BGServiceManager, val relationTypeComboBox: JComboBox<BGRelationType>, val variableManager: BGQueryVariableManager): JPanel() {
 
     val searchButtonTooltipText = "Search for entity URIs."
     val variablesTooltipText = "Choose URI to specify an entity, or pick a variable letter to find matching entities."
@@ -14,8 +16,8 @@ class BGMultiQueryAutocompleteLine(val serviceManager: BGServiceManager, val rel
     val fromComboBox: JComboBox<String>
     val toComboBox: JComboBox<String>
 
-    val fromTypeComboBox: JComboBox<String>
-    val toTypeComboBox: JComboBox<String>
+    val fromTypeComboBox: JComboBox<BGNodeType>
+    val toTypeComboBox: JComboBox<BGNodeType>
 
     val fromSearchBox: BGAutocompleteComboBox
     val toSearchBox: BGAutocompleteComboBox
@@ -38,12 +40,26 @@ class BGMultiQueryAutocompleteLine(val serviceManager: BGServiceManager, val rel
             variableManager.unRegisterUseOfVariableForComponent(comboBox)
             variableManager.URIcomboBoxes.add(comboBox)
             typeComboBox.isEnabled = true
-            //searchComboBox.isEnabled = true
+            searchComboBox.isEnabled = true
         } else {
             variableManager.registerUseOfVariableForComponent(selectedVariable, comboBox)
             variableManager.URIcomboBoxes.remove(comboBox)
             typeComboBox.isEnabled = false
-            //searchComboBox.isEnabled = false
+            searchComboBox.isEnabled = false
+        }
+    }
+
+    fun updateNodeTypesForRelationType() {
+        val selectedType = relationTypeComboBox.selectedItem as? BGRelationType
+        val fromType = selectedType?.fromType
+        val toType = selectedType?.toType
+        println(fromType)
+        println(toType)
+        fromType?.let {
+            fromTypeComboBox.selectedItem = it
+        }
+        toType?.let {
+            toTypeComboBox.selectedItem = it
         }
     }
 
@@ -56,12 +72,21 @@ class BGMultiQueryAutocompleteLine(val serviceManager: BGServiceManager, val rel
         toComboBox = JComboBox(variableManager.getShownVariables())
         toComboBox.toolTipText = variablesTooltipText
 
-        val types = arrayOf("Protein", "Gene", "GO-Term", "Taxon", "All")
+        //val types = arrayOf("Protein", "Gene", "GO-Term", "Taxon", "Disease", "All")
+        val types = arrayOf(BGNodeType.Protein, BGNodeType.Gene, BGNodeType.GO, BGNodeType.Taxon, BGNodeType.Disease)
         toTypeComboBox = JComboBox(types)
         fromTypeComboBox = JComboBox(types)
 
-        fromSearchBox = BGAutocompleteComboBox(fromTypeComboBox, serviceManager.endpoint)
-        toSearchBox = BGAutocompleteComboBox(toTypeComboBox, serviceManager.endpoint)
+        fromSearchBox = BGAutocompleteComboBox(serviceManager.endpoint) {
+            (fromTypeComboBox.selectedItem as? BGNodeType)?.let {
+                BGNodeType.forName(it.paremeterType)
+            }
+        }
+        toSearchBox = BGAutocompleteComboBox(serviceManager.endpoint) {
+            (toTypeComboBox.selectedItem as? BGNodeType)?.let {
+                BGNodeType.forName(it.paremeterType)
+            }
+        }
 
         updateComboBox(fromComboBox, fromTypeComboBox, fromSearchBox)
         fromComboBox.addActionListener {
@@ -70,6 +95,10 @@ class BGMultiQueryAutocompleteLine(val serviceManager: BGServiceManager, val rel
         updateComboBox(toComboBox, toTypeComboBox, toSearchBox)
         toComboBox.addActionListener {
             updateComboBox(toComboBox, toTypeComboBox, toSearchBox)
+        }
+
+        relationTypeComboBox.addActionListener {
+            updateNodeTypesForRelationType()
         }
 
         val searchIcon = ImageIcon(this.javaClass.classLoader.getResource("search.png"))
@@ -117,6 +146,8 @@ class BGMultiQueryAutocompleteLine(val serviceManager: BGServiceManager, val rel
         this.add(toSearchBox)
         this.add(toUriSearchButton)
         this.add(swapButton)
+
+        updateNodeTypesForRelationType()
     }
 
     private fun swapToAndFromParameters() {
@@ -196,8 +227,8 @@ class BGMultiQueryAutocompleteLine(val serviceManager: BGServiceManager, val rel
             toSearchBox.text
             //updateLabelAndDescriptionForField(toSearchBox, value ?: "")
         }
-    val relationType: String?
+    val relationType: BGRelationType?
         get() = {
-            this.relationTypeComboBox.model.selectedItem as? String
+            this.relationTypeComboBox.model.selectedItem as? BGRelationType
         }()
 }

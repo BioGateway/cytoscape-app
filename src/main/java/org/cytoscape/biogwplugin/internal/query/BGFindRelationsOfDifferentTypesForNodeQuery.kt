@@ -1,12 +1,10 @@
 package org.cytoscape.biogwplugin.internal.query
 
 import org.cytoscape.biogwplugin.internal.BGServiceManager
-import org.cytoscape.biogwplugin.internal.model.BGRelation
 import org.cytoscape.biogwplugin.internal.model.BGRelationType
 import org.cytoscape.biogwplugin.internal.parser.BGReturnType
-import org.cytoscape.biogwplugin.internal.util.Utility
 
-class BGFindRelationsOfDifferentTypesForNodeQuery(serviceManager: BGServiceManager, val relationTypes: Collection<BGRelationType>, val nodeUri: String, val direction: BGRelationDirection, val graphName: String? = null): BGQuery(serviceManager, BGReturnType.RELATION_TRIPLE) {
+class BGFindRelationsOfDifferentTypesForNodeQuery(serviceManager: BGServiceManager, val relationTypes: Collection<BGRelationType>, val nodeUri: String, val direction: BGRelationDirection, val graphName: String? = null): BGQuery(serviceManager, BGReturnType.RELATION_TRIPLE_GRAPHURI) {
 
     override fun generateQueryString(): String {
 

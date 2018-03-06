@@ -59,10 +59,9 @@ class BGServiceManager {
 
     val visualStyleBuilder = BGVisualStyleBuilder(this)
 
-    val serverPath: String
-        get() = Constants.SERVER_PATH
-
-    val dictionaryServerPath: String get() = Constants.DICTIONARY_SERVER_PATH
+    // These values will be updated by the settings in the config XML.
+    var serverPath: String = Constants.SERVER_PATH
+    var dictionaryServerPath: String = Constants.DICTIONARY_SERVER_PATH
 
     init {
         this.server = BGServer(this)

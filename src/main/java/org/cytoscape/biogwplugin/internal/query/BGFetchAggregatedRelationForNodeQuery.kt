@@ -6,7 +6,7 @@ import org.cytoscape.biogwplugin.internal.model.BGNodeType
 import org.cytoscape.biogwplugin.internal.parser.BGReturnType
 
 /// Returns the relation described by the expanded relation node.
-class BGFetchAggregatedRelationForNodeQuery(serviceManager: BGServiceManager, val node: BGNode): BGRelationQuery(serviceManager, BGReturnType.RELATION_TRIPLE) {
+class BGFetchAggregatedRelationForNodeQuery(serviceManager: BGServiceManager, val node: BGNode): BGRelationQuery(serviceManager, BGReturnType.RELATION_TRIPLE_GRAPHURI) {
 
     override fun generateQueryString(): String {
         val graphName = when (node.type) {
@@ -31,7 +31,7 @@ class BGFetchAggregatedRelationForNodeQuery(serviceManager: BGServiceManager, va
     }
 }
 
-class BGFetchAggregatedPPIRelationForNodeQuery(serviceManager: BGServiceManager, val nodeUri: String): BGRelationQuery(serviceManager, BGReturnType.RELATION_TRIPLE) {
+class BGFetchAggregatedPPIRelationForNodeQuery(serviceManager: BGServiceManager, val nodeUri: String): BGRelationQuery(serviceManager, BGReturnType.RELATION_TRIPLE_GRAPHURI) {
 
     override fun generateQueryString(): String {
 

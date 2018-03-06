@@ -8,7 +8,6 @@ import org.cytoscape.biogwplugin.internal.parser.BGReturnType
 import org.cytoscape.biogwplugin.internal.util.Utility
 import org.cytoscape.work.AbstractTask
 import org.cytoscape.work.TaskMonitor
-import javax.management.relation.Relation
 
 class BGMultiNodeRelationQuery(val serviceManager: BGServiceManager, val nodeUris: Collection<String>, val relationType: BGRelationType, val direction: BGRelationDirection): AbstractTask(), Runnable {
     private var taskMonitor: TaskMonitor? = null
@@ -99,7 +98,7 @@ class BGMultiNodeRelationQuery(val serviceManager: BGServiceManager, val nodeUri
             query.run()
         }
         var columnNames = arrayOf("From Node", "Relation Type", "To Node")
-        returnData = BGReturnRelationsData(BGReturnType.RELATION_TRIPLE, columnNames)
+        returnData = BGReturnRelationsData(BGReturnType.RELATION_TRIPLE_GRAPHURI, columnNames)
 
         if (minCommonRelations != 0) {
             // It now only finds relations to nodes with ALL the searched nodes in common.

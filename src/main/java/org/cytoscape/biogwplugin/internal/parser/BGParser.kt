@@ -3,10 +3,8 @@ package org.cytoscape.biogwplugin.internal.parser
 import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.model.BGNode
 import org.cytoscape.biogwplugin.internal.model.BGRelation
-import org.cytoscape.biogwplugin.internal.model.BGRelationMetadata
 import org.cytoscape.biogwplugin.internal.model.BGRelationType
 import org.cytoscape.biogwplugin.internal.query.*
-import org.cytoscape.biogwplugin.internal.util.Utility
 import org.cytoscape.biogwplugin.internal.util.sanitizeParameter
 import org.cytoscape.work.TaskMonitor
 import java.io.BufferedReader
@@ -20,7 +18,7 @@ enum class BGReturnType(val paremeterCount: Int) {
     NODE_LIST(2),              // nodeUri, common_name
     NODE_LIST_DESCRIPTION(3),  // nodeUri, common_name, name
     NODE_LIST_DESCRIPTION_TAXON(4),  // nodeUri, common_name, name, taxon
-    RELATION_TRIPLE(4),         // nodeUri, relationUri, nodeUri
+    RELATION_TRIPLE_GRAPHURI(4),         // nodeUri, graphUri, relationUri, nodeUri
     RELATION_TRIPLE_NAMED(6),    // nodeUri, common_name, relationUri, nodeUri, common_name
     RELATION_TRIPLE_PUBMED(6),  // nodeUri, common_name, relationUri, nodeUri, common_name, pubmedUri
     RELATION_MULTIPART(0), // Arbitrary length. Only to be used with parsing that supports it.
@@ -122,7 +120,7 @@ class BGParser(private val serviceManager: BGServiceManager) {
             val lineColumns = it.split("\t").dropLastWhile { it.isEmpty() }.toTypedArray()
             if (lineColumns.size != returnType.paremeterCount && returnType != BGReturnType.RELATION_MULTIPART) throw Exception("Number of columns in data array must match the parameter count of the query type!")
 
-            if (returnType == BGReturnType.RELATION_TRIPLE) {
+            if (returnType == BGReturnType.RELATION_TRIPLE_GRAPHURI) {
                 val fromNodeUri = lineColumns[0].replace("\"", "")
                 val graphName = lineColumns[1].replace("\"", "")
                 val relationUri = lineColumns[2].replace("\"", "")

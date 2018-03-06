@@ -7,7 +7,7 @@ import org.cytoscape.biogwplugin.internal.parser.BGReturnType
 import org.cytoscape.biogwplugin.internal.util.Utility
 
 
-class BGFindRelationForNodeQuery(serviceManager: BGServiceManager, val relationType: BGRelationType, val nodeUri: String, val direction: BGRelationDirection): BGQuery(serviceManager, BGReturnType.RELATION_TRIPLE) {
+class BGFindRelationForNodeQuery(serviceManager: BGServiceManager, val relationType: BGRelationType, val nodeUri: String, val direction: BGRelationDirection): BGQuery(serviceManager, BGReturnType.RELATION_TRIPLE_GRAPHURI) {
 
     override fun generateQueryString(): String {
        return when (direction) {

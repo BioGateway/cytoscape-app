@@ -16,7 +16,7 @@ internal class BGExpandRelationToNodesQueryTest {
         assertNotNull(relationType)
         val fromUri = "http://identifiers.org/uniprot/O15525"
         val toUri = "http://identifiers.org/uniprot/Q16236"
-        val query = BGExpandRelationToNodesQuery(serviceManager, fromUri, toUri, relationType!!, BGReturnType.RELATION_TRIPLE)
+        val query = BGExpandRelationToNodesQuery(serviceManager, fromUri, toUri, relationType!!, BGReturnType.RELATION_TRIPLE_GRAPHURI)
         val resultFuture = query.futureReturnData
 
         val thread = Thread(query).start()

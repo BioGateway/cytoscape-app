@@ -9,13 +9,35 @@ import org.cytoscape.model.CyNode
 enum class BGNodeType(val paremeterType: String) {
     Protein("Protein"),
     Gene("Gene"),
-    GO("GO annotation"),
+    GO("GO-Term"),
     Taxon("Taxon"),
+    Disease("Disease"),
     PPI("PPI"),
-    GOA("GO Annotation"),
+    GOA("GO-Annotation"),
     TFTG("TF-TG Statement"),
-    PUBMED("Pubmed URI"),
-    Undefined("Undefined type") }
+    Pubmed("Pubmed URI"),
+    Undefined("Undefined");
+
+    override fun toString(): String {
+        return this.paremeterType
+    }
+
+    companion object {
+        fun forName(name: String): BGNodeType? {
+            return when (name.toLowerCase()) {
+                "protein" -> Protein
+                "gene" -> Gene
+                "go-term" -> GO
+                "taxon" -> Taxon
+                "ppi" -> PPI
+                "tf-tg" -> TFTG
+                "pubmedId" -> Pubmed
+                "disease" -> Disease
+                else -> null
+            }
+        }
+    }
+}
 
 open class BGNode {
 
@@ -62,7 +84,7 @@ open class BGNode {
 
     fun generateName(): String {
 
-        if (type == BGNodeType.PUBMED) {
+        if (type == BGNodeType.Pubmed) {
             return "Pubmed ID " + uri.substringAfterLast("/")
         }
         if (type == BGNodeType.TFTG) {
@@ -116,8 +138,9 @@ open class BGNode {
                 uri.contains("GO_") -> BGNodeType.GO
                 uri.contains("NCBITaxon_") -> BGNodeType.Taxon
                 uri.contains("intact") -> BGNodeType.PPI
-                uri.contains("pubmed") -> BGNodeType.PUBMED
+                uri.contains("pubmed") -> BGNodeType.Pubmed
                 uri.contains("GOA_") -> BGNodeType.GOA
+                uri.contains("/omim/") -> BGNodeType.Disease
                 uri.contains("semantic-systems-biology.org/") -> BGNodeType.TFTG // TODO: Need a better identifier!
                 else -> {
                     BGNodeType.Undefined

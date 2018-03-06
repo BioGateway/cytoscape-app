@@ -5,13 +5,17 @@ import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
 import net.miginfocom.swing.MigLayout;
 import org.cytoscape.biogwplugin.internal.BGServiceManager;
+import org.cytoscape.biogwplugin.internal.gui.multiquery.BGAutocompleteComboBox;
+import org.cytoscape.biogwplugin.internal.gui.multiquery.BGAutocompleteTypeProvider;
 import org.cytoscape.biogwplugin.internal.gui.multiquery.BGMultiQueryPanel;
 import org.cytoscape.biogwplugin.internal.gui.multiquery.BGQueryConstraintPanel;
+import org.cytoscape.biogwplugin.internal.model.BGNodeType;
 import org.cytoscape.biogwplugin.internal.model.BGQueryConstraint;
 import org.cytoscape.biogwplugin.internal.query.BGQueryParameter;
 import org.cytoscape.biogwplugin.internal.query.QueryTemplate;
 import org.cytoscape.biogwplugin.internal.util.Constants;
 import org.cytoscape.biogwplugin.internal.util.SortedComboBoxModel;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -274,15 +278,30 @@ public class BGQueryBuilderView implements ChangeListener {
 
         parameterComponents = new HashMap<>();
 
-        JLabel description = new JLabel(query.getDescription());
-        description.setFont(description.getFont().deriveFont(Font.ITALIC));
-        descriptionPanel.add(description);
+        //JLabel description = new JLabel(query.getDescription());
+       // description.setFont(description.getFont().deriveFont(Font.ITALIC));
+        //descriptionPanel.add(description);
+
+        parameterPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), query.getDescription()));
+
 
         for (BGQueryParameter parameter : query.getParameters()) {
 
             JLabel label = new JLabel(parameter.getName() + ": ");
             JComponent component;
             switch (parameter.getType()) {
+                case GENE:
+                    component = new BGAutocompleteComboBox(serviceManager.getEndpoint(), () -> BGNodeType.Gene);
+                    break;
+                case TAXON:
+                    component = new BGAutocompleteComboBox(serviceManager.getEndpoint(), () -> BGNodeType.Taxon);
+                    break;
+                case GO_TERM:
+                    component = new BGAutocompleteComboBox(serviceManager.getEndpoint(), () -> BGNodeType.GO);
+                    break;
+                case PROTEIN:
+                    component = new BGAutocompleteComboBox(serviceManager.getEndpoint(), () -> BGNodeType.Protein);
+                    break;
                 case OPTIONAL_URI:
                     JTextField optionalField = new JTextField();
                     //optionalField.setPreferredSize(new Dimension(280, Utility.INSTANCE.getJTextFieldHeight()));
@@ -290,9 +309,7 @@ public class BGQueryBuilderView implements ChangeListener {
                     //component = optionalField;
                     component = new BGOptionalURIField(optionalField, serviceManager);
                     break;
-                case ONTOLOGY:
                 case TEXT:
-                case UNIPROT_ID:
                     JTextField field = new JTextField();
                     field.setColumns(Constants.INSTANCE.getBG_QUERY_BUILDER_URI_FIELD_COLUMNS());
                     //field.setPreferredSize(new Dimension(280, Utility.INSTANCE.getJTextFieldHeight()));

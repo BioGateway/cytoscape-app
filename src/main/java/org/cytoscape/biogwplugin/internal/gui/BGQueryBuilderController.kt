@@ -1,7 +1,7 @@
 package org.cytoscape.biogwplugin.internal.gui
 
 import org.cytoscape.biogwplugin.internal.BGServiceManager
-import org.cytoscape.biogwplugin.internal.gui.multiquery.BGMultiQueryPanel
+import org.cytoscape.biogwplugin.internal.gui.multiquery.BGAutocompleteComboBox
 import org.cytoscape.biogwplugin.internal.model.BGNode
 import org.cytoscape.biogwplugin.internal.model.BGNodeType
 import org.cytoscape.biogwplugin.internal.model.BGRelation
@@ -170,21 +170,10 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                     val selected = field.combobox.selectedItem as String
                     parameter.value = parameter.options[selected]
                     parameter.direction = field.direction
-
                 }
-                BGQueryParameter.ParameterType.UNIPROT_ID -> {
-                    var uniprotID = (component as JTextField).text
-                    if (!uniprotID.startsWith(UNIPROT_PREFIX)) {
-                        uniprotID = UNIPROT_PREFIX + uniprotID
-                    }
-                    parameter.value = uniprotID.sanitizeParameter()
-                }
-                BGQueryParameter.ParameterType.ONTOLOGY -> {
-                    var ontology = (component as JTextField).text
-                    if (!ontology.startsWith(ONTOLOGY_PREFIX)) {
-                        ontology = ONTOLOGY_PREFIX + ontology
-                    }
-                    parameter.value = ontology.sanitizeParameter()
+                BGQueryParameter.ParameterType.PROTEIN, BGQueryParameter.ParameterType.GO_TERM, BGQueryParameter.ParameterType.TAXON, BGQueryParameter.ParameterType.GENE -> {
+                    val searchField = (component as? BGAutocompleteComboBox) ?: throw Exception("Expected component to be BGAutocompleteComboBox!")
+                    parameter.value = searchField.selectedUri?.sanitizeParameter()
                 }
                 BGQueryParameter.ParameterType.OPTIONAL_URI -> {
                     val optionalUriField = component as? BGOptionalURIField ?: throw Exception("Invalid component type!")
@@ -237,7 +226,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                 BGReturnType.NODE_LIST, BGReturnType.NODE_LIST_DESCRIPTION -> {
                     BGNodeSearchQuery(serviceManager, queryString, queryType)
                 }
-                BGReturnType.RELATION_TRIPLE, BGReturnType.RELATION_TRIPLE_NAMED -> {
+                BGReturnType.RELATION_TRIPLE_GRAPHURI, BGReturnType.RELATION_TRIPLE_NAMED -> {
                     BGRelationQueryImplementation(serviceManager, queryString, queryType)
                 }
                 else -> {
@@ -251,7 +240,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                     BGReturnType.NODE_LIST, BGReturnType.NODE_LIST_DESCRIPTION -> {
                         it as? BGReturnNodeData ?: throw Exception("Expected Node Data in return!")
                     }
-                    BGReturnType.RELATION_TRIPLE, BGReturnType.RELATION_TRIPLE_NAMED -> {
+                    BGReturnType.RELATION_TRIPLE_GRAPHURI, BGReturnType.RELATION_TRIPLE_NAMED -> {
                         it as? BGReturnRelationsData ?: throw Exception("Expected Relation Data in return!")
                     }
                     else -> {
@@ -333,7 +322,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                     val node = (resultRow as? BGNodeResultRow)?.node ?: throw Exception("Result must be a node!")
                     nodes.put(node.uri, node)
                 }
-                BGReturnType.RELATION_TRIPLE, BGReturnType.RELATION_TRIPLE_NAMED, BGReturnType.RELATION_MULTIPART -> {
+                BGReturnType.RELATION_TRIPLE_GRAPHURI, BGReturnType.RELATION_TRIPLE_NAMED, BGReturnType.RELATION_MULTIPART -> {
                     val relation = (resultRow as? BGRelationResultRow)?.relation ?: throw Exception("Result must be a relation!")
                     nodes.put(relation.fromNode.uri, relation.fromNode)
                     nodes.put(relation.fromNode.uri, relation.fromNode)
@@ -357,7 +346,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
             BGReturnType.NODE_LIST, BGReturnType.NODE_LIST_DESCRIPTION, BGReturnType.NODE_LIST_DESCRIPTION_TAXON -> {
                 server.networkBuilder.addBGNodesToNetwork(nodes.values, network)
             }
-            BGReturnType.RELATION_TRIPLE, BGReturnType.RELATION_TRIPLE_NAMED, BGReturnType.RELATION_MULTIPART -> {
+            BGReturnType.RELATION_TRIPLE_GRAPHURI, BGReturnType.RELATION_TRIPLE_NAMED, BGReturnType.RELATION_MULTIPART -> {
                 server.networkBuilder.addRelationsToNetwork(network, relations)
             }
             else -> {
@@ -379,7 +368,11 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
     private fun validatePropertyFields(parameters: Collection<BGQueryParameter>, parameterComponents: HashMap<String, JComponent>): String? {
         for (parameter in parameters) {
             val component = parameterComponents[parameter.id]
-            if (parameter.type === BGQueryParameter.ParameterType.OPTIONAL_URI) {
+            if (component == null) {
+                return "Component not found!"
+            } else if (!component.isEnabled) {
+                continue
+            } else if (parameter.type === BGQueryParameter.ParameterType.OPTIONAL_URI) {
                 val optionalUriField = component as? BGOptionalURIField ?: throw Exception("Invalid component type!")
                 val uri = optionalUriField.textField.text
                 if (uri.sanitizeParameter().isEmpty()) {
@@ -387,12 +380,17 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                     optionalUriField.textField.text = "?" + parameter.id
                 } else if (uri.startsWith("?")) {
                     optionalUriField.textField.text = uri.sanitizeParameter()
-                }
-            } else if (component is JTextField) {
-                val field = component
-                field.text = Utility.sanitizeParameter(field.text)
-                if (field.text.isEmpty()) {
-                    return "All required text fields must be filled out!"
+                } else if (component is JTextField) {
+                    val field = component
+                    field.text = Utility.sanitizeParameter(field.text)
+                    if (field.text.isEmpty()) {
+                        return "All required text fields must be filled out!"
+                    }
+                } else if (component is BGAutocompleteComboBox) {
+                    val searchBox = component
+                    if (searchBox.selectedUri.isNullOrBlank()) {
+                        return "All required text fields must be filled out!"
+                    }
                 }
             }
         }

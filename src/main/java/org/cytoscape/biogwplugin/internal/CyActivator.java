@@ -74,7 +74,7 @@ public class CyActivator extends AbstractCyActivator {
                 serviceManager.getServer().loadXMLFileFromServer();
             }
         });
-        //registerService(context, reloadXMLAction, CyAction.class, new Properties());
+        registerService(context, reloadXMLAction, CyAction.class, new Properties());
 
         BGCreateAction importStyleAction = new BGCreateAction("Import the BioGateway visual style", "always", serviceManager, new BGAction() {
             @Override

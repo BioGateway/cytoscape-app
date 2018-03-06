@@ -1,8 +1,6 @@
 package org.cytoscape.biogwplugin.internal.query
-import org.apache.http.client.HttpClient
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.client.methods.HttpPost
-import org.apache.http.entity.ContentType
 import org.apache.http.entity.StringEntity
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.util.EntityUtils
@@ -31,7 +29,7 @@ enum class BGParsingType {
 
 enum class BGQueryType(val returnType: BGReturnType) {
     NODE(BGReturnType.NODE_LIST_DESCRIPTION),
-    RELATION(BGReturnType.RELATION_TRIPLE),
+    RELATION(BGReturnType.RELATION_TRIPLE_GRAPHURI),
     MULTI_RELATION(BGReturnType.RELATION_MULTIPART),
     METADATA(BGReturnType.METADATA_FIELD)
 }
@@ -92,7 +90,7 @@ abstract class BGQuery(val serviceManager: BGServiceManager, var type: BGReturnT
     var parsingBlock: ((BufferedReader) -> Unit)? = null
     var parseType = when (type) {
         BGReturnType.NODE_LIST, BGReturnType.NODE_LIST_DESCRIPTION -> BGParsingType.TO_ARRAY
-        BGReturnType.RELATION_TRIPLE -> BGParsingType.RELATIONS
+        BGReturnType.RELATION_TRIPLE_GRAPHURI -> BGParsingType.RELATIONS
         BGReturnType.RELATION_MULTIPART -> BGParsingType.RELATIONS
         BGReturnType.PUBMED_ID -> BGParsingType.TO_ARRAY
         BGReturnType.METADATA_FIELD -> BGParsingType.METADATA

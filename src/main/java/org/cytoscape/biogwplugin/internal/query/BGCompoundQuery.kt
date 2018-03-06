@@ -33,7 +33,7 @@ abstract class BGCompoundRelationQuery(val serviceManager: BGServiceManager, val
             }
         }
 
-        val returnData = BGReturnRelationsData(BGReturnType.RELATION_TRIPLE, columnNames)
+        val returnData = BGReturnRelationsData(BGReturnType.RELATION_TRIPLE_GRAPHURI, columnNames)
 
         if (minCommonRelations != 0) {
             val commonRelations = findCommonRelations(relationSet)

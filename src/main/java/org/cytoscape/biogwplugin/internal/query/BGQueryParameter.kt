@@ -5,7 +5,7 @@ import java.util.HashMap
 class BGQueryParameter(var id: String, var name: String, var type: BGQueryParameter.ParameterType) {
 
     enum class ParameterType {
-        TEXT, CHECKBOX, COMBOBOX, UNIPROT_ID, ONTOLOGY, OPTIONAL_URI, RELATION_COMBOBOX, RELATION_QUERY_ROW
+        TEXT, CHECKBOX, COMBOBOX, PROTEIN, GO_TERM, GENE, TAXON, OPTIONAL_URI, RELATION_COMBOBOX, RELATION_QUERY_ROW
     }
 
     class EnabledDependency(val dependingParameter: String, val isEnabled: Boolean, val forParameterValue: String)
