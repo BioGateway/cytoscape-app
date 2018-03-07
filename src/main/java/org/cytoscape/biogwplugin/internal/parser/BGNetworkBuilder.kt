@@ -226,7 +226,8 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
             BGNodeType.PPI -> BGFetchAggregatedPPIRelationForNodeQuery(serviceManager, nodeUri)
             BGNodeType.TFTG, BGNodeType.GOA -> BGFetchAggregatedRelationForNodeQuery(serviceManager, node)
             else -> {
-                throw Exception("Cannot collapse nodes of this type!")
+                return
+                //throw Exception("Cannot collapse nodes of this type!")
             }
         }
         val parentEdgeId = cyNode.getParentEdgeId(network)

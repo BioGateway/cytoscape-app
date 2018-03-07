@@ -82,7 +82,7 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager, val constraintPane
             throw Exception("Relation name not found!")
         }
 
-        queryLine.relationTypeComboBox.selectedItem = relationType.description
+        queryLine.relationTypeComboBox.selectedItem = relationType
 
         when (graph.to.type) {
             BGSPARQLParser.BGVariableType.URI -> {
