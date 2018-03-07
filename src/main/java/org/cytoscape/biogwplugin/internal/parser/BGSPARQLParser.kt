@@ -1,5 +1,6 @@
 package org.cytoscape.biogwplugin.internal.parser
 
+import org.cytoscape.biogwplugin.internal.model.BGQueryConstraint
 import org.cytoscape.biogwplugin.internal.model.BGRelationType
 import org.cytoscape.biogwplugin.internal.util.Utility
 import java.util.ArrayList
@@ -13,6 +14,7 @@ object BGSPARQLParser {
 
     enum class BGVariableType {URI, Variable, INVALID}
     class BGGraphParameter(val value: String, val type: BGVariableType)
+    class BGGraphConstraint(val id: String, val value: String)
     class BGQueryGraph(val from: BGGraphParameter, val relation: BGGraphParameter, val to: BGGraphParameter, val graph: BGGraphParameter)
 
     private fun getParameterType(parameter: String): BGVariableType {
@@ -57,9 +59,13 @@ object BGSPARQLParser {
     }
 
 
-    fun parseSPARQLCode(sparqlcode: String, validRelationTypeMap: Map<String, BGRelationType>): ArrayList<BGQueryGraph> {
+    fun parseSPARQLCode(sparqlcode: String, validRelationTypeMap: Map<String, BGRelationType>): Pair<ArrayList<BGQueryGraph>, List<BGGraphConstraint>?> {
 
-        val graphs = sparqlcode.split("GRAPH")
+        val query = sparqlcode.split("#QueryConstraints:")
+
+        val mainQuery = query.first()
+
+        val graphs = mainQuery.split("GRAPH")
         var queryGraphs = ArrayList<BGQueryGraph>()
 
         for (graphString in graphs) {
@@ -91,6 +97,21 @@ object BGSPARQLParser {
                 queryGraphs.add(queryGraph)
             }
         }
-        return queryGraphs
+
+        var constraints: List<BGGraphConstraint>? = null
+
+        if (query.size == 2) {
+            val constraintsSparql = query[1]
+            constraints = constraintsSparql
+                    .split("\n")
+                    .filter { it.startsWith("#Constraint: ") }
+                    .map { it.replace("#Constraint: ", "") }
+                    .map { it.split("=") }
+                    .filter { it.size == 2 }
+                    .map { BGGraphConstraint(it[0].trim(), it[1].trim()) }
+        }
+        println("Parsed Constraints:")
+        println(constraints)
+        return Pair(queryGraphs, constraints)
     }
 }

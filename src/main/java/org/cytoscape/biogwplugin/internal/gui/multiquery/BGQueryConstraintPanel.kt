@@ -6,7 +6,7 @@ import java.awt.TextField
 import java.util.ArrayList
 import javax.swing.*
 
-class BGQueryConstraintPanel(val constraints: Collection<BGQueryConstraint>): JPanel() {
+class BGQueryConstraintPanel(val constraints: HashMap<String, BGQueryConstraint>): JPanel() {
 
     class ConstraintUIComponent(val constraint: BGQueryConstraint, val component: JComponent, val checkBox: JCheckBox)
     class ConstraintValue(val stringValue: String, val isEnabled: Boolean)
@@ -18,7 +18,7 @@ class BGQueryConstraintPanel(val constraints: Collection<BGQueryConstraint>): JP
         this.layout = FlowLayout(FlowLayout.LEFT)
 
         // For each constraint:
-        for (constraint in constraints) {
+        for (constraint in constraints.values) {
 
             // Create the label.
             //val label = JLabel(constraint.label)
@@ -43,6 +43,20 @@ class BGQueryConstraintPanel(val constraints: Collection<BGQueryConstraint>): JP
 
             this.constraintUIComponents.add(ConstraintUIComponent(constraint, inputComponent, checkBox))
         }
+    }
+
+    fun setConstraintValue(id: String, enabled: Boolean, value: String) {
+        constraintUIComponents.filter { it.constraint.id == id }.forEach {
+            it.checkBox.isSelected = enabled
+
+            if (it.component is JTextField) {
+                it.component.text = value
+            } else if (it.component is JComboBox<*>) {
+                val option = it.constraint.options.filter { it.value == value }.first()
+                it.component.selectedItem = option.label
+            }
+        }
+
     }
 
     fun getConstraintValues(): HashMap<BGQueryConstraint, ConstraintValue> {

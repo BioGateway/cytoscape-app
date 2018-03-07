@@ -108,10 +108,16 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager, val constraintPane
         this.topLevelAncestor.repaint()
     }
 
-    fun loadQueryGraphs(queryGraphs: Collection<BGSPARQLParser.BGQueryGraph>) {
+    fun loadQueryGraphs(queryGraphs: Pair<Collection<BGSPARQLParser.BGQueryGraph>, List<BGSPARQLParser.BGGraphConstraint>?>) {
         removeAllQueryLines()
-        for (graph in queryGraphs) {
+        for (graph in queryGraphs.first) {
             addQueryLine(graph)
+        }
+        queryGraphs.second?.let {
+            for (constraint in it) {
+                // TODO: Should set all other constraints to false.
+                constraintPanel.setConstraintValue(constraint.id, true, constraint.value)
+            }
         }
     }
 
@@ -240,6 +246,11 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager, val constraintPane
             }
         }
 
+        val constraintHeader = "\n#QueryConstraints:\n"+constraintValues
+                .filter { it.value.isEnabled }
+                .map { "#Constraint: "+it.key.id+"="+it.value.stringValue+"\n"}
+                .reduce { acc, s -> acc+s }
+
         var constraintQueryString = ""
 
         for (graph in constraintQueries.keys) {
@@ -253,7 +264,7 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager, val constraintPane
             }
             constraintQueryString += "}\n"
         }
-        return constraintQueryString
+        return constraintHeader+constraintQueryString
     }
 
     private fun getRDFURI(uri: String): String {

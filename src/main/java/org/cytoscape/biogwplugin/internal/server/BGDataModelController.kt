@@ -40,7 +40,7 @@ class BGDataModelController(private val serviceManager: BGServiceManager) {
         var exportEdgeConversions: Collection<BGConversion>? = null
 
 
-        var queryConstraints = ArrayList<BGQueryConstraint>()
+        var queryConstraints = HashMap<String, BGQueryConstraint>()
         var availableGraphs: DefaultTreeModel = DefaultTreeModel(DefaultMutableTreeNode("Graphs"))
 
         // A cache of BGNodes, which are a local representation of the node found on the dataModelController.

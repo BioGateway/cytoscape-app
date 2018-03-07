@@ -203,7 +203,7 @@ object BGConfigParser {
                         queryConstraint.options.add(option)
                     }
                 }
-                cache.queryConstraints.add(queryConstraint)
+                cache.queryConstraints.put(queryConstraint.id, queryConstraint)
             }
 
 

@@ -482,7 +482,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
 
         val queryGraphs = BGSPARQLParser.parseSPARQLCode(sparqlCode, serviceManager.cache.relationTypeMap)
 
-        if (queryGraphs.isEmpty()) {
+        if (queryGraphs.first.isEmpty()) {
             JOptionPane.showMessageDialog(view.mainFrame, "Unable to parse any queries from current SPARQL.")
         }
         view.multiQueryPanel.loadQueryGraphs(queryGraphs)
