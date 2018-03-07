@@ -40,7 +40,6 @@ class BGQueryConstraintPanel(val constraints: HashMap<String, BGQueryConstraint>
                 }
             }
             this.add(inputComponent)
-
             this.constraintUIComponents.add(ConstraintUIComponent(constraint, inputComponent, checkBox))
         }
     }

@@ -152,7 +152,11 @@ class BGMultiNodeQueryCMF(val gravity: Float, val serviceManager: BGServiceManag
                     serviceManager.taskManager?.execute(TaskIterator(query))
                     async {
                         val returnData = query.returnFuture.get()
-                        if (returnData.relationsData.size == 0) throw Exception("No relations found.")
+                        if (returnData.relationsData.size == 0) {
+                            JOptionPane.showMessageDialog(null, "No results found", "No relations found.", JOptionPane.INFORMATION_MESSAGE)
+                            return@async
+                            //throw Exception("No relations found.")
+                        }
                         BGLoadUnloadedNodes.createAndRun(serviceManager, returnData.unloadedNodes) {
                             println("Loaded "+it.toString()+ " nodes.")
                             BGRelationSearchResultsController(serviceManager, returnData, returnData.columnNames, network)

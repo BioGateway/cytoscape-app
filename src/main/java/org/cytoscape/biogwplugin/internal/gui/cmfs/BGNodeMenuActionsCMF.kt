@@ -21,6 +21,7 @@ import java.awt.datatransfer.StringSelection
 import java.net.URI
 import javax.swing.JMenu
 import javax.swing.JMenuItem
+import javax.swing.JOptionPane
 
 /**
  * Created by sholmas on 06/07/2017.
@@ -68,28 +69,6 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
             else -> {
             }
         }
-        /*
-        if (nodeUri.contains("ncbigene")) {
-            parentMenu.addSeparator()
-            parentMenu.add(createTFTGSearchMenu(network, BGNodeType.Gene, nodeUri))
-            parentMenu.addSeparator()
-            parentMenu.add(createFetchAssociatedGeneOrProteinMenuItem(network, BGNodeType.Gene, nodeUri))
-            // Experimental functionality allowing users to search for relations to or from a CyGroup:
-//            parentMenu.addSeparator()
-//            parentMenu.add(createSearchGroupMenu("Search to group", network, BGNodeType.Gene, nodeUri))
-
-        } else if (nodeUri.contains("uniprot")) {
-            parentMenu.addSeparator()
-            parentMenu.add(createTFTGSearchMenu(network, BGNodeType.Protein, nodeUri))
-            parentMenu.addSeparator()
-            parentMenu.add(createFetchAssociatedGeneOrProteinMenuItem(network, BGNodeType.Protein, nodeUri))
-            parentMenu.addSeparator()
-            parentMenu.add(createPPISearchMenu(network, nodeUri))
-            // Experimental functionality allowing users to search for relations to or from a CyGroup:
-//            parentMenu.addSeparator()
-//            parentMenu.add(createSearchGroupMenu("Search to group", network, BGNodeType.Protein, nodeUri))
-        }
-        */
 
         createCopyURIMenu(nodeUri)?.let {
             parentMenu.addSeparator()
@@ -252,34 +231,18 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
 
         val parentMenu = JMenu(description)
 
-        val searchAllItem = JMenuItem("Search for all relation types")
-        searchAllItem.addActionListener {
-            println("Searching for all relations.")
-            val query = BGFindAllRelationsForNodeQuery(serviceManager, nodeUri, direction)
-            query.addCompletion {
-                val returnData = it as? BGReturnRelationsData ?: throw Exception("Invalid return data!")
-                if (returnData.relationsData.size == 0) throw Exception("No relations found.")
-                val columnNames = arrayOf("from node","relation type", "to node")
-
-                BGLoadUnloadedNodes.createAndRun(serviceManager, returnData.unloadedNodes) {
-                    BGRelationSearchResultsController(serviceManager, returnData, columnNames, network)
-                }
-            }
-            if (lookForGroups) {
-                val group = Utility.selectGroupPopup(serviceManager, network) ?: return@addActionListener
-                val groupNodeURIs = Utility.getNodeURIsForGroup(group)
-                query.returnDataFilter = { relation ->
-                    (groupNodeURIs.contains(relation.fromNode.uri) || groupNodeURIs.contains(relation.toNode.uri))
-                }
-            }
-
-            serviceManager.taskManager?.execute(TaskIterator(query))
-        }
-        parentMenu.add(searchAllItem)
-
         // Will only create the menu if the config is loaded.
         //for (relationType in serviceManager.cache.relationTypeMap.values.sortedBy { it.number }) {
         for (relationType in serviceManager.cache.filteredRelationTypeMap.values.sortedBy { it.number }) {
+
+            // Skip the relations that cannot return data:
+            val nodeType = BGNode(nodeUri, "").type
+            if (nodeType != BGNodeType.Undefined) {
+                if (direction == BGRelationDirection.FROM && relationType.fromType != null && nodeType != relationType.fromType) continue
+                if (direction == BGRelationDirection.TO && relationType.toType != null && nodeType != relationType.toType) continue
+            }
+
+
             val item = JMenuItem(relationType.description)
 
             item.addActionListener {
@@ -359,8 +322,13 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
                 val returnData = query.futureReturnData.get() as  BGReturnRelationsData
                 // TODO: The exception is no longer thrown to the TaskMonitor, need a popup to tell the user.
                 if (returnData.relationsData.size == 0)  {
-                    if (nodeType == BGNodeType.Protein) throw Exception("No results found. Are you sure it is a transcription factor?")
-                    throw Exception("No relations found.")
+                    if (nodeType == BGNodeType.Protein) {
+                        JOptionPane.showMessageDialog(null,  "No relations found. Are you sure it is a transcription factor?","No results found", JOptionPane.INFORMATION_MESSAGE)
+                        return@Runnable
+                    } else {
+                        JOptionPane.showMessageDialog(null,  "No relations found.", "No results found", JOptionPane.INFORMATION_MESSAGE)
+                        return@Runnable
+                    }
                 }
                 val columnNames = arrayOf("protein", "relation", "gene")
 
