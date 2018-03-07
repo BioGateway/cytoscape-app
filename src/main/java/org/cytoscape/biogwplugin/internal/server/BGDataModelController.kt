@@ -1,6 +1,7 @@
 package org.cytoscape.biogwplugin.internal.server
 
 import org.cytoscape.biogwplugin.internal.BGServiceManager
+import org.cytoscape.biogwplugin.internal.libs.JCheckBoxTree
 import org.cytoscape.biogwplugin.internal.model.*
 import org.cytoscape.biogwplugin.internal.parser.*
 import org.cytoscape.biogwplugin.internal.query.*
@@ -21,6 +22,19 @@ class RelationTypeTreeNode(val relationType: BGRelationType): DefaultMutableTree
 
 
 class BGDataModelController(private val serviceManager: BGServiceManager) {
+
+    internal inner class PreferencesManager {
+
+        var prefs = Preferences.userRoot().node("org.cytoscape.biogwplugin.PreferencesManager")
+
+        fun setSelected(path: String, selected: Boolean) {
+            prefs.putBoolean(path, selected)
+        }
+
+        fun getSelected(path: String): Boolean {
+            return prefs.getBoolean(path, false)
+        }
+    }
 
     class BGCache {
 
@@ -116,8 +130,8 @@ class BGDataModelController(private val serviceManager: BGServiceManager) {
         }
     }
 
-    val selectedRelationTypesPrefs = Preferences.userRoot().node(Constants.BG_SELECTED_ACTIVE_RELATION_TYPES)
     val cache: BGCache
+    private val preferencesManager = PreferencesManager()
     val settings = BGSettings()
     val parser = BGParser(serviceManager)
     val networkBuilder = BGNetworkBuilder(serviceManager)
@@ -142,9 +156,29 @@ class BGDataModelController(private val serviceManager: BGServiceManager) {
         }
     }
 
-    fun getActiveRelationTypes() {
-        val paths = selectedRelationTypesPrefs
-        // TODO: Store the path as a special object that implements functionality to be stored as bytes in the Preferences API.
+    fun setSelectionFromPreferences(tree: JCheckBoxTree) {
+        val model = serviceManager.cache.availableGraphs
+        val root = model.root as DefaultMutableTreeNode
+        val enumeration = root.depthFirstEnumeration()
+        for (node in enumeration) {
+            if (!(node is RelationTypeTreeNode)) continue
+            val type = node.relationType
+            val active = preferencesManager.getSelected(type.identifier)
+            if (active) {
+                tree.checkNode(node, true)
+            }
+        }
+        tree.repaint()
+//        val rootPath = TreePath(root.path)
+        //tree.fireCheckChangeEvent(JCheckBoxTree.CheckChangeEvent(rootPath))
+    }
+
+    private fun updateSelectedRelationPreferences() {
+        for (relationType in cache.relationTypeMap.values) {
+            val active = cache.activeRelationTypes.contains(relationType)
+            preferencesManager.setSelected(relationType.identifier, active)
+        }
+        preferencesManager.prefs.flush()
     }
 
     fun setActiveRelationsForPaths(paths: Array<TreePath>) {
@@ -154,6 +188,7 @@ class BGDataModelController(private val serviceManager: BGServiceManager) {
             set.add(leaf.relationType)
         }
         cache.activeRelationTypes = set
+        updateSelectedRelationPreferences()
         //return set
     }
 

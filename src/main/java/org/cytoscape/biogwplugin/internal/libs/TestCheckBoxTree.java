@@ -47,9 +47,9 @@ public class TestCheckBoxTree extends JFrame {
         DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
         MutableTreeNode node = cbt.find(root, "Sally");
         System.out.println(node.toString());
-        TreePath path = new TreePath(root.getPath());
-        cbt.checkSubTree(path, true);
-        cbt.fireCheckChangeEvent(new JCheckBoxTree.CheckChangeEvent(path));
+        //TreePath path = new TreePath(root.getPath());
+        //cbt.checkSubTree(path, true);
+        //cbt.fireCheckChangeEvent(new JCheckBoxTree.CheckChangeEvent(path));
     }
 
     public static void main(String args[]) {

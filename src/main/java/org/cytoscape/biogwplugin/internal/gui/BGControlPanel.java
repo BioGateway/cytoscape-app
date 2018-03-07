@@ -4,6 +4,7 @@ import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.biogwplugin.internal.libs.JCheckBoxTree;
 import org.cytoscape.biogwplugin.internal.BGServiceManager;
+import org.cytoscape.biogwplugin.internal.model.BGRelationType;
 
 
 import javax.swing.*;
@@ -12,6 +13,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import java.awt.*;
+import java.util.Enumeration;
+import java.util.prefs.Preferences;
 
 public class BGControlPanel extends JPanel implements CytoPanelComponent {
 
@@ -21,6 +24,7 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent {
     private JPanel mainPanel;
     private JComboBox comboBox1;
     private JPanel treePanel;
+    private JCheckBoxTree tree;
 
 
     public BGControlPanel(BGServiceManager serviceManager) {
@@ -30,11 +34,15 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent {
         setupTreePanel();
     }
 
+    private void setSelectionForNode(DefaultMutableTreeNode node) {
+
+    }
+
 
     public void setupTreePanel() {
         treePanel.removeAll();
         DefaultTreeModel model = serviceManager.getCache().getAvailableGraphs();
-        JCheckBoxTree tree = new JCheckBoxTree(model);
+        tree = new JCheckBoxTree(model);
         //tree.expandRow(0);
         tree.setRootVisible(false);
         tree.setShowsRootHandles(true);
@@ -50,42 +58,14 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent {
 
         // Set the selected nodes. Currently selects all.
         // TODO: Store this in a Preferences object and retrieve it.
-        DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
-        TreePath path = new TreePath(root.getPath());
-        tree.checkSubTree(path, true);
-        tree.fireCheckChangeEvent(new JCheckBoxTree.CheckChangeEvent(path));
+//        DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
+//        TreePath path = new TreePath(root.getPath());
+//        tree.checkSubTree(path, true);
+//
+         serviceManager.getDataModelController().setSelectionFromPreferences(tree);
+
 
     }
-
-
-
-    /*
-    System.out.println(event);
-                TreePath path = (TreePath) event.getSource();
-                System.out.println(path);
-                TreePath[] paths = cbt.getCheckedPaths();
-                for (TreePath tp : paths) {
-                    for (Object pathPart : tp.getPath()) {
-                        System.out.print(pathPart + ",");
-                    }
-                    System.out.println();
-                }
-
-     */
-
-   /*
-    private void addActionListenerToGraphCheckbox(JCheckBox box, String graph) {
-        box.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (box.isSelected()) {
-                    serviceManager.getDataModelController().addGraphFilter(graph);
-                } else {
-                    serviceManager.getDataModelController().removeGraphFilter(graph);
-                }
-            }
-        });
-    }*/
 
 // CytoPanel implementations:
 
