@@ -72,6 +72,19 @@ class BGDictEndpoint(internal var endpointUrl: String) {
         return ArrayList(suggestions)
     }
 
+    fun getSuggestionForURI(uri: String): Suggestion? {
+        val url = URL(endpointUrl + "fetch/?uri=" +URLEncoder.encode(uri, "UTF-8")).toURI()
+
+        val httpGet = HttpGet(url)
+        val response = client.execute(httpGet)
+        val statusCode = response.statusLine.statusCode
+        val data = EntityUtils.toString(response.entity)
+
+        val suggestion = gson.fromJson<Suggestion>(data)
+
+        return suggestion
+    }
+
     fun searchForLabel(term: String, type: String, limit: Int): ArrayList<Suggestion> {
 
         if (term.length == 0) {

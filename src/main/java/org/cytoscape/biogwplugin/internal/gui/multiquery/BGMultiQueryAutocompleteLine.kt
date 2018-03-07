@@ -34,11 +34,13 @@ class BGMultiQueryAutocompleteLine(val serviceManager: BGServiceManager, val rel
         return fromSearchBox.selectedUri
     } set(value) {
         fromSearchBox.selectedUri = value
+        fromSearchBox.getNameForSelectedURI()
     }
     var currentToUri: String? get() {
         return toSearchBox.selectedUri
     } set(value) {
         toSearchBox.selectedUri = value
+        toSearchBox.getNameForSelectedURI()
     }
 
     fun updateComboBoxColor(comboBox: JComboBox<BGColorableText>) {

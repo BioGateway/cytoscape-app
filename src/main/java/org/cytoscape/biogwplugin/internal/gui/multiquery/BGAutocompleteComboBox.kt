@@ -97,6 +97,15 @@ class BGAutocompleteComboBox(private val endpoint: BGDictEndpoint, private val t
 
     }
 
+    fun getNameForSelectedURI() {
+        val uri = selectedUri ?: return
+        val suggestion =  endpoint.getSuggestionForURI(uri)
+        suggestion?.let {
+            //selectSuggestion(suggestion)
+            searchBoxEditorComponent.text = suggestion.prefLabel
+        }
+    }
+
     private fun searchForTerm(term: String): ArrayList<Suggestion> {
 
         val type = typeSource() ?: return ArrayList()
