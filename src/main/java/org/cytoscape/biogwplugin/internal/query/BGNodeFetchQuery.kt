@@ -8,6 +8,7 @@ import java.io.InputStreamReader
 class BGNodeFetchMongoQuery(serviceManager: BGServiceManager, val nodeUri: String): BGQuery(serviceManager, BGReturnType.NODE_LIST_DESCRIPTION, true) {
 
     override fun generateQueryString(): String {
+
         return "{ \"returnType\": \"tsv\", \"uris\": [\"" + nodeUri + "\"] }"
     }
 }

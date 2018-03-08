@@ -56,15 +56,20 @@ class BGServiceManager {
     }
 
     var httpClient = HttpClients.createDefault()
-    val endpoint = BGDictEndpoint("http://localhost:3002/")
 
     var controlPanel: BGControlPanel? = null
-
     val visualStyleBuilder = BGVisualStyleBuilder(this)
 
     // These values will be updated by the settings in the config XML.
     var serverPath: String = Constants.SERVER_PATH
-    var dictionaryServerPath: String = Constants.DICTIONARY_SERVER_PATH
+    var dictionaryServerPath: String = ""
+        set(value) {
+        field = value
+        endpoint = BGDictEndpoint(value)
+    }
+
+    var endpoint = BGDictEndpoint(dictionaryServerPath)
+
 
     init {
         this.dataModelController = BGDataModelController(this)

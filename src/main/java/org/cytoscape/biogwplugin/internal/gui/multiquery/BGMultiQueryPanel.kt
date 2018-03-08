@@ -246,25 +246,28 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager, val constraintPane
             }
         }
 
-        val constraintHeader = "\n#QueryConstraints:\n"+constraintValues
-                .filter { it.value.isEnabled }
-                .map { "#Constraint: "+it.key.id+"="+it.value.stringValue+"\n"}
-                .reduce { acc, s -> acc+s }
 
-        var constraintQueryString = ""
+        if (constraintValues.count() > 0) {
+            val constraintHeader = "\n#QueryConstraints:\n" + constraintValues
+                    .filter { it.value.isEnabled }
+                    .map { "#Constraint: " + it.key.id + "=" + it.value.stringValue + "\n" }
+                    .fold("") { acc, s -> acc + s }
 
-        for (graph in constraintQueries.keys) {
+            var constraintQueryString = ""
 
-            val lines = constraintQueries[graph] ?: continue
+            for (graph in constraintQueries.keys) {
 
-            constraintQueryString += "\n" +
-                    "GRAPH <"+graph+"> { \n"
-            for (line in lines) {
-                constraintQueryString += line+"\n"
+                val lines = constraintQueries[graph] ?: continue
+
+                constraintQueryString += "\n" +
+                        "GRAPH <" + graph + "> { \n"
+                for (line in lines) {
+                    constraintQueryString += line + "\n"
+                }
+                constraintQueryString += "}\n"
             }
-            constraintQueryString += "}\n"
-        }
-        return constraintHeader+constraintQueryString
+            return constraintHeader + constraintQueryString
+        } else return ""
     }
 
     private fun getRDFURI(uri: String): String {
