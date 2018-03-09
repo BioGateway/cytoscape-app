@@ -54,15 +54,15 @@ class BGColorComboBoxRenderer(val comboBox: JComboBox<BGColorableText>): JPanel(
     }
 
 
-    override fun getListCellRendererComponent(list: JList<out BGColorableText>?, value: BGColorableText, index: Int, isSelected: Boolean, cellHasFocus: Boolean): Component {
+    override fun getListCellRendererComponent(list: JList<out BGColorableText>?, value: BGColorableText?, index: Int, isSelected: Boolean, cellHasFocus: Boolean): Component {
         if (isSelected) {
             background = list!!.selectionBackground
         } else {
             background = list!!.background
         }
         textLabel.background = background
-        textLabel.text = value.toString()
-        textLabel.foreground = value.textColor
+        textLabel.text = value?.toString()
+        textLabel.foreground = value?.textColor
 
         return textLabel
     }

@@ -387,7 +387,7 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
                 // Probably a pubmed id?
 
                 // TODO: THIS IS JUST A TEST. DO NOT USE!
-                val uri = nodeUri.replace("semantic-systems-biology.org", "biogateway.eu")
+                val uri = nodeUri.replace("semantic-systems-biology.org/", "semantic-systems-biology.org:8080/")
 
                 if (Desktop.isDesktopSupported()) {
                     Desktop.getDesktop().browse(URI(uri))
