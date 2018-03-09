@@ -758,7 +758,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                 val tableModel = view.resultTable.model as DefaultTableModel
                 tableModel.setColumnIdentifiers(data.columnNames)
 
-                BGLoadNodeDataFromBiogwDict.createAndRun(serviceManager, data.unloadedNodes, 100) {
+                BGLoadNodeDataFromBiogwDict.createAndRun(serviceManager, data.unloadedNodes, 500) {
                     setRelationTableData(data.relationsData)
                     view.tabPanel.selectedIndex = TAB_PANEL_RESULTS_INDEX // Open the result tab.
                     // Try the darnest to make the window appear on top!

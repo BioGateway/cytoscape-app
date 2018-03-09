@@ -49,22 +49,13 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent {
 
         treePanel.add(tree);
 
-        tree.addCheckChangeEventListener(new JCheckBoxTree.CheckChangeEventListener() {
-            public void checkStateChanged(JCheckBoxTree.CheckChangeEvent event) {
+        tree.addCheckChangeEventListener(event -> serviceManager.getDataModelController().setActiveRelationsForPaths(tree.getCheckedPaths()));
 
-                serviceManager.getDataModelController().setActiveRelationsForPaths(tree.getCheckedPaths());
-            }
-        });
+        serviceManager.getDataModelController().setSelectionFromPreferences(tree);
 
-        // Set the selected nodes. Currently selects all.
-        // TODO: Store this in a Preferences object and retrieve it.
-//        DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
-//        TreePath path = new TreePath(root.getPath());
-//        tree.checkSubTree(path, true);
-//
-         serviceManager.getDataModelController().setSelectionFromPreferences(tree);
-
-
+        DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
+        TreePath path = new TreePath(root.getPath());
+        tree.fireCheckChangeEvent(new JCheckBoxTree.CheckChangeEvent(path));
     }
 
 // CytoPanel implementations:
