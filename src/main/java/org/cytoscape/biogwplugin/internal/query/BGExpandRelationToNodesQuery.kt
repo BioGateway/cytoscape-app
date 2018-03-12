@@ -45,7 +45,7 @@ class BGExpandRelationToNodesQuery(serviceManager: BGServiceManager, val fromNod
                 "PREFIX has_agent: <http://semanticscience.org/resource/SIO_000139>\n"+
                 "SELECT DISTINCT ?ppi <intact> has_agent: ?node \n" +
                 "WHERE {\n" +
-                "FILTER (?count = 2)\n" +
+            //    "FILTER (?count = 2)\n" +
                 "GRAPH <intact> {\n" +
                 "?ppi has_agent: ?node . }\n" +
                 "{\n" +

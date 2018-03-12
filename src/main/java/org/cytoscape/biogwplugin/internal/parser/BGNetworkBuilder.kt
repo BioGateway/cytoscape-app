@@ -236,9 +236,9 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
         query.addCompletion {
             val data = it as BGReturnRelationsData
             val relation = data.relationsData.first()
-            if (!checkForExistingEdges(network.defaultEdgeTable, relation)) {
-                addRelationsToNetwork(network, arrayListOf(relation))
-            }
+
+            addRelationsToNetwork(network, data.relationsData)
+
             if (cyNodes != null) {
                  network.removeNodes(cyNodes)
             } else {
