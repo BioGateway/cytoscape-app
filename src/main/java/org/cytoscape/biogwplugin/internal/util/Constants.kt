@@ -22,6 +22,7 @@ object Constants {
     val SERVER_PATH = "http://www.semantic-systems-biology.org/biogateway/endpoint"
     val DICTIONARY_SERVER_PATH = "http://localhost:3002/"
     val BG_FIELD_SOURCE_GRAPH = "Source Graph"
+    val BG_FIELD_CONFIDENCE = "Confidence Value"
     val BG_LOAD_NODE_WARNING_LIMIT = 1000
     val BG_BULK_IMPORT_WARNING_LIMIT = 100
     val BG_FILE_EXTENSION = "bgwsparql"

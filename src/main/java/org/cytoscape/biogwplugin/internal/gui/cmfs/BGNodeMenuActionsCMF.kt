@@ -215,7 +215,7 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
                             iterator.remove()
                         }
                     }
-                    BGLoadUnloadedNodes.createAndRun(serviceManager, returnData.unloadedNodes) {
+                    BGLoadNodeDataFromBiogwDict.createAndRun(serviceManager, returnData.unloadedNodes, 200) {
                         serviceManager.dataModelController.networkBuilder.addRelationsToNetwork(network, relationsData)
                         Utility.reloadCurrentVisualStyleCurrentNetworkView(serviceManager)
                     }
@@ -254,7 +254,7 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
 
                         val columnNames = arrayOf("from node","relation type", "to node")
 
-                        BGLoadUnloadedNodes.createAndRun(serviceManager, returnData.unloadedNodes) {
+                        BGLoadNodeDataFromBiogwDict.createAndRun(serviceManager, returnData.unloadedNodes, 200) {
                             println("Loaded "+it.toString()+ " nodes.")
                             BGRelationSearchResultsController(serviceManager, returnData, columnNames, network)
                         }
@@ -332,7 +332,7 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
                 }
                 val columnNames = arrayOf("protein", "relation", "gene")
 
-                BGLoadUnloadedNodes.createAndRun(serviceManager, returnData.unloadedNodes) {
+                BGLoadNodeDataFromBiogwDict.createAndRun(serviceManager, returnData.unloadedNodes, 200) {
                     BGRelationSearchResultsController(serviceManager, returnData, columnNames, network)
                 }
             }).start()
@@ -351,7 +351,7 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
                 val returnData = it as? BGReturnRelationsData ?: throw Exception("Invalid return data!")
                 if (returnData.relationsData.isEmpty()) throw Exception("No relations found.")
                 val columnNames = arrayOf("Protein", "Relation", "Protein")
-                BGLoadUnloadedNodes.createAndRun(serviceManager, returnData.unloadedNodes) {
+                BGLoadNodeDataFromBiogwDict.createAndRun(serviceManager, returnData.unloadedNodes,200) {
                     BGRelationSearchResultsController(serviceManager, returnData, columnNames, network)
                 }
             }

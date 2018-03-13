@@ -47,7 +47,7 @@ abstract class BGCallableQuery(val serviceManager: BGServiceManager, var type: B
             val reader = BufferedReader(stringReader)
 
 
-            client.close()
+            //client.close()
             taskMonitor?.setTitle("Loading results...")
             when (parseType) {
                 BGParsingType.TO_ARRAY -> returnFuture.complete(parser.parseNodesToTextArray(reader, type))
@@ -71,7 +71,7 @@ abstract class BGCallableQuery(val serviceManager: BGServiceManager, var type: B
     }
 
     override fun cancel() {
-        client.close()
+        //client.close()
         serviceManager.dataModelController.parser.cancel()
         super.cancel()
         throw Exception("Cancelled.")

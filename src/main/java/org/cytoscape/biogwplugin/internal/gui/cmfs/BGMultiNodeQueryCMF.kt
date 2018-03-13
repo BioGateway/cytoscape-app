@@ -157,7 +157,7 @@ class BGMultiNodeQueryCMF(val gravity: Float, val serviceManager: BGServiceManag
                             return@async
                             //throw Exception("No relations found.")
                         }
-                        BGLoadUnloadedNodes.createAndRun(serviceManager, returnData.unloadedNodes) {
+                        BGLoadNodeDataFromBiogwDict.createAndRun(serviceManager, returnData.unloadedNodes, 300) {
                             println("Loaded "+it.toString()+ " nodes.")
                             BGRelationSearchResultsController(serviceManager, returnData, returnData.columnNames, network)
                         }
@@ -186,7 +186,7 @@ class BGMultiNodeQueryCMF(val gravity: Float, val serviceManager: BGServiceManag
             if (returnData != null) {
                 val network = netView.model
                 if (returnData.relationsData.size == 0) throw Exception("No relations found.")
-                BGLoadUnloadedNodes.createAndRun(serviceManager, returnData.unloadedNodes) {
+                BGLoadNodeDataFromBiogwDict.createAndRun(serviceManager, returnData.unloadedNodes, 300) {
                     println("Loaded "+it.toString()+ " nodes.")
                     BGRelationSearchResultsController(serviceManager, returnData, returnData.columnNames, network)
                 }

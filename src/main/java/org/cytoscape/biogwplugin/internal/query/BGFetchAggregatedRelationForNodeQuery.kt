@@ -31,19 +31,23 @@ class BGFetchAggregatedRelationForNodeQuery(serviceManager: BGServiceManager, va
     }
 }
 
-class BGFetchAggregatedPPIRelationForNodeQuery(serviceManager: BGServiceManager, val nodeUri: String): BGRelationQuery(serviceManager, BGReturnType.RELATION_TRIPLE_GRAPHURI) {
+class BGFetchAggregatedPPIRelationForNodeQuery(serviceManager: BGServiceManager, val nodeUri: String): BGRelationQuery(serviceManager, BGReturnType.RELATION_TRIPLE_CONFIDENCE) {
 
     override fun generateQueryString(): String {
 
         return "BASE <http://www.semantic-systems-biology.org/>\n" +
                 "PREFIX ppi: <"+nodeUri+">\n" +
                 "PREFIX has_agent: <http://semanticscience.org/resource/SIO_000139>\n" +
-                "SELECT DISTINCT ?a <intact> <http://purl.obolibrary.org/obo/RO_0002436> ?b \n" +
+                "SELECT DISTINCT ?a <intact> <http://purl.obolibrary.org/obo/RO_0002436> ?b ?confidence \n" +
                 "WHERE {  \n" +
                 "FILTER (?a != ?b)\n" +
                 " GRAPH <intact> {\n" +
                 "\t ppi: has_agent: ?a .\n" +
                 "\t ppi: has_agent: ?b .\n" +
+                "\t?meta rdf:subject ?a .\n" +
+                "\t?meta rdf:predicate <http://purl.obolibrary.org/obo/RO_0002436> .\n" +
+                "\t?meta rdf:object ?b .\n" +
+                "\t?meta rdfs:label ?confidence ." +
                 "}}"
     }
 

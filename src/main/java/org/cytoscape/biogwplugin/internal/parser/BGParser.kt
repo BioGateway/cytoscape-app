@@ -20,7 +20,8 @@ enum class BGReturnType(val paremeterCount: Int) {
     NODE_LIST_DESCRIPTION_TAXON(4),  // nodeUri, common_name, name, taxon
     RELATION_TRIPLE_GRAPHURI(4),         // nodeUri, graphUri, relationUri, nodeUri
     RELATION_TRIPLE_NAMED(6),    // nodeUri, common_name, relationUri, nodeUri, common_name
-    RELATION_TRIPLE_PUBMED(6),  // nodeUri, common_name, relationUri, nodeUri, common_name, pubmedUri
+    RELATION_TRIPLE_PUBMED(6),  // nodeUri, relationUri, nodeUri, pubmedUri
+    RELATION_TRIPLE_CONFIDENCE(5),  // nodeUri, graph, relationUri, nodeUri, confidence score
     RELATION_MULTIPART(0), // Arbitrary length. Only to be used with parsing that supports it.
     RELATION_MULTIPART_NAMED_DESCRIBED(0), // Same as above, but has names and description data for all returned nodes.
     RELATION_MULTIPART_FROM_NODE_NAMED_DESCRIBED(0), // Only has name and description data for the FROM nodes.
@@ -142,6 +143,30 @@ class BGParser(private val serviceManager: BGServiceManager) {
                 }
                 relationArray.add(relation)
 
+            } else if (returnType == BGReturnType.RELATION_TRIPLE_CONFIDENCE) {
+                val fromNodeUri = lineColumns[0].replace("\"", "")
+                val graphName = lineColumns[1].replace("\"", "")
+                val relationUri = lineColumns[2].replace("\"", "")
+                val toNodeUri = lineColumns[3].replace("\"", "")
+                val confidenceValue = lineColumns[4].replace("\"", "")
+
+                val fromNode = server.getNodeFromCacheOrNetworks(BGNode(fromNodeUri))
+                if (!fromNode.isLoaded) unloadedNodes.add(fromNode)
+                val toNode = server.getNodeFromCacheOrNetworks(BGNode(toNodeUri))
+                if (!toNode.isLoaded) unloadedNodes.add(toNode)
+
+                val relationType = server.cache.getRelationTypeForURIandGraph(relationUri, graphName) ?: BGRelationType(relationUri, relationUri, 0)
+                val relation = BGRelation(fromNode, relationType, toNode)
+                relation.metadata.confidence = confidenceValue.toDouble()
+                relationType.defaultGraphName?.let {
+                    relation.metadata.sourceGraph = it
+                }
+                val hash = relation.hashCode()
+                if (relationMap[hash] == null) {
+                    relationMap[hash] = relation
+                }
+                relationArray.add(relation)
+
             } else if (returnType == BGReturnType.RELATION_TRIPLE_NAMED) {
                 val fromNodeUri = lineColumns[0].replace("\"", "")
                 val fromNodeName = lineColumns[1].replace("\"", "")
@@ -159,35 +184,6 @@ class BGParser(private val serviceManager: BGServiceManager) {
                 // Note: Will ignore relation types it doesn't already know of.
                 if (relationType != null) {
                     val relation = BGRelation(fromNode, relationType, toNode)
-                    relationType.defaultGraphName?.let {
-                        relation.metadata.sourceGraph = it
-                    }
-                    val hash = relation.hashCode()
-                    if (relationMap[hash] == null) {
-                        relationMap[hash] = relation
-                    }
-                    relationArray.add(relation)
-                }
-            } else if (returnType == BGReturnType.RELATION_TRIPLE_PUBMED) {
-                val fromNodeUri = lineColumns[0].replace("\"", "")
-                val fromNodeName = lineColumns[1].replace("\"", "")
-                val relationUri = lineColumns[2].replace("\"", "")
-                val toNodeUri = lineColumns[3].replace("\"", "")
-                val toNodeName = lineColumns[4].replace("\"", "")
-                val pubmedUri = lineColumns[5].replace("\"", "")
-
-                val fromNode = server.getNodeFromCacheOrNetworks(BGNode(fromNodeUri))
-                if (!fromNode.isLoaded) unloadedNodes.add(fromNode)
-                val toNode = server.getNodeFromCacheOrNetworks(BGNode(toNodeUri))
-                if (!toNode.isLoaded) unloadedNodes.add(toNode)
-                fromNode.name = fromNodeName
-                toNode.name = toNodeName
-                val relationType = server.cache.relationTypeMap.get(relationUri)
-
-                // Note: Will ignore relation types it doesn't already know of.
-                if (relationType != null) {
-                    val relation = BGRelation(fromNode, relationType, toNode)
-                    relation.metadata.pubmedUris.add(pubmedUri)
                     relationType.defaultGraphName?.let {
                         relation.metadata.sourceGraph = it
                     }

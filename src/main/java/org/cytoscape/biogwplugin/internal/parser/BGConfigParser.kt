@@ -4,7 +4,7 @@ import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.model.*
 import org.cytoscape.biogwplugin.internal.query.BGQueryParameter
 import org.cytoscape.biogwplugin.internal.query.QueryTemplate
-import org.cytoscape.biogwplugin.internal.server.BGDataModelController
+import org.cytoscape.biogwplugin.internal.model.BGDataModelController
 import org.w3c.dom.Element
 import org.w3c.dom.Node
 import java.awt.Color

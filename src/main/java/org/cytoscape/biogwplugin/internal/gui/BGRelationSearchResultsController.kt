@@ -2,10 +2,12 @@ package org.cytoscape.biogwplugin.internal.gui
 
 import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.model.BGRelation
+import org.cytoscape.biogwplugin.internal.query.BGFetchConfidenceValues
 import org.cytoscape.biogwplugin.internal.query.BGReturnRelationsData
 import org.cytoscape.biogwplugin.internal.util.Constants
 import org.cytoscape.biogwplugin.internal.util.Utility
 import org.cytoscape.model.CyNetwork
+import org.cytoscape.work.TaskIterator
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import java.util.*
@@ -54,8 +56,21 @@ class BGRelationSearchResultsController(val serviceManager: BGServiceManager, pr
         for (row in view.resultTable.selectedRows) {
             relations.add(relationsFound[view.resultTable.convertRowIndexToModel(row)])
         }
-        serviceManager.dataModelController.networkBuilder.addRelationsToNetwork(network, relations)
-        Utility.reloadCurrentVisualStyleCurrentNetworkView(serviceManager)
+
+        val importConfidenceValues = true
+
+        if (importConfidenceValues) {
+            val searchRelations = relations.filter { it.relationType.identifier.equals("intact:http://purl.obolibrary.org/obo/RO_0002436") }
+            val query = BGFetchConfidenceValues(serviceManager, "Loading confidence values...", searchRelations)
+            query.completion = {
+                this.serviceManager.dataModelController.networkBuilder.addRelationsToNetwork(network, relations)
+                Utility.reloadCurrentVisualStyleCurrentNetworkView(this.serviceManager)
+            }
+            serviceManager.taskManager?.execute(TaskIterator(query))
+        } else {
+            serviceManager.dataModelController.networkBuilder.addRelationsToNetwork(network, relations)
+            Utility.reloadCurrentVisualStyleCurrentNetworkView(serviceManager)
+        }
     }
 
     private fun importBetweenExistingNodes() {
@@ -68,8 +83,22 @@ class BGRelationSearchResultsController(val serviceManager: BGServiceManager, pr
                 relations.add(result)
             }
         }
-        serviceManager.dataModelController.networkBuilder.addRelationsToNetwork(network, relations)
-        Utility.reloadCurrentVisualStyleCurrentNetworkView(serviceManager)
+
+        val importConfidenceValues = true
+
+        if (importConfidenceValues) {
+            val searchRelations = relations.filter { it.relationType.identifier.equals("intact:http://purl.obolibrary.org/obo/RO_0002436") }
+            val query = BGFetchConfidenceValues(serviceManager, "Loading confidence values...", searchRelations)
+            query.completion = {
+                this.serviceManager.dataModelController.networkBuilder.addRelationsToNetwork(network, relations)
+                Utility.reloadCurrentVisualStyleCurrentNetworkView(this.serviceManager)
+            }
+            serviceManager.taskManager?.execute(TaskIterator(query))
+        } else {
+
+            serviceManager.dataModelController.networkBuilder.addRelationsToNetwork(network, relations)
+            Utility.reloadCurrentVisualStyleCurrentNetworkView(serviceManager)
+        }
     }
 
     override fun actionPerformed(e: ActionEvent?) {

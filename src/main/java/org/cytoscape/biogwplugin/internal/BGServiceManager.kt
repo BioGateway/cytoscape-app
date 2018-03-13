@@ -5,7 +5,7 @@ import org.apache.http.impl.client.HttpClients
 import org.cytoscape.app.CyAppAdapter
 import org.cytoscape.application.CyApplicationManager
 import org.cytoscape.biogwplugin.internal.gui.BGControlPanel
-import org.cytoscape.biogwplugin.internal.server.BGDataModelController
+import org.cytoscape.biogwplugin.internal.model.BGDataModelController
 import org.cytoscape.biogwplugin.internal.util.BGVisualStyleBuilder
 import org.cytoscape.biogwplugin.internal.util.Constants
 import org.cytoscape.event.CyEventHelper

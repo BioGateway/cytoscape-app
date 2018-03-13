@@ -9,7 +9,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.biogwplugin.internal.gui.*;
 import org.cytoscape.biogwplugin.internal.gui.cmfs.*;
-import org.cytoscape.biogwplugin.internal.server.BGDataModelController;
+import org.cytoscape.biogwplugin.internal.model.BGDataModelController;
 import org.cytoscape.biogwplugin.internal.util.Utility;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.*;

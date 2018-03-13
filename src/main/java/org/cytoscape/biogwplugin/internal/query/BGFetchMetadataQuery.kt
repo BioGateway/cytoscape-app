@@ -4,13 +4,12 @@ import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.parser.BGReturnType
 
 
-
 enum class BGMetadataType(val uri: String) {
-    PUBMED_ID("http://semanticscience.org/resource/SIO_000253"),
-    EVIDENCE_CODE("http://www.w3.org/2004/02/skos/core#relatedMatch"),
-    CONFIDENCE_VALUE(""),
+    PUBMED_ID("<http://semanticscience.org/resource/SIO_000253>"),
+    EVIDENCE_CODE("<http://www.w3.org/2004/02/skos/core#relatedMatch>"),
+    CONFIDENCE_VALUE("rdfs:label"),
     FNL_VALUE(""),
-    SOURCE("")
+    SOURCE("<http://semanticscience.org/resource/SIO_000253>")
 }
 
 class BGFetchMetadataQuery(serviceManager: BGServiceManager, val fromNodeUri: String, val relationUri: String, val toNodeUri: String, val graph: String, val metadataType: BGMetadataType): BGCallableQuery(serviceManager, BGReturnType.METADATA_FIELD) {
@@ -24,7 +23,7 @@ class BGFetchMetadataQuery(serviceManager: BGServiceManager, val fromNodeUri: St
                 "?triple rdf:subject <"+fromNodeUri+"> .  \n" +
                 "?triple rdf:predicate <"+relationUri+"> .  \n" +
                 "?triple rdf:object <"+toNodeUri+"> . \n" +
-                "?triple <"+metadataType.uri+"> ?metadata .\n" +
+                "?triple "+metadataType.uri+" ?metadata .\n" +
                 "}}"}
 
     init {

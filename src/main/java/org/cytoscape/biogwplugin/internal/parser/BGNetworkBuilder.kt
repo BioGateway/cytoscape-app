@@ -70,14 +70,6 @@ fun CyNode.getParentEdgeId(network: CyNetwork): String {
     return network.defaultNodeTable.getRow(this.suid).get(Constants.BG_FIELD_NODE_PARENT_EDGE_ID, String::class.java)
 }
 
-fun CyEdge.setExpandable(expandable: Boolean, network: CyNetwork) {
-    network.defaultEdgeTable.getRow(this.suid).set(Constants.BG_FIELD_EDGE_EXPANDABLE, if (expandable) "true" else "false")
-}
-
-fun CyEdge.getExpandable(network: CyNetwork): Boolean {
-    return (network.defaultEdgeTable.getRow(this.suid).get(Constants.BG_FIELD_EDGE_EXPANDABLE, String::class.java) == "true")
-}
-
 fun CyEdge.getId(network: CyNetwork): String {
     return network.defaultEdgeTable.getRow(this.suid).get(Constants.BG_FIELD_EDGE_ID, String::class.java)
 }
@@ -355,16 +347,19 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
 
     private fun checkForMissingColumns(edgeTable: CyTable?, nodeTable: CyTable?) {
 
-        // Node table
-        if (nodeTable?.getColumn(Constants.BG_FIELD_IDENTIFIER_URI) == null) nodeTable?.createColumn(Constants.BG_FIELD_IDENTIFIER_URI, String::class.java, false)
-        if (nodeTable?.getColumn(Constants.BG_FIELD_NODE_TYPE) == null) nodeTable?.createColumn(Constants.BG_FIELD_NODE_TYPE, String::class.java, false)
-        if (nodeTable?.getColumn(Constants.BG_FIELD_NODE_PARENT_EDGE_ID) == null) nodeTable?.createColumn(Constants.BG_FIELD_NODE_PARENT_EDGE_ID, String::class.java, false)
+        BGNetworkTableCreator.checkForMissingColumns(edgeTable, nodeTable)
 
-        // Edge table
-        if (edgeTable?.getColumn(Constants.BG_FIELD_IDENTIFIER_URI) == null) edgeTable?.createColumn(Constants.BG_FIELD_IDENTIFIER_URI, String::class.java, false)
-        if (edgeTable?.getColumn(Constants.BG_FIELD_SOURCE_GRAPH) == null) edgeTable?.createColumn(Constants.BG_FIELD_SOURCE_GRAPH, String::class.java, false)
-        if (edgeTable?.getColumn(Constants.BG_FIELD_EDGE_ID) == null) edgeTable?.createColumn(Constants.BG_FIELD_EDGE_ID, String::class.java, false)
-        if (edgeTable?.getColumn(Constants.BG_FIELD_EDGE_EXPANDABLE) == null) edgeTable?.createColumn(Constants.BG_FIELD_EDGE_EXPANDABLE, String::class.java, false)
+//        // Node table
+//        if (nodeTable?.getColumn(Constants.BG_FIELD_IDENTIFIER_URI) == null) nodeTable?.createColumn(Constants.BG_FIELD_IDENTIFIER_URI, String::class.java, false)
+//        if (nodeTable?.getColumn(Constants.BG_FIELD_NODE_TYPE) == null) nodeTable?.createColumn(Constants.BG_FIELD_NODE_TYPE, String::class.java, false)
+//        if (nodeTable?.getColumn(Constants.BG_FIELD_NODE_PARENT_EDGE_ID) == null) nodeTable?.createColumn(Constants.BG_FIELD_NODE_PARENT_EDGE_ID, String::class.java, false)
+//
+//        // Edge table
+//        if (edgeTable?.getColumn(Constants.BG_FIELD_IDENTIFIER_URI) == null) edgeTable?.createColumn(Constants.BG_FIELD_IDENTIFIER_URI, String::class.java, false)
+//        if (edgeTable?.getColumn(Constants.BG_FIELD_SOURCE_GRAPH) == null) edgeTable?.createColumn(Constants.BG_FIELD_SOURCE_GRAPH, String::class.java, false)
+//        if (edgeTable?.getColumn(Constants.BG_FIELD_CONFIDENCE) == null) edgeTable?.createColumn(Constants.BG_FIELD_CONFIDENCE, Double::class.javaObjectType, false)
+//        if (edgeTable?.getColumn(Constants.BG_FIELD_EDGE_ID) == null) edgeTable?.createColumn(Constants.BG_FIELD_EDGE_ID, String::class.java, false)
+//        if (edgeTable?.getColumn(Constants.BG_FIELD_EDGE_EXPANDABLE) == null) edgeTable?.createColumn(Constants.BG_FIELD_EDGE_EXPANDABLE, String::class.java, false)
     }
 
     fun addBGNodesToNetwork(nodes: Collection<BGNode>, network: CyNetwork) {
@@ -416,6 +411,12 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
             val fromNode = cyNodes.get(relation.fromNode.uri) ?: throw Exception("CyNode not found!")
             val toNode = cyNodes.get(relation.toNode.uri) ?: throw Exception("CyNode not found!")
             if (!checkForExistingEdges(edgeTable, relation)) {
+//                if (relation.relationType.identifier == "intact:http://purl.obolibrary.org/obo/RO_0002436") {
+//                    serviceManager.dataModelController.getConfidenceScoreForRelation(relation)?.let {
+//                        println(it)
+//                        relation.metadata.confidence = it
+//                    }
+//                }
                 val edge = addEdgeToNetwork(fromNode, toNode, network, edgeTable, relation.relationType, relation.edgeIdentifier, relation.metadata)
             } else {
                 println("WARNING: Duplicate edges!")
@@ -433,17 +434,18 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
 
     private fun checkForExistingEdges(edgeTable: CyTable, relation: BGRelation): Boolean {
         // If undirected, first check for edges the other way.
+        var reverseExists = false
         if (!relation.relationType.directed) {
-            return checkForExistingEdges(edgeTable, relation.reverseEdgeIdentifier)
+            reverseExists = checkForExistingEdges(edgeTable, relation.reverseEdgeIdentifier)
         }
-        return checkForExistingEdges(edgeTable, relation.edgeIdentifier)
+        return checkForExistingEdges(edgeTable, relation.edgeIdentifier) || reverseExists
     }
 
     fun addEdgeToNetwork(network: CyNetwork, edgeId: String) {
         val components = edgeId.split(";")
         if (components.size != 3) throw Exception("Invalid number of EdgeId components!")
         val fromUri = components[0]
-        val relationComponents = components[1].split(":")
+        val relationComponents = components[1].split("::")
         val graph = if (relationComponents.size == 2) relationComponents[1] else null
         val relationUri = relationComponents[1]
         val toUri = components[2]
@@ -482,6 +484,9 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
             edgeTable.getRow(edge.suid).set(Constants.BG_FIELD_EDGE_EXPANDABLE, if (relationType.expandable) "true" else "false")
             if (metadata.sourceGraph != null) {
                 edgeTable.getRow(edge.suid).set(Constants.BG_FIELD_SOURCE_GRAPH, metadata.sourceGraph)
+            }
+            if (metadata.confidence != null) {
+                edgeTable.getRow(edge.suid).set(Constants.BG_FIELD_CONFIDENCE, metadata.confidence)
             }
             return edge
         }

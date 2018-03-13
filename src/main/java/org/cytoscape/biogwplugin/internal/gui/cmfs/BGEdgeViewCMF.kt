@@ -23,6 +23,7 @@ class BGEdgeViewCMF(val gravity: Float, val serviceManager: BGServiceManager): C
         return CyMenuItem(createChangeEdgeTypeMenu(netView, edgeView), gravity)
     }
 
+    @Deprecated("This should not be allowed anymore.")
     fun createChangeEdgeTypeMenu(netView: CyNetworkView?, edgeView: View<CyEdge>?): JMenuItem {
         val parentMenu = JMenu("Change to...")
         val edgeSuid = edgeView?.model?.suid

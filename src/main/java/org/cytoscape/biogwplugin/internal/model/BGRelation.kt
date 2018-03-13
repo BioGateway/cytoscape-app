@@ -4,9 +4,9 @@ class BGRelation(var fromNode: BGNode, val relationType: BGRelationType, var toN
 
     val metadata = BGRelationMetadata(relationType.uri)
     val edgeIdentifier: String
-        get() = fromNode.uri+";"+relationType.identifier+";"+toNode.uri
+        get() = fromNode.uri+"::"+relationType.identifier+"::"+toNode.uri
     val reverseEdgeIdentifier: String
-        get() = toNode.uri+";"+relationType.identifier+";"+fromNode.uri
+        get() = toNode.uri+"::"+relationType.identifier+"::"+fromNode.uri
 
     // Extra data field for helping sorting the relations in the result view.
     var extraTableData = ArrayList<Any>()
@@ -40,5 +40,5 @@ class BGRelationMetadata(val relationTypeUri: String) {
     var source: String? = null
     var pubmedUris = HashSet<String>()
     var evidenceCode: String? = null
-    val confidence: Double? = null
+    var confidence: Double? = null
 }
