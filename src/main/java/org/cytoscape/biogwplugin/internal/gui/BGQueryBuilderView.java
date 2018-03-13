@@ -435,7 +435,7 @@ public class BGQueryBuilderView implements ChangeListener {
         return bulkImportResultTable;
     }
 
-    public JPanel getQueryConstraintsPanel() {
+    public BGQueryConstraintPanel getQueryConstraintsPanel() {
         return queryConstraintsPanel;
     }
 

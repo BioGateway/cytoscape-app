@@ -6,6 +6,8 @@ import java.awt.TextField
 import java.util.ArrayList
 import javax.swing.*
 
+class InvalidInputValueException(override var message: String): Exception(message)
+
 class BGQueryConstraintPanel(val constraints: HashMap<String, BGQueryConstraint>): JPanel() {
 
     class ConstraintUIComponent(val constraint: BGQueryConstraint, val component: JComponent, val checkBox: JCheckBox)
@@ -58,12 +60,37 @@ class BGQueryConstraintPanel(val constraints: HashMap<String, BGQueryConstraint>
 
     }
 
+    fun validateConstraints(): String? {
+        constraintUIComponents.filter { it.checkBox.isSelected }
+                .forEach {
+                    when (it.constraint.inputType) {
+                        BGQueryConstraint.InputType.COMBOBOX -> {
+
+                        }
+                        BGQueryConstraint.InputType.NUMBER -> {
+                            val textField = it.component as? JTextField ?: throw Exception()
+                            try {
+                                val number = textField.text.toDouble()
+                            } catch (exception: NumberFormatException) {
+                                return "The "+it.constraint.label+" constraint is enabled, but isn't a valid number!"
+                            }
+                        }
+                        BGQueryConstraint.InputType.TEXT -> {
+                            val textField = it.component as? JTextField ?: throw Exception()
+                            if (textField.text.length == 0) return "The "+it.constraint.label+" constraint is enabled, but no value is set!"
+                        }
+                    }
+                }
+        return null
+    }
+
     fun getConstraintValues(): HashMap<BGQueryConstraint, ConstraintValue> {
 
         val values = HashMap<BGQueryConstraint, ConstraintValue>()
 
         for (constraintComponent in constraintUIComponents) {
             val type = constraintComponent.constraint.inputType
+            val enabled = constraintComponent.checkBox.isSelected
 
             val inputValue: String = when (type) {
                 BGQueryConstraint.InputType.COMBOBOX -> {
@@ -78,11 +105,14 @@ class BGQueryConstraintPanel(val constraints: HashMap<String, BGQueryConstraint>
                 }
                 BGQueryConstraint.InputType.TEXT -> {
                     val textField = constraintComponent.component as? JTextField ?: throw Exception()
-                    "\""+textField.text+"\""
+                    val text = textField.text
+                    if (text.length == 0 && enabled) {
+                        throw InvalidInputValueException("The "+constraintComponent.constraint.label+" constraint is enabled, but no value is set!")
+                    }
+                    "\""+text+"\""
                 }
             }
 
-            val enabled = constraintComponent.checkBox.isSelected
             values[constraintComponent.constraint] = ConstraintValue(inputValue, enabled)
         }
         return values

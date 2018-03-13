@@ -9,6 +9,7 @@ import org.cytoscape.biogwplugin.internal.parser.BGSPARQLParser
 import org.cytoscape.biogwplugin.internal.util.Constants
 import org.cytoscape.biogwplugin.internal.util.Utility
 import java.awt.FlowLayout
+import java.awt.image.ImageObserver
 import javax.swing.*
 
 
@@ -207,6 +208,7 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager, val constraintPane
         return Triple(returnValues, graphQueries, constraints)
     }
 
+
     private fun generateConstraintQueries(triples: Collection<Triple<String, BGRelationType, String>>): String {
 
         // Graphs are key, then all the queries on the graphs.
@@ -218,7 +220,8 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager, val constraintPane
             constraintQueries[key]?.add(sparql)
         }
 
-        val constraintValues = constraintPanel.getConstraintValues()
+        try {
+            val constraintValues = constraintPanel.getConstraintValues()
 
         for ((constraint, value) in constraintValues) {
             // Skip this if it's disabled.
@@ -268,6 +271,10 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager, val constraintPane
             }
             return constraintHeader + constraintQueryString
         } else return ""
+        } catch (exception: InvalidInputValueException) {
+            JOptionPane.showMessageDialog(this, exception.message, "Invalid query constraints", JOptionPane.ERROR_MESSAGE)
+            return ""
+        }
     }
 
     private fun getRDFURI(uri: String): String {
