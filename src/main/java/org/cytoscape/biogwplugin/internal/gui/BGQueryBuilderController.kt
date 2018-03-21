@@ -115,7 +115,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
     }
 
     private var preferences = Preferences.userRoot().node(javaClass.name)
-
+    private val importConfidenceValues = true
     private val view: BGQueryBuilderView
 
     //private var relationList = ArrayList<BGRelation>()
@@ -313,6 +313,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         val nodes = HashMap<String, BGNode>()
         val relations = ArrayList<BGRelation>()
 //        val model = view.resultTable.model as DefaultTableModel
+
         for (rowNumber in view.resultTable.selectedRows) {
 
             val resultRow = currentResultsInTable[view.resultTable.convertRowIndexToModel(rowNumber)]
@@ -342,26 +343,37 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
             shouldCreateNetworkView = true
         }
 
-        when (returnType) {
-            BGReturnType.NODE_LIST, BGReturnType.NODE_LIST_DESCRIPTION, BGReturnType.NODE_LIST_DESCRIPTION_TAXON -> {
-                server.networkBuilder.addBGNodesToNetwork(nodes.values, network)
+        fun buildNetwork() {
+            when (returnType) {
+                BGReturnType.NODE_LIST, BGReturnType.NODE_LIST_DESCRIPTION, BGReturnType.NODE_LIST_DESCRIPTION_TAXON -> {
+                    server.networkBuilder.addBGNodesToNetwork(nodes.values, network)
+                }
+                BGReturnType.RELATION_TRIPLE_GRAPHURI, BGReturnType.RELATION_TRIPLE_NAMED, BGReturnType.RELATION_MULTIPART -> {
+                    server.networkBuilder.addRelationsToNetwork(network, relations)
+                }
+                else -> {
+                }
             }
-            BGReturnType.RELATION_TRIPLE_GRAPHURI, BGReturnType.RELATION_TRIPLE_NAMED, BGReturnType.RELATION_MULTIPART -> {
-                server.networkBuilder.addRelationsToNetwork(network, relations)
-            }
-            else -> {
+
+            if (shouldCreateNetworkView) {
+                serviceManager.networkManager?.addNetwork(network)
+                EventQueue.invokeLater {
+                    server.networkBuilder.createNetworkView(network, serviceManager)
+                }
+            } else {
+                Utility.reloadCurrentVisualStyleCurrentNetworkView(serviceManager)
             }
         }
 
-        if (shouldCreateNetworkView) {
-            serviceManager.networkManager?.addNetwork(network)
-            EventQueue.invokeLater {
-                network?.let {
-                    server.networkBuilder.createNetworkView(it, serviceManager)
-                }
+        if (importConfidenceValues) {
+            val searchRelations = relations.filter { it.relationType.identifier.equals("intact:http://purl.obolibrary.org/obo/RO_0002436") }
+            val query = BGFetchConfidenceValues(serviceManager, "Loading confidence values...", searchRelations)
+            query.completion = {
+                buildNetwork()
             }
+            serviceManager.taskManager?.execute(TaskIterator(query))
         } else {
-            Utility.reloadCurrentVisualStyleCurrentNetworkView(serviceManager)
+            buildNetwork()
         }
     }
 

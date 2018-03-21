@@ -220,8 +220,28 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager, val constraintPane
             constraintQueries[key]?.add(sparql)
         }
 
+        val usedVariables = variableManager.usedVariables.values.toHashSet().map { "?"+it }.toTypedArray()
+
+        var uniqueVariablesFilter = ""
+
+        for (i in 0..(usedVariables.size-1)) {
+            for (j in i..(usedVariables.size-1)) {
+                if (j == i) continue
+                uniqueVariablesFilter += "\n FILTER("+usedVariables[i]+"!="+usedVariables[j]+")"
+            }
+        }
+
+//        for (variable in usedVariables) {
+//            for (otherVar in usedVariables) {
+//                if (variable.equals(otherVar)) continue
+//                uniqueVariablesFilter += "\n FILTER("+variable+"!="+otherVar+")"
+//            }
+//        }
+
         try {
             val constraintValues = constraintPanel.getConstraintValues()
+
+            var uniqueIdNumber = 1
 
         for ((constraint, value) in constraintValues) {
             // Skip this if it's disabled.
@@ -234,6 +254,8 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager, val constraintPane
                             .replace("@first", triple.first)
                             .replace("@last", triple.third)
                             .replace("@value", value.stringValue)
+                            .replace("@uniqueId", uniqueIdNumber.toString())
+                    uniqueIdNumber++
 
                     if (action.parameter == BGQueryConstraint.ActionParameter.FIRST && triple.first.startsWith("?")) {
                         addToQueries(action.graph, sparql)
@@ -256,7 +278,7 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager, val constraintPane
                     .map { "#Constraint: " + it.key.id + "=" + it.value.stringValue + "\n" }
                     .fold("") { acc, s -> acc + s }
 
-            var constraintQueryString = ""
+            var constraintQueryString = uniqueVariablesFilter+"\n\n"
 
             for (graph in constraintQueries.keys) {
 
@@ -270,10 +292,10 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager, val constraintPane
                 constraintQueryString += "}\n"
             }
             return constraintHeader + constraintQueryString
-        } else return ""
+        } else return uniqueVariablesFilter
         } catch (exception: InvalidInputValueException) {
             JOptionPane.showMessageDialog(this, exception.message, "Invalid query constraints", JOptionPane.ERROR_MESSAGE)
-            return ""
+            return uniqueVariablesFilter
         }
     }
 

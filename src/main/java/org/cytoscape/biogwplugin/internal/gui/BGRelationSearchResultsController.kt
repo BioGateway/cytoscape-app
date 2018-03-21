@@ -16,6 +16,7 @@ import javax.swing.table.DefaultTableModel
 class BGRelationSearchResultsController(val serviceManager: BGServiceManager, private val returnData: BGReturnRelationsData, val columnNames: Array<String>, val network: CyNetwork) : ActionListener, BGRelationResultViewTooltipDataSource {
 
     private val relationsFound = returnData.relationsData
+    val importConfidenceValues = true
 
     override fun getTooltipForResultRowAndColumn(row: Int, column: Int): String? {
         val modelRow = view.resultTable.convertRowIndexToModel(row)
@@ -57,7 +58,6 @@ class BGRelationSearchResultsController(val serviceManager: BGServiceManager, pr
             relations.add(relationsFound[view.resultTable.convertRowIndexToModel(row)])
         }
 
-        val importConfidenceValues = true
 
         if (importConfidenceValues) {
             val searchRelations = relations.filter { it.relationType.identifier.equals("intact:http://purl.obolibrary.org/obo/RO_0002436") }
@@ -83,8 +83,6 @@ class BGRelationSearchResultsController(val serviceManager: BGServiceManager, pr
                 relations.add(result)
             }
         }
-
-        val importConfidenceValues = true
 
         if (importConfidenceValues) {
             val searchRelations = relations.filter { it.relationType.identifier.equals("intact:http://purl.obolibrary.org/obo/RO_0002436") }
