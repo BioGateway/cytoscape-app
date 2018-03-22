@@ -55,6 +55,8 @@ class BGDataModelController(private val serviceManager: BGServiceManager) {
 
 
         var queryConstraints = HashMap<String, BGQueryConstraint>()
+        var metadataTypes = HashMap<String, BGRelationMetadataType>()
+
         var availableGraphs: DefaultTreeModel = DefaultTreeModel(DefaultMutableTreeNode("Graphs"))
 
         // A cache of BGNodes, which are a local representation of the node found on the dataModelController.
@@ -63,6 +65,7 @@ class BGDataModelController(private val serviceManager: BGServiceManager) {
 
         var relationTypeMap = HashMap<String, BGRelationType>()
         var relationTypesForGraphs = HashMap<String, HashMap<String, BGRelationType>>()
+
 
         //var activeGraphs = arrayOf("intact", "tf-tg", "goa", "refprot").toHashSet()
 
@@ -128,6 +131,7 @@ class BGDataModelController(private val serviceManager: BGServiceManager) {
         fun getRelationsForName(name: String): Collection<BGRelationType> {
             return relationTypeMap.filter { it.value.name == name }.map { it.value }.toList()
         }
+
     }
 
     val cache: BGCache

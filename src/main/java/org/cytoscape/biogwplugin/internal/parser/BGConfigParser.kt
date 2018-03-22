@@ -62,6 +62,40 @@ object BGConfigParser {
                 }
             }
 
+            // Parsing RelationMetadataTypes
+
+            val relationMetadataNode = (doc.getElementsByTagName("relationMetadata").item(0) as? Element) ?: throw Exception("relationMetadata element not found in XML file!")
+            val relationMetadataList = relationMetadataNode.getElementsByTagName("metadataType")
+
+            for (index in 0..relationMetadataList.length-1) {
+                val metadataElement = relationMetadataList.item(index) as? Element ?: continue
+                val id = metadataElement.getAttribute("id") ?: continue
+                val label = metadataElement.getAttribute("label") ?: continue
+                val relationUri = metadataElement.getAttribute("relationUri") ?: continue
+                val typeName = metadataElement.getAttribute("dataType") ?: continue
+
+                val dataType = when (typeName) {
+                    "text" -> BGRelationMetadataType.DataType.STRING
+                    "number" -> BGRelationMetadataType.DataType.NUMBER
+                    else -> null } ?: continue
+
+                val relationTypes = ArrayList<BGRelationType>()
+
+                val relationTypeList = metadataElement.getElementsByTagName("relationType")
+                for (j in 0..relationTypeList.length-1) {
+                    val rtElement = relationTypeList.item(j) as? Element ?: continue
+                    val rtGraph = rtElement.getAttribute("graph") ?: continue
+                    val rtUri = rtElement.textContent
+                    val relationType = cache.getRelationTypeForURIandGraph(rtUri, rtGraph) ?: continue
+                    relationTypes.add(relationType)
+                }
+
+                val metadataType = BGRelationMetadataType(id, label, dataType, relationUri, relationTypes)
+
+                cache.metadataTypes.put(metadataType.id, metadataType)
+            }
+
+
             // Parse conversions
 
             fun parseConversionElement(type: BGConversion.ConversionType, element: Element): BGConversion? {
