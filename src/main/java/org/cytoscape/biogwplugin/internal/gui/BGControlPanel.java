@@ -4,7 +4,6 @@ import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.biogwplugin.internal.libs.JCheckBoxTree;
 import org.cytoscape.biogwplugin.internal.BGServiceManager;
-import org.cytoscape.biogwplugin.internal.model.BGRelationType;
 
 
 import javax.swing.*;
@@ -13,8 +12,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import java.awt.*;
-import java.util.Enumeration;
-import java.util.prefs.Preferences;
 
 public class BGControlPanel extends JPanel implements CytoPanelComponent {
 
@@ -41,7 +38,7 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent {
 
     public void setupTreePanel() {
         treePanel.removeAll();
-        DefaultTreeModel model = serviceManager.getCache().getAvailableGraphs();
+        DefaultTreeModel model = serviceManager.getCache().getConfigPanelTreeModel();
         tree = new JCheckBoxTree(model);
         //tree.expandRow(0);
         tree.setRootVisible(false);

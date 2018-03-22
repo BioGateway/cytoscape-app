@@ -19,6 +19,7 @@ import javax.swing.tree.MutableTreeNode
 import javax.swing.tree.TreePath
 
 class RelationTypeTreeNode(val relationType: BGRelationType): DefaultMutableTreeNode(relationType.name)
+class MetadataTypeTreeNode(val metadataType: BGRelationMetadataType): DefaultMutableTreeNode(metadataType.name)
 
 
 class BGDataModelController(private val serviceManager: BGServiceManager) {
@@ -27,12 +28,12 @@ class BGDataModelController(private val serviceManager: BGServiceManager) {
 
         var prefs = Preferences.userRoot().node("org.cytoscape.biogwplugin.PreferencesManager")
 
-        fun setSelected(path: String, selected: Boolean) {
-            prefs.putBoolean(path, selected)
+        fun setSelected(path: String, identifier: String, selected: Boolean) {
+            prefs.putBoolean(path+":"+identifier, selected)
         }
 
-        fun getSelected(path: String): Boolean {
-            return prefs.getBoolean(path, false)
+        fun getSelected(path: String, identifier: String): Boolean {
+            return prefs.getBoolean(path+":"+identifier, false)
         }
     }
 
@@ -57,7 +58,11 @@ class BGDataModelController(private val serviceManager: BGServiceManager) {
         var queryConstraints = HashMap<String, BGQueryConstraint>()
         var metadataTypes = HashMap<String, BGRelationMetadataType>()
 
-        var availableGraphs: DefaultTreeModel = DefaultTreeModel(DefaultMutableTreeNode("Graphs"))
+        var relationMetadataTypesNode = DefaultMutableTreeNode("Metadata Types")
+        var relationTypesRootNode = DefaultMutableTreeNode("Graphs")
+        var configPanelRootNode = DefaultMutableTreeNode("Root")
+        var configPanelTreeModel: DefaultTreeModel = DefaultTreeModel(configPanelRootNode)
+
 
         // A cache of BGNodes, which are a local representation of the node found on the dataModelController.
         // Note that this cache is independent of the CyNodes and CyNetworks.
@@ -67,16 +72,23 @@ class BGDataModelController(private val serviceManager: BGServiceManager) {
         var relationTypesForGraphs = HashMap<String, HashMap<String, BGRelationType>>()
 
 
-        //var activeGraphs = arrayOf("intact", "tf-tg", "goa", "refprot").toHashSet()
+        //var relationTypesRootNode = arrayOf("intact", "tf-tg", "goa", "refprot").toHashSet()
 
         var activeRelationTypes = HashSet<BGRelationType>()
+        var activeMetadataTypes = HashSet<BGRelationMetadataType>()
 
         val filteredRelationTypeMap: Map<String, BGRelationType> get() {
             return relationTypeMap.filter { activeRelationTypes.contains(it.value) }
         }
 
+        init {
+            configPanelRootNode.add(relationTypesRootNode)
+            configPanelRootNode.add(relationMetadataTypesNode)
+        }
+
+        @Deprecated("Too specific.")
         fun addGraphToModel(graph: DefaultMutableTreeNode) {
-            val root = availableGraphs.root as DefaultMutableTreeNode
+            val root = configPanelTreeModel.root as DefaultMutableTreeNode
            root.insert(graph, root.childCount)
         }
 
@@ -147,52 +159,67 @@ class BGDataModelController(private val serviceManager: BGServiceManager) {
     }
 
     fun createGraphTreeRootnode() {
-
         for (graph in cache.relationTypesForGraphs.keys) {
-            val graphNode = DefaultMutableTreeNode(graph)
+            val graphNode = if (graph.isNotBlank()) DefaultMutableTreeNode(graph) else DefaultMutableTreeNode("Unspecified")
             cache.relationTypesForGraphs[graph]?.let {
                 for (child in it.values) {
                     val childNode = RelationTypeTreeNode(child)
-                    graphNode.insert(childNode, graphNode.childCount)
+                    graphNode.add(childNode)
                 }
             }
-            cache.addGraphToModel(graphNode)
+            cache.relationTypesRootNode.add(graphNode)
+        }
+
+        for (metadata in cache.metadataTypes.values) {
+            val node = MetadataTypeTreeNode(metadata)
+            cache.relationMetadataTypesNode.add(node)
         }
     }
 
     fun setSelectionFromPreferences(tree: JCheckBoxTree) {
-        val model = serviceManager.cache.availableGraphs
-        val root = model.root as DefaultMutableTreeNode
-        val enumeration = root.depthFirstEnumeration()
-        for (node in enumeration) {
+
+        for (node in cache.relationTypesRootNode.depthFirstEnumeration()) {
             if (!(node is RelationTypeTreeNode)) continue
-            val type = node.relationType
-            val active = preferencesManager.getSelected(type.identifier)
-            if (active) {
+            if (preferencesManager.getSelected("activeRelationTypes", node.relationType.identifier)) {
+                tree.checkNode(node, true)
+            }
+        }
+
+        for (node in cache.relationMetadataTypesNode.depthFirstEnumeration()) {
+            if (!(node is MetadataTypeTreeNode)) continue
+            if (preferencesManager.getSelected("activeMetadataTypes", node.metadataType.id)) {
                 tree.checkNode(node, true)
             }
         }
         tree.repaint()
-//        val rootPath = TreePath(root.path)
-        //tree.fireCheckChangeEvent(JCheckBoxTree.CheckChangeEvent(rootPath))
     }
 
-    private fun updateSelectedRelationPreferences() {
+    private fun updateSelectedConfigTreePreferences() {
         for (relationType in cache.relationTypeMap.values) {
             val active = cache.activeRelationTypes.contains(relationType)
-            preferencesManager.setSelected(relationType.identifier, active)
+            preferencesManager.setSelected("activeRelationTypes", relationType.identifier, active)
+        }
+        for (metadataType in cache.metadataTypes.values) {
+            val active = cache.activeMetadataTypes.contains(metadataType)
+            preferencesManager.setSelected("activeMetadataTypes", metadataType.id, active)
         }
         preferencesManager.prefs.flush()
     }
 
     fun setActiveRelationsForPaths(paths: Array<TreePath>) {
-        val set = HashSet<BGRelationType>()
+        val relationSet = HashSet<BGRelationType>()
+        val metadataSet = HashSet<BGRelationMetadataType>()
         for (path in paths) {
-            val leaf = path.lastPathComponent as? RelationTypeTreeNode ?: continue
-            set.add(leaf.relationType)
+            (path.lastPathComponent as? RelationTypeTreeNode)?.let {
+                relationSet.add(it.relationType)
+            }
+            (path.lastPathComponent as? MetadataTypeTreeNode)?.let {
+                metadataSet.add(it.metadataType)
+            }
         }
-        cache.activeRelationTypes = set
-        updateSelectedRelationPreferences()
+        cache.activeRelationTypes = relationSet
+        cache.activeMetadataTypes = metadataSet
+        updateSelectedConfigTreePreferences()
         //return set
     }
 
