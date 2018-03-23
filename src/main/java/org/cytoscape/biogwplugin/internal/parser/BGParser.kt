@@ -3,6 +3,7 @@ package org.cytoscape.biogwplugin.internal.parser
 import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.model.BGNode
 import org.cytoscape.biogwplugin.internal.model.BGRelation
+import org.cytoscape.biogwplugin.internal.model.BGRelationMetadata
 import org.cytoscape.biogwplugin.internal.model.BGRelationType
 import org.cytoscape.biogwplugin.internal.query.*
 import org.cytoscape.biogwplugin.internal.util.sanitizeParameter
@@ -135,7 +136,7 @@ class BGParser(private val serviceManager: BGServiceManager) {
                 val relationType = server.cache.getRelationTypeForURIandGraph(relationUri, graphName) ?: BGRelationType(relationUri, relationUri, 0)
                 val relation = BGRelation(fromNode, relationType, toNode)
                 relationType.defaultGraphName?.let {
-                    relation.metadata.sourceGraph = it
+                    relation.sourceGraph = it
                 }
                 val hash = relation.hashCode()
                 if (relationMap[hash] == null) {
@@ -157,9 +158,9 @@ class BGParser(private val serviceManager: BGServiceManager) {
 
                 val relationType = server.cache.getRelationTypeForURIandGraph(relationUri, graphName) ?: BGRelationType(relationUri, relationUri, 0)
                 val relation = BGRelation(fromNode, relationType, toNode)
-                relation.metadata.confidence = confidenceValue.toDouble()
+                relation.metadata["confidence"] = BGRelationMetadata(BGRelationMetadata.DataType.NUMBER, confidenceValue.toDouble())
                 relationType.defaultGraphName?.let {
-                    relation.metadata.sourceGraph = it
+                    relation.sourceGraph = it
                 }
                 val hash = relation.hashCode()
                 if (relationMap[hash] == null) {
@@ -185,7 +186,7 @@ class BGParser(private val serviceManager: BGServiceManager) {
                 if (relationType != null) {
                     val relation = BGRelation(fromNode, relationType, toNode)
                     relationType.defaultGraphName?.let {
-                        relation.metadata.sourceGraph = it
+                        relation.sourceGraph = it
                     }
                     val hash = relation.hashCode()
                     if (relationMap[hash] == null) {
@@ -218,7 +219,7 @@ class BGParser(private val serviceManager: BGServiceManager) {
                     if (relationType != null) {
                         val relation = BGRelation(fromNode, relationType, toNode)
                         relationType.defaultGraphName?.let {
-                            relation.metadata.sourceGraph = it
+                            relation.sourceGraph = it
                         }
                         val hash = relation.hashCode()
                         if (relationMap[hash] == null) {

@@ -75,8 +75,8 @@ object BGConfigParser {
                 val typeName = metadataElement.getAttribute("dataType") ?: continue
 
                 val dataType = when (typeName) {
-                    "text" -> BGRelationMetadataType.DataType.STRING
-                    "number" -> BGRelationMetadataType.DataType.NUMBER
+                    "text" -> BGRelationMetadata.DataType.STRING
+                    "number" -> BGRelationMetadata.DataType.NUMBER
                     else -> null } ?: continue
 
                 val relationTypes = ArrayList<BGRelationType>()

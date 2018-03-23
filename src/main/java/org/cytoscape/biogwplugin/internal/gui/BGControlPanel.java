@@ -1,9 +1,13 @@
 package org.cytoscape.biogwplugin.internal.gui;
 
+import com.intellij.uiDesigner.core.GridConstraints;
+import com.intellij.uiDesigner.core.GridLayoutManager;
+import com.intellij.uiDesigner.core.Spacer;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.biogwplugin.internal.libs.JCheckBoxTree;
 import org.cytoscape.biogwplugin.internal.BGServiceManager;
+import org.cytoscape.biogwplugin.internal.util.Utility;
 
 
 import javax.swing.*;
@@ -16,11 +20,11 @@ import java.awt.*;
 public class BGControlPanel extends JPanel implements CytoPanelComponent {
 
 
-
     private BGServiceManager serviceManager;
     private JPanel mainPanel;
     private JComboBox comboBox1;
     private JPanel treePanel;
+    private JButton resetBioGatewayStyleButton;
     private JCheckBoxTree tree;
 
 
@@ -29,6 +33,7 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent {
         this.add(mainPanel);
 
         setupTreePanel();
+        setUpActions();
     }
 
     private void setSelectionForNode(DefaultMutableTreeNode node) {
@@ -53,6 +58,12 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent {
         DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
         TreePath path = new TreePath(root.getPath());
         tree.fireCheckChangeEvent(new JCheckBoxTree.CheckChangeEvent(path));
+    }
+
+    private void setUpActions() {
+        resetBioGatewayStyleButton.addActionListener(e -> {
+            Utility.INSTANCE.resetBioGatewayVisualStyle(serviceManager);
+        });
     }
 
 // CytoPanel implementations:
@@ -111,10 +122,18 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent {
         final JPanel panel2 = new JPanel();
         panel2.setLayout(new BorderLayout(0, 0));
         mainPanel.add(panel2, BorderLayout.CENTER);
-        panel2.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Active Graphs"));
+        panel2.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Active Properties"));
         treePanel = new JPanel();
         treePanel.setLayout(new BorderLayout(0, 0));
         panel2.add(treePanel, BorderLayout.CENTER);
+        final JPanel panel3 = new JPanel();
+        panel3.setLayout(new GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
+        mainPanel.add(panel3, BorderLayout.SOUTH);
+        resetBioGatewayStyleButton = new JButton();
+        resetBioGatewayStyleButton.setText("Reset BioGateway Style");
+        panel3.add(resetBioGatewayStyleButton, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final Spacer spacer1 = new Spacer();
+        panel3.add(spacer1, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
     }
 
     /**

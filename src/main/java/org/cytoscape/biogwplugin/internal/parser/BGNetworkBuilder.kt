@@ -222,6 +222,10 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
                 //throw Exception("Cannot collapse nodes of this type!")
             }
         }
+
+        network.removeEdges(network.getAdjacentEdgeIterable(cyNode, CyEdge.Type.ANY).toHashSet())
+
+
         val parentEdgeId = cyNode.getParentEdgeId(network)
         val cyNodes = if (parentEdgeId.isNotBlank()) getCyNodesWithValue(network, network.defaultNodeTable, Constants.BG_FIELD_NODE_PARENT_EDGE_ID, parentEdgeId) else null
 
@@ -249,6 +253,7 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
             fromNodes.add(edge.source)
         }*/
     }
+
 
     fun collapseEdgeWithNodes(netView: CyNetworkView, nodeView: View<CyNode>, relationTypeUri: String) {
 
@@ -417,7 +422,7 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
 //                        relation.metadata.confidence = it
 //                    }
 //                }
-                val edge = addEdgeToNetwork(fromNode, toNode, network, edgeTable, relation.relationType, relation.edgeIdentifier, relation.metadata)
+                val edge = addEdgeToNetwork(fromNode, toNode, network, edgeTable, relation.relationType, relation.edgeIdentifier, relation.sourceGraph)
             } else {
                 println("WARNING: Duplicate edges!")
             }
@@ -451,7 +456,6 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
         val toUri = components[2]
 
         // TODO: Extract the metadata from the nodes and add it to the edge.
-        val metadata = BGRelationMetadata(relationUri)
 
         val relationType = when (graph != null) {
             true -> {
@@ -466,7 +470,7 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
         val fromNode = getNodeWithUri(fromUri, network, network.defaultNodeTable) ?: throw Exception("CyNode not found!")
         val toNode = getNodeWithUri(toUri, network, network.defaultNodeTable) ?: throw Exception("CyNode not found!")
         if (!checkForExistingEdges(network.defaultEdgeTable, edgeId)) {
-            val edge = addEdgeToNetwork(fromNode, toNode, network, network.defaultEdgeTable, relationType, edgeId, metadata)
+            val edge = addEdgeToNetwork(fromNode, toNode, network, network.defaultEdgeTable, relationType, edgeId, graph)
         } else {
             println("WARNING: Duplicate edges!")
         }
@@ -474,7 +478,7 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
 
 
 
-        fun addEdgeToNetwork(from: CyNode, to: CyNode, network: CyNetwork, edgeTable: CyTable, relationType: BGRelationType, edgeId: String, metadata: BGRelationMetadata): CyEdge {
+        fun addEdgeToNetwork(from: CyNode, to: CyNode, network: CyNetwork, edgeTable: CyTable, relationType: BGRelationType, edgeId: String, sourceGraph: String?): CyEdge {
 
             val edge = network.addEdge(from, to, relationType.directed)
             checkForMissingColumns(edgeTable, null)
@@ -482,12 +486,12 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
             edgeTable.getRow(edge.suid).set(Constants.BG_FIELD_NAME, relationType.name)
             edgeTable.getRow(edge.suid).set(Constants.BG_FIELD_EDGE_ID, edgeId)
             edgeTable.getRow(edge.suid).set(Constants.BG_FIELD_EDGE_EXPANDABLE, if (relationType.expandable) "true" else "false")
-            if (metadata.sourceGraph != null) {
-                edgeTable.getRow(edge.suid).set(Constants.BG_FIELD_SOURCE_GRAPH, metadata.sourceGraph)
+            if (sourceGraph != null) {
+                edgeTable.getRow(edge.suid).set(Constants.BG_FIELD_SOURCE_GRAPH, sourceGraph)
             }
-            if (metadata.confidence != null) {
-                edgeTable.getRow(edge.suid).set(Constants.BG_FIELD_CONFIDENCE, metadata.confidence)
-            }
+//            if (metadata.confidence != null) {
+//                edgeTable.getRow(edge.suid).set(Constants.BG_FIELD_CONFIDENCE, metadata.confidence)
+//            }
             return edge
         }
 

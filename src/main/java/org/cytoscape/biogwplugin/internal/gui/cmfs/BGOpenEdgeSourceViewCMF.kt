@@ -4,7 +4,7 @@ import org.cytoscape.application.swing.CyEdgeViewContextMenuFactory
 import org.cytoscape.application.swing.CyMenuItem
 import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.query.BGFetchMetadataQuery
-import org.cytoscape.biogwplugin.internal.query.BGMetadataType
+import org.cytoscape.biogwplugin.internal.query.BGMetadataTypeEnum
 import org.cytoscape.biogwplugin.internal.util.Constants
 import org.cytoscape.model.CyEdge
 import org.cytoscape.view.model.CyNetworkView
@@ -41,7 +41,7 @@ class BGOpenEdgeSourceViewCMF(val gravity: Float, val serviceManager: BGServiceM
                     edgeUri,
                     toNodeUri,
                     sourceGraph ?: "?graph",
-                    BGMetadataType.PUBMED_ID)
+                    BGMetadataTypeEnum.PUBMED_ID.uri)
 
             serviceManager.taskManager?.execute(TaskIterator(query))
 

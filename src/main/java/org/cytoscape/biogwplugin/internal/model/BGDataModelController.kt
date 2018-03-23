@@ -398,11 +398,22 @@ class BGDataModelController(private val serviceManager: BGServiceManager) {
         return null
     }
 
+    fun loadRelationMetadataForRelation(relation: BGRelation, metadataType: BGRelationMetadataType) {
+        if (!metadataType.supportedRelations.contains(relation.relationType)) return
+        val graph = relation.relationType.defaultGraphName ?: return
+
+        val query = BGFetchMetadataQuery(serviceManager, relation.fromNode.uri, relation.relationType.uri, relation.toNode.uri, graph, metadataType.relationUri)
+        query.run()
+        val result = query.returnFuture.get() as BGReturnMetadata // <- This is also synchronous. Should not halt at this point though.
+
+    }
+
+
     fun getConfidenceScoreForRelation(relation: BGRelation): Double? {
         // Synchronous code! Will halt execution (Well, it's supposed to now...)
         val graph = relation.relationType.defaultGraphName
         if (graph.equals("intact")) {
-            val query = BGFetchMetadataQuery(serviceManager, relation.fromNode.uri, relation.relationType.uri, relation.toNode.uri, graph!!, BGMetadataType.CONFIDENCE_VALUE)
+            val query = BGFetchMetadataQuery(serviceManager, relation.fromNode.uri, relation.relationType.uri, relation.toNode.uri, graph!!, BGMetadataTypeEnum.CONFIDENCE_VALUE.uri)
             query.run() // <- This is synchronous.
             val result = query.returnFuture.get() as BGReturnMetadata // <- This is also synchronous. Should not halt at this point though.
             return result.values.first().toDouble() // <- Will throw an exception if the data isn't a double!

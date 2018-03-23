@@ -2,6 +2,7 @@ package org.cytoscape.biogwplugin.internal.query
 
 import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.model.BGRelation
+import org.cytoscape.biogwplugin.internal.model.BGRelationMetadata
 import org.cytoscape.work.AbstractTask
 import org.cytoscape.work.TaskMonitor
 import java.util.concurrent.CompletableFuture
@@ -18,7 +19,7 @@ class BGFetchConfidenceValues(val serviceManager: BGServiceManager, val title: S
             taskMonitor?.setProgress(progress)
             taskMonitor?.setStatusMessage(i.toString() + " of "+ relations.size.toString())
             serviceManager.dataModelController.getConfidenceScoreForRelation(relation)?.let {
-                relation.metadata.confidence = it
+                relation.metadata["confidence"] = BGRelationMetadata(BGRelationMetadata.DataType.NUMBER, it)
             }
         }
         completableFuture.complete(true)
