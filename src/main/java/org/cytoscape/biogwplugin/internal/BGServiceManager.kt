@@ -19,6 +19,8 @@ import org.cytoscape.view.model.CyNetworkViewFactory
 import org.cytoscape.view.model.CyNetworkViewManager
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory
 import org.cytoscape.view.vizmap.VisualMappingManager
+import org.cytoscape.work.AbstractTask
+import org.cytoscape.work.TaskIterator
 import org.cytoscape.work.swing.DialogTaskManager
 import org.osgi.framework.BundleContext
 
@@ -85,5 +87,9 @@ class BGServiceManager {
 
     fun getVisualManager(): VisualMappingManager? {
         return visualMappingManager
+    }
+
+    fun execute(task: AbstractTask) {
+        taskManager?.execute(TaskIterator(task))
     }
 }

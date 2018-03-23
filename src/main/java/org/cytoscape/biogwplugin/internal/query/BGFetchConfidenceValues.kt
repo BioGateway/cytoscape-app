@@ -7,6 +7,7 @@ import org.cytoscape.work.AbstractTask
 import org.cytoscape.work.TaskMonitor
 import java.util.concurrent.CompletableFuture
 
+@Deprecated("Use the generic relation metadata load functionailty instead.")
 class BGFetchConfidenceValues(val serviceManager: BGServiceManager, val title: String, val relations: Collection<BGRelation>): AbstractTask() {
 
     var completableFuture = CompletableFuture<Boolean>()
@@ -19,7 +20,7 @@ class BGFetchConfidenceValues(val serviceManager: BGServiceManager, val title: S
             taskMonitor?.setProgress(progress)
             taskMonitor?.setStatusMessage(i.toString() + " of "+ relations.size.toString())
             serviceManager.dataModelController.getConfidenceScoreForRelation(relation)?.let {
-                relation.metadata["confidence"] = BGRelationMetadata(BGRelationMetadata.DataType.NUMBER, it)
+                relation.metadata[BGRelationMetadata.CONFIDENCE_VALUE] = BGRelationMetadata(BGRelationMetadata.DataType.NUMBER, it)
             }
         }
         completableFuture.complete(true)

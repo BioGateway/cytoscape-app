@@ -398,6 +398,9 @@ class BGDataModelController(private val serviceManager: BGServiceManager) {
         return null
     }
 
+
+
+
     fun loadRelationMetadataForRelation(relation: BGRelation, metadataType: BGRelationMetadataType) {
         if (!metadataType.supportedRelations.contains(relation.relationType)) return
         val graph = relation.relationType.defaultGraphName ?: return

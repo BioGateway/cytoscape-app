@@ -1,6 +1,9 @@
 package org.cytoscape.biogwplugin.internal.parser;
 
 import com.sun.org.apache.xpath.internal.operations.Bool;
+import org.cytoscape.biogwplugin.internal.model.BGRelationMetadata;
+import org.cytoscape.biogwplugin.internal.model.BGRelationMetadataType;
+import org.cytoscape.biogwplugin.internal.query.BGMetadataTypeEnum;
 import org.cytoscape.biogwplugin.internal.util.Constants;
 import org.cytoscape.model.CyTable;
 
@@ -33,4 +36,26 @@ public class BGNetworkTableCreator {
         }
     }
 
+    /// Returns false if the column already exists with another data type.
+    static Boolean assureThatEdgeColumnExists(CyTable edgeTable, String identifier, BGRelationMetadata.DataType dataType, Boolean immutable) {
+
+        Class classType = null;
+        switch (dataType) {
+            case NUMBER:
+                classType = Double.class;
+                break;
+            case STRING:
+                classType = String.class;
+                break;
+        }
+        if (edgeTable.getColumn(identifier) != null) {
+            Class tableType = edgeTable.getColumn(identifier).getType();
+            if (tableType == classType) {
+                return true;
+            }
+            return false;
+        }
+        edgeTable.createColumn(identifier, classType, immutable);
+        return true;
+    }
 }

@@ -365,6 +365,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
             }
         }
 
+        /*
         if (importConfidenceValues) {
             val searchRelations = relations.filter { it.relationType.identifier.equals("intact:http://purl.obolibrary.org/obo/RO_0002436") }
             val query = BGFetchConfidenceValues(serviceManager, "Loading confidence values...", searchRelations)
@@ -375,6 +376,12 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         } else {
             buildNetwork()
         }
+        */
+
+        val query = BGLoadRelationMetadataQuery(serviceManager, relations, serviceManager.cache.activeMetadataTypes) {
+            buildNetwork()
+        }
+        serviceManager.execute(query)
     }
 
     private fun validatePropertyFields(parameters: Collection<BGQueryParameter>, parameterComponents: HashMap<String, JComponent>): String? {

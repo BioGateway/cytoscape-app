@@ -158,7 +158,7 @@ class BGParser(private val serviceManager: BGServiceManager) {
 
                 val relationType = server.cache.getRelationTypeForURIandGraph(relationUri, graphName) ?: BGRelationType(relationUri, relationUri, 0)
                 val relation = BGRelation(fromNode, relationType, toNode)
-                relation.metadata["confidence"] = BGRelationMetadata(BGRelationMetadata.DataType.NUMBER, confidenceValue.toDouble())
+                relation.metadata[BGRelationMetadata.CONFIDENCE_VALUE] = BGRelationMetadata(BGRelationMetadata.DataType.NUMBER, confidenceValue.toDouble())
                 relationType.defaultGraphName?.let {
                     relation.sourceGraph = it
                 }
