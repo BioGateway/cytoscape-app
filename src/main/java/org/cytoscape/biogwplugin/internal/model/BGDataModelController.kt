@@ -193,24 +193,24 @@ class BGDataModelController(private val serviceManager: BGServiceManager) {
         }
     }
 
-    private inline fun <reified T: DefaultMutableTreeNode> setSelectionFromPreferencesForType(tree: JCheckBoxTree, selection: (T) -> Boolean) {
-        for (node in cache.relationMetadataTypesNode.depthFirstEnumeration()) {
+    private inline fun <reified T: DefaultMutableTreeNode> setSelectionFromPreferencesForType(tree: JCheckBoxTree, rootNode: DefaultMutableTreeNode, selection: (T) -> Boolean) {
+        for (node in rootNode.depthFirstEnumeration()) {
             val typedNode = node as? T ?: continue
             if (selection(typedNode)) {
                 tree.checkNode(typedNode, true)
             }}}
 
     fun setSelectionFromPreferences(tree: JCheckBoxTree) {
-        setSelectionFromPreferencesForType<BGRelationTypeTreeNode>(tree) {
+        setSelectionFromPreferencesForType<BGRelationTypeTreeNode>(tree, cache.relationTypesRootNode) {
             preferencesManager.getSelected("activeRelationTypes", it.relationType.identifier)
         }
-        setSelectionFromPreferencesForType<BGMetadataTypeTreeNode>(tree) {
+        setSelectionFromPreferencesForType<BGMetadataTypeTreeNode>(tree, cache.relationMetadataTypesNode) {
             preferencesManager.getSelected("activeMetadataTypes", it.metadataType.id)
         }
-        setSelectionFromPreferencesForType<BGQueryConstraintTreeNode>(tree) {
+        setSelectionFromPreferencesForType<BGQueryConstraintTreeNode>(tree, cache.queryConstraintsRootNode) {
             preferencesManager.getSelected("activeConstraints", it.constraint.id)
         }
-        setSelectionFromPreferencesForType<BGSourceTreeNode>(tree) {
+        setSelectionFromPreferencesForType<BGSourceTreeNode>(tree, cache.sourcesRootNode) {
             preferencesManager.getSelected("activeSources", it.source.uri)
         }
         tree.repaint()

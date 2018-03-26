@@ -92,7 +92,7 @@ object BGConfigParser {
 
             for (index in 0..relationMetadataList.length-1) {
                 val metadataElement = relationMetadataList.item(index) as? Element ?: continue
-                val id = metadataElement.getAttribute("uri") ?: continue
+                val id = metadataElement.getAttribute("id") ?: continue
                 val label = metadataElement.getAttribute("label") ?: continue
                 val relationUri = metadataElement.getAttribute("relationUri") ?: continue
                 val typeName = metadataElement.getAttribute("dataType") ?: continue
@@ -122,7 +122,7 @@ object BGConfigParser {
             // Parse conversions
 
             fun parseConversionElement(type: BGConversion.ConversionType, element: Element): BGConversion? {
-                val id = element.getAttribute("uri") ?: return null
+                val id = element.getAttribute("id") ?: return null
                 val name = element.getAttribute("name") ?: return null
                 val dataTypeString = element.getAttribute("dataType") ?: return null
                 val biogwId = element.getAttribute("biogwId") ?: return null
@@ -209,7 +209,7 @@ object BGConfigParser {
 
             for (index in 0..constraintList.length-1) {
                 val constraint = constraintList.item(index) as? Element ?: continue
-                val id = constraint.getAttribute("uri") ?: continue
+                val id = constraint.getAttribute("id") ?: continue
                 val label = constraint.getAttribute("label") ?: continue
                 val columns = constraint.getAttribute("columns").toIntOrNull()
                 val typeName = constraint.getAttribute("type") ?: continue
@@ -297,7 +297,7 @@ object BGConfigParser {
 
                         if (parameterList.item(pIndex).nodeType == Node.ELEMENT_NODE) {
                             val parameter = parameterList.item(pIndex) as Element
-                            val pId = parameter.getAttribute("uri")
+                            val pId = parameter.getAttribute("id")
                             val pTypeString = parameter.getAttribute("type")
                             val pName = parameter.getElementsByTagName("name").item(0).textContent
 

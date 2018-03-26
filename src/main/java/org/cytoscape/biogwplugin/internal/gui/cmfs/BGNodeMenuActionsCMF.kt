@@ -267,7 +267,6 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
                 if (direction == BGRelationDirection.TO && relationType.toType != null && nodeType != relationType.toType) continue
             }
 
-
             val item = JMenuItem(relationType.description)
 
             item.addActionListener {
@@ -327,7 +326,7 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
                     BGRelationSearchResultsController(serviceManager, returnData, columnNames, network)
                 }
             }*/
-            val relationType = serviceManager.cache.getRelationTypesForURI("http://purl.obolibrary.org/obo/RO_0002448")?.first() ?: throw Exception("Unable to find relation type in cache!")
+            val relationType = serviceManager.cache.getRelationTypeForURIandGraph("http://www.w3.org/2004/02/skos/core#related", "tf-tg") ?: throw Exception("Unable to find relation type in cache!")
             val direction = when (nodeType) {
                 BGNodeType.Protein -> BGRelationDirection.FROM
                 BGNodeType.Gene -> BGRelationDirection.TO

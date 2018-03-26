@@ -3,6 +3,7 @@ package org.cytoscape.biogwplugin.internal.gui
 import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.model.BGRelation
 import org.cytoscape.biogwplugin.internal.query.BGFetchConfidenceValues
+import org.cytoscape.biogwplugin.internal.query.BGLoadRelationMetadataQuery
 import org.cytoscape.biogwplugin.internal.query.BGReturnRelationsData
 import org.cytoscape.biogwplugin.internal.util.Constants
 import org.cytoscape.biogwplugin.internal.util.Utility
@@ -16,7 +17,7 @@ import javax.swing.table.DefaultTableModel
 class BGRelationSearchResultsController(val serviceManager: BGServiceManager, private val returnData: BGReturnRelationsData, val columnNames: Array<String>, val network: CyNetwork) : ActionListener, BGRelationResultViewTooltipDataSource {
 
     private val relationsFound = returnData.relationsData
-    val importConfidenceValues = true
+    val importConfidenceValues = false
 
     override fun getTooltipForResultRowAndColumn(row: Int, column: Int): String? {
         val modelRow = view.resultTable.convertRowIndexToModel(row)
@@ -59,44 +60,33 @@ class BGRelationSearchResultsController(val serviceManager: BGServiceManager, pr
         }
 
 
-        if (importConfidenceValues) {
-            val searchRelations = relations.filter { it.relationType.identifier.equals("intact:http://purl.obolibrary.org/obo/RO_0002436") }
-            val query = BGFetchConfidenceValues(serviceManager, "Loading confidence values...", searchRelations)
-            query.completion = {
-                this.serviceManager.dataModelController.networkBuilder.addRelationsToNetwork(network, relations)
-                Utility.reloadCurrentVisualStyleCurrentNetworkView(this.serviceManager)
-            }
-            serviceManager.taskManager?.execute(TaskIterator(query))
-        } else {
+        val query = BGLoadRelationMetadataQuery(serviceManager, relations, serviceManager.cache.activeMetadataTypes) {
             serviceManager.dataModelController.networkBuilder.addRelationsToNetwork(network, relations)
             Utility.reloadCurrentVisualStyleCurrentNetworkView(serviceManager)
         }
+        serviceManager.execute(query)
     }
 
     private fun importBetweenExistingNodes() {
 
         val allNodeUris = network.defaultNodeTable.getColumn(Constants.BG_FIELD_IDENTIFIER_URI).getValues(String::class.java)
-        var relations = ArrayList<BGRelation>()
+        val relations = relationsFound.filter { allNodeUris.contains(it.toNode.uri) && allNodeUris.contains(it.fromNode.uri) }
 
-        for (result in relationsFound) {
-            if (allNodeUris.contains(result.toNode.uri) && allNodeUris.contains(result.fromNode.uri)) {
-                relations.add(result)
+        //        if (importConfidenceValues) {
+//            val searchRelations = relations.filter { it.relationType.identifier.equals("intact:http://purl.obolibrary.org/obo/RO_0002436") }
+//            val query = BGFetchConfidenceValues(serviceManager, "Loading confidence values...", searchRelations)
+//            query.completion = {
+//                this.serviceManager.dataModelController.networkBuilder.addRelationsToNetwork(network, relations)
+//                Utility.reloadCurrentVisualStyleCurrentNetworkView(this.serviceManager)
+//            }
+////            serviceManager.taskManager?.execute(TaskIterator(query))
+//        } else {
+            val query = BGLoadRelationMetadataQuery(serviceManager, relations, serviceManager.cache.activeMetadataTypes) {
+                serviceManager.dataModelController.networkBuilder.addRelationsToNetwork(network, relations)
+                Utility.reloadCurrentVisualStyleCurrentNetworkView(serviceManager)
             }
-        }
-
-        if (importConfidenceValues) {
-            val searchRelations = relations.filter { it.relationType.identifier.equals("intact:http://purl.obolibrary.org/obo/RO_0002436") }
-            val query = BGFetchConfidenceValues(serviceManager, "Loading confidence values...", searchRelations)
-            query.completion = {
-                this.serviceManager.dataModelController.networkBuilder.addRelationsToNetwork(network, relations)
-                Utility.reloadCurrentVisualStyleCurrentNetworkView(this.serviceManager)
-            }
-            serviceManager.taskManager?.execute(TaskIterator(query))
-        } else {
-
-            serviceManager.dataModelController.networkBuilder.addRelationsToNetwork(network, relations)
-            Utility.reloadCurrentVisualStyleCurrentNetworkView(serviceManager)
-        }
+            serviceManager.execute(query)
+//        }
     }
 
     override fun actionPerformed(e: ActionEvent?) {

@@ -3,6 +3,7 @@ package org.cytoscape.biogwplugin.internal.gui.multiquery
 import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.gui.BGColorComboBoxRenderer
 import org.cytoscape.biogwplugin.internal.gui.BGColorableText
+import org.cytoscape.biogwplugin.internal.model.BGDatasetSource
 import org.cytoscape.biogwplugin.internal.model.BGQueryConstraint
 import org.cytoscape.biogwplugin.internal.model.BGRelationType
 import org.cytoscape.biogwplugin.internal.parser.BGSPARQLParser
@@ -221,7 +222,6 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager, val constraintPane
         }
 
         val usedVariables = variableManager.usedVariables.values.toHashSet().map { "?"+it }.toTypedArray()
-
         var uniqueVariablesFilter = ""
 
         for (i in 0..(usedVariables.size-1)) {
@@ -230,13 +230,31 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager, val constraintPane
                 uniqueVariablesFilter += "\n FILTER("+usedVariables[i]+"!="+usedVariables[j]+")"
             }
         }
+        var sourceConstraintCounter = 1
+        var sourceConstraintFilters = ""
 
-//        for (variable in usedVariables) {
-//            for (otherVar in usedVariables) {
-//                if (variable.equals(otherVar)) continue
-//                uniqueVariablesFilter += "\n FILTER("+variable+"!="+otherVar+")"
-//            }
-//        }
+
+        for (triple in triples) {
+            val graph = triple.second.defaultGraphName ?: continue
+            val pair = BGDatasetSource.generateSourceConstraint(serviceManager, triple.second, triple.first, triple.third, sourceConstraintCounter)
+            sourceConstraintCounter++
+//            val relevantSources = serviceManager.cache.activeSources.filter { it.relationTypes.contains(triple.second) }
+//            if (relevantSources.count() == 0) continue
+//            val uri = "?sourceConstraint"+sourceConstraintCounter
+//            sourceConstraintCounter++
+//
+//            val filter = "FILTER("+relevantSources.map { uri+"filter = <"+it.uri+">" }.reduce { acc, s -> acc+"||"+s }+")\n"
+//            val sparql = uri+" rdf:subject "+triple.first+".\n" +
+//                    uri+" rdf:object "+triple.third+" .\n" +
+//                    uri+" rdf:predicate <"+triple.second.uri+"> .\n" +
+//                    uri+" <http://semanticscience.org/resource/SIO_000253> "+uri+"filter ."
+
+            pair?.let {
+                sourceConstraintFilters += it.first
+                addToQueries(graph, it.second)
+            }
+
+        }
 
         try {
             val constraintValues = constraintPanel.getConstraintValues()
@@ -291,7 +309,7 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager, val constraintPane
                 }
                 constraintQueryString += "}\n"
             }
-            return constraintHeader + constraintQueryString
+            return sourceConstraintFilters + constraintHeader + constraintQueryString
         } else return uniqueVariablesFilter
         } catch (exception: InvalidInputValueException) {
             JOptionPane.showMessageDialog(this, exception.message, "Invalid query constraints", JOptionPane.ERROR_MESSAGE)

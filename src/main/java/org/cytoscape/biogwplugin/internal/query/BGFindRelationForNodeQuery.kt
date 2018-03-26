@@ -1,6 +1,7 @@
 package org.cytoscape.biogwplugin.internal.query
 
 import org.cytoscape.biogwplugin.internal.BGServiceManager
+import org.cytoscape.biogwplugin.internal.model.BGDatasetSource
 import org.cytoscape.biogwplugin.internal.model.BGRelation
 import org.cytoscape.biogwplugin.internal.model.BGRelationType
 import org.cytoscape.biogwplugin.internal.parser.BGReturnType
@@ -42,25 +43,31 @@ class BGFindRelationForNodeQuery(serviceManager: BGServiceManager, val relationT
     }
 
     fun generateFromQueryString(): String {
+        val sourceFilter = BGDatasetSource.generateSourceConstraint(serviceManager, relationType, "<"+nodeUri+">", "?toNode") ?: Pair("", "")
         return "BASE <http://www.semantic-systems-biology.org/>\n" +
                 "PREFIX relation1: <" + relationType.uri + ">\n" +
                 "PREFIX fromNode: <" + nodeUri + ">\n" +
                 "SELECT DISTINCT fromNode: "+graphName+" relation1: ?toNode\n" +
                 "WHERE {\n" +
+                sourceFilter.first + "\n" +
                 "GRAPH "+graphName+" {\n" +
                 "fromNode: "+relationType.sparqlIRI+" ?toNode .\n" +
+                sourceFilter.second + "\n" +
                 "}}"
 
     }
 
     fun generateToQueryString(): String {
+        val sourceFilter = BGDatasetSource.generateSourceConstraint(serviceManager, relationType, "?fromNode",  "<"+nodeUri+">") ?: Pair("", "")
         return "BASE <http://www.semantic-systems-biology.org/>\n" +
                 "PREFIX relation1: <" + relationType.uri + ">\n" +
                 "PREFIX toNode: <" + nodeUri + ">\n" +
                 "SELECT DISTINCT ?fromNode "+graphName+" relation1: toNode:\n" +
                 "WHERE {\n" +
+                sourceFilter.first + "\n" +
                 "GRAPH "+graphName+" {\n" +
                 "?fromNode "+relationType.sparqlIRI+" toNode: .\n" +
+                sourceFilter.second + "\n" +
                 "}}"
     }
 }

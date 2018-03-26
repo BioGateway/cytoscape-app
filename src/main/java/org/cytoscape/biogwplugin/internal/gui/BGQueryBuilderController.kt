@@ -779,6 +779,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
 
                 BGLoadNodeDataFromBiogwDict.createAndRun(serviceManager, data.unloadedNodes, 500) {
                     setRelationTableData(data.relationsData)
+                    view.mainFrame.title = "BioGateway Query Builder - "+data.relationsData.size+" relations found."
                     view.tabPanel.selectedIndex = TAB_PANEL_RESULTS_INDEX // Open the result tab.
                     // Try the darnest to make the window appear on top!
                     Utility.fightForFocus(view.mainFrame)
