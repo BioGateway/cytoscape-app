@@ -8,7 +8,7 @@ import javax.swing.*
 
 class InvalidInputValueException(override var message: String): Exception(message)
 
-class BGQueryConstraintPanel(val constraints: HashMap<String, BGQueryConstraint>): JPanel() {
+class BGQueryConstraintPanel(val constraints: HashSet<BGQueryConstraint>): JPanel() {
 
     class ConstraintUIComponent(val constraint: BGQueryConstraint, val component: JComponent, val checkBox: JCheckBox)
     class ConstraintValue(val stringValue: String, val isEnabled: Boolean)
@@ -20,13 +20,13 @@ class BGQueryConstraintPanel(val constraints: HashMap<String, BGQueryConstraint>
         this.layout = FlowLayout(FlowLayout.LEFT)
 
         // For each constraint:
-        for (constraint in constraints.values) {
+        for (constraint in constraints) {
 
             // Create the label.
             //val label = JLabel(constraint.label)
             //this.add(label)
             // Check the type.
-            val checkBox = JCheckBox(constraint.label)
+            val checkBox = JCheckBox(constraint.label+":")
             this.add(checkBox)
             val columns = constraint.columns ?: 10
 

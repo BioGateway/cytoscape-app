@@ -186,7 +186,7 @@ public class BGQueryBuilderView implements ChangeListener {
 
         filterSelectedCheckBox.addActionListener(e -> updateFilterBySelectedRows());
 
-        queryConstraintsPanel = new BGQueryConstraintPanel(serviceManager.getCache().getQueryConstraints());
+        queryConstraintsPanel = new BGQueryConstraintPanel(serviceManager.getCache().getActiveConstraints());
     }
 
     private void setUpActionListeners() {
@@ -379,7 +379,7 @@ public class BGQueryBuilderView implements ChangeListener {
     }
 
     public void setUpMultiQueryPanel() {
-        this.queryConstraintsPanel = new BGQueryConstraintPanel(serviceManager.getCache().getQueryConstraints());
+        this.queryConstraintsPanel = new BGQueryConstraintPanel(serviceManager.getCache().getActiveConstraints());
         queryConstraintsPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Query Constraints"));
         this.multiQueryPanel = new BGMultiQueryPanel(serviceManager, queryConstraintsPanel);
         multiQueryPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Queries"));

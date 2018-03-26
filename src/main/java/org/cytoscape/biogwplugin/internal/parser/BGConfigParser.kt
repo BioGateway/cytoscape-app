@@ -40,8 +40,6 @@ object BGConfigParser {
             val relationTypesNode = (doc.getElementsByTagName("relationTypes").item(0) as? Element) ?: throw Exception("relationTypes element not found in XML file!")
             val rList = relationTypesNode.getElementsByTagName("relationType") ?: throw Exception()
 
-            //var relationTypes = HashMap<String, BGRelationType>()
-
             for (index in 0..rList.length -1) {
                 val element = rList.item(index) as? Element ?: continue
                 val name = element.getAttribute("name")
@@ -57,10 +55,35 @@ object BGConfigParser {
 
                 if (name != null && uri != null) {
                     val relationType = BGRelationType(uri, name, index, color ,defaultGraph, arbitraryLength, directed, expandable, fromType, toType)
-                    //relationTypes.put(relationType.identifier, relationType)
                     cache.addRelationType(relationType)
                 }
             }
+
+            // Parsing datasetsources
+            val sourcesTypeNode = (doc.getElementsByTagName("sources").item(0) as? Element) ?: throw Exception("sources element not found in XML file!")
+            val sourcesList = sourcesTypeNode.getElementsByTagName("source") ?: throw Exception()
+
+            for (index in 0..sourcesList.length -1) {
+                val element = sourcesList.item(index) as? Element ?: continue
+                val name = element.getAttribute("name") ?: continue
+                val uri = element.getAttribute("uri") ?: continue
+                val relationTypes = HashSet<BGRelationType>()
+
+                val relationTypeList = element.getElementsByTagName("relationType")
+                for (j in 0..relationTypeList.length-1) {
+                    val rtElement = relationTypeList.item(j) as? Element ?: continue
+                    val rtGraph = rtElement.getAttribute("graph") ?: continue
+                    val rtUri = rtElement.textContent
+                    val relationType = cache.getRelationTypeForURIandGraph(rtUri, rtGraph) ?: continue
+                    relationTypes.add(relationType)
+                }
+
+                if (relationTypes.size > 0) {
+                    val source = BGDatasetSource(uri, name, relationTypes)
+                    cache.datasetSources[uri] = source
+                }
+            }
+
 
             // Parsing RelationMetadataTypes
 
@@ -69,7 +92,7 @@ object BGConfigParser {
 
             for (index in 0..relationMetadataList.length-1) {
                 val metadataElement = relationMetadataList.item(index) as? Element ?: continue
-                val id = metadataElement.getAttribute("id") ?: continue
+                val id = metadataElement.getAttribute("uri") ?: continue
                 val label = metadataElement.getAttribute("label") ?: continue
                 val relationUri = metadataElement.getAttribute("relationUri") ?: continue
                 val typeName = metadataElement.getAttribute("dataType") ?: continue
@@ -99,7 +122,7 @@ object BGConfigParser {
             // Parse conversions
 
             fun parseConversionElement(type: BGConversion.ConversionType, element: Element): BGConversion? {
-                val id = element.getAttribute("id") ?: return null
+                val id = element.getAttribute("uri") ?: return null
                 val name = element.getAttribute("name") ?: return null
                 val dataTypeString = element.getAttribute("dataType") ?: return null
                 val biogwId = element.getAttribute("biogwId") ?: return null
@@ -186,7 +209,7 @@ object BGConfigParser {
 
             for (index in 0..constraintList.length-1) {
                 val constraint = constraintList.item(index) as? Element ?: continue
-                val id = constraint.getAttribute("id") ?: continue
+                val id = constraint.getAttribute("uri") ?: continue
                 val label = constraint.getAttribute("label") ?: continue
                 val columns = constraint.getAttribute("columns").toIntOrNull()
                 val typeName = constraint.getAttribute("type") ?: continue
@@ -274,7 +297,7 @@ object BGConfigParser {
 
                         if (parameterList.item(pIndex).nodeType == Node.ELEMENT_NODE) {
                             val parameter = parameterList.item(pIndex) as Element
-                            val pId = parameter.getAttribute("id")
+                            val pId = parameter.getAttribute("uri")
                             val pTypeString = parameter.getAttribute("type")
                             val pName = parameter.getElementsByTagName("name").item(0).textContent
 

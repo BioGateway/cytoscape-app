@@ -231,6 +231,31 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
 
         val parentMenu = JMenu(description)
 
+        val searchAllItem = JMenuItem("Search for all relation types")
+        searchAllItem.addActionListener {
+            println("Searching for all relations.")
+            val query = BGFindAllRelationsForNodeQuery(serviceManager, nodeUri, direction)
+            query.addCompletion {
+                val returnData = it as? BGReturnRelationsData ?: throw Exception("Invalid return data!")
+                if (returnData.relationsData.size == 0) throw Exception("No relations found.")
+                val columnNames = arrayOf("from node","relation type", "to node")
+
+                BGLoadUnloadedNodes.createAndRun(serviceManager, returnData.unloadedNodes) {
+                    BGRelationSearchResultsController(serviceManager, returnData, columnNames, network)
+                }
+            }
+            if (lookForGroups) {
+                val group = Utility.selectGroupPopup(serviceManager, network) ?: return@addActionListener
+                val groupNodeURIs = Utility.getNodeURIsForGroup(group)
+                query.returnDataFilter = { relation ->
+                    (groupNodeURIs.contains(relation.fromNode.uri) || groupNodeURIs.contains(relation.toNode.uri))
+                }
+            }
+
+            serviceManager.taskManager?.execute(TaskIterator(query))
+        }
+        parentMenu.add(searchAllItem)
+
         // Will only create the menu if the config is loaded.
         //for (relationType in serviceManager.cache.relationTypeMap.values.sortedBy { it.number }) {
         for (relationType in serviceManager.cache.filteredRelationTypeMap.values.sortedBy { it.number }) {
@@ -384,7 +409,7 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
         if (nodeUri.startsWith("http")) {
             val menuItem = JMenuItem("Open resource URI")
             menuItem.addActionListener {
-                // Probably a pubmed id?
+                // Probably a pubmed uri?
 
                 // TODO: THIS IS JUST A TEST. DO NOT USE!
                 val uri = nodeUri.replace("semantic-systems-biology.org/", "semantic-systems-biology.org:8080/")

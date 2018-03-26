@@ -47,7 +47,7 @@ class BGVisualStyleBuilder(val serviceManager: BGServiceManager) {
                 "enables" to edgeGreen,
                 "has agent" to edgeTurquoise,
                 "encodes" to edgeDarkBlue,
-                "molecularly controls" to edgeTurquoise,
+                "related" to edgeTurquoise,
                 "molecularly interacts with" to edgeTurquoise
         )
         val edgeLineTypes = hashMapOf<String, LineType>(

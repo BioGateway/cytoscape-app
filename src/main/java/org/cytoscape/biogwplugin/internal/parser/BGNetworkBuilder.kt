@@ -174,7 +174,7 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
         val addedNodes = ArrayList<CyNode>()
         for ((index, node) in nodes.withIndex()) {
 
-            //node.collapsableToEdgeID = initialEdgeView.model.getId(network)
+            //node.collapsableToEdgeID = initialEdgeView.model.getUri(network)
             val cyNode = addNodeToNetwork(node, network, network.defaultNodeTable)
             cyNode.setParentEdgeId(initialEdgeView.model.getId(network), network)
             addedNodes.add(cyNode)

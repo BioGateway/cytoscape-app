@@ -51,7 +51,7 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent {
 
         treePanel.add(tree);
 
-        tree.addCheckChangeEventListener(event -> serviceManager.getDataModelController().setActiveRelationsForPaths(tree.getCheckedPaths()));
+        tree.addCheckChangeEventListener(event -> serviceManager.getDataModelController().setActiveNodesForPaths(tree.getCheckedPaths()));
 
         serviceManager.getDataModelController().setSelectionFromPreferences(tree);
 

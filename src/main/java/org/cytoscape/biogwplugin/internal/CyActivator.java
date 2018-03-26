@@ -69,7 +69,7 @@ public class CyActivator extends AbstractCyActivator {
         // This action is disabled in the current build.
         //registerService(context, openSettingsAction, CyAction.class, new Properties());
 
-        BGCreateAction reloadDataModelAction = new BGCreateAction("Reload Data", "always", serviceManager, new BGAction() {
+        BGCreateAction reloadDataModelAction = new BGCreateAction("BioGateway: Reload Config", "always", serviceManager, new BGAction() {
             @Override
             public void action(BGServiceManager serviceManager) {
                 serviceManager.setDataModelController(new BGDataModelController(serviceManager));
