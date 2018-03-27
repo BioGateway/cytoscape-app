@@ -516,7 +516,13 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
                     }}
                 if (metaData.dataType == BGRelationMetadata.DataType.STRING) {
                     metaData.stringValue?.let {
-                        edge.setStringForColumnName(it, metadataType.name, edgeTable)
+                        // TODO: Remove this when the server stops using dummy URIs
+                        // TODO: Get the label name instead.
+                        if (it.startsWith("http://www.semantic-systems-biology.org/ssb/")) {
+                            edge.setStringForColumnName(it.substringAfterLast("/"), metadataType.name, edgeTable)
+                        } else {
+                            edge.setStringForColumnName(it, metadataType.name, edgeTable)
+                        }
                     }}
             }
         }
