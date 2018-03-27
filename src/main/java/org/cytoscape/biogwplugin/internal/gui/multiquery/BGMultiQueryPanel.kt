@@ -103,9 +103,12 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager, val constraintPane
     }
 
     private fun removeAllQueryLines() {
-        for (line in queryLines) {
-            this.remove(line)
+        // Make a copy to avoid ConcurrentModificationException while deleting.
+        val queryLinesCopy = this.queryLines.toTypedArray().copyOf()
+        for (line in queryLinesCopy) {
+            this.removeQueryLine(line)
         }
+
         queryLines.clear()
         this.topLevelAncestor.repaint()
     }

@@ -56,14 +56,18 @@
               <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text value="Use default Biogateway Style"/>
+              <text value="Reset Layout Style"/>
+              <toolTipText value="Resets the BioGateway layout style to the default configuration encoded in the app."/>
             </properties>
           </component>
-          <hspacer id="d8f53">
+          <component id="e9832" class="javax.swing.JButton" binding="reloadMetadataButton" default-binding="true">
             <constraints>
-              <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+              <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
-          </hspacer>
+            <properties>
+              <text value="Reload Metadata"/>
+            </properties>
+          </component>
         </children>
       </grid>
     </children>

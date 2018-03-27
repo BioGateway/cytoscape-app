@@ -8,10 +8,7 @@ import org.cytoscape.view.model.View
 import org.cytoscape.view.presentation.property.BasicVisualLexicon
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D
 import org.cytoscape.biogwplugin.internal.model.*
-import org.cytoscape.biogwplugin.internal.query.BGFetchAggregatedPPIRelationForNodeQuery
-import org.cytoscape.biogwplugin.internal.query.BGFetchAggregatedRelationForNodeQuery
-import org.cytoscape.biogwplugin.internal.query.BGRelationQuery
-import org.cytoscape.biogwplugin.internal.query.BGReturnRelationsData
+import org.cytoscape.biogwplugin.internal.query.*
 import org.cytoscape.model.*
 import java.lang.Math.*
 
@@ -360,7 +357,7 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
 
     private fun checkForMissingColumns(edgeTable: CyTable?, nodeTable: CyTable?) {
 
-        BGNetworkTableCreator.checkForMissingColumns(edgeTable, nodeTable)
+        BGNetworkTableHelper.checkForMissingColumns(edgeTable, nodeTable)
 
     }
 
@@ -487,8 +484,29 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
             edgeTable.getRow(edge.suid).set(Constants.BG_FIELD_SOURCE_GRAPH, sourceGraph)
         }
 
+        updateMetadataForEdge(metadata, edge, edgeTable)
+
+//        for ((metadataType, metaData) in metadata.iterator()) {
+//            if (BGNetworkTableHelper.assureThatEdgeColumnExists(edgeTable,
+//                            metadataType.name,
+//                            metadataType.dataType,
+//                            false)) {
+//                if (metaData.dataType == BGRelationMetadata.DataType.NUMBER) {
+//                    metaData.numericValue?.let {
+//                        edge.setDoubleForColumnName(it, metadataType.name, edgeTable)
+//                    }}
+//                if (metaData.dataType == BGRelationMetadata.DataType.STRING) {
+//                    metaData.stringValue?.let {
+//                        edge.setStringForColumnName(it, metadataType.name, edgeTable)
+//                    }}
+//            }
+//        }
+        return edge
+    }
+
+    private fun updateMetadataForEdge(metadata: Map<BGRelationMetadataType, BGRelationMetadata>, edge: CyEdge, edgeTable: CyTable) {
         for ((metadataType, metaData) in metadata.iterator()) {
-            if (BGNetworkTableCreator.assureThatEdgeColumnExists(edgeTable,
+            if (BGNetworkTableHelper.assureThatEdgeColumnExists(edgeTable,
                             metadataType.name,
                             metadataType.dataType,
                             false)) {
@@ -502,7 +520,58 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
                     }}
             }
         }
-        return edge
+    }
+
+    fun updateEdgeTableMetadataForCyEdges(network: CyNetwork, relations: Map<BGPrimitiveRelation, CyEdge>) {
+        for ((relation, edge) in relations) {
+            updateMetadataForEdge(relation.metadata, edge, network.defaultEdgeTable)
+        }
+    }
+
+    fun reloadMetadataForRelationsInCurrentNetwork() {
+        // Get the active metadata types.
+        val activeMetadataTypes = serviceManager.cache.activeMetadataTypes
+        // Get a list of column names for the active metadata types.
+        val activeColumnNames = activeMetadataTypes.map { it.name }
+
+        // Get the CyEdges of the current network.
+        val network = serviceManager.applicationManager?.currentNetwork ?: return
+        val edgeTable = network.defaultEdgeTable
+
+        // Attempt to recreate them as BGRelations in a Map<CyEdge, BGRelation>
+        val relations = HashMap<BGPrimitiveRelation, CyEdge>()
+        for (edge in network.edgeList) {
+            val relationType = serviceManager.cache.getRelationTypeForURIandGraph(edge.getUri(network), edge.getSourceGraph(network)) ?: continue
+
+            // TODO: Check that these values exist! The URI table might not even be present!
+            val fromUri = edge.source.getUri(network)
+            val toUri = edge.target.getUri(network)
+            val sourceGraph = edge.getSourceGraph(network)
+
+            val relation = BGPrimitiveRelation(fromUri, relationType, toUri)
+            relation.sourceGraph = sourceGraph
+            relations[relation] = edge
+        }
+
+        val unloadedRelations = HashMap<BGPrimitiveRelation, CyEdge>()
+
+        // Iterate through each metadata type.
+        for (metadataType in activeMetadataTypes) {
+            // Filter out the relations of the wrong relation type.
+            val relevantRelations = relations.filter { metadataType.supportedRelations.contains(it.key.relationType) }
+                    .filter {
+                        // Filter out the CyEdges that have the data present.
+                        BGNetworkTableHelper.getStringForEdgeColumnName(it.value, metadataType.name, network).isNullOrEmpty()
+                    }
+            // Add the remaining relations to a set.
+            unloadedRelations.putAll(relevantRelations)
+        }
+
+        if (unloadedRelations.size == 0) return
+        val query = BGLoadRelationMetadataQuery(serviceManager, unloadedRelations.keys, activeMetadataTypes) {
+            serviceManager.dataModelController.networkBuilder.updateEdgeTableMetadataForCyEdges(network, unloadedRelations)
+        }
+        serviceManager.execute(query)
     }
 
     private fun addNodeToNetwork(node: BGNode, network: CyNetwork, table: CyTable): CyNode {

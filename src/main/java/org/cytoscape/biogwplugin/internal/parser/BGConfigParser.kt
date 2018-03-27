@@ -61,26 +61,25 @@ object BGConfigParser {
 
             // Parsing datasetsources
             val sourcesTypeNode = (doc.getElementsByTagName("sources").item(0) as? Element) ?: throw Exception("sources element not found in XML file!")
-            val sourcesList = sourcesTypeNode.getElementsByTagName("source") ?: throw Exception()
 
-            for (index in 0..sourcesList.length -1) {
-                val element = sourcesList.item(index) as? Element ?: continue
-                val name = element.getAttribute("name") ?: continue
-                val uri = element.getAttribute("uri") ?: continue
-                val relationTypes = HashSet<BGRelationType>()
+            val relationTypeList = sourcesTypeNode.getElementsByTagName("relationType")
+            for (j in 0..relationTypeList.length-1) {
+                val rtElement = relationTypeList.item(j) as? Element ?: continue
+                val rtGraph = rtElement.getAttribute("graph") ?: continue
+                val rtUri = rtElement.getAttribute("uri") ?: continue
+                val relationType = cache.getRelationTypeForURIandGraph(rtUri, rtGraph) ?: continue
 
-                val relationTypeList = element.getElementsByTagName("relationType")
-                for (j in 0..relationTypeList.length-1) {
-                    val rtElement = relationTypeList.item(j) as? Element ?: continue
-                    val rtGraph = rtElement.getAttribute("graph") ?: continue
-                    val rtUri = rtElement.textContent
-                    val relationType = cache.getRelationTypeForURIandGraph(rtUri, rtGraph) ?: continue
-                    relationTypes.add(relationType)
-                }
+                val sourcesList = rtElement.getElementsByTagName("source") ?: throw Exception()
 
-                if (relationTypes.size > 0) {
-                    val source = BGDatasetSource(uri, name, relationTypes)
-                    cache.datasetSources[uri] = source
+                for (index in 0..sourcesList.length - 1) {
+                    val element = sourcesList.item(index) as? Element ?: continue
+                    val name = element.getAttribute("name") ?: continue
+                    val uri = element.getAttribute("uri") ?: continue
+                    val source = BGDatasetSource(uri, name, relationType)
+                    if (!cache.datasetSources.containsKey(relationType)) {
+                        cache.datasetSources[relationType] = HashSet()
+                    }
+                    cache.datasetSources[relationType]?.add(source)
                 }
             }
 

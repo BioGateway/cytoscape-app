@@ -5,9 +5,12 @@ import org.cytoscape.biogwplugin.internal.model.BGRelationMetadata;
 import org.cytoscape.biogwplugin.internal.model.BGRelationMetadataType;
 import org.cytoscape.biogwplugin.internal.query.BGMetadataTypeEnum;
 import org.cytoscape.biogwplugin.internal.util.Constants;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
+import org.jetbrains.annotations.Nullable;
 
-public class BGNetworkTableCreator {
+public class BGNetworkTableHelper {
 
     static void checkForMissingColumns(CyTable edgeTable, CyTable nodeTable) {
 
@@ -58,4 +61,13 @@ public class BGNetworkTableCreator {
         edgeTable.createColumn(identifier, classType, immutable);
         return true;
     }
-}
+
+    @Nullable
+    public static String getStringForEdgeColumnName(CyEdge edge, String columnName, CyNetwork network) {
+        return network.getDefaultEdgeTable().getRow(edge.getSUID()).get(columnName, String.class);
+    }
+
+    @Nullable
+    public static Double getDoubleForEdgeColumnName(CyEdge edge, String columnName, CyNetwork network) {
+        return network.getDefaultEdgeTable().getRow(edge.getSUID()).get(columnName, Double.class);
+    }}

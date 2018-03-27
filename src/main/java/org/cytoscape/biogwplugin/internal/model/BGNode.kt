@@ -1,6 +1,10 @@
 package org.cytoscape.biogwplugin.internal.model
 
 import org.cytoscape.biogwplugin.internal.gui.BGColorableText
+import org.cytoscape.biogwplugin.internal.parser.getDescription
+import org.cytoscape.biogwplugin.internal.parser.getName
+import org.cytoscape.biogwplugin.internal.parser.getUri
+import org.cytoscape.model.CyNetwork
 import org.cytoscape.model.CyNode
 import java.awt.Color
 
@@ -84,6 +88,12 @@ open class BGNode {
         this.taxon = taxon
     }
 
+    // TODO: Check that these values exist! The URI table might not even be present!
+    constructor(cyNode: CyNode, network: CyNetwork): this(cyNode.getUri(network)) {
+        this.description = cyNode.getDescription(network) ?: ""
+        this.name = cyNode.getName(network) ?: ""
+    }
+
     fun generateName(): String {
 
         if (type == BGNodeType.Pubmed) {
@@ -143,7 +153,7 @@ open class BGNode {
                 uri.contains("pubmed") -> BGNodeType.Pubmed
                 uri.contains("GOA_") -> BGNodeType.GOA
                 uri.contains("/omim/") -> BGNodeType.Disease
-                uri.contains("semantic-systems-biology.org/") -> BGNodeType.TFTG // TODO: Need a better identifier!
+                uri.contains("tf2tg") -> BGNodeType.TFTG // TODO: Need a better identifier!
                 else -> {
                     BGNodeType.Undefined
                 }

@@ -93,24 +93,42 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
 
         val RELATED_MATCH_URI = "http://www.w3.org/2004/02/skos/core#relatedMatch"
         val HAS_SOURCE_URI = "http://semanticscience.org/resource/SIO_000253"
+        val REFERENCE_URI = "http://www.w3.org/2004/02/skos/core#reference"
 
-        val query = BGFetchAttributeValuesQuery(serviceManager, nodeUri, HAS_SOURCE_URI, "?graph", BGRelationDirection.FROM)
+
+        val nodeType = BGNode(nodeUri).type
+
+        val relationUri = when (nodeType) {
+            BGNodeType.TFTG -> REFERENCE_URI
+            BGNodeType.GOA -> RELATED_MATCH_URI
+            else -> {
+                HAS_SOURCE_URI
+            }
+        }
+
+
+
+        val query = BGFetchAttributeValuesQuery(serviceManager, nodeUri, relationUri, "?graph", BGRelationDirection.FROM)
         query.run()
         val data = query.returnData as? BGReturnMetadata ?: return null
 
-        if (data.values.size == 0) return null
+        val validResults = data.values.filter { it.toLowerCase().contains("pubmed") }
 
-        if (data.values.size == 1) {
+        val validURLs = validResults.map { it.replace("PubMed:", "http://identifiers.org/pubmed/") }
+
+        if (validURLs.size == 0) return null
+
+        if (validURLs.size == 1) {
             val item = JMenuItem("Open PubMed Annotation")
             item.addActionListener {
                 if (Desktop.isDesktopSupported()) {
-                    Desktop.getDesktop().browse(URI(data.values[0]))
+                    Desktop.getDesktop().browse(URI(validURLs[0]))
                 }
             }
             return item
         }
 
-        val uris = data.values.map { Utility.sanitizeParameter(it) }
+        val uris = validURLs.map { Utility.sanitizeParameter(it) }
 
         for ((index, uri) in uris.withIndex()) {
             val label = "["+index+"]: "+uri

@@ -1,10 +1,13 @@
 package org.cytoscape.biogwplugin.internal.model
 
-class BGRelation(var fromNode: BGNode, val relationType: BGRelationType, var toNode: BGNode) {
 
-    val metadata = HashMap<BGRelationMetadataType, BGRelationMetadata>()
-
+open class BGPrimitiveRelation(val fromNodeUri: String, val relationType: BGRelationType, val toNodeUri: String) {
     var sourceGraph: String = ""
+    val metadata = HashMap<BGRelationMetadataType, BGRelationMetadata>()
+}
+
+class BGRelation(val fromNode: BGNode, relationType: BGRelationType, val toNode: BGNode): BGPrimitiveRelation(fromNode.uri, relationType, toNode.uri) {
+
 
     val edgeIdentifier: String
         get() = fromNode.uri+"::"+relationType.identifier+"::"+toNode.uri

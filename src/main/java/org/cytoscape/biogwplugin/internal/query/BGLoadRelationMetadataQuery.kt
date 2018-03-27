@@ -1,6 +1,7 @@
 package org.cytoscape.biogwplugin.internal.query
 
 import org.cytoscape.biogwplugin.internal.BGServiceManager
+import org.cytoscape.biogwplugin.internal.model.BGPrimitiveRelation
 import org.cytoscape.biogwplugin.internal.model.BGRelation
 import org.cytoscape.biogwplugin.internal.model.BGRelationMetadata
 import org.cytoscape.biogwplugin.internal.model.BGRelationMetadataType
@@ -9,7 +10,7 @@ import org.cytoscape.work.TaskMonitor
 import java.util.concurrent.TimeUnit
 
 /// Loads all specified metadata types for the specified relations, where the relations' type is supported by the metadata type.
-class BGLoadRelationMetadataQuery(val serviceManager: BGServiceManager, val relations: Collection<BGRelation>, val activeMetadataTypes: Collection<BGRelationMetadataType>, val completion: () -> Unit): AbstractTask(), Runnable {
+class BGLoadRelationMetadataQuery(val serviceManager: BGServiceManager, val relations: Collection<BGPrimitiveRelation>, val activeMetadataTypes: Collection<BGRelationMetadataType>, val completion: () -> Unit): AbstractTask(), Runnable {
 
     var taskMonitor: TaskMonitor? = null
 
@@ -20,7 +21,7 @@ class BGLoadRelationMetadataQuery(val serviceManager: BGServiceManager, val rela
 
     override fun run() {
         taskMonitor?.setTitle("Loading metadata...")
-        val metadataRelations = HashMap<BGRelationMetadataType, HashSet<BGRelation>>()
+        val metadataRelations = HashMap<BGRelationMetadataType, HashSet<BGPrimitiveRelation>>()
         // Create a map between metadata types and the relations they support.
 
         for (metadataType in activeMetadataTypes) {
@@ -44,9 +45,9 @@ class BGLoadRelationMetadataQuery(val serviceManager: BGServiceManager, val rela
                 counter++
 
                 val query = BGFetchMetadataQuery(serviceManager,
-                        relation.fromNode.uri,
+                        relation.fromNodeUri,
                         relation.relationType.uri,
-                        relation.toNode.uri,
+                        relation.toNodeUri,
                         relation.sourceGraph,
                         metadataType.relationUri)
 

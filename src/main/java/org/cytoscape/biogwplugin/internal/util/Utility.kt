@@ -103,19 +103,25 @@ object Utility {
     fun resetBioGatewayVisualStyle(serviceManager: BGServiceManager) {
         // Making sure we make a copy of the array of references, so we can delete them without ConcurrentModificationException.
         val styles = serviceManager.adapter?.visualMappingManager?.allVisualStyles?.toTypedArray()?.copyOf()
+
+        var updateStyle = false
+
         if (styles != null) {
             for (style in styles) {
                 if (style.title.equals("BioGateway")) {
-                    serviceManager.adapter?.visualMappingManager?.removeVisualStyle(style)
+                    updateStyle = (serviceManager.visualMappingManager?.currentVisualStyle == style)
+                    serviceManager.visualMappingManager?.removeVisualStyle(style)
                 }
             }
         }
         val defaultStyle = serviceManager.visualStyleBuilder.generateStyle()
         serviceManager.adapter?.visualMappingManager?.addVisualStyle(defaultStyle)
-//        serviceManager.eventHelper?.flushPayloadEvents()
-//        serviceManager.applicationManager?.currentNetworkView?.let {
-//            defaultStyle.apply(it)
-//        }
+        serviceManager.eventHelper?.flushPayloadEvents()
+        if (updateStyle) {
+            serviceManager.applicationManager?.currentNetworkView?.let {
+                defaultStyle.apply(it)
+            }
+        }
     }
 
     fun reloadCurrentVisualStyleCurrentNetworkView(serviceManager: BGServiceManager) {

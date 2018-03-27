@@ -3,12 +3,16 @@ package org.cytoscape.biogwplugin.internal.model
 import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.libs.JCheckBoxTree
 import org.cytoscape.biogwplugin.internal.parser.*
+import org.cytoscape.biogwplugin.internal.parser.BGNetworkTableHelper.getStringForEdgeColumnName
 import org.cytoscape.biogwplugin.internal.query.*
 import org.cytoscape.biogwplugin.internal.server.BGSettings
 import org.cytoscape.biogwplugin.internal.util.Constants
 import org.cytoscape.biogwplugin.internal.util.Constants.BG_SHOULD_USE_BG_DICT
 import org.cytoscape.biogwplugin.internal.util.Utility
+import org.cytoscape.model.CyEdge
 import org.cytoscape.model.CyNetwork
+import org.cytoscape.model.CyNode
+import org.cytoscape.model.CyTable
 import java.io.IOException
 import java.net.URL
 import java.util.concurrent.TimeUnit
@@ -59,12 +63,12 @@ class BGDataModelController(private val serviceManager: BGServiceManager) {
 
         var queryConstraints = HashMap<String, BGQueryConstraint>()
         var metadataTypes = HashMap<String, BGRelationMetadataType>()
-        var datasetSources = HashMap<String, BGDatasetSource>()
+        var datasetSources = HashMap<BGRelationType, HashSet<BGDatasetSource>>()
 
         var relationMetadataTypesNode = DefaultMutableTreeNode("Metadata Types")
         var queryConstraintsRootNode = DefaultMutableTreeNode("Query Constraints")
         var sourcesRootNode = DefaultMutableTreeNode("Sources")
-        var relationTypesRootNode = DefaultMutableTreeNode("Graphs")
+        var relationTypesRootNode = DefaultMutableTreeNode("Datasets")
         var configPanelRootNode = DefaultMutableTreeNode("Root")
         var configPanelTreeModel: DefaultTreeModel = DefaultTreeModel(configPanelRootNode)
 
@@ -171,8 +175,8 @@ class BGDataModelController(private val serviceManager: BGServiceManager) {
         for (graph in cache.relationTypesForGraphs.keys) {
             val graphNode = if (graph.isNotBlank()) DefaultMutableTreeNode(graph) else DefaultMutableTreeNode("Unspecified")
             cache.relationTypesForGraphs[graph]?.let {
-                for (child in it.values) {
-                    val childNode = BGRelationTypeTreeNode(child)
+                for (relationType in it.values) {
+                    val childNode = BGRelationTypeTreeNode(relationType)
                     graphNode.add(childNode)
                 }
             }
@@ -187,10 +191,29 @@ class BGDataModelController(private val serviceManager: BGServiceManager) {
             val node = BGQueryConstraintTreeNode(constraint)
             cache.queryConstraintsRootNode.add(node)
         }
-        for (source in cache.datasetSources.values) {
-            val node = BGSourceTreeNode(source)
-            cache.sourcesRootNode.add(node)
+        for (relationType in cache.datasetSources.keys) {
+            val graph = relationType.defaultGraphName ?: "Unspecified"
+            val graphNode = getChildNode(graph, cache.sourcesRootNode)
+            val relationTypeNode = getChildNode(relationType.name, graphNode)
+            cache.datasetSources[relationType]?.let {
+                for (source in it) {
+                    val sourceNode = BGSourceTreeNode(source)
+                    relationTypeNode.add(sourceNode)
+                }
+            }
         }
+    }
+
+    private fun getChildNode(name: String, parentNode: DefaultMutableTreeNode): DefaultMutableTreeNode {
+        val nodes = parentNode.children().toList()
+                .filter { it is DefaultMutableTreeNode }
+                .map { it as DefaultMutableTreeNode }
+                .filter { it.userObject.equals(name) }
+        if (nodes.count() > 1) throw Exception("Duplicate graph nodes!")
+        if (nodes.count() == 1) return nodes[0]
+        val node = DefaultMutableTreeNode(name)
+        parentNode.add(node)
+        return node
     }
 
     private inline fun <reified T: DefaultMutableTreeNode> setSelectionFromPreferencesForType(tree: JCheckBoxTree, rootNode: DefaultMutableTreeNode, selection: (T) -> Boolean) {
@@ -211,7 +234,7 @@ class BGDataModelController(private val serviceManager: BGServiceManager) {
             preferencesManager.getSelected("activeConstraints", it.constraint.id)
         }
         setSelectionFromPreferencesForType<BGSourceTreeNode>(tree, cache.sourcesRootNode) {
-            preferencesManager.getSelected("activeSources", it.source.uri)
+            preferencesManager.getSelected("activeSources", it.source.toString())
         }
         tree.repaint()
     }
@@ -225,15 +248,14 @@ class BGDataModelController(private val serviceManager: BGServiceManager) {
             val active = cache.activeMetadataTypes.contains(metadataType)
             preferencesManager.setSelected("activeMetadataTypes", metadataType.id, active)
         }
-        // TODO: Rewrite for constraints
         for (constraint in cache.queryConstraints.values) {
             val active = cache.activeConstraints.contains(constraint)
             preferencesManager.setSelected("activeConstraints", constraint.id, active)
         }
-        // TODO: Rewrite for sources
-        for (source in cache.datasetSources.values) {
+        val sources = cache.datasetSources.values.fold(HashSet<BGDatasetSource>()) {acc, hashSet -> acc.union(hashSet).toHashSet() }
+        for (source in sources) {
             val active = cache.activeSources.contains(source)
-            preferencesManager.setSelected("activeSources", source.uri, active)
+            preferencesManager.setSelected("activeSources", source.toString(), active)
         }
         preferencesManager.prefs.flush()
     }
@@ -441,6 +463,8 @@ class BGDataModelController(private val serviceManager: BGServiceManager) {
         }
         return null
     }
+
+
 
 
 
