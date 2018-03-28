@@ -148,15 +148,21 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager, val constraintPane
 
     fun generateSPARQLQuery(): String {
         val queryComponents = generateReturnValuesAndGraphQueries()
-
+        val queryWildcards = variableManager.usedVariables.values.toHashSet()
+                .sorted()
+                .map { "?"+it }
+                .reduce { acc, s -> acc+" "+s }
+        val header = "#QUERY <http://www.semantic-systems-biology.org/biogateway/endpoint>\n"
         val query = "BASE <http://www.semantic-systems-biology.org/>\n" +
                 "SELECT DISTINCT " + queryComponents.first + "\n" +
                 "WHERE {\n" +
-                queryComponents.second +
-                queryComponents.third +
-                "}"
+                "{ SELECT DISTINCT "+queryWildcards+"\n" +
+                "WHERE {\n" +
+                 queryComponents.second +
+                "}}\n\n"+
+                queryComponents.third + "}"
 
-        return query
+        return header+query
     }
 
     fun generateSPARQLCountQuery(): String {
@@ -165,7 +171,7 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager, val constraintPane
                 "SELECT COUNT (*) \n" +
                 "WHERE {\n" +
                 graphQueries.second +
-                graphQueries.third +
+                //graphQueries.third +
                 "}"
 
         return query
