@@ -131,7 +131,7 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
         val uris = validURLs.map { Utility.sanitizeParameter(it) }
 
         for ((index, uri) in uris.withIndex()) {
-            val label = "["+index+"]: "+uri
+            val label = "["+(index+1)+"]: "+uri
             val item = JMenuItem(label)
             item.addActionListener {
                 if (Desktop.isDesktopSupported()) {
