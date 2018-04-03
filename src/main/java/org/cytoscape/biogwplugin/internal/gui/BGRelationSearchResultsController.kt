@@ -2,13 +2,11 @@ package org.cytoscape.biogwplugin.internal.gui
 
 import org.cytoscape.biogwplugin.internal.BGServiceManager
 import org.cytoscape.biogwplugin.internal.model.BGRelation
-import org.cytoscape.biogwplugin.internal.query.BGFetchConfidenceValues
 import org.cytoscape.biogwplugin.internal.query.BGLoadRelationMetadataQuery
 import org.cytoscape.biogwplugin.internal.query.BGReturnRelationsData
 import org.cytoscape.biogwplugin.internal.util.Constants
 import org.cytoscape.biogwplugin.internal.util.Utility
 import org.cytoscape.model.CyNetwork
-import org.cytoscape.work.TaskIterator
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import java.util.*
@@ -89,12 +87,12 @@ class BGRelationSearchResultsController(val serviceManager: BGServiceManager, pr
 //        }
     }
 
-    override fun actionPerformed(e: ActionEvent?) {
-        if (e != null) {
-            if (e.actionCommand == BGRelationSearchResultsView.ACTION_IMPORT) {
+    override fun actionPerformed(error: ActionEvent?) {
+        if (error != null) {
+            if (error.actionCommand == BGRelationSearchResultsView.ACTION_IMPORT) {
                 importSelected()
             }
-            if (e.actionCommand == BGRelationSearchResultsView.ACTION_IMPORT_BETWEEN_EXISTING) {
+            if (error.actionCommand == BGRelationSearchResultsView.ACTION_IMPORT_BETWEEN_EXISTING) {
                 importBetweenExistingNodes()
             }
         }

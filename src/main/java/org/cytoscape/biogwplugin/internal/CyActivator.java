@@ -78,16 +78,6 @@ public class CyActivator extends AbstractCyActivator {
         });
         registerService(context, reloadDataModelAction, CyAction.class, new Properties());
 
-        BGCreateAction importStyleAction = new BGCreateAction("Import the BioGateway visual style", "always", serviceManager, new BGAction() {
-            @Override
-            public void action(BGServiceManager serviceManager) {
-                VisualStyle style = serviceManager.getVisualStyleBuilder().generateStyle();
-                serviceManager.getVisualManager().addVisualStyle(style);
-            }
-        });
-        // This is disabled, as the style is imported automatically.
-        //registerService(context, importStyleAction, CyAction.class, new Properties());
-
         BGControlPanel controlPanel = new BGControlPanel(serviceManager);
         serviceManager.setControlPanel(controlPanel);
         registerService(context, controlPanel, CytoPanelComponent.class, new Properties());
