@@ -80,9 +80,11 @@ class BGDictEndpoint(internal var endpointUrl: String) {
         val statusCode = response.statusLine.statusCode
         val data = EntityUtils.toString(response.entity)
 
-        val suggestion = gson.fromJson<Suggestion>(data)
-
-        return suggestion
+        return try {
+            gson.fromJson<Suggestion>(data)
+        } catch (e: JsonSyntaxException) {
+            null
+        }
     }
 
     fun searchForLabel(term: String, type: String, limit: Int): ArrayList<Suggestion> {
