@@ -39,9 +39,10 @@ class BGExpandEdgeDoubleClickEVTF(val serviceManager: BGServiceManager): EdgeVie
 
         // The PPI edges returns a multipart type results.
 
+        // TODO: This block is useless now.
         val returnType = when (edgeUri == PPI_URI) {
             false -> BGReturnType.RELATION_MULTIPART
-            true -> BGReturnType.RELATION_TRIPLE_GRAPHURI
+            true -> BGReturnType.RELATION_MULTIPART
         }
 
         val query = BGExpandRelationToNodesQuery(serviceManager, fromNodeUri, toNodeUri, relationType, returnType)

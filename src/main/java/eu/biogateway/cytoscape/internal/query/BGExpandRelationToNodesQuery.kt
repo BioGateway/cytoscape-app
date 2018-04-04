@@ -18,7 +18,7 @@ class BGExpandRelationToNodesQuery(serviceManager: BGServiceManager, val fromNod
 
         if (relationType.defaultGraphName == "goa") return generateQueryString("goa")
         if (relationType.defaultGraphName == "tf-tg") return generateQueryString("tf-tg")
-        if (relationType.defaultGraphName == "intact") return generatePPIQueryString()
+        if (relationType.defaultGraphName == "intact") return generatePPIQueryString2()
 
         throw Exception("Missing or invalid default graph name!")
     }
@@ -27,7 +27,7 @@ class BGExpandRelationToNodesQuery(serviceManager: BGServiceManager, val fromNod
         return "BASE <http://www.semantic-systems-biology.org/> \n" +
                 "PREFIX object: <"+toNode+">\n" +
                 "PREFIX subject: <"+fromNode+">\n" +
-                "SELECT distinct ?a as ?a1 <goa> ?rel1 object: ?a as ?a2 <goa> ?rel2 subject:\n" +
+                "SELECT distinct ?a as ?a1 <"+graphName+"> ?rel1 object: ?a as ?a2 <"+graphName+"> ?rel2 subject:\n" +
                 "WHERE {  \n" +
                 " GRAPH <"+graphName+"> {  \n" +
                 "\t ?a ?rel2 subject: .\n" +
@@ -57,5 +57,19 @@ class BGExpandRelationToNodesQuery(serviceManager: BGServiceManager, val fromNod
                 "?ppi has_agent: ?node .\n" +
                 "}}}}"
 
+    }
+
+    private fun generatePPIQueryString2(): String {
+        return "BASE <http://www.semantic-systems-biology.org/> \n" +
+                "PREFIX object: <"+toNode+">\n" +
+                "PREFIX subject: <"+fromNode+">\n" +
+                "PREFIX has_agent: <http://semanticscience.org/resource/SIO_000139>\n"+
+                "SELECT distinct ?a as ?a1 <intact> has_agent: object: ?a as ?a2 <intact> has_agent: subject:\n" +
+                "WHERE {  \n" +
+                " GRAPH <intact> {  \n" +
+                "\t ?a has_agent: subject: .\n" +
+                "\t ?a has_agent: object: .\n" +
+                " }\n" +
+                "}"
     }
 }
