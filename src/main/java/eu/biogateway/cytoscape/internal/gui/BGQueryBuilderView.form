@@ -1,0 +1,406 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="eu.biogateway.cytoscape.internal.gui.BGQueryBuilderView">
+  <grid id="27dc6" binding="mainPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
+    <constraints>
+      <xy x="20" y="20" width="1129" height="400"/>
+    </constraints>
+    <properties/>
+    <border type="none"/>
+    <children>
+      <tabbedpane id="fa4a1" binding="tabPanel">
+        <constraints border-constraint="Center"/>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <grid id="1ccbb" layout-manager="BorderLayout" hgap="0" vgap="0">
+            <constraints>
+              <tabbedpane title="Build Query"/>
+            </constraints>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <grid id="4f0fe" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+                <constraints border-constraint="South"/>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="86035" class="javax.swing.JButton" binding="addLineButton" default-binding="true">
+                    <constraints/>
+                    <properties>
+                      <text value="Add Line"/>
+                    </properties>
+                  </component>
+                  <component id="f528e" class="javax.swing.JButton" binding="generateSPARQLButton">
+                    <constraints/>
+                    <properties>
+                      <text value="Generate SPARQL"/>
+                    </properties>
+                  </component>
+                  <component id="6eb46" class="javax.swing.JButton" binding="loadQueryButton" default-binding="true">
+                    <constraints/>
+                    <properties>
+                      <text value="Load Query"/>
+                    </properties>
+                  </component>
+                  <component id="61d45" class="javax.swing.JButton" binding="saveQueryButton" default-binding="true">
+                    <constraints/>
+                    <properties>
+                      <text value="Save Query"/>
+                    </properties>
+                  </component>
+                  <component id="55426" class="javax.swing.JButton" binding="runChainQueryButton">
+                    <constraints/>
+                    <properties>
+                      <text value="Run Query"/>
+                    </properties>
+                  </component>
+                </children>
+              </grid>
+              <grid id="7871f" binding="multiQueryContainer" layout-manager="BorderLayout" hgap="0" vgap="0">
+                <constraints border-constraint="Center"/>
+                <properties/>
+                <border type="none"/>
+                <children/>
+              </grid>
+            </children>
+          </grid>
+          <grid id="f0eaf" layout-manager="BorderLayout" hgap="0" vgap="0">
+            <constraints>
+              <tabbedpane title="Bulk Import"/>
+            </constraints>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <grid id="b54ad" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+                <constraints border-constraint="South"/>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="95491" class="javax.swing.JButton" binding="bulkSearchButton" default-binding="true">
+                    <constraints/>
+                    <properties>
+                      <text value="Bulk Search"/>
+                    </properties>
+                  </component>
+                  <component id="b2116" class="javax.swing.JButton" binding="bulkImportSelectedNodesNewButton">
+                    <constraints/>
+                    <properties>
+                      <text value="Import selected nodes to new network"/>
+                    </properties>
+                  </component>
+                  <component id="1b49c" class="javax.swing.JButton" binding="bulkImportSelectedCurrentButton">
+                    <constraints/>
+                    <properties>
+                      <text value="Import selected nodes to current network"/>
+                    </properties>
+                  </component>
+                </children>
+              </grid>
+              <grid id="14193" layout-manager="BorderLayout" hgap="0" vgap="0">
+                <constraints border-constraint="Center"/>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <grid id="53df2" layout-manager="BorderLayout" hgap="0" vgap="0">
+                    <constraints border-constraint="West"/>
+                    <properties/>
+                    <border type="none"/>
+                    <children>
+                      <scrollpane id="f6a90">
+                        <constraints border-constraint="Center"/>
+                        <properties/>
+                        <border type="none"/>
+                        <children>
+                          <component id="aaa28" class="javax.swing.JTextPane" binding="bulkImportTextPane">
+                            <constraints/>
+                            <properties/>
+                          </component>
+                        </children>
+                      </scrollpane>
+                      <component id="6651c" class="javax.swing.JLabel">
+                        <constraints border-constraint="North"/>
+                        <properties>
+                          <text value="  Paste genes/proteins here:  "/>
+                        </properties>
+                      </component>
+                    </children>
+                  </grid>
+                  <grid id="a5101" layout-manager="BorderLayout" hgap="0" vgap="0">
+                    <constraints border-constraint="Center"/>
+                    <properties/>
+                    <border type="none"/>
+                    <children>
+                      <scrollpane id="53706">
+                        <constraints border-constraint="Center"/>
+                        <properties/>
+                        <border type="none"/>
+                        <children>
+                          <component id="a1b57" class="javax.swing.JTable" binding="bulkImportResultTable">
+                            <constraints/>
+                            <properties>
+                              <autoCreateRowSorter value="false"/>
+                            </properties>
+                          </component>
+                        </children>
+                      </scrollpane>
+                    </children>
+                  </grid>
+                </children>
+              </grid>
+              <grid id="2f44a" layout-manager="BorderLayout" hgap="0" vgap="0">
+                <constraints border-constraint="East"/>
+                <properties/>
+                <border type="none"/>
+                <children/>
+              </grid>
+              <grid id="51bb3" layout-manager="BorderLayout" hgap="0" vgap="0">
+                <constraints border-constraint="North"/>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <grid id="3b64e" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="0">
+                    <constraints border-constraint="West"/>
+                    <properties/>
+                    <border type="none"/>
+                    <children>
+                      <component id="64d82" class="javax.swing.JComboBox" binding="bulkImportTypeComboBox">
+                        <constraints/>
+                        <properties>
+                          <model>
+                            <item value="Gene names"/>
+                            <item value="Protein names"/>
+                            <item value="Uniprot IDs"/>
+                            <item value="GO terms"/>
+                          </model>
+                        </properties>
+                      </component>
+                      <component id="f8085" class="javax.swing.JLabel">
+                        <constraints/>
+                        <properties>
+                          <text value="to import:"/>
+                        </properties>
+                      </component>
+                    </children>
+                  </grid>
+                  <grid id="52667" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+                    <constraints border-constraint="East"/>
+                    <properties/>
+                    <border type="none"/>
+                    <children>
+                      <component id="5da6a" class="javax.swing.JLabel">
+                        <constraints/>
+                        <properties>
+                          <text value="Filter results:"/>
+                        </properties>
+                      </component>
+                      <component id="3c5b0" class="javax.swing.JTextField" binding="bulkFilterTextField">
+                        <constraints/>
+                        <properties>
+                          <columns value="10"/>
+                        </properties>
+                      </component>
+                    </children>
+                  </grid>
+                </children>
+              </grid>
+            </children>
+          </grid>
+          <grid id="b3611" binding="queryPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
+            <constraints>
+              <tabbedpane title="Predefined Queries"/>
+            </constraints>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <grid id="fef17" binding="buttonPanel" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+                <constraints border-constraint="South"/>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="d2d61" class="javax.swing.JButton" binding="runQueryButton" default-binding="true">
+                    <constraints/>
+                    <properties>
+                      <text value="Run Query"/>
+                    </properties>
+                  </component>
+                </children>
+              </grid>
+              <grid id="868ac" layout-manager="BorderLayout" hgap="0" vgap="0">
+                <constraints border-constraint="Center"/>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <grid id="a8a4b" binding="parameterPanel" layout-manager="GridBagLayout">
+                    <constraints border-constraint="Center"/>
+                    <properties/>
+                    <border type="none"/>
+                    <children/>
+                  </grid>
+                  <grid id="86fdc" layout-manager="BorderLayout" hgap="0" vgap="0">
+                    <constraints border-constraint="North"/>
+                    <properties/>
+                    <border type="none"/>
+                    <children>
+                      <grid id="ca358" binding="descriptionPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
+                        <constraints border-constraint="South"/>
+                        <properties/>
+                        <border type="none"/>
+                        <children/>
+                      </grid>
+                      <component id="5f85b" class="javax.swing.JComboBox" binding="querySelectionBox">
+                        <constraints border-constraint="North"/>
+                        <properties/>
+                      </component>
+                    </children>
+                  </grid>
+                </children>
+              </grid>
+            </children>
+          </grid>
+          <grid id="9ef6a" binding="sparqlPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
+            <constraints>
+              <tabbedpane title="SPARQL Code"/>
+            </constraints>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <scrollpane id="8849a">
+                <constraints border-constraint="Center"/>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="a623b" class="javax.swing.JTextArea" binding="sparqlTextArea">
+                    <constraints/>
+                    <properties/>
+                  </component>
+                </children>
+              </scrollpane>
+              <grid id="caa75" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+                <constraints border-constraint="South"/>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="98b50" class="javax.swing.JButton" binding="parseSPARQLButton">
+                    <constraints/>
+                    <properties>
+                      <text value="Parse SPARQL to Biogateway Query"/>
+                    </properties>
+                  </component>
+                </children>
+              </grid>
+            </children>
+          </grid>
+          <grid id="a8fb2" binding="resultPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
+            <constraints>
+              <tabbedpane title="Query Result"/>
+            </constraints>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <grid id="51d4a" layout-manager="BorderLayout" hgap="0" vgap="0">
+                <constraints border-constraint="Center"/>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <scrollpane id="6d909">
+                    <constraints border-constraint="Center"/>
+                    <properties/>
+                    <border type="none"/>
+                    <children>
+                      <component id="c341a" class="javax.swing.JTable" binding="resultTable" custom-create="true">
+                        <constraints/>
+                        <properties>
+                          <autoCreateRowSorter value="false"/>
+                          <fillsViewportHeight value="false"/>
+                        </properties>
+                      </component>
+                    </children>
+                  </scrollpane>
+                  <grid id="6980a" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+                    <constraints border-constraint="South"/>
+                    <properties/>
+                    <border type="none"/>
+                    <children>
+                      <component id="90933" class="javax.swing.JButton" binding="importToNewButton">
+                        <constraints/>
+                        <properties>
+                          <text value="Import to new Network"/>
+                        </properties>
+                      </component>
+                      <component id="7ab3d" class="javax.swing.JButton" binding="importToSelectedNetworkButton" default-binding="true">
+                        <constraints/>
+                        <properties>
+                          <text value="Import to selected Network"/>
+                        </properties>
+                      </component>
+                      <component id="34e70" class="javax.swing.JCheckBox" binding="filterRelationsToExistingCheckBox">
+                        <constraints/>
+                        <properties>
+                          <text value="Only show relations to nodes in current network"/>
+                        </properties>
+                      </component>
+                    </children>
+                  </grid>
+                  <grid id="11213" layout-manager="BorderLayout" hgap="0" vgap="0">
+                    <constraints border-constraint="North"/>
+                    <properties/>
+                    <border type="none"/>
+                    <children>
+                      <grid id="2e713" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+                        <constraints border-constraint="West"/>
+                        <properties/>
+                        <border type="none"/>
+                        <children>
+                          <component id="83b72" class="javax.swing.JButton" binding="selectUpstreamRelationsButton" default-binding="true">
+                            <constraints/>
+                            <properties>
+                              <horizontalTextPosition value="11"/>
+                              <text value="Select relations leading to selection"/>
+                              <toolTipText value="Select all relations leading to the relations currently selected."/>
+                            </properties>
+                          </component>
+                          <component id="a2cfd" class="javax.swing.JCheckBox" binding="filterSelectedCheckBox" default-binding="true">
+                            <constraints/>
+                            <properties>
+                              <text value="Filter selected"/>
+                              <toolTipText value="Only show currently selected relations."/>
+                            </properties>
+                          </component>
+                        </children>
+                      </grid>
+                      <grid id="fe9b2" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+                        <constraints border-constraint="East"/>
+                        <properties/>
+                        <border type="none"/>
+                        <children>
+                          <component id="aec48" class="javax.swing.JLabel">
+                            <constraints/>
+                            <properties>
+                              <text value="Filter results:"/>
+                            </properties>
+                          </component>
+                          <component id="f056c" class="javax.swing.JTextField" binding="filterResultsTextField">
+                            <constraints/>
+                            <properties>
+                              <columns value="10"/>
+                            </properties>
+                          </component>
+                        </children>
+                      </grid>
+                    </children>
+                  </grid>
+                </children>
+              </grid>
+            </children>
+          </grid>
+        </children>
+      </tabbedpane>
+      <grid id="43b35" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+        <constraints border-constraint="North"/>
+        <properties/>
+        <border type="none"/>
+        <children/>
+      </grid>
+    </children>
+  </grid>
+</form>

@@ -1,8 +1,8 @@
-package org.cytoscape.biogwplugin.internal.query
+package eu.biogateway.cytoscape.internal.query
 
-import org.cytoscape.biogwplugin.internal.BGServiceManager
-import org.cytoscape.biogwplugin.internal.model.BGNodeType
-import org.cytoscape.biogwplugin.internal.util.Utility
+import eu.biogateway.cytoscape.internal.BGServiceManager
+import eu.biogateway.cytoscape.internal.model.BGNodeType
+import eu.biogateway.cytoscape.internal.util.Utility
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import java.util.concurrent.CompletableFuture

@@ -1,7 +1,7 @@
-package org.cytoscape.biogwplugin.internal.query
+package eu.biogateway.cytoscape.internal.query
 
-import org.cytoscape.biogwplugin.internal.BGServiceManager
-import org.cytoscape.biogwplugin.internal.model.BGNode
+import eu.biogateway.cytoscape.internal.BGServiceManager
+import eu.biogateway.cytoscape.internal.model.BGNode
 import org.junit.jupiter.api.Test
 
 internal class BGLoadUnloadedNodesTest {

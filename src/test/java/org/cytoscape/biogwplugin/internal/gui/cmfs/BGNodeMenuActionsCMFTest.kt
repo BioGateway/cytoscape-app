@@ -1,4 +1,4 @@
-package org.cytoscape.biogwplugin.internal.gui.cmfs
+package eu.biogateway.cytoscape.internal.gui.cmfs
 
 import org.junit.jupiter.api.Test
 

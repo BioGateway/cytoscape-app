@@ -1,6 +1,6 @@
-package org.cytoscape.biogwplugin.internal.gui
+package eu.biogateway.cytoscape.internal.gui
 
-import org.cytoscape.biogwplugin.internal.BGServiceManager
+import eu.biogateway.cytoscape.internal.BGServiceManager
 import org.junit.jupiter.api.Test
 
 internal class BGQueryBuilderControllerTest {

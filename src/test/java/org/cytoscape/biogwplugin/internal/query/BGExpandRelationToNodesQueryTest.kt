@@ -1,7 +1,7 @@
-package org.cytoscape.biogwplugin.internal.query
+package eu.biogateway.cytoscape.internal.query
 
-import org.cytoscape.biogwplugin.internal.BGServiceManager
-import org.cytoscape.biogwplugin.internal.parser.BGReturnType
+import eu.biogateway.cytoscape.internal.BGServiceManager
+import eu.biogateway.cytoscape.internal.parser.BGReturnType
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 

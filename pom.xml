@@ -2,8 +2,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<properties>
-		<bundle.symbolicName>org.cytoscape.biogwplugin</bundle.symbolicName>
-		<bundle.namespace>org.cytoscape.biogwplugin</bundle.namespace>
+		<bundle.symbolicName>eu.biogateway.cytoscape</bundle.symbolicName>
+		<bundle.namespace>eu.biogateway.cytoscape</bundle.namespace>
         <kotlin.version>1.2.30</kotlin.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
