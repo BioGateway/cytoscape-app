@@ -6,6 +6,8 @@ package eu.biogateway.cytoscape.internal.util
 
 
 object Constants {
+    val PROFILING = true
+
     val BG_SELECTED_ACTIVE_RELATION_TYPES = "biogatewayPluginActiveRelationTypes"
     val BG_SHOULD_USE_BG_DICT = true
     val BG_FIELD_IDENTIFIER_URI = "identifier uri"

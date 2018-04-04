@@ -26,12 +26,6 @@ internal class BGFetchAggregatedRelationForNodeQueryTest {
         validate(query.futureReturnData, 1)
     }
 
-    @Test
-    internal fun PPIRelationTest() {
-        val query = BGFetchAggregatedPPIRelationForNodeQuery(BGServiceManager(), ppiNode.uri)
-        Thread(query).start()
-        validate(query.futureReturnData, 2) // Will find one for each direction.
-    }
 
     private fun validate(result: CompletableFuture<BGReturnData>, expectedResultCount: Int) {
         val data = result.get() as BGReturnRelationsData

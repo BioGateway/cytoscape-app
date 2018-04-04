@@ -6,9 +6,12 @@ import eu.biogateway.cytoscape.internal.model.BGRelation
 import eu.biogateway.cytoscape.internal.model.BGRelationMetadata
 import eu.biogateway.cytoscape.internal.model.BGRelationType
 import eu.biogateway.cytoscape.internal.query.*
+import eu.biogateway.cytoscape.internal.util.Constants
 import eu.biogateway.cytoscape.internal.util.sanitizeParameter
 import org.cytoscape.work.TaskMonitor
 import java.io.BufferedReader
+import kotlin.system.measureNanoTime
+import kotlin.system.measureTimeMillis
 
 /**
  * Created by sholmas on 26/05/2017.
@@ -118,6 +121,7 @@ class BGParser(private val serviceManager: BGServiceManager) {
         val relationArray = ArrayList<BGRelation>()
 
         reader.forEachLine {
+            val parseLineTime = measureTimeMillis {
             if (cancelled) throw Exception("Cancelled.")
             val lineColumns = it.split("\t").dropLastWhile { it.isEmpty() }.toTypedArray()
             if (lineColumns.size != returnType.paremeterCount && returnType != BGReturnType.RELATION_MULTIPART) throw Exception("Number of columns in data array must match the parameter count of the query type!")
@@ -230,6 +234,9 @@ class BGParser(private val serviceManager: BGServiceManager) {
                 }
             }
         }
+            if (Constants.PROFILING) println("Line parse time: "+parseLineTime+"ms.")
+        }
+
 
         returnData.relationsData.addAll(relationMap.values)
 

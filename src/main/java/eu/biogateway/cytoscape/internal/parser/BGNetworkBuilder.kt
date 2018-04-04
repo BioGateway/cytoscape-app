@@ -11,6 +11,7 @@ import eu.biogateway.cytoscape.internal.model.*
 import eu.biogateway.cytoscape.internal.query.*
 import org.cytoscape.model.*
 import java.lang.Math.*
+import kotlin.system.measureTimeMillis
 
 fun Vector2D.getPerpendicular(): Vector2D {
     return Vector2D(this.y, -this.x)
@@ -215,11 +216,16 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
         val nodeUri = nodeView.model.getUri(network)
         val cyNode = nodeView.model
 
+        val startTime = System.currentTimeMillis()
+        val adjacentNodeUris = network.getAdjacentEdgeIterable(cyNode, CyEdge.Type.ANY).fold(HashSet<CyNode>()) { acc, cyEdge -> acc.union(setOf(cyEdge.source, cyEdge.target)).toHashSet() }.map { it.getUri(network) }
+        val adjacentNodeExecutionTime = System.currentTimeMillis() - startTime
+
         // Get the associated BGNode
-        val node = serviceManager.dataModelController.searchForExistingNode(nodeUri) ?: throw Exception("Node not found!")
+        val node = serviceManager.dataModelController.searchForExistingNode(nodeUri)
+                ?: throw Exception("Node not found!")
 
         val query: BGRelationQuery = when (node.type) {
-            BGNodeType.PPI -> BGFetchAggregatedPPIRelationForNodeQuery(serviceManager, nodeUri)
+            BGNodeType.PPI -> BGFetchAggregatedPPIRelationForNodeQuery(serviceManager, nodeUri, adjacentNodeUris)
             BGNodeType.TFTG, BGNodeType.GOA -> BGFetchAggregatedRelationForNodeQuery(serviceManager, node)
             else -> {
                 return
@@ -235,9 +241,9 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
 
         query.addCompletion {
             val data = it as BGReturnRelationsData
-            val relation = data.relationsData.first()
+            val filteredRelations = data.relationsData.filter { adjacentNodeUris.contains(it.fromNodeUri) }.filter { adjacentNodeUris.contains(it.toNodeUri) }
 
-            addRelationsToNetwork(network, data.relationsData)
+            addRelationsToNetwork(network, filteredRelations)
 
             if (cyNodes != null) {
                 network.removeNodes(cyNodes)
@@ -245,17 +251,12 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
                 network.removeNodes(arrayListOf(cyNode))
             }
         }
-        query.run()
-
-        /*
-        val toNodes = ArrayList<CyNode>()
-        val fromNodes = ArrayList<CyNode>()
-        for (edge in network.getAdjacentEdgeList(cyNode, CyEdge.Type.OUTGOING)) {
-            toNodes.add(edge.target)
+        val queryExecutionTime = measureTimeMillis {
+            query.run()
         }
-        for (edge in network.getAdjacentEdgeList(cyNode, CyEdge.Type.INCOMING)) {
-            fromNodes.add(edge.source)
-        }*/
+
+        if (Constants.PROFILING) print("Adjacent node execution: $adjacentNodeExecutionTime ms. Query execution: $queryExecutionTime ms.")
+
     }
 
 

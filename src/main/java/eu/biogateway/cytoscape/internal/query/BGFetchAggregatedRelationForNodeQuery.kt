@@ -4,6 +4,7 @@ import eu.biogateway.cytoscape.internal.BGServiceManager
 import eu.biogateway.cytoscape.internal.model.BGNode
 import eu.biogateway.cytoscape.internal.model.BGNodeType
 import eu.biogateway.cytoscape.internal.parser.BGReturnType
+import org.w3c.dom.traversal.NodeFilter
 
 /// Returns the relation described by the expanded relation node.
 class BGFetchAggregatedRelationForNodeQuery(serviceManager: BGServiceManager, val node: BGNode): BGRelationQuery(serviceManager, BGReturnType.RELATION_TRIPLE_GRAPHURI) {
@@ -31,16 +32,24 @@ class BGFetchAggregatedRelationForNodeQuery(serviceManager: BGServiceManager, va
     }
 }
 
-class BGFetchAggregatedPPIRelationForNodeQuery(serviceManager: BGServiceManager, val nodeUri: String): BGRelationQuery(serviceManager, BGReturnType.RELATION_TRIPLE_CONFIDENCE) {
+class BGFetchAggregatedPPIRelationForNodeQuery(serviceManager: BGServiceManager, val nodeUri: String, val nodeFilter: Collection<String>): BGRelationQuery(serviceManager, BGReturnType.RELATION_TRIPLE_CONFIDENCE) {
 
     override fun generateQueryString(): String {
+
+        var filter = ""
+        if (nodeFilter.isNotEmpty()) {
+            val nodelist = nodeFilter.map { "<"+it+">" }.reduce { acc, uri -> acc+", "+uri }
+            filter += "FILTER(?a IN("+nodelist+"))\n"
+            filter += "FILTER(?b IN("+nodelist+"))\n"
+        }
+
 
         return "BASE <http://www.semantic-systems-biology.org/>\n" +
                 "PREFIX ppi: <"+nodeUri+">\n" +
                 "PREFIX has_agent: <http://semanticscience.org/resource/SIO_000139>\n" +
                 "SELECT DISTINCT ?a <intact> <http://purl.obolibrary.org/obo/RO_0002436> ?b ?confidence \n" +
                 "WHERE {  \n" +
-                "FILTER (?a != ?b)\n" +
+                "FILTER (?a != ?b)\n" + filter +
                 " GRAPH <intact> {\n" +
                 "\t ppi: has_agent: ?a .\n" +
                 "\t ppi: has_agent: ?b .\n" +

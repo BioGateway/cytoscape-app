@@ -6,6 +6,7 @@ import org.apache.http.impl.client.HttpClients
 import org.apache.http.util.EntityUtils
 import eu.biogateway.cytoscape.internal.BGServiceManager
 import eu.biogateway.cytoscape.internal.parser.BGReturnType
+import eu.biogateway.cytoscape.internal.util.Constants
 import org.cytoscape.work.AbstractTask
 import org.cytoscape.work.TaskMonitor
 import java.io.BufferedReader
@@ -125,9 +126,12 @@ abstract class BGQuery(val serviceManager: BGServiceManager, var type: BGReturnT
                 false -> HttpGet(uri)
             }
 
-
+            val startTime = System.currentTimeMillis()
             val response = client.execute(httpRequest)
+            val queryTime = System.currentTimeMillis() - startTime
             val statusCode = response.statusLine.statusCode
+
+            if (Constants.PROFILING) println("Query time: $queryTime ms.")
 
             val data = EntityUtils.toString(response.entity)
             if (statusCode > 204) {
