@@ -57,14 +57,16 @@ class BGLoadRelationMetadataQuery(val serviceManager: BGServiceManager, val rela
 
                 val dataType = metadataType.dataType
 
-                val value = result.values.firstOrNull()
-
                 val metaData = when (dataType) {
                     BGRelationMetadata.DataType.STRING -> {
                         // TODO: Handle arrays / multiple data points.
-                        if (value != null) BGRelationMetadata(metadataType, value) else null
+                        if (result.values.isNotEmpty()) {
+                            val value = result.values.reduce { acc, s -> acc + ";" + s }
+                            BGRelationMetadata(metadataType, value)
+                        } else null
                     }
                     BGRelationMetadata.DataType.NUMBER -> {
+                        val value = result.values.firstOrNull()
                         if (value != null) BGRelationMetadata(metadataType, value.toDouble()) else null
 
                     }}
