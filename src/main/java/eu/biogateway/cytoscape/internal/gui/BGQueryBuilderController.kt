@@ -437,7 +437,9 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
             if (!fromUri.startsWith("?") && !fromUri.startsWith("http://")) return "The From URI is invalid."
             if (!toUri.startsWith("?") && !toUri.startsWith("http://")) return "The To URI is invalid."
         }
-        return view.queryConstraintsPanel.validateConstraints()
+        view.multiQueryPanel.validateNodeTypeConsistency()?.let { return it }
+        view.queryConstraintsPanel.validateConstraints()?.let { return it }
+        return null
     }
 
     private fun filterRelationsToNodesInCurrentNetwork(filterOn: Boolean) {

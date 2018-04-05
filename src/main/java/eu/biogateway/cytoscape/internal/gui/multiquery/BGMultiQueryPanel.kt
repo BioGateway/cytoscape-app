@@ -3,10 +3,7 @@ package eu.biogateway.cytoscape.internal.gui.multiquery
 import eu.biogateway.cytoscape.internal.BGServiceManager
 import eu.biogateway.cytoscape.internal.gui.BGColorComboBoxRenderer
 import eu.biogateway.cytoscape.internal.gui.BGColorableText
-import eu.biogateway.cytoscape.internal.model.BGDatasetSource
-import eu.biogateway.cytoscape.internal.model.BGNode
-import eu.biogateway.cytoscape.internal.model.BGQueryConstraint
-import eu.biogateway.cytoscape.internal.model.BGRelationType
+import eu.biogateway.cytoscape.internal.model.*
 import eu.biogateway.cytoscape.internal.parser.BGNetworkTableHelper
 import eu.biogateway.cytoscape.internal.parser.BGSPARQLParser
 import eu.biogateway.cytoscape.internal.util.Constants
@@ -152,6 +149,32 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager, val constraintPane
         this.remove(queryLine)
         this.repaint()
         this.topLevelAncestor.repaint()
+    }
+
+    fun validateNodeTypeConsistency(): String? {
+        val nodeVariableTypes = HashMap<String, BGNodeType>()
+
+        fun checkLineParameter(comboBox: JComboBox<String>, nodeType: BGNodeType?): String? {
+            if (nodeType == null) return null
+            if (comboBox.selectedItem == Constants.BG_QUERYBUILDER_ENTITY_LABEL) return null
+            val variable = comboBox.selectedItem as? String ?: return null
+            val oldType = nodeVariableTypes.get(variable)
+            oldType?.let {
+                if (it != nodeType) return "$variable is expected to be both $it and $nodeType"
+            }
+            nodeVariableTypes.put(variable, nodeType)
+            return null
+        }
+
+        for (line in queryLines) {
+            checkLineParameter(line.fromComboBox, line.fromTypeComboBox.selectedItem as? BGNodeType)?.let {
+                return "Type inconcistency: Variable $it"
+            }
+            checkLineParameter(line.toComboBox, line.toTypeComboBox.selectedItem as? BGNodeType)?.let {
+                return "Type inconcistency: Variable $it"
+            }
+        }
+        return null
     }
 
     fun generateSPARQLQuery(): String {
@@ -382,4 +405,6 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager, val constraintPane
         }
         return nameQueryLines
     }
+
+
 }
