@@ -519,11 +519,12 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
                     metaData.stringValue?.let {
                         // TODO: Remove this when the server stops using dummy URIs
                         // TODO: Get the label name instead.
-                        if (it.startsWith("http://www.semantic-systems-biology.org/ssb/")) {
-                            edge.setStringForColumnName(it.substringAfterLast("/"), metadataType.name, edgeTable)
-                        } else {
-                            edge.setStringForColumnName(it, metadataType.name, edgeTable)
-                        }
+                        edge.setStringForColumnName(it.replace("http://www.semantic-systems-biology.org/ssb/", ""), metadataType.name, edgeTable)
+//                        if (it.startsWith("http://www.semantic-systems-biology.org/ssb/")) {
+//                            edge.setStringForColumnName(it.substringAfterLast("/"), metadataType.name, edgeTable)
+//                        } else {
+//                            edge.setStringForColumnName(it, metadataType.name, edgeTable)
+//                        }
                     }}
             }
         }
