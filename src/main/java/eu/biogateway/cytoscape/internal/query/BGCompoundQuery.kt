@@ -22,7 +22,7 @@ abstract class BGCompoundRelationQuery(val serviceManager: BGServiceManager, val
         val relationSet = HashSet<BGRelation>() // Using a set to avoid duplicates.
         val unloadedNodes = HashSet<BGNode>()
 
-        // The createFuture function is provided when creating the query, and abstracts the query type out of this class.
+        // The createFuture function is provided when creating the query, and abstracts the query dataType out of this class.
         val futures = nodeUris.map { createFuture(it) }
 
         for (future in futures) {

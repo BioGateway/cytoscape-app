@@ -95,6 +95,7 @@ object BGConfigParser {
                 val label = metadataElement.getAttribute("label") ?: continue
                 val relationUri = metadataElement.getAttribute("relationUri") ?: continue
                 val typeName = metadataElement.getAttribute("dataType") ?: continue
+                val sparql = metadataElement.getAttribute("sparql")
 
                 val dataType = when (typeName) {
                     "text" -> BGRelationMetadata.DataType.STRING
@@ -112,15 +113,15 @@ object BGConfigParser {
                     relationTypes.add(relationType)
                 }
 
-                val metadataType = BGRelationMetadataType(id, label, dataType, relationUri, relationTypes)
+                val metadataType = BGRelationMetadataType(id, label, dataType, relationUri, relationTypes, sparql)
 
                 cache.metadataTypes.put(metadataType.id, metadataType)
             }
 
 
-            // Parse conversions
+            // Parse conversionTypes
 
-            fun parseConversionElement(type: BGConversion.ConversionType, element: Element): BGConversion? {
+            fun parseConversionElement(direction: BGConversionType.ConversionDirection, element: Element): BGConversionType? {
                 val id = element.getAttribute("id") ?: return null
                 val name = element.getAttribute("name") ?: return null
                 val dataTypeString = element.getAttribute("dataType") ?: return null
@@ -128,44 +129,44 @@ object BGConfigParser {
                 val lookupTypeString = element.getAttribute("lookup") ?: return null
 
                 val dataType = when (dataTypeString) {
-                    "string" -> BGConversion.DataType.STRING
-                    "stringArray" -> BGConversion.DataType.STRINGARRAY
-                    "number" -> BGConversion.DataType.NUMBER
+                    "string" -> BGConversionType.DataType.STRING
+                    "stringArray" -> BGConversionType.DataType.STRINGARRAY
+                    "double" -> BGConversionType.DataType.DOUBLE
                     else -> null
                 } ?: return null
 
                 val lookupMethod = when (lookupTypeString) {
-                    "replace" -> BGConversion.LookupMethod.REPLACE
-                    "extract" -> BGConversion.LookupMethod.EXTRACT
-                    "copy" -> BGConversion.LookupMethod.COPY
-                    "dictExactLookup" -> BGConversion.LookupMethod.DICT_EXACT_LOOKUP
+                    "replace" -> BGConversionType.LookupMethod.REPLACE
+                    "extract" -> BGConversionType.LookupMethod.EXTRACT
+                    "copy" -> BGConversionType.LookupMethod.COPY
+                    "dictExactLookup" -> BGConversionType.LookupMethod.DICT_EXACT_LOOKUP
                     else -> null
                 } ?: return null
 
                 val template = element.getAttribute("template")
                 val sparql = element.getAttribute("sparql")
 
-                val conversion = BGConversion(type, id, name, dataType, biogwId, lookupMethod, template, sparql)
+                val conversion = BGConversionType(direction, id, name, dataType, biogwId, lookupMethod, template, sparql)
                 return conversion
             }
 
-            val importNodeConversions = HashSet<BGConversion>()
-            val exportEdgeConversions = HashSet<BGConversion>()
-            val exportNodeConversions = HashSet<BGConversion>()
+            val importNodeConversions = HashSet<BGConversionType>()
+            val exportEdgeConversions = HashSet<BGConversionType>()
+            val exportNodeConversions = HashSet<BGConversionType>()
 
-            val conversionsNode = doc.getElementsByTagName("conversions").item(0) as? Element
+            val conversionsNode = doc.getElementsByTagName("conversionTypes").item(0) as? Element
             val importNode = conversionsNode?.getElementsByTagName("import")?.item(0) as? Element
             if (importNode != null) {
                 val nodes = importNode.getElementsByTagName("node")
                 for (index in 0..nodes.length -1 ) {
                     val node = nodes.item(index) as? Element ?: continue
 
-                    val conversion = parseConversionElement(BGConversion.ConversionType.IMPORT, node) ?: continue
+                    val conversion = parseConversionElement(BGConversionType.ConversionDirection.IMPORT, node) ?: continue
 
                     val typeString = node.getAttribute("type") ?: continue
                     val nodeType = BGNodeType.forName(typeString) ?: continue
 
-                    val nodeConversion = BGNodeConversion(nodeType, conversion) ?: continue
+                    val nodeConversion = BGNodeConversionType(nodeType, conversion) ?: continue
 
                     importNodeConversions.add(nodeConversion)
                 }
@@ -177,7 +178,7 @@ object BGConfigParser {
                 for (index in 0..edges.length -1 ) {
                     val edgeElement = edges.item(index) as? Element ?: continue
 
-                    val conversion = parseConversionElement(BGConversion.ConversionType.EXPORT, edgeElement) ?: continue
+                    val conversion = parseConversionElement(BGConversionType.ConversionDirection.EXPORT, edgeElement) ?: continue
 
                     exportEdgeConversions.add(conversion)
                 }
@@ -186,20 +187,20 @@ object BGConfigParser {
                 for (index in 0..nodes.length -1 ) {
                     val node = nodes.item(index) as? Element ?: continue
 
-                    val conversion = parseConversionElement(BGConversion.ConversionType.EXPORT, node) ?: continue
+                    val conversion = parseConversionElement(BGConversionType.ConversionDirection.EXPORT, node) ?: continue
 
                     val typeString = node.getAttribute("type") ?: continue
                     val nodeType = BGNodeType.forName(typeString) ?: continue
 
-                    val nodeConversion = BGNodeConversion(nodeType, conversion) ?: continue
+                    val nodeConversion = BGNodeConversionType(nodeType, conversion) ?: continue
 
                     exportNodeConversions.add(nodeConversion)
                 }
             }
 
-            cache.importNodeConversions = importNodeConversions
-            cache.exportEdgeConversions = exportEdgeConversions
-            cache.exportNodeConversions = exportNodeConversions
+            cache.importNodeConversionTypes = importNodeConversions
+            cache.exportEdgeConversionTypes = exportEdgeConversions
+            cache.exportNodeConversionTypes = exportNodeConversions
 
             // Parse QueryConstraints. Must be after parsing RelationTypes, as it relies on finding relation types in cache.
 
@@ -211,7 +212,7 @@ object BGConfigParser {
                 val id = constraint.getAttribute("id") ?: continue
                 val label = constraint.getAttribute("label") ?: continue
                 val columns = constraint.getAttribute("columns").toIntOrNull()
-                val typeName = constraint.getAttribute("type") ?: continue
+                val typeName = constraint.getAttribute("dataType") ?: continue
 
                 val type = when (typeName) {
                     "combobox" -> BGQueryConstraint.InputType.COMBOBOX
@@ -285,7 +286,7 @@ object BGConfigParser {
                         "relationTriple" -> BGReturnType.RELATION_TRIPLE_GRAPHURI
                         "relationTripleNamed" -> BGReturnType.RELATION_TRIPLE_NAMED
                         else -> {
-                            throw Exception("Unknown return type!")
+                            throw Exception("Unknown return dataType!")
                         }
                     }
 
@@ -297,7 +298,7 @@ object BGConfigParser {
                         if (parameterList.item(pIndex).nodeType == Node.ELEMENT_NODE) {
                             val parameter = parameterList.item(pIndex) as Element
                             val pId = parameter.getAttribute("id")
-                            val pTypeString = parameter.getAttribute("type")
+                            val pTypeString = parameter.getAttribute("dataType")
                             val pName = parameter.getElementsByTagName("name").item(0).textContent
 
                             val pEnabledDependency = parameter.getElementsByTagName("enabled-dependency")

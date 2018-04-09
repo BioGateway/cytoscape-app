@@ -176,7 +176,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                     parameter.value = searchField.selectedUri?.sanitizeParameter()
                 }
                 BGQueryParameter.ParameterType.OPTIONAL_URI -> {
-                    val optionalUriField = component as? BGOptionalURIField ?: throw Exception("Invalid component type!")
+                    val optionalUriField = component as? BGOptionalURIField ?: throw Exception("Invalid component direction!")
                     val uri = optionalUriField.textField.text
                     if (uri.startsWith("?")) {
                         parameter.value = uri

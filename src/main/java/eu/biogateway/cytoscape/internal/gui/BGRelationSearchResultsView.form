@@ -5,12 +5,12 @@
       <xy x="20" y="20" width="632" height="400"/>
     </constraints>
     <properties/>
-    <border type="none"/>
+    <border direction="none"/>
     <children>
       <grid id="4afc1" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
         <constraints border-constraint="South"/>
         <properties/>
-        <border type="none"/>
+        <border direction="none"/>
         <children>
           <component id="abfd3" class="javax.swing.JButton" binding="importButton">
             <constraints/>
@@ -30,7 +30,7 @@
       <scrollpane id="d4647">
         <constraints border-constraint="Center"/>
         <properties/>
-        <border type="none"/>
+        <border direction="none"/>
         <children>
           <component id="5b873" class="javax.swing.JTable" binding="resultTable" custom-create="true">
             <constraints/>
@@ -43,12 +43,12 @@
       <grid id="cd7c2" layout-manager="BorderLayout" hgap="0" vgap="0">
         <constraints border-constraint="North"/>
         <properties/>
-        <border type="none"/>
+        <border direction="none"/>
         <children>
           <grid id="2d654" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="2">
             <constraints border-constraint="East"/>
             <properties/>
-            <border type="none"/>
+            <border direction="none"/>
             <children>
               <component id="e9026" class="javax.swing.JLabel">
                 <constraints/>
@@ -67,7 +67,7 @@
           <grid id="1f954" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
             <constraints border-constraint="West"/>
             <properties/>
-            <border type="none"/>
+            <border direction="none"/>
             <children>
               <component id="c5baf" class="javax.swing.JButton" binding="selectRelationsLeadingToButton" default-binding="true">
                 <constraints/>

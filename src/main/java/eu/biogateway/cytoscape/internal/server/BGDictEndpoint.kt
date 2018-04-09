@@ -54,13 +54,13 @@ class BGDictEndpoint(internal var endpointUrl: String) {
             return ArrayList()
         }
 
-        val url = URL(endpointUrl + "prefixLabelSearch/?term=" + URLEncoder.encode(prefix, "UTF-8")+"&type="+type+"&limit="+limit).toURI()
+        val url = URL(endpointUrl + "prefixLabelSearch/?term=" + URLEncoder.encode(prefix, "UTF-8")+"&dataType="+type+"&limit="+limit).toURI()
 
         val httpGet = HttpGet(url)
         val response = client.execute(httpGet)
         val statusCode = response.statusLine.statusCode
         val data = EntityUtils.toString(response.entity)
-        //val typeToken = object : TypeToken<List<Suggestion>>() {}.type
+        //val typeToken = object : TypeToken<List<Suggestion>>() {}.dataType
         //val otherList: List<Suggestion> = gson.fromJson(data, typeToken)
 
         val suggestions = ArrayList(gson.fromJson<List<Suggestion>>(data))
@@ -93,13 +93,13 @@ class BGDictEndpoint(internal var endpointUrl: String) {
             return ArrayList()
         }
 
-        val url = URL(endpointUrl + "labelSearch/?term=" +URLEncoder.encode(term, "UTF-8")+"&type="+type+"&limit="+limit).toURI()
+        val url = URL(endpointUrl + "labelSearch/?term=" +URLEncoder.encode(term, "UTF-8")+"&dataType="+type+"&limit="+limit).toURI()
 
         val httpGet = HttpGet(url)
         val response = client.execute(httpGet)
         val statusCode = response.statusLine.statusCode
         val data = EntityUtils.toString(response.entity)
-        //val typeToken = object : TypeToken<List<Suggestion>>() {}.type
+        //val typeToken = object : TypeToken<List<Suggestion>>() {}.dataType
         //val otherList: List<Suggestion> = gson.fromJson(data, typeToken)
 
         val suggestions = ArrayList(gson.fromJson<List<Suggestion>>(data))

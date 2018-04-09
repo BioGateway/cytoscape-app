@@ -44,7 +44,7 @@ internal class BGBulkImportNodesQueryTest {
                serviceManager.taskManager?.execute(TaskIterator(query))
            }
            BGQueryBuilderController.QueryType.NOT_SET -> {
-               throw Exception("Invalid query type!")
+               throw Exception("Invalid query dataType!")
            }
        }
 

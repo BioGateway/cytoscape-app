@@ -12,10 +12,24 @@ enum class BGMetadataTypeEnum(val uri: String) {
     SOURCE("<http://semanticscience.org/resource/SIO_000253>")
 }
 
-class BGFetchMetadataQuery(serviceManager: BGServiceManager, val fromNodeUri: String, val relationUri: String, val toNodeUri: String, val graph: String, val metadataRelationUri: String): BGCallableQuery(serviceManager, BGReturnType.METADATA_FIELD) {
+class BGFetchMetadataQuery(serviceManager: BGServiceManager, val fromNodeUri: String, val relationUri: String, val toNodeUri: String, val graph: String, val metadataRelationUri: String, val sparql: String? = null): BGCallableQuery(serviceManager, BGReturnType.METADATA_FIELD) {
 
 
     override fun createQueryString(): String {
+
+        if (sparql != null && sparql.isNotEmpty()) {
+            val sparqlQuery = sparql
+                    .replace("@fromUri", fromNodeUri)
+                    .replace("@toUri", toNodeUri)
+                    .replace("@relationUri", metadataRelationUri)
+                    .replace("@graph", graph)
+            return "BASE <http://www.semantic-systems-biology.org/>  \n" +
+                    "SELECT DISTINCT ?metadata\n" +
+                    "WHERE {\n" +
+                    sparqlQuery +
+                    "}"
+        }
+
         return "BASE <http://www.semantic-systems-biology.org/>  \n" +
                 "SELECT DISTINCT ?metadata\n" +
                 "WHERE {\n" +

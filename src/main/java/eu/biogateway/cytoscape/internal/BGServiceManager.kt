@@ -6,6 +6,7 @@ import org.cytoscape.app.CyAppAdapter
 import org.cytoscape.application.CyApplicationManager
 import eu.biogateway.cytoscape.internal.gui.BGControlPanel
 import eu.biogateway.cytoscape.internal.model.BGDataModelController
+import eu.biogateway.cytoscape.internal.model.BGNetworkConverter
 import eu.biogateway.cytoscape.internal.util.BGVisualStyleBuilder
 import eu.biogateway.cytoscape.internal.util.Constants
 import org.cytoscape.event.CyEventHelper
@@ -51,7 +52,7 @@ class BGServiceManager {
     var tableFactory: CyTableFactory? = null
     var tableManager: CyTableManager? = null
 
-
+    val networkConverter = BGNetworkConverter(this)
     var dataModelController: BGDataModelController
     val cache: BGDataModelController.BGCache get() {
         return dataModelController.cache

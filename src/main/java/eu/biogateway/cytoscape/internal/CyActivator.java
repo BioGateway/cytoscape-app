@@ -60,14 +60,13 @@ public class CyActivator extends AbstractCyActivator {
         // This action is disabled in the current build.
         //registerService(context, reloadCurrentStyleAction, CyAction.class, new Properties());
 
-        BGCreateAction openSettingsAction = new BGCreateAction("Settings", "always", serviceManager, new BGAction() {
+        BGCreateAction openImportExport = new BGCreateAction("BioGateway: Import/Export", "always", serviceManager, new BGAction() {
             @Override
             public void action(BGServiceManager serviceManager) {
-                new BGSettingsView(serviceManager);
+                new BGImportExportController(serviceManager);
             }
         });
-        // This action is disabled in the current build.
-        //registerService(context, openSettingsAction, CyAction.class, new Properties());
+        registerService(context, openImportExport, CyAction.class, new Properties());
 
         BGCreateAction reloadDataModelAction = new BGCreateAction("BioGateway: Reload Config", "always", serviceManager, new BGAction() {
             @Override

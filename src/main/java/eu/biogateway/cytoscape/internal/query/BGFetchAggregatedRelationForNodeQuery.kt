@@ -15,7 +15,7 @@ class BGFetchAggregatedRelationForNodeQuery(serviceManager: BGServiceManager, va
             BGNodeType.GOA -> "goa"
             BGNodeType.TFTG -> "tf-tg"
             else -> {
-                throw Exception("Collapsing of this type is not supported!")
+                throw Exception("Collapsing of this dataType is not supported!")
             }
         }
 

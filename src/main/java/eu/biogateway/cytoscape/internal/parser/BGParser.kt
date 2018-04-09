@@ -58,7 +58,7 @@ class BGParser(private val serviceManager: BGServiceManager) {
         val returnType = BGReturnType.METADATA_FIELD
 
         val firstLine = reader.readLine().split("\t")
-        if (firstLine.size != returnType.paremeterCount) throw Exception("Number of columns in data array must match the parameter count of the query type!")
+        if (firstLine.size != returnType.paremeterCount) throw Exception("Number of columns in data array must match the parameter count of the query dataType!")
 
         val values = ArrayList<String>()
         reader.forEachLine {
@@ -92,7 +92,7 @@ class BGParser(private val serviceManager: BGServiceManager) {
         reader.forEachLine {
             if (cancelled) throw Exception("Cancelled.")
             val lineColumns = it.split("\t").dropLastWhile({it.isEmpty()}).toTypedArray()
-            if (lineColumns.size != returnType.paremeterCount) throw Exception("Number of columns in data array must match the parameter count of the query type!")
+            if (lineColumns.size != returnType.paremeterCount) throw Exception("Number of columns in data array must match the parameter count of the query dataType!")
             val uri = lineColumns[0].replace("\"", "")
             returnData.pubmedIDlist.add(uri)
         }
@@ -124,7 +124,7 @@ class BGParser(private val serviceManager: BGServiceManager) {
             val parseLineTime = measureTimeMillis {
             if (cancelled) throw Exception("Cancelled.")
             val lineColumns = it.split("\t").dropLastWhile { it.isEmpty() }.toTypedArray()
-            if (lineColumns.size != returnType.paremeterCount && returnType != BGReturnType.RELATION_MULTIPART) throw Exception("Number of columns in data array must match the parameter count of the query type!")
+            if (lineColumns.size != returnType.paremeterCount && returnType != BGReturnType.RELATION_MULTIPART) throw Exception("Number of columns in data array must match the parameter count of the query dataType!")
 
             if (returnType == BGReturnType.RELATION_TRIPLE_GRAPHURI) {
                 val fromNodeUri = lineColumns[0].replace("\"", "")

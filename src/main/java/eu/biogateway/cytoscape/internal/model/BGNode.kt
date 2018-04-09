@@ -39,6 +39,7 @@ enum class BGNodeType(val paremeterType: String) {
                 "tf-tg" -> TFTG
                 "pubmedId" -> Pubmed
                 "disease" -> Disease
+                "undefined" -> Undefined
                 else -> null
             }
         }

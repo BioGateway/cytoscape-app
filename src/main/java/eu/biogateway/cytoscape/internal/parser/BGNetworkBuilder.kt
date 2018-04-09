@@ -85,6 +85,13 @@ fun CyEdge.setStringForColumnName(value: String, columnName: String, table: CyTa
     table.getRow(this.suid).set(columnName, value)
 }
 
+fun CyNode.setDoubleForColumnName(value: Double, columnName: String, table: CyTable) {
+    table.getRow(this.suid).set(columnName, value)
+}
+fun CyNode.setStringForColumnName(value: String, columnName: String, table: CyTable) {
+    table.getRow(this.suid).set(columnName, value)
+}
+
 class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
 
 
@@ -229,7 +236,7 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
             BGNodeType.TFTG, BGNodeType.GOA -> BGFetchAggregatedRelationForNodeQuery(serviceManager, node)
             else -> {
                 return
-                //throw Exception("Cannot collapse nodes of this type!")
+                //throw Exception("Cannot collapse nodes of this dataType!")
             }
         }
 
@@ -311,7 +318,7 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
 
     }
 
-    /// Finds nodes with relations of the given type to both nodes provided.
+    /// Finds nodes with relations of the given dataType to both nodes provided.
     private fun findNodesWithEdgesToNodes(network: CyNetwork, firstNode: CyNode, secondNode: CyNode, relationTypeUri: String): Set<CyNode> {
 
         //if (secondNode.networkPointer != network) throw Exception("Cannot find edges between nodes in different networks!")
@@ -492,7 +499,7 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
 //                            metadataType.name,
 //                            metadataType.dataType,
 //                            false)) {
-//                if (metaData.dataType == BGRelationMetadata.DataType.NUMBER) {
+//                if (metaData.dataType == BGRelationMetadata.DataType.DOUBLE) {
 //                    metaData.numericValue?.let {
 //                        edge.setDoubleForColumnName(it, metadataType.name, edgeTable)
 //                    }}
@@ -563,9 +570,9 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
 
         val unloadedRelations = HashMap<BGPrimitiveRelation, CyEdge>()
 
-        // Iterate through each metadata type.
+        // Iterate through each metadata dataType.
         for (metadataType in activeMetadataTypes) {
-            // Filter out the relations of the wrong relation type.
+            // Filter out the relations of the wrong relation dataType.
             val relevantRelations = relations.filter { metadataType.supportedRelations.contains(it.key.relationType) }
                     .filter {
                         // Filter out the CyEdges that have the data present.

@@ -25,7 +25,7 @@ class BGQueryConstraintPanel(val constraints: HashSet<BGQueryConstraint>): JPane
             // Create the label.
             //val label = JLabel(constraint.label)
             //this.add(label)
-            // Check the type.
+            // Check the dataType.
             val checkBox = JCheckBox(constraint.label+":")
             this.add(checkBox)
             val columns = constraint.columns ?: 10

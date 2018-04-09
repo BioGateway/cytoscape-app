@@ -64,7 +64,7 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager, val constraintPane
     private fun addQueryLine(graph: BGSPARQLParser.BGQueryGraph): BGMultiQueryAutocompleteLine {
         val queryLine = createQueryLine()
 
-        if (graph.relation.type != BGSPARQLParser.BGVariableType.URI) throw Exception("Relation type cannot be a variable!")
+        if (graph.relation.type != BGSPARQLParser.BGVariableType.URI) throw Exception("Relation direction cannot be a variable!")
 
         val relationIdentifier = Utility.createRelationTypeIdentifier(graph.relation.value, graph.graph.value)
         val relationType = serviceManager.cache.relationTypeMap.get(relationIdentifier) ?: serviceManager.cache.getRelationTypesForURI(graph.relation.value)?.first()

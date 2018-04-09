@@ -3,16 +3,12 @@ package eu.biogateway.cytoscape.internal.model
 import eu.biogateway.cytoscape.internal.BGServiceManager
 import eu.biogateway.cytoscape.internal.libs.JCheckBoxTree
 import eu.biogateway.cytoscape.internal.parser.*
-import eu.biogateway.cytoscape.internal.parser.BGNetworkTableHelper.getStringForEdgeColumnName
 import eu.biogateway.cytoscape.internal.query.*
 import eu.biogateway.cytoscape.internal.server.BGSettings
 import eu.biogateway.cytoscape.internal.util.Constants
 import eu.biogateway.cytoscape.internal.util.Constants.BG_SHOULD_USE_BG_DICT
 import eu.biogateway.cytoscape.internal.util.Utility
-import org.cytoscape.model.CyEdge
 import org.cytoscape.model.CyNetwork
-import org.cytoscape.model.CyNode
-import org.cytoscape.model.CyTable
 import java.io.IOException
 import java.net.URL
 import java.util.concurrent.TimeUnit
@@ -56,9 +52,9 @@ class BGDataModelController(private val serviceManager: BGServiceManager) {
             return null
         }
 
-        var importNodeConversions: Collection<BGConversion>? = null
-        var exportNodeConversions: Collection<BGConversion>? = null
-        var exportEdgeConversions: Collection<BGConversion>? = null
+        var importNodeConversionTypes: Collection<BGConversionType>? = null
+        var exportNodeConversionTypes: Collection<BGConversionType>? = null
+        var exportEdgeConversionTypes: Collection<BGConversionType>? = null
 
 
         var queryConstraints = HashMap<String, BGQueryConstraint>()

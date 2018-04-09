@@ -37,7 +37,7 @@ class BGExpandEdgeDoubleClickEVTF(val serviceManager: BGServiceManager): EdgeVie
 
         val PPI_URI = "http://purl.obolibrary.org/obo/RO_0002436"
 
-        // The PPI edges returns a multipart type results.
+        // The PPI edges returns a multipart direction results.
 
         // TODO: This block is useless now.
         val returnType = when (edgeUri == PPI_URI) {

@@ -82,8 +82,8 @@ class BGVisualStyleBuilder(val serviceManager: BGServiceManager) {
 
 
         // Node styles
-        val nodeShapeMapping = discreteMappingFactory.createVisualMappingFunction("type", String::class.java, BasicVisualLexicon.NODE_SHAPE) as DiscreteMapping<String, NodeShape>
-        val nodeColorMapping = discreteMappingFactory.createVisualMappingFunction("type", String::class.java, BasicVisualLexicon.NODE_FILL_COLOR) as DiscreteMapping<String, Paint>
+        val nodeShapeMapping = discreteMappingFactory.createVisualMappingFunction("direction", String::class.java, BasicVisualLexicon.NODE_SHAPE) as DiscreteMapping<String, NodeShape>
+        val nodeColorMapping = discreteMappingFactory.createVisualMappingFunction("direction", String::class.java, BasicVisualLexicon.NODE_FILL_COLOR) as DiscreteMapping<String, Paint>
         val nodeTooltipMapping = passthroughMappingFactory.createVisualMappingFunction("description", String::class.java, BasicVisualLexicon.NODE_TOOLTIP) as PassthroughMapping<String, String>
         val nodeLabelMapping = passthroughMappingFactory.createVisualMappingFunction("name", String::class.java, BasicVisualLexicon.NODE_LABEL) as PassthroughMapping<String, String>
 
