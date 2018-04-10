@@ -256,7 +256,7 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
             query.addCompletion {
                 val returnData = it as? BGReturnRelationsData ?: throw Exception("Invalid return data!")
                 if (returnData.relationsData.size == 0) throw Exception("No relations found.")
-                val columnNames = arrayOf("from node","relation direction", "to node")
+                val columnNames = arrayOf("from node","relation type", "to node")
 
                 BGLoadUnloadedNodes.createAndRun(serviceManager, returnData.unloadedNodes) {
                     BGRelationSearchResultsController(serviceManager, returnData, columnNames, network)
@@ -344,7 +344,7 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
                     BGRelationSearchResultsController(serviceManager, returnData, columnNames, network)
                 }
             }*/
-            val relationType = serviceManager.cache.getRelationTypeForURIandGraph("http://www.w3.org/2004/02/skos/core#related", "tf-tg") ?: throw Exception("Unable to find relation direction in cache!")
+            val relationType = serviceManager.cache.getRelationTypeForURIandGraph("http://www.w3.org/2004/02/skos/core#related", "tf-tg") ?: throw Exception("Unable to find relation type in cache!")
             val direction = when (nodeType) {
                 BGNodeType.Protein -> BGRelationDirection.FROM
                 BGNodeType.Gene -> BGRelationDirection.TO

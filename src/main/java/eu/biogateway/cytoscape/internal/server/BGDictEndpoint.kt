@@ -54,7 +54,7 @@ class BGDictEndpoint(internal var endpointUrl: String) {
             return ArrayList()
         }
 
-        val url = URL(endpointUrl + "prefixLabelSearch/?term=" + URLEncoder.encode(prefix, "UTF-8")+"&dataType="+type+"&limit="+limit).toURI()
+        val url = URL(endpointUrl + "prefixLabelSearch/?term=" + URLEncoder.encode(prefix, "UTF-8")+"&type="+type+"&limit="+limit).toURI()
 
         val httpGet = HttpGet(url)
         val response = client.execute(httpGet)
@@ -63,13 +63,15 @@ class BGDictEndpoint(internal var endpointUrl: String) {
         //val typeToken = object : TypeToken<List<Suggestion>>() {}.dataType
         //val otherList: List<Suggestion> = gson.fromJson(data, typeToken)
 
-        val suggestions = ArrayList(gson.fromJson<List<Suggestion>>(data))
+        if (statusCode in 200..399) {
+            val suggestions = ArrayList(gson.fromJson<List<Suggestion>>(data))
 
-        for (suggestion in suggestions) {
-            println(suggestion.prefLabel)
-        }
+            for (suggestion in suggestions) {
+                println(suggestion.prefLabel)
+            }
 
-        return ArrayList(suggestions)
+            return ArrayList(suggestions)
+        } else return ArrayList()
     }
 
     fun getSuggestionForURI(uri: String): Suggestion? {
@@ -93,7 +95,7 @@ class BGDictEndpoint(internal var endpointUrl: String) {
             return ArrayList()
         }
 
-        val url = URL(endpointUrl + "labelSearch/?term=" +URLEncoder.encode(term, "UTF-8")+"&dataType="+type+"&limit="+limit).toURI()
+        val url = URL(endpointUrl + "labelSearch/?term=" +URLEncoder.encode(term, "UTF-8")+"&type="+type+"&limit="+limit).toURI()
 
         val httpGet = HttpGet(url)
         val response = client.execute(httpGet)

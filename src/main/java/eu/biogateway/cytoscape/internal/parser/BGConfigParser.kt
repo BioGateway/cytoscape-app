@@ -212,7 +212,7 @@ object BGConfigParser {
                 val id = constraint.getAttribute("id") ?: continue
                 val label = constraint.getAttribute("label") ?: continue
                 val columns = constraint.getAttribute("columns").toIntOrNull()
-                val typeName = constraint.getAttribute("dataType") ?: continue
+                val typeName = constraint.getAttribute("type") ?: continue
 
                 val type = when (typeName) {
                     "combobox" -> BGQueryConstraint.InputType.COMBOBOX
@@ -286,7 +286,7 @@ object BGConfigParser {
                         "relationTriple" -> BGReturnType.RELATION_TRIPLE_GRAPHURI
                         "relationTripleNamed" -> BGReturnType.RELATION_TRIPLE_NAMED
                         else -> {
-                            throw Exception("Unknown return dataType!")
+                            throw Exception("Unknown return type!")
                         }
                     }
 
@@ -298,7 +298,7 @@ object BGConfigParser {
                         if (parameterList.item(pIndex).nodeType == Node.ELEMENT_NODE) {
                             val parameter = parameterList.item(pIndex) as Element
                             val pId = parameter.getAttribute("id")
-                            val pTypeString = parameter.getAttribute("dataType")
+                            val pTypeString = parameter.getAttribute("type")
                             val pName = parameter.getElementsByTagName("name").item(0).textContent
 
                             val pEnabledDependency = parameter.getElementsByTagName("enabled-dependency")

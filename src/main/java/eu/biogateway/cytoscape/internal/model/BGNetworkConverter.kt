@@ -23,13 +23,15 @@ class BGNetworkConverter(val serviceManager: BGServiceManager) {
                 when (conversion.type.dataType) {
                     BGConversionType.DataType.DOUBLE -> {
                         val value =  BGNetworkTableHelper.getDoubleForNodeColumnName(cyNode, conversion.sourceFieldName, sourceNetwork) ?: continue@loop
+                        val result = conversion.runForDataString(serviceManager, value.toString())?.toDouble() ?: continue@loop
                         BGNetworkTableHelper.assureThatNodeColumnExists(network.defaultNodeTable, conversion.destinationFieldName, conversion.type.dataType, false)
-                        newNode.setDoubleForColumnName(value, conversion.destinationFieldName, network.defaultNodeTable)
+                        newNode.setDoubleForColumnName(result, conversion.destinationFieldName, network.defaultNodeTable)
                     }
                     BGConversionType.DataType.STRING -> {
                         val value =  BGNetworkTableHelper.getStringForNodeColumnName(cyNode, conversion.sourceFieldName, sourceNetwork) ?: continue@loop
+                        val result = conversion.runForDataString(serviceManager, value) ?: continue@loop
                         BGNetworkTableHelper.assureThatNodeColumnExists(network.defaultNodeTable, conversion.destinationFieldName, conversion.type.dataType, false)
-                        newNode.setStringForColumnName(value, conversion.destinationFieldName, network.defaultNodeTable)
+                        newNode.setStringForColumnName(result, conversion.destinationFieldName, network.defaultNodeTable)
                     }
                     else -> null
                 } ?: continue

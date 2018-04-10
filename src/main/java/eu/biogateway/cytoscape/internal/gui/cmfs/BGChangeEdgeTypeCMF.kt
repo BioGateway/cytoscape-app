@@ -11,7 +11,7 @@ import javax.swing.JMenu
 import javax.swing.JMenuItem
 
 /**
- * A ContextMenuFactory which creates context menus for changing the direction of a CyEdge.
+ * A ContextMenuFactory which creates context menus for changing the type of a CyEdge.
  *
  * @param gravity The position of the menu where it is added.
  * @param serviceManager The BGServiceManager object holding references to services needed.
@@ -21,7 +21,7 @@ import javax.swing.JMenuItem
 class BGChangeEdgeTypeCMF(val gravity: Float, val serviceManager: BGServiceManager): CyEdgeViewContextMenuFactory {
 
     /**
-     * Creates a CyMenuItem with actions which allows the user to change the relation direction and URI of an edge.
+     * Creates a CyMenuItem with actions which allows the user to change the relation type and URI of an edge.
      *
      * @param netView The CyNetworkView that the edge belongs to.
      * @param edgeView The view for the edge that was selected.

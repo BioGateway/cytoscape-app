@@ -41,7 +41,7 @@ public class BGNetworkTableHelper {
         }
     }
 
-    /// Returns false if the column already exists with another data dataType.
+    /// Returns false if the column already exists with another data type.
     static Boolean assureThatEdgeColumnExists(CyTable edgeTable, String identifier, BGRelationMetadata.DataType dataType, Boolean immutable) {
 
         Class classType = null;

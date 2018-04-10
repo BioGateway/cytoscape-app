@@ -5,12 +5,12 @@
       <xy x="20" y="20" width="349" height="400"/>
     </constraints>
     <properties/>
-    <border direction="none"/>
+    <border type="none"/>
     <children>
       <grid id="d782d" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
         <constraints border-constraint="North"/>
         <properties/>
-        <border direction="etched" title="Taxon">
+        <border type="etched" title="Taxon">
           <title-color color="-16777216"/>
         </border>
         <children>
@@ -35,12 +35,12 @@
       <grid id="ff7bd" layout-manager="BorderLayout" hgap="0" vgap="0">
         <constraints border-constraint="Center"/>
         <properties/>
-        <border direction="etched" title="Active Properties"/>
+        <border type="etched" title="Active Properties"/>
         <children>
           <grid id="a9f55" binding="treePanel" layout-manager="BorderLayout" hgap="0" vgap="0">
             <constraints border-constraint="Center"/>
             <properties/>
-            <border direction="none"/>
+            <border type="none"/>
             <children/>
           </grid>
         </children>
@@ -49,7 +49,7 @@
         <margin top="0" left="0" bottom="0" right="0"/>
         <constraints border-constraint="South"/>
         <properties/>
-        <border direction="none"/>
+        <border type="none"/>
         <children>
           <component id="b879f" class="javax.swing.JButton" binding="resetBioGatewayStyleButton" default-binding="true">
             <constraints>

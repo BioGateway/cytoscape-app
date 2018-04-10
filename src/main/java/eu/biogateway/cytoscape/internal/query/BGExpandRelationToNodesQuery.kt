@@ -14,7 +14,7 @@ class BGExpandRelationToNodesQuery(serviceManager: BGServiceManager, val fromNod
     }
 
     override fun generateQueryString(): String {
-        if (!relationType.expandable) throw Exception("Relation dataType is not expandable!")
+        if (!relationType.expandable) throw Exception("Relation type is not expandable!")
 
         if (relationType.defaultGraphName == "goa") return generateQueryString("goa")
         if (relationType.defaultGraphName == "tf-tg") return generateQueryString("tf-tg")

@@ -38,7 +38,7 @@ public class JCheckBoxTree extends JTree {
     HashMap<TreePath, CheckedNode> nodesCheckingState;
     HashSet<TreePath> checkedPaths = new HashSet<TreePath>();
 
-    // Defining a new event direction for the checking mechanism and preparing event-handling mechanism
+    // Defining a new event type for the checking mechanism and preparing event-handling mechanism
     protected EventListenerList listenerList = new EventListenerList();
 
     public static class CheckChangeEvent extends EventObject {

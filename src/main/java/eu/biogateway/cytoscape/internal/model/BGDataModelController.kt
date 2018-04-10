@@ -452,10 +452,16 @@ class BGDataModelController(private val serviceManager: BGServiceManager) {
         for (cyNode in nodes) {
             val nodeName = nodeTable.getRow(cyNode.suid).get(Constants.BG_FIELD_NAME, String::class.java)
             val description = nodeTable.getRow(cyNode.suid).get(Constants.BG_FIELD_DESCRIPTION, String::class.java)
-            if (nodeName != null && description != null) {
-                val node = BGNode(uri, nodeName, description)
-                return node
-            }
+
+            val node = BGNode(uri)
+            node.name = nodeName
+            node.description = description
+            return node
+            // This old code did not work with imported networks which didn't have the "description" field.
+//            if (nodeName != null && description != null) {
+//                val node = BGNode(uri, nodeName, description)
+//                return node
+//            }
         }
         return null
     }

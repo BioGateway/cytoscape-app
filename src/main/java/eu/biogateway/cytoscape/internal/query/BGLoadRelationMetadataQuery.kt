@@ -9,7 +9,7 @@ import org.cytoscape.work.AbstractTask
 import org.cytoscape.work.TaskMonitor
 import java.util.concurrent.TimeUnit
 
-/// Loads all specified metadata types for the specified relations, where the relations' dataType is supported by the metadata dataType.
+/// Loads all specified metadata types for the specified relations, where the relations' type is supported by the metadata type.
 class BGLoadRelationMetadataQuery(val serviceManager: BGServiceManager, val relations: Collection<BGPrimitiveRelation>, val activeMetadataTypes: Collection<BGRelationMetadataType>, val completion: () -> Unit): AbstractTask(), Runnable {
 
     var taskMonitor: TaskMonitor? = null
@@ -36,7 +36,7 @@ class BGLoadRelationMetadataQuery(val serviceManager: BGServiceManager, val rela
         val relationCount = metadataRelations.values.fold(0) { acc, hashSet -> acc + hashSet.size }
         var counter = 1
 
-        // For each metadata dataType, query for each of their relations.
+        // For each metadata type, query for each of their relations.
 
         for ((metadataType, toFetchRelations) in metadataRelations.iterator()) {
             for (relation in toFetchRelations) {
