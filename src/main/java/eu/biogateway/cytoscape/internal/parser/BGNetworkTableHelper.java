@@ -4,6 +4,7 @@ import com.sun.org.apache.xpath.internal.operations.Bool;
 import eu.biogateway.cytoscape.internal.model.BGConversionType;
 import eu.biogateway.cytoscape.internal.model.BGRelationMetadata;
 import eu.biogateway.cytoscape.internal.model.BGRelationMetadataType;
+import eu.biogateway.cytoscape.internal.model.BGTableDataType;
 import eu.biogateway.cytoscape.internal.query.BGMetadataTypeEnum;
 import eu.biogateway.cytoscape.internal.util.Constants;
 import org.cytoscape.model.CyEdge;
@@ -42,11 +43,11 @@ public class BGNetworkTableHelper {
     }
 
     /// Returns false if the column already exists with another data type.
-    static Boolean assureThatEdgeColumnExists(CyTable edgeTable, String identifier, BGRelationMetadata.DataType dataType, Boolean immutable) {
+    static Boolean assureThatEdgeColumnExists(CyTable edgeTable, String identifier, BGTableDataType dataType, Boolean immutable) {
 
         Class classType = null;
         switch (dataType) {
-            case NUMBER:
+            case DOUBLE:
                 classType = Double.class;
                 break;
             case STRING:
@@ -65,7 +66,7 @@ public class BGNetworkTableHelper {
     }
 
     /// Returns false if the column already exists with another data type.
-    public static Boolean assureThatNodeColumnExists(CyTable nodeTable, String identifier, BGConversionType.DataType dataType, Boolean immutable) {
+    public static Boolean assureThatNodeColumnExists(CyTable nodeTable, String identifier, BGTableDataType dataType, Boolean immutable) {
 
         Class classType = null;
         switch (dataType) {

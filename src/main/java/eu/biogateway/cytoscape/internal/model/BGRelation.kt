@@ -3,7 +3,7 @@ package eu.biogateway.cytoscape.internal.model
 
 open class BGPrimitiveRelation(val fromNodeUri: String, val relationType: BGRelationType, val toNodeUri: String) {
     var sourceGraph: String = ""
-    val metadata = HashMap<BGRelationMetadataType, BGRelationMetadata>()
+    val metadata = HashMap<String, BGRelationMetadata>()
 }
 
 class BGRelation(val fromNode: BGNode, relationType: BGRelationType, val toNode: BGNode): BGPrimitiveRelation(fromNode.uri, relationType, toNode.uri) {

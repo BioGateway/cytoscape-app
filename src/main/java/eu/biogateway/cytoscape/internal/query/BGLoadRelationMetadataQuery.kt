@@ -1,10 +1,7 @@
 package eu.biogateway.cytoscape.internal.query
 
 import eu.biogateway.cytoscape.internal.BGServiceManager
-import eu.biogateway.cytoscape.internal.model.BGPrimitiveRelation
-import eu.biogateway.cytoscape.internal.model.BGRelation
-import eu.biogateway.cytoscape.internal.model.BGRelationMetadata
-import eu.biogateway.cytoscape.internal.model.BGRelationMetadataType
+import eu.biogateway.cytoscape.internal.model.*
 import org.cytoscape.work.AbstractTask
 import org.cytoscape.work.TaskMonitor
 import java.util.concurrent.TimeUnit
@@ -42,6 +39,7 @@ class BGLoadRelationMetadataQuery(val serviceManager: BGServiceManager, val rela
             for (relation in toFetchRelations) {
 
                 taskMonitor?.setProgress(counter.toDouble()/relationCount.toDouble())
+                taskMonitor?.setStatusMessage("Loading "+counter+" of "+relationCount+" ...")
                 counter++
 
                 val query = BGFetchMetadataQuery(serviceManager,
@@ -58,21 +56,23 @@ class BGLoadRelationMetadataQuery(val serviceManager: BGServiceManager, val rela
                 val dataType = metadataType.dataType
 
                 val metaData = when (dataType) {
-                    BGRelationMetadata.DataType.STRING -> {
+                    BGTableDataType.STRING -> {
                         // TODO: Handle arrays / multiple data points.
                         if (result.values.isNotEmpty()) {
                             val value = result.values.reduce { acc, s -> acc + ";" + s }
                             BGRelationMetadata(metadataType, value)
                         } else null
                     }
-                    BGRelationMetadata.DataType.NUMBER -> {
+                    BGTableDataType.DOUBLE -> {
                         val value = result.values.firstOrNull()
                         if (value != null) BGRelationMetadata(metadataType, value.toDouble()) else null
 
-                    }}
+                    }
+                    else -> { throw Exception("Unsupported data type.")}
+                }
                 // Add this metadata entry into the relation's metadata map.
                 metaData?.let {
-                    relation.metadata[metadataType] = it
+                    relation.metadata[metadataType.name] = it
                 }
             }
         }

@@ -7,13 +7,24 @@ import java.awt.Color
  * Created by sholmas on 26/05/2017.
  */
 
-class BGRelationType(val uri: String, val name: String, val number: Int, override val textColor: Color = Color.BLACK, val defaultGraphName: String? = null, val arbitraryLength: Boolean = false, val directed: Boolean = true, val expandable: Boolean = false, val fromType: BGNodeType? = null, val toType: BGNodeType? = null): BGColorableText {
+
+class BGExternalRelationType(name: String): BGRelationType("External", name, 0)
+
+
+open class BGRelationType(val uri: String, val name: String, val number: Int, override val textColor: Color = Color.BLACK, val defaultGraphName: String? = null, val arbitraryLength: Boolean = false, val directed: Boolean = true, val expandable: Boolean = false, val fromType: BGNodeType? = null, val toType: BGNodeType? = null): BGColorableText {
 
 
     val description: String get() {
         return when (defaultGraphName != null && defaultGraphName.isNotEmpty()) {
             true -> defaultGraphName!!.toUpperCase() + ": "+name
             false -> name
+        }
+    }
+
+    val interaction: String get() {
+        return when (defaultGraphName.isNullOrEmpty()) {
+            true -> name
+            false -> defaultGraphName+":"+name
         }
     }
 

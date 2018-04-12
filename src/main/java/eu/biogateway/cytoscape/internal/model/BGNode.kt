@@ -55,6 +55,8 @@ open class BGNode {
     var description: String? = null
     var taxon: String? = null
 
+    var metadata = HashMap<String, BGNodeMetadata>()
+
     // This is used to keep track of the CyNodes using data from this BGNode, so they can be updated if needed.
     var cyNodes: ArrayList<CyNode>
 

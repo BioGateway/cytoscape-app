@@ -3,6 +3,7 @@ package eu.biogateway.cytoscape.internal.model
 import eu.biogateway.cytoscape.internal.BGServiceManager
 import eu.biogateway.cytoscape.internal.parser.BGReturnType
 import eu.biogateway.cytoscape.internal.query.*
+import jdk.nashorn.internal.runtime.regexp.joni.constants.NodeType
 import org.cytoscape.model.CyNetwork
 import java.util.concurrent.TimeUnit
 
@@ -16,7 +17,10 @@ class BGConversionQuery(serviceManager: BGServiceManager, val sparqlQuery: Strin
     }
 }
 
-class BGConversion(val type: BGConversionType, val sourceNetwork: CyNetwork, val sourceFieldName: String, val destinationFieldName: String) {
+class BGIdentifierConversion(val nodeType: BGNodeType, type: BGConversionType, sourceNetwork: CyNetwork, sourceFieldName: String, destinationFieldName: String): BGConversion(type, sourceNetwork, sourceFieldName, destinationFieldName) {
+
+}
+open class BGConversion(val type: BGConversionType, val sourceNetwork: CyNetwork, val sourceFieldName: String, val destinationFieldName: String) {
 
     fun runForDataString(serviceManager: BGServiceManager, input: String): String? {
 
@@ -33,6 +37,8 @@ class BGConversion(val type: BGConversionType, val sourceNetwork: CyNetwork, val
                 // Will only get the first value for the SPARQL result. The query specified in the XML must assure that only one result is returned.
                 // TODO: Might add support for "stringarray" here too, in that case it will make a ";"-separated list.
                 data = returnData.values.first()
+            } else {
+                return null
             }
         }
         // Continue with the conversion:
@@ -49,7 +55,7 @@ class BGConversion(val type: BGConversionType, val sourceNetwork: CyNetwork, val
                     // Will get the parts of the template before and after the "@value" tag, and remove them from the data.
                     val parts = type.template.split("@value")
                     if (parts.size == 2) {
-                        var string = data.replace(parts.first(), "")
+                        var string = data.replace(parts[0], "")
                         string = data.replace(parts[1], "")
                         string
                     } else {
@@ -62,7 +68,11 @@ class BGConversion(val type: BGConversionType, val sourceNetwork: CyNetwork, val
             BGConversionType.LookupMethod.DICT_EXACT_LOOKUP -> {
                 val nodeConversion = type as? BGNodeConversionType ?: return null //  Only valid for node conversions.
                 val suggestions = serviceManager.endpoint.searchForLabel(data, nodeConversion.nodeType.paremeterType.toLowerCase(), 1)
-                suggestions.first()._id
+                if (suggestions.isNotEmpty()) {
+                    suggestions.first()._id
+                } else {
+                    null
+                }
             }
         }
         return result

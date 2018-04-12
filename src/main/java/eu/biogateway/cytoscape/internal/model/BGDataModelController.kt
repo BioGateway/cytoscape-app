@@ -52,7 +52,8 @@ class BGDataModelController(private val serviceManager: BGServiceManager) {
             return null
         }
 
-        var importNodeConversionTypes: Collection<BGConversionType>? = null
+        var importNodeConversionTypes: Collection<BGNodeConversionType>? = null
+        var importEdgeConversionTypes: Collection<BGConversionType>? = null
         var exportNodeConversionTypes: Collection<BGConversionType>? = null
         var exportEdgeConversionTypes: Collection<BGConversionType>? = null
 
@@ -417,6 +418,7 @@ class BGDataModelController(private val serviceManager: BGServiceManager) {
     }
 
     private fun getNodesFromDictionaryServer(nodeUris: Collection<String>): HashMap<String, BGNode> {
+        if (nodeUris.isEmpty()) return HashMap()
         val query = BGMultiNodeFetchMongoQuery(serviceManager, nodeUris)
         query.run()
         val data = query.futureReturnData.get() as BGReturnNodeData

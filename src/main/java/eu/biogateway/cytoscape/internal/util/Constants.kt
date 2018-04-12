@@ -12,6 +12,7 @@ object Constants {
     val BG_SHOULD_USE_BG_DICT = true
     val BG_FIELD_IDENTIFIER_URI = "identifier uri"
     val BG_FIELD_NAME = "name"
+    val BG_FIELD_INTERACTION = "interaction"
     val BG_FIELD_NODE_TYPE: String = "type"
     val BG_FIELD_DESCRIPTION = "Description"
     val BG_FIELD_NODE_PARENT_EDGE_ID: String = "Parent Edge ID"

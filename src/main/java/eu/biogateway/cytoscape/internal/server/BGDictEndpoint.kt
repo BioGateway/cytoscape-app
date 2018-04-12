@@ -7,6 +7,7 @@ import org.apache.http.impl.client.HttpClients
 import org.apache.http.util.EntityUtils
 import com.google.gson.*
 import com.google.gson.reflect.TypeToken
+import eu.biogateway.cytoscape.internal.util.Constants
 import java.net.URL
 import java.net.URLEncoder
 
@@ -98,8 +99,14 @@ class BGDictEndpoint(internal var endpointUrl: String) {
         val url = URL(endpointUrl + "labelSearch/?term=" +URLEncoder.encode(term, "UTF-8")+"&type="+type+"&limit="+limit).toURI()
 
         val httpGet = HttpGet(url)
+
+        val queryStart = System.currentTimeMillis()
         val response = client.execute(httpGet)
         val statusCode = response.statusLine.statusCode
+
+        if (Constants.PROFILING) {
+            println("Label search time: "+(System.currentTimeMillis()-queryStart)+" ms. Status: "+statusCode+". Label: "+term)
+        }
         val data = EntityUtils.toString(response.entity)
         //val typeToken = object : TypeToken<List<Suggestion>>() {}.dataType
         //val otherList: List<Suggestion> = gson.fromJson(data, typeToken)

@@ -1,10 +1,7 @@
 package eu.biogateway.cytoscape.internal.parser
 
 import eu.biogateway.cytoscape.internal.BGServiceManager
-import eu.biogateway.cytoscape.internal.model.BGNode
-import eu.biogateway.cytoscape.internal.model.BGRelation
-import eu.biogateway.cytoscape.internal.model.BGRelationMetadata
-import eu.biogateway.cytoscape.internal.model.BGRelationType
+import eu.biogateway.cytoscape.internal.model.*
 import eu.biogateway.cytoscape.internal.query.*
 import eu.biogateway.cytoscape.internal.util.Constants
 import eu.biogateway.cytoscape.internal.util.sanitizeParameter
@@ -162,7 +159,8 @@ class BGParser(private val serviceManager: BGServiceManager) {
 
                 val relationType = server.cache.getRelationTypeForURIandGraph(relationUri, graphName) ?: BGRelationType(relationUri, relationUri, 0)
                 val relation = BGRelation(fromNode, relationType, toNode)
-                relation.metadata[BGRelationMetadata.CONFIDENCE_VALUE] = BGRelationMetadata(BGRelationMetadata.DataType.NUMBER, confidenceValue.toDouble())
+                // TODO: Delete this line, see if it works still. It should.
+                relation.metadata[BGRelationMetadata.CONFIDENCE_VALUE.name] = BGRelationMetadata(BGTableDataType.DOUBLE, confidenceValue.toDouble())
                 relationType.defaultGraphName?.let {
                     relation.sourceGraph = it
                 }

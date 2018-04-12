@@ -98,8 +98,8 @@ object BGConfigParser {
                 val sparql = metadataElement.getAttribute("sparql")
 
                 val dataType = when (typeName) {
-                    "text" -> BGRelationMetadata.DataType.STRING
-                    "number" -> BGRelationMetadata.DataType.NUMBER
+                    "text" -> BGTableDataType.STRING
+                    "number" -> BGTableDataType.DOUBLE
                     else -> null } ?: continue
 
                 val relationTypes = ArrayList<BGRelationType>()
@@ -129,9 +129,9 @@ object BGConfigParser {
                 val lookupTypeString = element.getAttribute("lookup") ?: return null
 
                 val dataType = when (dataTypeString) {
-                    "string" -> BGConversionType.DataType.STRING
-                    "stringArray" -> BGConversionType.DataType.STRINGARRAY
-                    "double" -> BGConversionType.DataType.DOUBLE
+                    "string" -> BGTableDataType.STRING
+                    "stringArray" -> BGTableDataType.STRINGARRAY
+                    "double" -> BGTableDataType.DOUBLE
                     else -> null
                 } ?: return null
 
@@ -150,13 +150,23 @@ object BGConfigParser {
                 return conversion
             }
 
-            val importNodeConversions = HashSet<BGConversionType>()
+            val importNodeConversions = HashSet<BGNodeConversionType>()
+            val importEdgeConversions = HashSet<BGConversionType>()
             val exportEdgeConversions = HashSet<BGConversionType>()
             val exportNodeConversions = HashSet<BGConversionType>()
 
             val conversionsNode = doc.getElementsByTagName("conversionTypes").item(0) as? Element
             val importNode = conversionsNode?.getElementsByTagName("import")?.item(0) as? Element
             if (importNode != null) {
+                val edges = importNode.getElementsByTagName("edge")
+                for (index in 0..edges.length -1 ) {
+                    val edgeElement = edges.item(index) as? Element ?: continue
+
+                    val conversion = parseConversionElement(BGConversionType.ConversionDirection.EXPORT, edgeElement) ?: continue
+
+                    importEdgeConversions.add(conversion)
+                }
+
                 val nodes = importNode.getElementsByTagName("node")
                 for (index in 0..nodes.length -1 ) {
                     val node = nodes.item(index) as? Element ?: continue
@@ -198,6 +208,7 @@ object BGConfigParser {
                 }
             }
 
+            cache.importEdgeConversionTypes = importEdgeConversions
             cache.importNodeConversionTypes = importNodeConversions
             cache.exportEdgeConversionTypes = exportEdgeConversions
             cache.exportNodeConversionTypes = exportNodeConversions

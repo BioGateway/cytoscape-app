@@ -385,6 +385,21 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
         }
     }
 
+    fun addBGNodesToNetworkWithMetadata(nodes: Collection<BGNode>, metadata: Map<BGNode, Set<BGNodeMetadata>>, network: CyNetwork) {
+
+        val nodeTable = network.defaultNodeTable
+        checkForMissingColumns(null, nodeTable)
+
+        for (node in nodes) {
+            val cyNode = addNodeToNetwork(node, network, nodeTable)
+            metadata[node]?.let {
+                updateMetadataForNode(it, cyNode, nodeTable)
+            }
+        }
+    }
+
+
+
     fun addRelationsToNetwork(network: CyNetwork, relations: Collection<BGRelation>) {
         val nodeTable = network.defaultNodeTable
         val edgeTable = network.defaultEdgeTable
@@ -480,11 +495,12 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
         }
     }*/
 
-    private fun addEdgeToNetwork(from: CyNode, to: CyNode, network: CyNetwork, edgeTable: CyTable, relationType: BGRelationType, edgeId: String, metadata: Map<BGRelationMetadataType, BGRelationMetadata>, sourceGraph: String?): CyEdge {
+    private fun addEdgeToNetwork(from: CyNode, to: CyNode, network: CyNetwork, edgeTable: CyTable, relationType: BGRelationType, edgeId: String, metadata: Map<String, BGRelationMetadata>, sourceGraph: String?): CyEdge {
 
         val edge = network.addEdge(from, to, relationType.directed)
         checkForMissingColumns(edgeTable, null)
         edgeTable.getRow(edge.suid).set(Constants.BG_FIELD_IDENTIFIER_URI, relationType.uri)
+        edgeTable.getRow(edge.suid).set(Constants.BG_FIELD_INTERACTION, relationType.identifier)
         edgeTable.getRow(edge.suid).set(Constants.BG_FIELD_NAME, relationType.name)
         edgeTable.getRow(edge.suid).set(Constants.BG_FIELD_EDGE_ID, edgeId)
         edgeTable.getRow(edge.suid).set(Constants.BG_FIELD_EDGE_EXPANDABLE, if (relationType.expandable) "true" else "false")
@@ -494,44 +510,44 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
 
         updateMetadataForEdge(metadata, edge, edgeTable)
 
-//        for ((metadataType, metaData) in metadata.iterator()) {
-//            if (BGNetworkTableHelper.assureThatEdgeColumnExists(edgeTable,
-//                            metadataType.name,
-//                            metadataType.dataType,
-//                            false)) {
-//                if (metaData.dataType == BGRelationMetadata.DataType.DOUBLE) {
-//                    metaData.numericValue?.let {
-//                        edge.setDoubleForColumnName(it, metadataType.name, edgeTable)
-//                    }}
-//                if (metaData.dataType == BGRelationMetadata.DataType.STRING) {
-//                    metaData.stringValue?.let {
-//                        edge.setStringForColumnName(it, metadataType.name, edgeTable)
-//                    }}
-//            }
-//        }
         return edge
     }
 
-    private fun updateMetadataForEdge(metadata: Map<BGRelationMetadataType, BGRelationMetadata>, edge: CyEdge, edgeTable: CyTable) {
-        for ((metadataType, metaData) in metadata.iterator()) {
-            if (BGNetworkTableHelper.assureThatEdgeColumnExists(edgeTable,
-                            metadataType.name,
-                            metadataType.dataType,
+    private fun updateMetadataForNode(metadata: Set<BGNodeMetadata>, node: CyNode, nodeTable: CyTable) {
+        for (metaData in metadata) {
+            if (BGNetworkTableHelper.assureThatNodeColumnExists(nodeTable,
+                            metaData.columnName,
+                            metaData.dataType,
                             false)) {
-                if (metaData.dataType == BGRelationMetadata.DataType.NUMBER) {
+                if (metaData.dataType == BGTableDataType.DOUBLE) {
+                    (metaData.getValue() as Double?)?.let {
+                        node.setDoubleForColumnName(it, metaData.columnName, nodeTable)
+                    }
+                }
+                if (metaData.dataType == BGTableDataType.STRING) {
+                    (metaData.getValue() as String?)?.let {
+                        node.setStringForColumnName(it, metaData.columnName, nodeTable)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun updateMetadataForEdge(metadata: Map<String, BGRelationMetadata>, edge: CyEdge, edgeTable: CyTable) {
+        for ((columnName, metaData) in metadata.iterator()) {
+            if (BGNetworkTableHelper.assureThatEdgeColumnExists(edgeTable,
+                            columnName,
+                            metaData.dataType,
+                            false)) {
+                if (metaData.dataType == BGTableDataType.DOUBLE) {
                     metaData.numericValue?.let {
-                        edge.setDoubleForColumnName(it, metadataType.name, edgeTable)
+                        edge.setDoubleForColumnName(it, columnName, edgeTable)
                     }}
-                if (metaData.dataType == BGRelationMetadata.DataType.STRING) {
+                if (metaData.dataType == BGTableDataType.STRING) {
                     metaData.stringValue?.let {
                         // TODO: Remove this when the server stops using dummy URIs
                         // TODO: Get the label name instead.
-                        edge.setStringForColumnName(it.replace("http://www.semantic-systems-biology.org/ssb/", ""), metadataType.name, edgeTable)
-//                        if (it.startsWith("http://www.semantic-systems-biology.org/ssb/")) {
-//                            edge.setStringForColumnName(it.substringAfterLast("/"), metadataType.name, edgeTable)
-//                        } else {
-//                            edge.setStringForColumnName(it, metadataType.name, edgeTable)
-//                        }
+                        edge.setStringForColumnName(it.replace("http://www.semantic-systems-biology.org/ssb/", ""), columnName, edgeTable)
                     }}
             }
         }

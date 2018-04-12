@@ -2,12 +2,9 @@ package eu.biogateway.cytoscape.internal.model
 
 
 
-open class BGConversionType(val direction: ConversionDirection, val id: String, val name: String, val dataType: DataType, val biogwId: String, val lookupMethod: LookupMethod, val template: String? = null, val sparqlTemplate: String? = null) {
+open class BGConversionType(val direction: ConversionDirection, val id: String, val name: String, val dataType: BGTableDataType, val biogwId: String, val lookupMethod: LookupMethod, val template: String? = null, val sparqlTemplate: String? = null) {
     enum class ConversionDirection {
         IMPORT, EXPORT
-    }
-    enum class DataType {
-        STRING, DOUBLE, STRINGARRAY, INT, BOOLEAN
     }
     enum class LookupMethod {
         REPLACE, COPY, EXTRACT, DICT_EXACT_LOOKUP
@@ -18,9 +15,9 @@ open class BGConversionType(val direction: ConversionDirection, val id: String, 
     }
 }
 
-class BGNodeConversionType(val nodeType: BGNodeType, direction: ConversionDirection, id: String, name: String, dataType: DataType, biogwId: String, lookupMethod: LookupMethod, template: String? = null, sparqlTemplate: String? = null): BGConversionType(direction, id, name, dataType, biogwId, lookupMethod, template, sparqlTemplate) {
+class BGNodeConversionType(val nodeType: BGNodeType, direction: ConversionDirection, id: String, name: String, dataType: BGTableDataType, biogwId: String, lookupMethod: LookupMethod, template: String? = null, sparqlTemplate: String? = null): BGConversionType(direction, id, name, dataType, biogwId, lookupMethod, template, sparqlTemplate) {
     constructor(nodeType: BGNodeType, conversionType: BGConversionType) : this(nodeType, conversionType.direction, conversionType.id, conversionType.name, conversionType.dataType, conversionType.biogwId, conversionType.lookupMethod, conversionType.template, conversionType.sparqlTemplate)
 }
-class BGEdgeConversionType(direction: ConversionDirection, id: String, name: String, dataType: DataType, biogwId: String, lookupMethod: LookupMethod, template: String? = null, sparqlTemplate: String? = null): BGConversionType(direction, id, name, dataType, biogwId, lookupMethod, template, sparqlTemplate) {
+class BGEdgeConversionType(direction: ConversionDirection, id: String, name: String, dataType: BGTableDataType, biogwId: String, lookupMethod: LookupMethod, template: String? = null, sparqlTemplate: String? = null): BGConversionType(direction, id, name, dataType, biogwId, lookupMethod, template, sparqlTemplate) {
     constructor(conversionType: BGConversionType) : this(conversionType.direction, conversionType.id, conversionType.name, conversionType.dataType, conversionType.biogwId, conversionType.lookupMethod, conversionType.template, conversionType.sparqlTemplate)
 }
