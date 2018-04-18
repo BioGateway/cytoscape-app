@@ -8,5 +8,21 @@ enum class BGTableDataType(val javaCanonicalName: String) {
     UNSUPPORTED(""),
     STRINGARRAY(""),
     INTARRAY(""),
-    DOUBLEARRAY("")
+    DOUBLEARRAY("");
+    companion object {
+        fun getTypeFromString(dataTypeString: String): BGTableDataType? {
+
+            return when (dataTypeString) {
+                "string" -> BGTableDataType.STRING
+                "stringArray" -> BGTableDataType.STRINGARRAY
+                "doubleArray" -> BGTableDataType.DOUBLEARRAY
+                "intArray" -> BGTableDataType.INTARRAY
+                "double" -> BGTableDataType.DOUBLE
+                "boolean" -> BGTableDataType.BOOLEAN
+                "integer" -> BGTableDataType.INT
+                else -> null
+            }
+        }
+    }
 }
+

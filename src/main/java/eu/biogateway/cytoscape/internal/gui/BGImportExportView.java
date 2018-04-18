@@ -88,7 +88,7 @@ public class BGImportExportView {
         panel1.add(tabbedPane1, BorderLayout.CENTER);
         final JPanel panel2 = new JPanel();
         panel2.setLayout(new BorderLayout(0, 0));
-        tabbedPane1.addTab("Nodes", panel2);
+        tabbedPane1.addTab("Convert to BioGateway", panel2);
         final JPanel panel3 = new JPanel();
         panel3.setLayout(new BorderLayout(0, 0));
         panel2.add(panel3, BorderLayout.SOUTH);

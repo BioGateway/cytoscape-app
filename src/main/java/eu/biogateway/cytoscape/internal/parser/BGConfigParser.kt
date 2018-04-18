@@ -97,10 +97,7 @@ object BGConfigParser {
                 val typeName = metadataElement.getAttribute("dataType") ?: continue
                 val sparql = metadataElement.getAttribute("sparql")
 
-                val dataType = when (typeName) {
-                    "text" -> BGTableDataType.STRING
-                    "number" -> BGTableDataType.DOUBLE
-                    else -> null } ?: continue
+                val dataType = BGTableDataType.getTypeFromString(typeName) ?: continue
 
                 val relationTypes = ArrayList<BGRelationType>()
 
@@ -127,17 +124,7 @@ object BGConfigParser {
                 val dataTypeString = element.getAttribute("dataType") ?: return null
                 val biogwId = element.getAttribute("biogwId") ?: return null
                 val lookupTypeString = element.getAttribute("lookup") ?: return null
-
-                val dataType = when (dataTypeString) {
-                    "string" -> BGTableDataType.STRING
-                    "stringArray" -> BGTableDataType.STRINGARRAY
-                    "doubleArray" -> BGTableDataType.DOUBLEARRAY
-                    "intArray" -> BGTableDataType.INTARRAY
-                    "double" -> BGTableDataType.DOUBLE
-                    "boolean" -> BGTableDataType.BOOLEAN
-                    "integer" -> BGTableDataType.INT
-                    else -> null
-                } ?: return null
+                val dataType = BGTableDataType.getTypeFromString(dataTypeString) ?: return null
 
                 val lookupMethod = when (lookupTypeString) {
                     "replace" -> BGConversionType.LookupMethod.REPLACE

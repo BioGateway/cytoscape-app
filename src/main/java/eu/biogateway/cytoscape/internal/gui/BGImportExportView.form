@@ -14,7 +14,7 @@
         <children>
           <grid id="184af" layout-manager="BorderLayout" hgap="0" vgap="0">
             <constraints>
-              <tabbedpane title="Nodes"/>
+              <tabbedpane title="Convert to BioGateway"/>
             </constraints>
             <properties/>
             <border type="none"/>
