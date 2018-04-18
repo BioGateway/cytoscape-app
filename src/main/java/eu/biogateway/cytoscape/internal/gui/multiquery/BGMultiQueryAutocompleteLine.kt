@@ -12,7 +12,7 @@ import java.awt.Color
 import java.awt.FlowLayout
 import javax.swing.*
 
-class BGMultiQueryAutocompleteLine(val serviceManager: BGServiceManager, val relationTypeComboBox: JComboBox<BGRelationType>, val variableManager: BGQueryVariableManager): JPanel() {
+class BGMultiQueryAutocompleteLine(val relationTypeComboBox: JComboBox<BGRelationType>, val variableManager: BGQueryVariableManager): JPanel() {
 
     val searchButtonTooltipText = "Search for entity URIs."
     val variablesTooltipText = "Choose URI to specify an entity, or pick a variable letter to find matching entities."
@@ -126,12 +126,12 @@ class BGMultiQueryAutocompleteLine(val serviceManager: BGServiceManager, val rel
         fromTypeComboBox.renderer = fromTypeBoxRenderer
         toTypeComboBox.renderer = toTypeBoxRenderer
 
-        fromSearchBox = BGAutocompleteComboBox(serviceManager.endpoint) {
+        fromSearchBox = BGAutocompleteComboBox(BGServiceManager.endpoint) {
             (fromTypeComboBox.selectedItem as? BGNodeType)?.let {
                 BGNodeType.forName(it.paremeterType)
             }
         }
-        toSearchBox = BGAutocompleteComboBox(serviceManager.endpoint) {
+        toSearchBox = BGAutocompleteComboBox(BGServiceManager.endpoint) {
             (toTypeComboBox.selectedItem as? BGNodeType)?.let {
                 BGNodeType.forName(it.paremeterType)
             }
@@ -163,7 +163,7 @@ class BGMultiQueryAutocompleteLine(val serviceManager: BGServiceManager, val rel
         val fromUriSearchButton = JButton(searchIcon)
         fromUriSearchButton.toolTipText = searchButtonTooltipText
         fromUriSearchButton.addActionListener {
-            val lookupController = BGNodeLookupController(serviceManager, this) {
+            val lookupController = BGNodeLookupController(this) {
                 if (it != null) {
                     this.fromUri = it.uri
                     it.name?.let {
@@ -176,7 +176,7 @@ class BGMultiQueryAutocompleteLine(val serviceManager: BGServiceManager, val rel
         val toUriSearchButton = JButton(searchIcon)
         toUriSearchButton.toolTipText = searchButtonTooltipText
         toUriSearchButton.addActionListener {
-            val lookupController = BGNodeLookupController(serviceManager, this) {
+            val lookupController = BGNodeLookupController(this) {
                 if (it != null) {
                     this.toUri = it.uri
                     it.name?.let {
@@ -239,7 +239,7 @@ class BGMultiQueryAutocompleteLine(val serviceManager: BGServiceManager, val rel
     }*/
 
     private fun updateLabelAndDescriptionForField(textField: JTextField, uri: String) {
-        val node = serviceManager.dataModelController.searchForExistingNode(uri)
+        val node = BGServiceManager.dataModelController.searchForExistingNode(uri)
         textField.text = node?.name ?: ""
         textField.toolTipText = node?.description ?: ""
     }

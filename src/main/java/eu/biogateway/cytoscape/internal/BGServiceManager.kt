@@ -29,7 +29,7 @@ import org.osgi.framework.BundleContext
 /**
  * Created by sholmas on 23/03/2017.
  */
-class BGServiceManager {
+object BGServiceManager {
 
     // This seems like a good place to store static properties.
     var bundleContext: BundleContext? = null
@@ -75,16 +75,9 @@ class BGServiceManager {
 
 
     init {
-        this.dataModelController = BGDataModelController(this)
+        this.dataModelController = BGDataModelController()
     }
 
-    constructor()
-
-    constructor(cyActivator: CyActivator, adapter: CyAppAdapter, bundleContext: BundleContext) {
-        this.bundleContext = bundleContext
-        this.activator = cyActivator
-        this.adapter = adapter
-    }
 
     fun getVisualManager(): VisualMappingManager? {
         return visualMappingManager

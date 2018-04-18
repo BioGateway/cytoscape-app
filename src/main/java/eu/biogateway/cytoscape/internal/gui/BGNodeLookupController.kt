@@ -15,7 +15,7 @@ import javax.swing.JComponent
 import javax.swing.JOptionPane
 import javax.swing.table.DefaultTableModel
 
-class BGNodeLookupController(val serviceManager: BGServiceManager, parentComponent: JComponent?, defaultURI: String? = null, val completion: (BGNode?) -> Unit): ActionListener {
+class BGNodeLookupController(parentComponent: JComponent?, defaultURI: String? = null, val completion: (BGNode?) -> Unit): ActionListener {
 
     private val view = BGNodeLookupView(this, parentComponent)
     private var nodesFound = HashMap<String, BGNode>()
@@ -61,7 +61,7 @@ class BGNodeLookupController(val serviceManager: BGServiceManager, parentCompone
         when (view.nameOrURIComboBox.selectedIndex) {
             0 -> {
                 // Label search
-                val query = BGNodeURILookupQuery(serviceManager, searchString, useRegex, nodeType)
+                val query = BGNodeURILookupQuery(searchString, useRegex, nodeType)
                 query.addCompletion {
                     val data = it as? BGReturnNodeData ?: return@addCompletion
                     if (data.nodeData.count() == 0) {
@@ -93,7 +93,7 @@ class BGNodeLookupController(val serviceManager: BGServiceManager, parentCompone
     }
 
     private fun lookupURIString(searchString: String) {
-        val query = BGNodeFetchQuery(serviceManager, searchString)
+        val query = BGNodeFetchQuery(searchString)
         query.parseType = BGParsingType.TO_ARRAY
         query.addCompletion {
             val data = it as? BGReturnNodeData ?: return@addCompletion

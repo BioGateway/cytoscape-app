@@ -9,23 +9,20 @@ import java.awt.event.ActionEvent;
  */
 
 interface BGAction {
-    void action(BGServiceManager serviceManager);
+    void action();
 }
 
 public class BGCreateAction extends AbstractCyAction {
     private final BGAction action;
 
-    private final BGServiceManager serviceManager;
-
-    public BGCreateAction(String name, String enableFor, BGServiceManager serviceManager, BGAction action) {
-        super(name, serviceManager.getApplicationManager(), enableFor, serviceManager.getViewManager());
+    public BGCreateAction(String name, String enableFor, BGAction action) {
+        super(name, BGServiceManager.INSTANCE.getApplicationManager(), enableFor, BGServiceManager.INSTANCE.getViewManager());
         setPreferredMenu("Apps");
-        this.serviceManager = serviceManager;
         this.action = action;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        action.action(serviceManager);
+        action.action();
     }
 }

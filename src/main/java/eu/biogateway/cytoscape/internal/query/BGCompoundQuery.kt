@@ -9,7 +9,7 @@ import org.cytoscape.work.AbstractTask
 import org.cytoscape.work.TaskMonitor
 import java.util.concurrent.CompletableFuture
 
-abstract class BGCompoundRelationQuery(val serviceManager: BGServiceManager, val nodeUris: Collection<String>, val columnNames: Array<String>, val createFuture: (String) -> CompletableFuture<BGReturnData>): AbstractTask(), Runnable {
+abstract class BGCompoundRelationQuery(val nodeUris: Collection<String>, val columnNames: Array<String>, val createFuture: (String) -> CompletableFuture<BGReturnData>): AbstractTask(), Runnable {
     var returnFuture = CompletableFuture<BGReturnRelationsData>()
     var minCommonRelations = 0
 

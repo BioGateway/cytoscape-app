@@ -35,7 +35,7 @@ interface BGRelationResultViewTooltipDataSource {
     fun getTooltipForResultRowAndColumn(row: Int, column: Int): String?
 }
 
-class BGOptionalURIField(val textField: JTextField, val serviceManager: BGServiceManager): JPanel() {
+class BGOptionalURIField(val textField: JTextField): JPanel() {
     val comboBox: JComboBox<String>
     init {
         val comboBoxOptions = arrayOf("Gene", "Protein")
@@ -47,7 +47,7 @@ class BGOptionalURIField(val textField: JTextField, val serviceManager: BGServic
         val uriSearchButton = JButton(searchIcon)
         uriSearchButton.toolTipText = "Search for entity URIs."
         uriSearchButton.addActionListener {
-            val lookupController = BGNodeLookupController(serviceManager, this) {
+            val lookupController = BGNodeLookupController(this) {
                 if (it != null) {
                     textField.text = it.uri
                     textField.toolTipText = it.description
@@ -58,9 +58,9 @@ class BGOptionalURIField(val textField: JTextField, val serviceManager: BGServic
     }
 }
 
-class BGRelationQueryRow(relationTypes: Array<String>, serviceManager: BGServiceManager): JPanel() {
-    val fromNodeField = BGOptionalURIField(JTextField(), serviceManager)
-    val toNodeField = BGOptionalURIField(JTextField(), serviceManager)
+class BGRelationQueryRow(relationTypes: Array<String>): JPanel() {
+    val fromNodeField = BGOptionalURIField(JTextField())
+    val toNodeField = BGOptionalURIField(JTextField())
     val comboBox: JComboBox<String>
     init {
         this.layout = FlowLayout()
@@ -100,7 +100,7 @@ private class BGRelationResultRow(val relation: BGRelation): BGResultRow()
 
 class BGComponentButton(label: String, val associatedComponent: JComponent): JButton(label)
 
-class BGQueryBuilderController(private val serviceManager: BGServiceManager) : ActionListener, ChangeListener, BGRelationResultViewTooltipDataSource {
+class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationResultViewTooltipDataSource {
 
     override fun getTooltipForResultRowAndColumn(row: Int, column: Int): String? {
         val modelRow = view.resultTable.convertRowIndexToModel(row)
@@ -130,8 +130,8 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
     private var  queries = HashMap<String, QueryTemplate>()
 
     init {
-        this.view = BGQueryBuilderView(this, this, serviceManager)
-        this.queries = serviceManager.dataModelController.cache.queryTemplates
+        this.view = BGQueryBuilderView(this, this)
+        this.queries = BGServiceManager.dataModelController.cache.queryTemplates
         updateUIAfterXMLLoad()
     }
 
@@ -224,10 +224,10 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
 
             query = when(queryType){
                 BGReturnType.NODE_LIST, BGReturnType.NODE_LIST_DESCRIPTION -> {
-                    BGNodeSearchQuery(serviceManager, queryString, queryType)
+                    BGNodeSearchQuery(queryString, queryType)
                 }
                 BGReturnType.RELATION_TRIPLE_GRAPHURI, BGReturnType.RELATION_TRIPLE_NAMED -> {
-                    BGRelationQueryImplementation(serviceManager, queryString, queryType)
+                    BGRelationQueryImplementation(queryString, queryType)
                 }
                 else -> {
                     throw Exception("Unexpected query type: "+queryType.toString())
@@ -260,7 +260,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                     setNodeTableData(data.nodeData.values)
                 }
                 if (data is BGReturnRelationsData) {
-                    BGLoadUnloadedNodes.createAndRun(serviceManager, data.unloadedNodes) {
+                    BGLoadUnloadedNodes.createAndRun(data.unloadedNodes) {
                         setRelationTableData(data.relationsData)
                         view.tabPanel.selectedIndex = TAB_PANEL_RESULTS_INDEX
                         Utility.fightForFocus(view.mainFrame)
@@ -272,7 +272,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                 }
             }
             val iterator = TaskIterator(query)
-            serviceManager.taskManager?.execute(iterator)
+            BGServiceManager.taskManager?.execute(iterator)
 
         }
     }
@@ -308,7 +308,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
 
     private fun importSelectedResults(net: CyNetwork?, returnType: BGReturnType) {
         var network = net // Need to redeclare it to make it mutable.
-        val server = serviceManager.dataModelController
+        val server = BGServiceManager.dataModelController
         // 1. Get the selected lines from the table.
         val nodes = HashMap<String, BGNode>()
         val relations = ArrayList<BGRelation>()
@@ -356,12 +356,12 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
             }
 
             if (shouldCreateNetworkView) {
-                serviceManager.networkManager?.addNetwork(network)
+                BGServiceManager.networkManager?.addNetwork(network)
                 EventQueue.invokeLater {
-                    server.networkBuilder.createNetworkView(network, serviceManager)
+                    server.networkBuilder.createNetworkView(network)
                 }
             } else {
-                Utility.reloadCurrentVisualStyleCurrentNetworkView(serviceManager)
+                Utility.reloadCurrentVisualStyleCurrentNetworkView()
             }
         }
 
@@ -378,10 +378,10 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         }
         */
 
-        val query = BGLoadRelationMetadataQuery(serviceManager, relations, serviceManager.cache.activeMetadataTypes) {
+        val query = BGLoadRelationMetadataQuery(relations, BGServiceManager.cache.activeMetadataTypes) {
             buildNetwork()
         }
-        serviceManager.execute(query)
+        BGServiceManager.execute(query)
     }
 
     private fun validatePropertyFields(parameters: Collection<BGQueryParameter>, parameterComponents: HashMap<String, JComponent>): String? {
@@ -448,7 +448,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         val relationsFound = returnData.relationsData
 
         if (filterOn) {
-            val network = serviceManager.applicationManager?.currentNetwork
+            val network = BGServiceManager.applicationManager?.currentNetwork
             val allNodeUris = network?.defaultNodeTable?.getColumn(Constants.BG_FIELD_IDENTIFIER_URI)?.getValues(String::class.java)
             var relations = ArrayList<BGRelation>()
             for (result in relationsFound) {
@@ -501,7 +501,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         val sparqlCode = view.sparqlTextArea.text
         if (sparqlCode.isEmpty()) return
 
-        val queryGraphs = BGSPARQLParser.parseSPARQLCode(sparqlCode, serviceManager.cache.relationTypeMap)
+        val queryGraphs = BGSPARQLParser.parseSPARQLCode(sparqlCode, BGServiceManager.cache.relationTypeMap)
 
         if (queryGraphs.first.isEmpty()) {
             JOptionPane.showMessageDialog(view.mainFrame, "Unable to parse any queries from current SPARQL.")
@@ -518,7 +518,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         val file = openFileChooser() ?: return
         val sparqlCode = file.readText()
 
-        val queryGraphs = BGSPARQLParser.parseSPARQLCode(sparqlCode, serviceManager.cache.relationTypeMap)
+        val queryGraphs = BGSPARQLParser.parseSPARQLCode(sparqlCode, BGServiceManager.cache.relationTypeMap)
         view.multiQueryPanel.loadQueryGraphs(queryGraphs)
     }
 
@@ -645,21 +645,21 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
 
         when (queryType) {
             QueryType.NAME_SEARCH -> {
-                val query = BGBulkImportNodesQuery(serviceManager, nodeList, nodeType)
+                val query = BGBulkImportNodesQuery(nodeList, nodeType)
                 query.addCompletion(queryCompletion)
-                serviceManager.taskManager?.execute(TaskIterator(query))
+                BGServiceManager.taskManager?.execute(TaskIterator(query))
             }
             BGQueryBuilderController.QueryType.UNIPROT_LOOKUP -> {
                 val uniprotNodeList = nodeList.map { Utility.generateUniprotURI(it) }
-                val query = BGBulkImportNodesFromURIs(serviceManager, nodeType, uniprotNodeList)
+                val query = BGBulkImportNodesFromURIs(nodeType, uniprotNodeList)
                 query.addCompletion(queryCompletion)
-                serviceManager.taskManager?.execute(TaskIterator(query))
+                BGServiceManager.taskManager?.execute(TaskIterator(query))
             }
             BGQueryBuilderController.QueryType.GO_LOOKUP -> {
                 val goNodeList = nodeList.map { Utility.generateGOTermURI(it) }
-                val query = BGBulkImportNodesFromURIs(serviceManager, nodeType, goNodeList)
+                val query = BGBulkImportNodesFromURIs(nodeType, goNodeList)
                 query.addCompletion(queryCompletion)
-                serviceManager.taskManager?.execute(TaskIterator(query))
+                BGServiceManager.taskManager?.execute(TaskIterator(query))
             }
             BGQueryBuilderController.QueryType.NOT_SET -> {
                 throw Exception("Invalid query type!")
@@ -683,21 +683,21 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
         var shouldCreateNetworkView = false
 
         if (network == null) {
-            network = serviceManager.dataModelController.networkBuilder.createNetwork()
+            network = BGServiceManager.dataModelController.networkBuilder.createNetwork()
             shouldCreateNetworkView = true
         }
 
-        serviceManager.dataModelController.networkBuilder.addBGNodesToNetwork(nodes.values, network)
+        BGServiceManager.dataModelController.networkBuilder.addBGNodesToNetwork(nodes.values, network)
 
         if (shouldCreateNetworkView) {
-            serviceManager.networkManager?.addNetwork(network)
+            BGServiceManager.networkManager?.addNetwork(network)
             EventQueue.invokeLater {
                 network?.let {
-                    serviceManager.dataModelController.networkBuilder.createNetworkView(it, serviceManager)
+                    BGServiceManager.dataModelController.networkBuilder.createNetworkView(it)
                 }
             }
         } else {
-            Utility.reloadCurrentVisualStyleCurrentNetworkView(serviceManager)
+            Utility.reloadCurrentVisualStyleCurrentNetworkView()
         }
     }
 
@@ -756,7 +756,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
             JOptionPane.showMessageDialog(view.mainFrame, errorText)
         } else {
 
-            val relationCount = Utility.countMatchingRowsQuery(serviceManager, view.multiQueryPanel.generateSPARQLCountQuery()) ?: throw Exception("Unable to get relation count.")
+            val relationCount = Utility.countMatchingRowsQuery(view.multiQueryPanel.generateSPARQLCountQuery()) ?: throw Exception("Unable to get relation count.")
 
             if (relationCount > Constants.BG_RELATION_COUNT_WARNING_LIMIT) {
                 val message = "Estimated "+relationCount.toString()+" relations must be evaluated to complete this query. This might take a very long time or time out. Are you sure you want to proceed?"
@@ -770,7 +770,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
             view.sparqlTextArea.text = queryString
 
             val queryType = BGReturnType.RELATION_MULTIPART
-            val query = BGMultiRelationsQuery(serviceManager, queryString, queryType)
+            val query = BGMultiRelationsQuery(queryString, queryType)
 
             query.addCompletion {
                 val data = it as? BGReturnRelationsData ?: throw Exception("Expected Relation Data in return!")
@@ -779,7 +779,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                 val tableModel = view.resultTable.model as DefaultTableModel
                 tableModel.setColumnIdentifiers(data.columnNames)
 
-                BGLoadNodeDataFromBiogwDict.createAndRun(serviceManager, data.unloadedNodes, 500) {
+                BGLoadNodeDataFromBiogwDict.createAndRun(data.unloadedNodes, 500) {
                     setRelationTableData(data.relationsData)
                     view.mainFrame.title = "BioGateway Query Builder - "+data.relationsData.size+" relations found."
                     view.tabPanel.selectedIndex = TAB_PANEL_RESULTS_INDEX // Open the result tab.
@@ -788,7 +788,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
                 }
             }
             val iterator = TaskIterator(query)
-            serviceManager.taskManager?.execute(iterator)
+            BGServiceManager.taskManager?.execute(iterator)
         }
     }
 
@@ -853,7 +853,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
             ACTION_RUN_QUERY -> runQuery()
             ACTION_CHANGED_QUERY -> updateSelectedQuery()
             ACTION_IMPORT_TO_SELECTED -> {
-                val network = serviceManager.applicationManager?.currentNetwork
+                val network = BGServiceManager.applicationManager?.currentNetwork
                 importSelectedResults(network, currentQuery!!.returnType)
             }
             ACTION_IMPORT_TO_NEW -> importSelectedResults(null, currentQuery!!.returnType)
@@ -872,7 +872,7 @@ class BGQueryBuilderController(private val serviceManager: BGServiceManager) : A
             ACTION_SELECT_UPSTREAM_RELATIONS -> selectUpstreamRelations()
             ACTION_RUN_BULK_IMPORT -> runBulkImport()
             ACTION_BULK_IMPORT_TO_NEW_NETWORK -> bulkImportToNetwork()
-            ACTION_BULK_IMPORT_TO_CURRENT_NETWORK -> bulkImportToNetwork(serviceManager.applicationManager?.currentNetwork)
+            ACTION_BULK_IMPORT_TO_CURRENT_NETWORK -> bulkImportToNetwork(BGServiceManager.applicationManager?.currentNetwork)
             else -> {
             }
         }

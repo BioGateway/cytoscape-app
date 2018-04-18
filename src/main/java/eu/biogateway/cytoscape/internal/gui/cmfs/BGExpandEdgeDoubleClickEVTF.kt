@@ -14,7 +14,7 @@ import org.cytoscape.view.model.CyNetworkView
 import org.cytoscape.view.model.View
 import org.cytoscape.work.TaskIterator
 
-class BGExpandEdgeDoubleClickEVTF(val serviceManager: BGServiceManager): EdgeViewTaskFactory {
+class BGExpandEdgeDoubleClickEVTF(): EdgeViewTaskFactory {
     override fun createTaskIterator(edgeView: View<CyEdge>?, netView: CyNetworkView?): TaskIterator {
         if (edgeView == null) throw Exception("Edge view is null!")
         if (netView == null) throw Exception("Network view is null!")
@@ -31,7 +31,7 @@ class BGExpandEdgeDoubleClickEVTF(val serviceManager: BGServiceManager): EdgeVie
         val fromNodeUri = edge.source.getUri(network)
         val toNodeUri = edge.target.getUri(network)
         val edgeUri = edge.getUri(network)
-        val relationType = serviceManager.cache.getRelationTypeForURIandGraph(edge.getUri(network), edge.getSourceGraph(network)) ?: throw Exception("RelationType not found in cache!")
+        val relationType = BGServiceManager.cache.getRelationTypeForURIandGraph(edge.getUri(network), edge.getSourceGraph(network)) ?: throw Exception("RelationType not found in cache!")
 
         //val query = BGFindBinaryPPIsBetweenNodesQuery(serviceManager, fromNodeUri, toNodeUri)
 
@@ -45,13 +45,13 @@ class BGExpandEdgeDoubleClickEVTF(val serviceManager: BGServiceManager): EdgeVie
             true -> BGReturnType.RELATION_MULTIPART
         }
 
-        val query = BGExpandRelationToNodesQuery(serviceManager, fromNodeUri, toNodeUri, relationType, returnType)
+        val query = BGExpandRelationToNodesQuery(fromNodeUri, toNodeUri, relationType, returnType)
         query.addCompletion {
             val returnData = it as? BGReturnRelationsData
             if (returnData != null) {
                 val network = netView.model
                 if (returnData.relationsData.size == 0) throw Exception("No relations found.")
-                BGLoadUnloadedNodes.createAndRun(serviceManager, returnData.unloadedNodes) {
+                BGLoadUnloadedNodes.createAndRun(returnData.unloadedNodes) {
                     println("Loaded " + it.toString() + " nodes.")
 
                     val relations = returnData.relationsData
@@ -63,7 +63,7 @@ class BGExpandEdgeDoubleClickEVTF(val serviceManager: BGServiceManager): EdgeVie
                             }
                             .filter { it.uri != fromNodeUri }
                             .filter { it.uri != toNodeUri }
-                    serviceManager.dataModelController.networkBuilder.expandEdgeWithRelations(netView, edgeView, newNodes, relations)
+                    BGServiceManager.dataModelController.networkBuilder.expandEdgeWithRelations(netView, edgeView, newNodes, relations)
                 }
             }
         }
@@ -76,7 +76,7 @@ class BGExpandEdgeDoubleClickEVTF(val serviceManager: BGServiceManager): EdgeVie
         val edge = edgeView.model
         val network = networkView.model
 
-        val relationType = serviceManager.cache.getRelationTypeForURIandGraph(edge.getUri(network), edge.getSourceGraph(network))
+        val relationType = BGServiceManager.cache.getRelationTypeForURIandGraph(edge.getUri(network), edge.getSourceGraph(network))
 
         if (relationType == null) return false
         return relationType.expandable

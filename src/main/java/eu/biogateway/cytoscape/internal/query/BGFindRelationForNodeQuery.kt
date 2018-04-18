@@ -8,7 +8,7 @@ import eu.biogateway.cytoscape.internal.parser.BGReturnType
 import eu.biogateway.cytoscape.internal.util.Utility
 
 
-class BGFindRelationForNodeQuery(serviceManager: BGServiceManager, val relationType: BGRelationType, val nodeUri: String, val direction: BGRelationDirection): BGQuery(serviceManager, BGReturnType.RELATION_TRIPLE_GRAPHURI) {
+class BGFindRelationForNodeQuery(val relationType: BGRelationType, val nodeUri: String, val direction: BGRelationDirection): BGQuery(BGReturnType.RELATION_TRIPLE_GRAPHURI) {
 
     override fun generateQueryString(): String {
        return when (direction) {
@@ -43,7 +43,7 @@ class BGFindRelationForNodeQuery(serviceManager: BGServiceManager, val relationT
     }
 
     fun generateFromQueryString(): String {
-        val sourceFilter = BGDatasetSource.generateSourceConstraint(serviceManager, relationType, "<"+nodeUri+">", "?toNode") ?: Pair("", "")
+        val sourceFilter = BGDatasetSource.generateSourceConstraint(relationType, "<"+nodeUri+">", "?toNode") ?: Pair("", "")
         return "BASE <http://www.semantic-systems-biology.org/>\n" +
                 "PREFIX relation1: <" + relationType.uri + ">\n" +
                 "PREFIX fromNode: <" + nodeUri + ">\n" +
@@ -58,7 +58,7 @@ class BGFindRelationForNodeQuery(serviceManager: BGServiceManager, val relationT
     }
 
     fun generateToQueryString(): String {
-        val sourceFilter = BGDatasetSource.generateSourceConstraint(serviceManager, relationType, "?fromNode",  "<"+nodeUri+">") ?: Pair("", "")
+        val sourceFilter = BGDatasetSource.generateSourceConstraint(relationType, "?fromNode",  "<"+nodeUri+">") ?: Pair("", "")
         return "BASE <http://www.semantic-systems-biology.org/>\n" +
                 "PREFIX relation1: <" + relationType.uri + ">\n" +
                 "PREFIX toNode: <" + nodeUri + ">\n" +

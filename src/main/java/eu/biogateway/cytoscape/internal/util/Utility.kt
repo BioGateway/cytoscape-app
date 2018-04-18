@@ -46,8 +46,8 @@ object Utility {
         return nodeURIs
     }
 
-    fun selectGroupPopup(serviceManager: BGServiceManager, network: CyNetwork): CyGroup? {
-        val groups = Utility.findNodeGroupsInNetwork(serviceManager, network)
+    fun selectGroupPopup(network: CyNetwork): CyGroup? {
+        val groups = Utility.findNodeGroupsInNetwork(network)
         val groupNames = groups.keys.toTypedArray()
 
         val comboBox = JComboBox(groupNames)
@@ -66,10 +66,10 @@ object Utility {
         return rootNetwork.getRow(group.groupNode, CyRootNetwork.SHARED_ATTRS).get(CyRootNetwork.SHARED_NAME, String::class.java)
     }
 
-    fun findNodeGroupsInNetwork(serviceManager: BGServiceManager, network: CyNetwork): HashMap<String, CyGroup> {
+    fun findNodeGroupsInNetwork(network: CyNetwork): HashMap<String, CyGroup> {
         val groupMap = HashMap<String, CyGroup>()
 
-        val groups = serviceManager.adapter?.cyGroupManager?.getGroupSet(network) ?: return groupMap
+        val groups = BGServiceManager.adapter?.cyGroupManager?.getGroupSet(network) ?: return groupMap
 
         for (group in groups) {
             val groupName = getGroupName(group)
@@ -86,8 +86,8 @@ object Utility {
         return identifier
     }
 
-    fun getOrCreateBioGatewayVisualStyle(serviceManager: BGServiceManager): VisualStyle {
-        val styles = serviceManager.adapter?.visualMappingManager?.allVisualStyles
+    fun getOrCreateBioGatewayVisualStyle(): VisualStyle {
+        val styles = BGServiceManager.adapter?.visualMappingManager?.allVisualStyles
         if (styles != null) {
             for (style in styles) {
                 if (style.title.equals("BioGateway")) {
@@ -95,40 +95,40 @@ object Utility {
                 }
             }
         }
-        val style = serviceManager.visualStyleBuilder.generateStyle()
-        serviceManager.adapter?.visualMappingManager?.addVisualStyle(style)
+        val style = BGServiceManager.visualStyleBuilder.generateStyle()
+        BGServiceManager.adapter?.visualMappingManager?.addVisualStyle(style)
         return style
     }
 
-    fun resetBioGatewayVisualStyle(serviceManager: BGServiceManager) {
+    fun resetBioGatewayVisualStyle() {
         // Making sure we make a copy of the array of references, so we can delete them without ConcurrentModificationException.
-        val styles = serviceManager.adapter?.visualMappingManager?.allVisualStyles?.toTypedArray()?.copyOf()
+        val styles = BGServiceManager.adapter?.visualMappingManager?.allVisualStyles?.toTypedArray()?.copyOf()
 
         var updateStyle = false
 
         if (styles != null) {
             for (style in styles) {
                 if (style.title.equals("BioGateway")) {
-                    updateStyle = (serviceManager.visualMappingManager?.currentVisualStyle == style)
-                    serviceManager.visualMappingManager?.removeVisualStyle(style)
+                    updateStyle = (BGServiceManager.visualMappingManager?.currentVisualStyle == style)
+                    BGServiceManager.visualMappingManager?.removeVisualStyle(style)
                 }
             }
         }
-        val defaultStyle = serviceManager.visualStyleBuilder.generateStyle()
-        serviceManager.adapter?.visualMappingManager?.addVisualStyle(defaultStyle)
-        serviceManager.eventHelper?.flushPayloadEvents()
+        val defaultStyle = BGServiceManager.visualStyleBuilder.generateStyle()
+        BGServiceManager.adapter?.visualMappingManager?.addVisualStyle(defaultStyle)
+        BGServiceManager.eventHelper?.flushPayloadEvents()
         if (updateStyle) {
-            serviceManager.applicationManager?.currentNetworkView?.let {
+            BGServiceManager.applicationManager?.currentNetworkView?.let {
                 defaultStyle.apply(it)
             }
         }
     }
 
-    fun reloadCurrentVisualStyleCurrentNetworkView(serviceManager: BGServiceManager) {
-        val view = serviceManager.applicationManager?.currentNetworkView
-        val style = serviceManager.adapter?.visualMappingManager?.currentVisualStyle
+    fun reloadCurrentVisualStyleCurrentNetworkView() {
+        val view = BGServiceManager.applicationManager?.currentNetworkView
+        val style = BGServiceManager.adapter?.visualMappingManager?.currentVisualStyle
         view?.let {
-            serviceManager.eventHelper?.flushPayloadEvents()
+            BGServiceManager.eventHelper?.flushPayloadEvents()
             style?.apply(it)
         }
     }
@@ -164,11 +164,11 @@ object Utility {
         return "http://purl.obolibrary.org/obo/"+goTerm
     }
 
-    fun encodeUrl(serviceManager: BGServiceManager, queryString: String): URL? {
+    fun encodeUrl(queryString: String): URL? {
         val RETURN_TYPE_TSV = "text/tab-separated-values"
         val BIOPAX_DEFAULT_OPTIONS = "timeout=0&debug=on"
 
-        val queryURL = URL(serviceManager.serverPath + "?query=" + URLEncoder.encode(queryString, "UTF-8") + "&format=" + RETURN_TYPE_TSV +"&" + BIOPAX_DEFAULT_OPTIONS)
+        val queryURL = URL(BGServiceManager.serverPath + "?query=" + URLEncoder.encode(queryString, "UTF-8") + "&format=" + RETURN_TYPE_TSV +"&" + BIOPAX_DEFAULT_OPTIONS)
 
         return queryURL
     }
@@ -193,8 +193,8 @@ object Utility {
         }
     }
 
-    fun countMatchingRowsQuery(serviceManager: BGServiceManager, queryString: String): Int? {
-        val url = Utility.encodeUrl(serviceManager, queryString)
+    fun countMatchingRowsQuery(queryString: String): Int? {
+        val url = Utility.encodeUrl(queryString)
         val stream = url?.openStream()
         if (stream != null) {
             val reader = BufferedReader(InputStreamReader(stream))

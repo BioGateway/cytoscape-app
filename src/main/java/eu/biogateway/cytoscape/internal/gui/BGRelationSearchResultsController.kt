@@ -12,7 +12,7 @@ import java.awt.event.ActionListener
 import java.util.*
 import javax.swing.table.DefaultTableModel
 
-class BGRelationSearchResultsController(val serviceManager: BGServiceManager, private val returnData: BGReturnRelationsData, val columnNames: Array<String>, val network: CyNetwork) : ActionListener, BGRelationResultViewTooltipDataSource {
+class BGRelationSearchResultsController(private val returnData: BGReturnRelationsData, val columnNames: Array<String>, val network: CyNetwork) : ActionListener, BGRelationResultViewTooltipDataSource {
 
     private val relationsFound = returnData.relationsData
     val importConfidenceValues = false
@@ -58,11 +58,11 @@ class BGRelationSearchResultsController(val serviceManager: BGServiceManager, pr
         }
 
 
-        val query = BGLoadRelationMetadataQuery(serviceManager, relations, serviceManager.cache.activeMetadataTypes) {
-            serviceManager.dataModelController.networkBuilder.addRelationsToNetwork(network, relations)
-            Utility.reloadCurrentVisualStyleCurrentNetworkView(serviceManager)
+        val query = BGLoadRelationMetadataQuery(relations, BGServiceManager.cache.activeMetadataTypes) {
+            BGServiceManager.dataModelController.networkBuilder.addRelationsToNetwork(network, relations)
+            Utility.reloadCurrentVisualStyleCurrentNetworkView()
         }
-        serviceManager.execute(query)
+        BGServiceManager.execute(query)
     }
 
     private fun importBetweenExistingNodes() {
@@ -79,11 +79,11 @@ class BGRelationSearchResultsController(val serviceManager: BGServiceManager, pr
 //            }
 ////            serviceManager.taskManager?.execute(TaskIterator(query))
 //        } else {
-            val query = BGLoadRelationMetadataQuery(serviceManager, relations, serviceManager.cache.activeMetadataTypes) {
-                serviceManager.dataModelController.networkBuilder.addRelationsToNetwork(network, relations)
-                Utility.reloadCurrentVisualStyleCurrentNetworkView(serviceManager)
+            val query = BGLoadRelationMetadataQuery(relations, BGServiceManager.cache.activeMetadataTypes) {
+                BGServiceManager.dataModelController.networkBuilder.addRelationsToNetwork(network, relations)
+                Utility.reloadCurrentVisualStyleCurrentNetworkView()
             }
-            serviceManager.execute(query)
+        BGServiceManager.execute(query)
 //        }
     }
 

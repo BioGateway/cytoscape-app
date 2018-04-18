@@ -1,50 +1,10 @@
 package eu.biogateway.cytoscape.internal.model
 
-import eu.biogateway.cytoscape.internal.gui.BGColorableText
 import eu.biogateway.cytoscape.internal.parser.getDescription
 import eu.biogateway.cytoscape.internal.parser.getName
 import eu.biogateway.cytoscape.internal.parser.getUri
 import org.cytoscape.model.CyNetwork
 import org.cytoscape.model.CyNode
-import java.awt.Color
-
-/**
- * Created by sholmas on 26/05/2017.
- */
-
-enum class BGNodeType(val paremeterType: String) {
-    Protein("Protein"),
-    Gene("Gene"),
-    GO("GO-Term"),
-    Taxon("Taxon"),
-    Disease("Disease"),
-    PPI("PPI"),
-    GOA("GO-Annotation"),
-    TFTG("TF-TG Statement"),
-    Pubmed("Pubmed URI"),
-    Undefined("Undefined");
-
-    override fun toString(): String {
-        return this.paremeterType
-    }
-
-    companion object {
-        fun forName(name: String): BGNodeType? {
-            return when (name.toLowerCase()) {
-                "protein" -> Protein
-                "gene" -> Gene
-                "go-term" -> GO
-                "taxon" -> Taxon
-                "ppi" -> PPI
-                "tf-tg" -> TFTG
-                "pubmedId" -> Pubmed
-                "disease" -> Disease
-                "undefined" -> Undefined
-                else -> null
-            }
-        }
-    }
-}
 
 open class BGNode {
 

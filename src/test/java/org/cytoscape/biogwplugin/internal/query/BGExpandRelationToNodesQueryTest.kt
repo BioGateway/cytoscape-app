@@ -7,16 +7,14 @@ import org.junit.jupiter.api.Test
 
 internal class BGExpandRelationToNodesQueryTest {
 
-    var serviceManager = BGServiceManager()
-
     @Test
     internal fun expandPPIRelationTest() {
         val relationTypeUri = "http://purl.obolibrary.org/obo/RO_0002436"
-        val relationType = serviceManager.cache.getRelationTypeForURIandGraph(relationTypeUri, "intact")
+        val relationType = BGServiceManager.cache.getRelationTypeForURIandGraph(relationTypeUri, "intact")
         assertNotNull(relationType)
         val fromUri = "http://identifiers.org/uniprot/O15525"
         val toUri = "http://identifiers.org/uniprot/Q16236"
-        val query = BGExpandRelationToNodesQuery(serviceManager, fromUri, toUri, relationType!!, BGReturnType.RELATION_TRIPLE_GRAPHURI)
+        val query = BGExpandRelationToNodesQuery(fromUri, toUri, relationType!!, BGReturnType.RELATION_TRIPLE_GRAPHURI)
         val resultFuture = query.futureReturnData
 
         val thread = Thread(query).start()

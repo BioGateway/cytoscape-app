@@ -12,16 +12,16 @@ import java.net.URL
 import java.net.URLEncoder
 import java.util.concurrent.CompletableFuture
 
-abstract class BGCallableQuery(val serviceManager: BGServiceManager, var type: BGReturnType, val taskMonitorTitle: String = "Running query..."): AbstractTask(), Runnable {
+abstract class BGCallableQuery(var type: BGReturnType, val taskMonitorTitle: String = "Running query..."): AbstractTask(), Runnable {
 
     abstract fun createQueryString(): String
 
     var returnFuture = CompletableFuture<BGReturnData>()
 
     var taskMonitor: TaskMonitor? = null
-    var client = serviceManager.httpClient
+    var client = BGServiceManager.httpClient
     var parseType = BGParsingType.PARSE_FUNCTION
-    val parser = serviceManager.dataModelController.parser
+    val parser = BGServiceManager.dataModelController.parser
 
     var parseFunction: ((BufferedReader, BGReturnType) -> BGReturnData)? = null
 
@@ -72,7 +72,7 @@ abstract class BGCallableQuery(val serviceManager: BGServiceManager, var type: B
 
     override fun cancel() {
         //client.close()
-        serviceManager.dataModelController.parser.cancel()
+        BGServiceManager.dataModelController.parser.cancel()
         super.cancel()
         throw Exception("Cancelled.")
     }
@@ -80,7 +80,7 @@ abstract class BGCallableQuery(val serviceManager: BGServiceManager, var type: B
     private fun encodeUrl(): URL? {
         val RETURN_TYPE_TSV = "text/tab-separated-values"
         val BIOPAX_DEFAULT_OPTIONS = "timeout=0&debug=on"
-        val queryURL = URL(serviceManager.serverPath + "?query=" + URLEncoder.encode(createQueryString(), "UTF-8") + "&format=" + RETURN_TYPE_TSV +"&" + BIOPAX_DEFAULT_OPTIONS)
+        val queryURL = URL(BGServiceManager.serverPath + "?query=" + URLEncoder.encode(createQueryString(), "UTF-8") + "&format=" + RETURN_TYPE_TSV +"&" + BIOPAX_DEFAULT_OPTIONS)
         return queryURL
     }
 

@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test
 
 internal class BGLoadUnloadedNodesTest {
 
-    val serviceManager = BGServiceManager()
     val nodeUris = arrayListOf(
             "http://identifiers.org/uniprot/Q9UER7",
             "http://identifiers.org/uniprot/Q8WWK9",
@@ -17,7 +16,7 @@ internal class BGLoadUnloadedNodesTest {
     fun run() {
 
         val nodes = nodeUris.map { BGNode(it) }
-        val query = BGLoadUnloadedNodes.createAndRun(serviceManager, nodes) {
+        val query = BGLoadUnloadedNodes.createAndRun(nodes) {
 
         }
 

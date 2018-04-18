@@ -11,13 +11,13 @@ import javax.swing.JOptionPane
 
 
 
-class BGLoadNodeDataFromBiogwDict(val serviceManager: BGServiceManager, val unloadedNodes: List<BGNode>, val bulkSize: Int, private val queryCompletion: (Int) -> Unit): AbstractTask(), Runnable {
+class BGLoadNodeDataFromBiogwDict(val unloadedNodes: List<BGNode>, val bulkSize: Int, private val queryCompletion: (Int) -> Unit): AbstractTask(), Runnable {
 
     companion object {
-        fun createAndRun(serviceManager: BGServiceManager, unloadedNodes: List<BGNode>?, bulkSize: Int, completion: (Int) -> Unit) {
+        fun createAndRun(unloadedNodes: List<BGNode>?, bulkSize: Int, completion: (Int) -> Unit) {
             if (unloadedNodes != null && unloadedNodes.isNotEmpty()) {
-                val query = BGLoadNodeDataFromBiogwDict(serviceManager, unloadedNodes, bulkSize, completion)
-                serviceManager.taskManager?.execute(TaskIterator(query))
+                val query = BGLoadNodeDataFromBiogwDict(unloadedNodes, bulkSize, completion)
+                BGServiceManager.taskManager?.execute(TaskIterator(query))
 
 //                EventQueue.invokeLater {
 //                    if (unloadedNodes.size > Constants.BG_LOAD_NODE_WARNING_LIMIT) {
@@ -69,7 +69,7 @@ class BGLoadNodeDataFromBiogwDict(val serviceManager: BGServiceManager, val unlo
     }
 
     private fun loadAllNodesIn(nodes: Collection<BGNode>) {
-        val loadedNodes = serviceManager.dataModelController.loadNodesFromServerSynchronously(nodes.filter { !it.isLoaded })
+        val loadedNodes = BGServiceManager.dataModelController.loadNodesFromServerSynchronously(nodes.filter { !it.isLoaded })
     }
 
     private fun setProgress(progress: Int) {
@@ -86,7 +86,7 @@ class BGLoadNodeDataFromBiogwDict(val serviceManager: BGServiceManager, val unlo
             while ((!this.isCancelled) && (index < unloadedNodes.size)) {
                 val node = unloadedNodes[index]
                 setProgress(index + 1)
-                if (!node.isLoaded) serviceManager.dataModelController.loadDataForNode(node)
+                if (!node.isLoaded) BGServiceManager.dataModelController.loadDataForNode(node)
                 index++
             }
         }
@@ -95,24 +95,24 @@ class BGLoadNodeDataFromBiogwDict(val serviceManager: BGServiceManager, val unlo
 }
 
 @Deprecated("Must be rewritten to handle the BiogwDict")
-class BGLoadUnloadedNodes(val serviceManager: BGServiceManager, val unloadedNodes: List<BGNode>, private val queryCompletion: (Int) -> Unit): AbstractTask(), Runnable {
+class BGLoadUnloadedNodes(val unloadedNodes: List<BGNode>, private val queryCompletion: (Int) -> Unit): AbstractTask(), Runnable {
 
     companion object {
-        fun createAndRun(serviceManager: BGServiceManager, unloadedNodes: List<BGNode>?, completion: (Int) -> Unit) {
+        fun createAndRun(unloadedNodes: List<BGNode>?, completion: (Int) -> Unit) {
             if (unloadedNodes != null && unloadedNodes.isNotEmpty()) {
                 EventQueue.invokeLater {
-                    val query = BGLoadUnloadedNodes(serviceManager, unloadedNodes, completion)
+                    val query = BGLoadUnloadedNodes(unloadedNodes, completion)
                     if (unloadedNodes.size > Constants.BG_LOAD_NODE_WARNING_LIMIT) {
                         val message = unloadedNodes.size.toString() + " nodes needs to be loaded from the dataModelController. Do you want to proceed?"
                         val optionsText = arrayOf("Ok", "Show unloaded nodes", "Cancel")
                         val response = JOptionPane.showOptionDialog(null, message, "Load nodes from dataModelController?", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, null, optionsText, null)
                         when (response) {
-                            0 -> serviceManager.taskManager?.execute(TaskIterator(query))
+                            0 -> BGServiceManager.taskManager?.execute(TaskIterator(query))
                             1 -> completion(0)
                         }
                     } else {
                         //query.run()
-                        serviceManager.taskManager?.execute(TaskIterator(query))
+                        BGServiceManager.taskManager?.execute(TaskIterator(query))
                     }
                 }
             } else {
@@ -140,7 +140,7 @@ class BGLoadUnloadedNodes(val serviceManager: BGServiceManager, val unloadedNode
                 val node = unloadedNodes[index]
                 taskMonitor?.setTitle("Loading node " + (index + 1) + " of " + unloadedNodes.size + "...")
                 taskMonitor?.setProgress(index.toDouble() / unloadedNodes.size.toDouble())
-                if (!node.isLoaded) serviceManager.dataModelController.loadDataForNode(node)
+                if (!node.isLoaded) BGServiceManager.dataModelController.loadDataForNode(node)
                 index++
             }
         }

@@ -4,10 +4,11 @@ import eu.biogateway.cytoscape.internal.BGServiceManager
 import eu.biogateway.cytoscape.internal.parser.BGReturnType
 import eu.biogateway.cytoscape.internal.query.*
 import jdk.nashorn.internal.runtime.regexp.joni.constants.NodeType
+import org.cytoscape.model.CyColumn
 import org.cytoscape.model.CyNetwork
 import java.util.concurrent.TimeUnit
 
-class BGConversionQuery(serviceManager: BGServiceManager, val sparqlQuery: String): BGQuery(serviceManager, BGReturnType.METADATA_FIELD) {
+class BGConversionQuery(val sparqlQuery: String): BGQuery(BGReturnType.METADATA_FIELD) {
     override fun generateQueryString(): String {
         return "BASE <http://www.semantic-systems-biology.org/>  \n" +
                 "SELECT DISTINCT ?queryReturnData\n" +
@@ -17,10 +18,10 @@ class BGConversionQuery(serviceManager: BGServiceManager, val sparqlQuery: Strin
     }
 }
 
-class BGIdentifierConversion(val nodeType: BGNodeType, type: BGConversionType, sourceNetwork: CyNetwork, sourceFieldName: String, destinationFieldName: String): BGConversion(type, sourceNetwork, sourceFieldName, destinationFieldName) {
+class BGIdentifierConversion(val nodeType: BGNodeType, type: BGConversionType, sourceNetwork: CyNetwork, sourceColumn: CyColumn, destinationFieldName: String): BGConversion(type, sourceNetwork, sourceColumn, destinationFieldName) {
 
 }
-open class BGConversion(val type: BGConversionType, val sourceNetwork: CyNetwork, val sourceFieldName: String, val destinationFieldName: String) {
+open class BGConversion(val type: BGConversionType, val sourceNetwork: CyNetwork, val sourceColumn: CyColumn, val destinationFieldName: String) {
 
     fun runForDataString(serviceManager: BGServiceManager, input: String): String? {
 
@@ -30,7 +31,7 @@ open class BGConversion(val type: BGConversionType, val sourceNetwork: CyNetwork
 
         if (sparql != null && sparql.isNotEmpty()) {
             val sparqlQuery = sparql.replace("@input", input).replace("@output", "?queryReturnData")
-            val query = BGConversionQuery(serviceManager, sparqlQuery)
+            val query = BGConversionQuery(sparqlQuery)
             query.run()
             val returnData = query.futureReturnData.get(20, TimeUnit.SECONDS) as? BGReturnMetadata ?: throw Exception("Invalid return data.")
             if (returnData.values.isNotEmpty()) {
@@ -56,8 +57,12 @@ open class BGConversion(val type: BGConversionType, val sourceNetwork: CyNetwork
                     val parts = type.template.split("@value")
                     if (parts.size == 2) {
                         var string = data.replace(parts[0], "")
-                        string = data.replace(parts[1], "")
-                        string
+                        string = string.replace(parts[1], "")
+                        if (string != data) { // If the result equals the input, the pattern was not found.
+                            string
+                        } else {
+                            null
+                        }
                     } else {
                         null
                     }

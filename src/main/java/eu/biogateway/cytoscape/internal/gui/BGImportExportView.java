@@ -1,6 +1,6 @@
 package eu.biogateway.cytoscape.internal.gui;
 
-import eu.biogateway.cytoscape.internal.model.BGConversionType;
+import eu.biogateway.cytoscape.internal.gui.conversion.BGImportExportController;
 
 import javax.swing.*;
 import java.awt.*;
@@ -8,22 +8,21 @@ import java.awt.*;
 public class BGImportExportView {
     private final BGImportExportController controller;
     private JFrame mainFrame;
-    private JTabbedPane tabbedPane1;
     private JPanel panel1;
-    private JTabbedPane tabbedPane2;
-    private JPanel Import;
     private JButton nextButton;
-    private JButton importButton;
-    private JPanel edgeImportsPanel;
     private JPanel nodeImportsPanel;
     private JPanel nodeImportIdentifiersPanel;
     private JButton addIdentifierColumnButton;
+    private JPanel convertColumnsPanel;
+    private JButton addConvertedColumnsButton;
+    private JButton addLineButton;
+    private JComboBox sourceNetworkComboBox;
 
     public BGImportExportView(BGImportExportController controller) {
         this.controller = controller;
-        mainFrame = new JFrame("BioGateway Import/Export");
+        mainFrame = new JFrame("BioGateway Column Converter");
         $$$setupUI$$$();
-        mainFrame.setPreferredSize(new Dimension(600, 600));
+        mainFrame.setPreferredSize(new Dimension(700, 600));
         mainFrame.setContentPane(this.panel1);
         setupActions();
         mainFrame.pack();
@@ -33,19 +32,16 @@ public class BGImportExportView {
 
     private void setupActions() {
         nextButton.addActionListener(e -> {
-            tabbedPane2.setSelectedIndex(1);
-        });
-        importButton.addActionListener(e -> {
-            controller.runImports();
+            //tabbedPane2.setSelectedIndex(1);
+            controller.runImport();
         });
         addIdentifierColumnButton.addActionListener(e -> {
             controller.addIdentifierLine();
             nodeImportIdentifiersPanel.updateUI();
         });
-    }
-
-    public JPanel getEdgeImportsPanel() {
-        return edgeImportsPanel;
+        addConvertedColumnsButton.addActionListener(e -> {
+            controller.runConvertColumns();
+        });
     }
 
     public JPanel getNodeImportsPanel() {
@@ -56,16 +52,25 @@ public class BGImportExportView {
         return nodeImportIdentifiersPanel;
     }
 
+    public JPanel getConvertColumnsPanel() {
+        return convertColumnsPanel;
+    }
+
+    public JComboBox getSourceNetworkComboBox() {
+        return sourceNetworkComboBox;
+    }
+
     private void createUIComponents() {
         // TODO: place custom component creation code here
         nodeImportsPanel = new JPanel();
-        nodeImportsPanel.setLayout(new BoxLayout(nodeImportsPanel, BoxLayout.Y_AXIS));
-
-        edgeImportsPanel = new JPanel();
-        edgeImportsPanel.setLayout(new BoxLayout(edgeImportsPanel, BoxLayout.Y_AXIS));
+        nodeImportsPanel.setLayout(new GridBagLayout());
 
         nodeImportIdentifiersPanel = new JPanel();
         nodeImportIdentifiersPanel.setLayout(new BoxLayout(nodeImportIdentifiersPanel, BoxLayout.Y_AXIS));
+
+        convertColumnsPanel = new JPanel();
+        convertColumnsPanel.setLayout(new GridBagLayout());
+//        convertColumnsPanel.setLayout(new BoxLayout(convertColumnsPanel, BoxLayout.Y_AXIS));
     }
 
     /**
@@ -79,49 +84,56 @@ public class BGImportExportView {
         createUIComponents();
         panel1 = new JPanel();
         panel1.setLayout(new BorderLayout(0, 0));
-        tabbedPane1 = new JTabbedPane();
+        final JTabbedPane tabbedPane1 = new JTabbedPane();
         panel1.add(tabbedPane1, BorderLayout.CENTER);
-        Import = new JPanel();
-        Import.setLayout(new BorderLayout(0, 0));
-        tabbedPane1.addTab("Import", Import);
-        tabbedPane2 = new JTabbedPane();
-        Import.add(tabbedPane2, BorderLayout.CENTER);
         final JPanel panel2 = new JPanel();
         panel2.setLayout(new BorderLayout(0, 0));
-        tabbedPane2.addTab("Nodes", panel2);
+        tabbedPane1.addTab("Nodes", panel2);
         final JPanel panel3 = new JPanel();
         panel3.setLayout(new BorderLayout(0, 0));
         panel2.add(panel3, BorderLayout.SOUTH);
         nextButton = new JButton();
-        nextButton.setText("Next");
+        nextButton.setText("Convert");
         panel3.add(nextButton, BorderLayout.EAST);
+        final JPanel panel4 = new JPanel();
+        panel4.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        panel3.add(panel4, BorderLayout.WEST);
         addIdentifierColumnButton = new JButton();
         addIdentifierColumnButton.setText("Add identifier column");
-        panel3.add(addIdentifierColumnButton, BorderLayout.WEST);
+        panel4.add(addIdentifierColumnButton);
         final JScrollPane scrollPane1 = new JScrollPane();
         scrollPane1.setHorizontalScrollBarPolicy(31);
         panel2.add(scrollPane1, BorderLayout.CENTER);
         scrollPane1.setBorder(BorderFactory.createTitledBorder("Additional columns"));
         scrollPane1.setViewportView(nodeImportsPanel);
         panel2.add(nodeImportIdentifiersPanel, BorderLayout.NORTH);
-        nodeImportIdentifiersPanel.setBorder(BorderFactory.createTitledBorder("Identifier columns"));
-        final JPanel panel4 = new JPanel();
-        panel4.setLayout(new BorderLayout(0, 0));
-        tabbedPane2.addTab("Edges", panel4);
+        nodeImportIdentifiersPanel.setBorder(BorderFactory.createTitledBorder("Node Identifier columns"));
         final JPanel panel5 = new JPanel();
         panel5.setLayout(new BorderLayout(0, 0));
-        panel4.add(panel5, BorderLayout.SOUTH);
-        importButton = new JButton();
-        importButton.setText("Import");
-        panel5.add(importButton, BorderLayout.EAST);
-        final JScrollPane scrollPane2 = new JScrollPane();
-        scrollPane2.setHorizontalScrollBarPolicy(31);
-        panel4.add(scrollPane2, BorderLayout.CENTER);
-        scrollPane2.setBorder(BorderFactory.createTitledBorder("Edge Columns"));
-        scrollPane2.setViewportView(edgeImportsPanel);
+        tabbedPane1.addTab("Convert Columns", panel5);
         final JPanel panel6 = new JPanel();
         panel6.setLayout(new BorderLayout(0, 0));
-        tabbedPane1.addTab("Export", panel6);
+        panel5.add(panel6, BorderLayout.SOUTH);
+        addConvertedColumnsButton = new JButton();
+        addConvertedColumnsButton.setText("Add Converted Columns");
+        panel6.add(addConvertedColumnsButton, BorderLayout.EAST);
+        addLineButton = new JButton();
+        addLineButton.setText("Add Line");
+        panel6.add(addLineButton, BorderLayout.WEST);
+        final JScrollPane scrollPane2 = new JScrollPane();
+        scrollPane2.setHorizontalScrollBarPolicy(31);
+        panel5.add(scrollPane2, BorderLayout.CENTER);
+        scrollPane2.setBorder(BorderFactory.createTitledBorder("Column Conversions"));
+        scrollPane2.setViewportView(convertColumnsPanel);
+        convertColumnsPanel.setBorder(BorderFactory.createTitledBorder(""));
+        final JPanel panel7 = new JPanel();
+        panel7.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
+        panel1.add(panel7, BorderLayout.NORTH);
+        final JLabel label1 = new JLabel();
+        label1.setText("Source Network:");
+        panel7.add(label1);
+        sourceNetworkComboBox = new JComboBox();
+        panel7.add(sourceNetworkComboBox);
     }
 
     /**

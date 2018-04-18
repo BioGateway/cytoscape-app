@@ -4,7 +4,7 @@ import eu.biogateway.cytoscape.internal.BGServiceManager
 import eu.biogateway.cytoscape.internal.parser.BGReturnType
 
 
-class BGFindBinaryPPIsBetweenNodesQuery(serviceManager: BGServiceManager, val fromNode: String, val toNode: String): BGRelationQuery(serviceManager, BGReturnType.RELATION_TRIPLE_GRAPHURI) {
+class BGFindBinaryPPIsBetweenNodesQuery(val fromNode: String, val toNode: String): BGRelationQuery(BGReturnType.RELATION_TRIPLE_GRAPHURI) {
 
     init {
         taskMonitorTitle = "Expanding PPI..."

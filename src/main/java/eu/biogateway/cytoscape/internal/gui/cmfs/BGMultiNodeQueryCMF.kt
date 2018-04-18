@@ -17,7 +17,7 @@ import org.cytoscape.view.model.CyNetworkView
 import org.cytoscape.work.TaskIterator
 import javax.swing.*
 
-class BGMultiNodeQueryCMF(val gravity: Float, val serviceManager: BGServiceManager): CyNetworkViewContextMenuFactory {
+class BGMultiNodeQueryCMF(val gravity: Float): CyNetworkViewContextMenuFactory {
     override fun createMenuItem(netView: CyNetworkView?): CyMenuItem {
 
         if (netView != null) {
@@ -94,7 +94,7 @@ class BGMultiNodeQueryCMF(val gravity: Float, val serviceManager: BGServiceManag
                     BGRelationSearchResultsController(serviceManager, returnData, returnData.columnNames, network)
                 } }}
         */
-        val query = BGFindBinaryPPIsForMultipleNodesQuery(serviceManager, nodeUris) { it.run() }
+        val query = BGFindBinaryPPIsForMultipleNodesQuery(nodeUris) { it.run() }
 
         /*
         if (group != null) {
@@ -144,12 +144,12 @@ class BGMultiNodeQueryCMF(val gravity: Float, val serviceManager: BGServiceManag
             ppiItem.addActionListener {
                 var group: CyGroup? = null
                 if (lookForGroups) {
-                    group = Utility.selectGroupPopup(serviceManager, network)
+                    group = Utility.selectGroupPopup(network)
                     if (group == null) return@addActionListener
                 }
                 val query = createPPISearchQuery(nodeUris, network, onlyCommonRelations, group)
                 if (query != null) {
-                    serviceManager.taskManager?.execute(TaskIterator(query))
+                    BGServiceManager.taskManager?.execute(TaskIterator(query))
                     async {
                         val returnData = query.returnFuture.get()
                         if (returnData.relationsData.size == 0) {
@@ -157,9 +157,9 @@ class BGMultiNodeQueryCMF(val gravity: Float, val serviceManager: BGServiceManag
                             return@async
                             //throw Exception("No relations found.")
                         }
-                        BGLoadNodeDataFromBiogwDict.createAndRun(serviceManager, returnData.unloadedNodes, 300) {
+                        BGLoadNodeDataFromBiogwDict.createAndRun(returnData.unloadedNodes, 300) {
                             println("Loaded "+it.toString()+ " nodes.")
-                            BGRelationSearchResultsController(serviceManager, returnData, returnData.columnNames, network)
+                            BGRelationSearchResultsController(returnData, returnData.columnNames, network)
                         }
                     }
                 }
@@ -172,7 +172,7 @@ class BGMultiNodeQueryCMF(val gravity: Float, val serviceManager: BGServiceManag
     private fun createOpenQueryBuilderWithSelectedURIsMenu(netView: CyNetworkView, nodeUris: Collection<String>): JMenuItem {
         val item = JMenuItem("Use selected URIs in query builder")
         item.addActionListener {
-            val queryBuilder = BGQueryBuilderController(serviceManager)
+            val queryBuilder = BGQueryBuilderController()
             queryBuilder.addMultiQueryLinesForURIs(nodeUris)
 
         }
@@ -180,15 +180,15 @@ class BGMultiNodeQueryCMF(val gravity: Float, val serviceManager: BGServiceManag
     }
 
     private fun createRelationSearchQuery(relationType: BGRelationType, netView: CyNetworkView, nodeUris: Collection<String>, direction: BGRelationDirection, onlyCommonRelations: Boolean, group: CyGroup? = null): BGMultiNodeRelationQuery? {
-        val query = BGMultiNodeRelationQuery(serviceManager, nodeUris, relationType, direction)
+        val query = BGMultiNodeRelationQuery(nodeUris, relationType, direction)
         query.addCompletion {
             val returnData = it as? BGReturnRelationsData
             if (returnData != null) {
                 val network = netView.model
                 if (returnData.relationsData.size == 0) throw Exception("No relations found.")
-                BGLoadNodeDataFromBiogwDict.createAndRun(serviceManager, returnData.unloadedNodes, 300) {
+                BGLoadNodeDataFromBiogwDict.createAndRun(returnData.unloadedNodes, 300) {
                     println("Loaded "+it.toString()+ " nodes.")
-                    BGRelationSearchResultsController(serviceManager, returnData, returnData.columnNames, network)
+                    BGRelationSearchResultsController(returnData, returnData.columnNames, network)
                 }
             }
         }
@@ -235,17 +235,17 @@ class BGMultiNodeQueryCMF(val gravity: Float, val serviceManager: BGServiceManag
         val parentMenu = JMenu(description)
 
         // Will only create the menu if the config is loaded.
-        for (relationType in serviceManager.cache.relationTypeMap.values.sortedBy { it.number }) {
+        for (relationType in BGServiceManager.cache.relationTypeMap.values.sortedBy { it.number }) {
             val item = JMenuItem(relationType.description)
 
             item.addActionListener {
                 var group: CyGroup? = null
                 if (lookForGroups) {
-                    group = Utility.selectGroupPopup(serviceManager, netView.model)
+                    group = Utility.selectGroupPopup(netView.model)
                     if (group == null) return@addActionListener
                 }
                 val query = createRelationSearchQuery(relationType, netView, nodeUris, direction, onlyCommonRelations, group)
-                serviceManager.taskManager?.execute(TaskIterator(query))
+                BGServiceManager.taskManager?.execute(TaskIterator(query))
             }
             parentMenu.add(item)
         }

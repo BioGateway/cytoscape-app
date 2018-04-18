@@ -24,10 +24,8 @@ import eu.biogateway.cytoscape.BiogwPlugin;
  */
 public class BiogwPluginImpl implements BiogwPlugin {
 
-    private final BGServiceManager serviceManager;
+	public BiogwPluginImpl() {
 
-	public BiogwPluginImpl(BGServiceManager serviceManager) {
-	    this.serviceManager = serviceManager;
 	}
 
 	/**

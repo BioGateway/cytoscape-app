@@ -35,13 +35,13 @@ class BGExpandEdgeCMF(val gravity: Float, val serviceManager: BGServiceManager):
         if (edgeUri == MOLECULARLY_INTERACTS_WITH_URI) {
             val item = JMenuItem("Expand")
             item.addActionListener {
-                val query = BGFindBinaryPPIsBetweenNodesQuery(serviceManager, fromNodeUri, toNodeUri)
+                val query = BGFindBinaryPPIsBetweenNodesQuery(fromNodeUri, toNodeUri)
                 query.addCompletion {
                     val returnData = it as? BGReturnRelationsData
                     if (returnData != null) {
                         val network = netView.model
                         if (returnData.relationsData.size == 0) throw Exception("No relations found.")
-                        BGLoadUnloadedNodes.createAndRun(serviceManager, returnData.unloadedNodes) {
+                        BGLoadUnloadedNodes.createAndRun(returnData.unloadedNodes) {
                             println("Loaded " + it.toString() + " nodes.")
 
                             val relations = returnData.relationsData

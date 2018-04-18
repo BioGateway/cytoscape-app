@@ -5,7 +5,7 @@ import eu.biogateway.cytoscape.internal.parser.BGReturnType
 import java.io.BufferedReader
 import java.io.InputStreamReader
 
-class BGNodeFetchMongoQuery(serviceManager: BGServiceManager, val nodeUri: String): BGQuery(serviceManager, BGReturnType.NODE_LIST_DESCRIPTION, true) {
+class BGNodeFetchMongoQuery(val nodeUri: String): BGQuery(BGReturnType.NODE_LIST_DESCRIPTION, true) {
 
     override fun generateQueryString(): String {
 
@@ -13,7 +13,7 @@ class BGNodeFetchMongoQuery(serviceManager: BGServiceManager, val nodeUri: Strin
     }
 }
 
-class BGMultiNodeFetchMongoQuery(serviceManager: BGServiceManager, val nodeUris: Collection<String>): BGQuery(serviceManager, BGReturnType.NODE_LIST_DESCRIPTION, true) {
+class BGMultiNodeFetchMongoQuery(val nodeUris: Collection<String>): BGQuery(BGReturnType.NODE_LIST_DESCRIPTION, true) {
 
     override fun generateQueryString(): String {
         val nodeUriList = nodeUris.map { "\"" + it + "\"" }.reduce { list, node -> list + ", "+node}
@@ -21,7 +21,7 @@ class BGMultiNodeFetchMongoQuery(serviceManager: BGServiceManager, val nodeUris:
     }
 }
 
-class BGNodeFetchQuery(serviceManager: BGServiceManager, val nodeUri: String): BGQuery(serviceManager, BGReturnType.NODE_LIST_DESCRIPTION, false) {
+class BGNodeFetchQuery(val nodeUri: String): BGQuery(BGReturnType.NODE_LIST_DESCRIPTION, false) {
 
     /// This is running synchronously and without the main HTTPClient.
 

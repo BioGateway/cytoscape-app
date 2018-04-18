@@ -12,7 +12,7 @@ import java.io.InputStream
 import javax.xml.parsers.DocumentBuilderFactory
 
 object BGConfigParser {
-    fun parseXMLConfigFile(stream: InputStream, serviceManager: BGServiceManager, cache: BGDataModelController.BGCache) {
+    fun parseXMLConfigFile(stream: InputStream, cache: BGDataModelController.BGCache) {
 
         val queryTemplateHashMap = java.util.HashMap<String, QueryTemplate>()
         val dbFactory = DocumentBuilderFactory.newInstance()
@@ -27,11 +27,11 @@ object BGConfigParser {
                 val dictEndpoint = it.getAttribute("dictionary")
 
                 sparqlEndpoint?.let {
-                    serviceManager.serverPath = it
+                    BGServiceManager.serverPath = it
                 }
 
                 dictEndpoint?.let {
-                    serviceManager.dictionaryServerPath = it
+                    BGServiceManager.dictionaryServerPath = it
                 }
             }
 
@@ -131,7 +131,11 @@ object BGConfigParser {
                 val dataType = when (dataTypeString) {
                     "string" -> BGTableDataType.STRING
                     "stringArray" -> BGTableDataType.STRINGARRAY
+                    "doubleArray" -> BGTableDataType.DOUBLEARRAY
+                    "intArray" -> BGTableDataType.INTARRAY
                     "double" -> BGTableDataType.DOUBLE
+                    "boolean" -> BGTableDataType.BOOLEAN
+                    "integer" -> BGTableDataType.INT
                     else -> null
                 } ?: return null
 

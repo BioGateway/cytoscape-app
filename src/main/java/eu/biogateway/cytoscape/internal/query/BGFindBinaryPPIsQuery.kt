@@ -3,7 +3,7 @@ package eu.biogateway.cytoscape.internal.query
 import eu.biogateway.cytoscape.internal.BGServiceManager
 import eu.biogateway.cytoscape.internal.parser.BGReturnType
 
-class BGFindBinaryPPIsQuery(serviceManager: BGServiceManager, val nodeUri: String): BGRelationQuery(serviceManager, BGReturnType.RELATION_TRIPLE_GRAPHURI) {
+class BGFindBinaryPPIsQuery(val nodeUri: String): BGRelationQuery(BGReturnType.RELATION_TRIPLE_GRAPHURI) {
 
     init {
         taskMonitorTitle = "Searching for binary protein interactions..."

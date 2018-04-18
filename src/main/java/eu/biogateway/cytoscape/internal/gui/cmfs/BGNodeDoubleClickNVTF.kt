@@ -18,14 +18,14 @@ class BGTask(val task: (() -> Unit)): AbstractTask() {
     }
 }
 
-class BGNodeDoubleClickNVTF(val serviceManager: BGServiceManager) : NodeViewTaskFactory {
+class BGNodeDoubleClickNVTF() : NodeViewTaskFactory {
 
     // TODO: This should be more dynamic.
     val HAS_AGENT_URI = "http://semanticscience.org/resource/SIO_000139"
 
     override fun createTaskIterator(nodeView: View<CyNode>, networkView: CyNetworkView): TaskIterator? {
         val task = BGTask() {
-            serviceManager.dataModelController.networkBuilder.collapseEdgeWithNodes(networkView, nodeView, HAS_AGENT_URI)
+            BGServiceManager.dataModelController.networkBuilder.collapseEdgeWithNodes(networkView, nodeView, HAS_AGENT_URI)
         }
         return TaskIterator(task)
     }
@@ -33,7 +33,7 @@ class BGNodeDoubleClickNVTF(val serviceManager: BGServiceManager) : NodeViewTask
     override fun isReady(nodeView: View<CyNode>, networkView: CyNetworkView): Boolean {
         val network = networkView.model ?: return false
         val nodeUri = network.defaultNodeTable?.getRow(nodeView?.model?.suid)?.get(Constants.BG_FIELD_IDENTIFIER_URI, String::class.java) ?: throw Exception("Node URI not found in CyNetwork table. Are you sure you are querying a node created with this plugin?")
-        val node = serviceManager.dataModelController.searchForExistingNode(nodeUri) ?: return false
+        val node = BGServiceManager.dataModelController.searchForExistingNode(nodeUri) ?: return false
         return true
     }
 }

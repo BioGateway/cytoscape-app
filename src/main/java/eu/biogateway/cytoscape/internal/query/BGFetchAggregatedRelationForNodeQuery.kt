@@ -7,7 +7,7 @@ import eu.biogateway.cytoscape.internal.parser.BGReturnType
 import org.w3c.dom.traversal.NodeFilter
 
 /// Returns the relation described by the expanded relation node.
-class BGFetchAggregatedRelationForNodeQuery(serviceManager: BGServiceManager, val node: BGNode): BGRelationQuery(serviceManager, BGReturnType.RELATION_TRIPLE_GRAPHURI) {
+class BGFetchAggregatedRelationForNodeQuery(val node: BGNode): BGRelationQuery(BGReturnType.RELATION_TRIPLE_GRAPHURI) {
 
     override fun generateQueryString(): String {
         val graphName = when (node.type) {
@@ -32,7 +32,7 @@ class BGFetchAggregatedRelationForNodeQuery(serviceManager: BGServiceManager, va
     }
 }
 
-class BGFetchAggregatedPPIRelationForNodeQuery(serviceManager: BGServiceManager, val nodeUri: String, val nodeFilter: Collection<String>): BGRelationQuery(serviceManager, BGReturnType.RELATION_TRIPLE_CONFIDENCE) {
+class BGFetchAggregatedPPIRelationForNodeQuery(val nodeUri: String, val nodeFilter: Collection<String>): BGRelationQuery(BGReturnType.RELATION_TRIPLE_CONFIDENCE) {
 
     override fun generateQueryString(): String {
 

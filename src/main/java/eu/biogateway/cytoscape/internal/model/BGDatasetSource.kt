@@ -15,9 +15,9 @@ class BGDatasetSource(val uri: String, val name: String, val relationType: BGRel
     }
 
     companion object {
-        fun generateSourceConstraint(serviceManager: BGServiceManager, relationType: BGRelationType, fromUri: String, toUri: String, number: Int = 0): Pair<String, String>? {
-            val relevantSources = serviceManager.cache.activeSources.filter { it.relationType.equals(relationType) }
-            if (relevantSources.size == serviceManager.cache.datasetSources.get(relationType)?.size) return null // Don't filter if all sources are selected.
+        fun generateSourceConstraint(relationType: BGRelationType, fromUri: String, toUri: String, number: Int = 0): Pair<String, String>? {
+            val relevantSources = BGServiceManager.cache.activeSources.filter { it.relationType.equals(relationType) }
+            if (relevantSources.size == BGServiceManager.cache.datasetSources.get(relationType)?.size) return null // Don't filter if all sources are selected.
             if (relevantSources.count() == 0) return null
             val uri = "?sourceConstraint"+number
 

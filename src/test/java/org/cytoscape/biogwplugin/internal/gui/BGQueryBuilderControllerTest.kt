@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 
 internal class BGQueryBuilderControllerTest {
 
-    val controller = BGQueryBuilderController(BGServiceManager())
+    val controller = BGQueryBuilderController()
 
     @Test
     internal fun loadSparqlQueryTest() {

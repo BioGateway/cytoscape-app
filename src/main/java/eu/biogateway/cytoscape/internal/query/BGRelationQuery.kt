@@ -5,13 +5,13 @@ import eu.biogateway.cytoscape.internal.model.BGRelation
 import eu.biogateway.cytoscape.internal.parser.BGReturnType
 import eu.biogateway.cytoscape.internal.util.Utility
 
-class BGRelationQueryImplementation(serviceManager: BGServiceManager, val queryString: String, var returnType: BGReturnType): BGRelationQuery(serviceManager, returnType) {
+class BGRelationQueryImplementation(val queryString: String, var returnType: BGReturnType): BGRelationQuery(returnType) {
     override fun generateQueryString(): String {
         return queryString
     }
 }
 
-abstract class BGRelationQuery(serviceManager: BGServiceManager, type: BGReturnType): BGQuery(serviceManager, type) {
+abstract class BGRelationQuery(type: BGReturnType): BGQuery(type) {
     var returnDataFilter: ((BGRelation) -> Boolean)? = null
 
     init {

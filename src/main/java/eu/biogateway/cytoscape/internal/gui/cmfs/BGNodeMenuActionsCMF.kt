@@ -27,12 +27,12 @@ import javax.swing.JOptionPane
  * Created by sholmas on 06/07/2017.
  */
 
-class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceManager): CyNodeViewContextMenuFactory {
+class BGNodeMenuActionsCMF(val gravity: Float): CyNodeViewContextMenuFactory {
 
     override fun createMenuItem(netView: CyNetworkView?, nodeView: View<CyNode>?): CyMenuItem {
         val network = netView?.model ?: return CyMenuItem(null, gravity)
         val nodeUri = network.defaultNodeTable?.getRow(nodeView?.model?.suid)?.get(Constants.BG_FIELD_IDENTIFIER_URI, String::class.java) ?: throw Exception("Node URI not found in CyNetwork table. Are you sure you are querying a node created with this plugin?")
-        val node = serviceManager.dataModelController.searchForExistingNode(nodeUri) ?: throw Exception("Node not found!")
+        val node = BGServiceManager.dataModelController.searchForExistingNode(nodeUri) ?: throw Exception("Node not found!")
 
         val nodeMenu = createNodeMenu(node, nodeUri, network)
         return CyMenuItem(nodeMenu as JMenuItem?, gravity)
@@ -108,7 +108,7 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
 
 
 
-        val query = BGFetchAttributeValuesQuery(serviceManager, nodeUri, relationUri, "?graph", BGRelationDirection.FROM)
+        val query = BGFetchAttributeValuesQuery(nodeUri, relationUri, "?graph", BGRelationDirection.FROM)
         query.run()
         val data = query.returnData as? BGReturnMetadata ?: return null
 
@@ -148,21 +148,21 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
 
         val HAS_SOURCE_URI = "http://semanticscience.org/resource/SIO_000253"
         val RELATED_MATCH_URI = "http://www.w3.org/2004/02/skos/core#relatedMatch"
-        val hasSourceType = serviceManager.cache.getRelationTypesForURI(HAS_SOURCE_URI)?.first() ?: throw Exception("Relation type not found in cache!")
-        val relatedMatchType = serviceManager.cache.getRelationTypesForURI(RELATED_MATCH_URI)?.first() ?: throw Exception("Relation type not found in cache!")
+        val hasSourceType = BGServiceManager.cache.getRelationTypesForURI(HAS_SOURCE_URI)?.first() ?: throw Exception("Relation type not found in cache!")
+        val relatedMatchType = BGServiceManager.cache.getRelationTypesForURI(RELATED_MATCH_URI)?.first() ?: throw Exception("Relation type not found in cache!")
 
         val relationTypes = arrayListOf(hasSourceType, relatedMatchType)
 
         item.addActionListener {
-            val query = BGFindRelationsOfDifferentTypesForNodeQuery(serviceManager, relationTypes, nodeUri, BGRelationDirection.FROM)
+            val query = BGFindRelationsOfDifferentTypesForNodeQuery(relationTypes, nodeUri, BGRelationDirection.FROM)
             query.addCompletion {
                 val data = it as? BGReturnRelationsData ?: throw Exception("Invalid return data.")
-                BGLoadUnloadedNodes.createAndRun(serviceManager, data.unloadedNodes) {
-                    serviceManager.dataModelController.networkBuilder.addRelationsToNetwork(network, data.relationsData)
-                    Utility.reloadCurrentVisualStyleCurrentNetworkView(serviceManager)
+                BGLoadUnloadedNodes.createAndRun(data.unloadedNodes) {
+                    BGServiceManager.dataModelController.networkBuilder.addRelationsToNetwork(network, data.relationsData)
+                    Utility.reloadCurrentVisualStyleCurrentNetworkView()
                 }
             }
-            serviceManager.taskManager?.execute(TaskIterator(query))
+            BGServiceManager.taskManager?.execute(TaskIterator(query))
         }
 
         return item
@@ -186,7 +186,7 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
     protected fun createOpenQueryBuilderWithSelectedURIsMenu(nodeUri: String): JMenuItem {
         val item = JMenuItem("Use node URI in query builder")
         item.addActionListener {
-            val queryBuilder = BGQueryBuilderController(serviceManager)
+            val queryBuilder = BGQueryBuilderController()
             queryBuilder.addMultiQueryLinesForURIs(arrayListOf(nodeUri))
 
         }
@@ -209,11 +209,11 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
             }
         }
         val encodesIdentifier = Utility.createRelationTypeIdentifier("http://semanticscience.org/resource/SIO_010078", "refseq")
-        val relationType = serviceManager.dataModelController.cache.relationTypeMap.get(encodesIdentifier) ?: throw Exception("Relation type with identifier: "+encodesIdentifier+" not found in cache.")
+        val relationType = BGServiceManager.dataModelController.cache.relationTypeMap.get(encodesIdentifier) ?: throw Exception("Relation type with identifier: "+encodesIdentifier+" not found in cache.")
         val menuItem = JMenuItem(menuItemText)
 
         menuItem.addActionListener {
-            val query = BGFindRelationForNodeQuery(serviceManager, relationType, nodeUri, direction)
+            val query = BGFindRelationForNodeQuery(relationType, nodeUri, direction)
             query.addCompletion {
                 val returnData = it as? BGReturnRelationsData
                 if (returnData != null) {
@@ -233,13 +233,13 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
                             iterator.remove()
                         }
                     }
-                    BGLoadNodeDataFromBiogwDict.createAndRun(serviceManager, returnData.unloadedNodes, 200) {
-                        serviceManager.dataModelController.networkBuilder.addRelationsToNetwork(network, relationsData)
-                        Utility.reloadCurrentVisualStyleCurrentNetworkView(serviceManager)
+                    BGLoadNodeDataFromBiogwDict.createAndRun(returnData.unloadedNodes, 200) {
+                        BGServiceManager.dataModelController.networkBuilder.addRelationsToNetwork(network, relationsData)
+                        Utility.reloadCurrentVisualStyleCurrentNetworkView()
                     }
                 }
             }
-            serviceManager.taskManager?.execute(TaskIterator(query))
+            BGServiceManager.taskManager?.execute(TaskIterator(query))
         }
         return menuItem
     }
@@ -252,31 +252,31 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
         val searchAllItem = JMenuItem("Search for all relation types")
         searchAllItem.addActionListener {
             println("Searching for all relations.")
-            val query = BGFindAllRelationsForNodeQuery(serviceManager, nodeUri, direction)
+            val query = BGFindAllRelationsForNodeQuery(nodeUri, direction)
             query.addCompletion {
                 val returnData = it as? BGReturnRelationsData ?: throw Exception("Invalid return data!")
                 if (returnData.relationsData.size == 0) throw Exception("No relations found.")
                 val columnNames = arrayOf("from node","relation type", "to node")
 
-                BGLoadUnloadedNodes.createAndRun(serviceManager, returnData.unloadedNodes) {
-                    BGRelationSearchResultsController(serviceManager, returnData, columnNames, network)
+                BGLoadUnloadedNodes.createAndRun(returnData.unloadedNodes) {
+                    BGRelationSearchResultsController(returnData, columnNames, network)
                 }
             }
             if (lookForGroups) {
-                val group = Utility.selectGroupPopup(serviceManager, network) ?: return@addActionListener
+                val group = Utility.selectGroupPopup(network) ?: return@addActionListener
                 val groupNodeURIs = Utility.getNodeURIsForGroup(group)
                 query.returnDataFilter = { relation ->
                     (groupNodeURIs.contains(relation.fromNode.uri) || groupNodeURIs.contains(relation.toNode.uri))
                 }
             }
 
-            serviceManager.taskManager?.execute(TaskIterator(query))
+            BGServiceManager.taskManager?.execute(TaskIterator(query))
         }
         parentMenu.add(searchAllItem)
 
         // Will only create the menu if the config is loaded.
         //for (relationType in serviceManager.cache.relationTypeMap.values.sortedBy { it.number }) {
-        for (relationType in serviceManager.cache.filteredRelationTypeMap.values.sortedBy { it.number }) {
+        for (relationType in BGServiceManager.cache.filteredRelationTypeMap.values.sortedBy { it.number }) {
 
             // Skip the relations that cannot return data:
             val nodeType = BGNode(nodeUri, "").type
@@ -288,7 +288,7 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
             val item = JMenuItem(relationType.description)
 
             item.addActionListener {
-                val query = BGFindRelationForNodeQuery(serviceManager, relationType, nodeUri, direction)
+                val query = BGFindRelationForNodeQuery(relationType, nodeUri, direction)
                 query.addCompletion {
                     val returnData = it as? BGReturnRelationsData
                     if (returnData != null) {
@@ -296,21 +296,21 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
 
                         val columnNames = arrayOf("from node","relation type", "to node")
 
-                        BGLoadNodeDataFromBiogwDict.createAndRun(serviceManager, returnData.unloadedNodes, 200) {
+                        BGLoadNodeDataFromBiogwDict.createAndRun(returnData.unloadedNodes, 200) {
                             println("Loaded "+it.toString()+ " nodes.")
-                            BGRelationSearchResultsController(serviceManager, returnData, columnNames, network)
+                            BGRelationSearchResultsController(returnData, columnNames, network)
                         }
                     }
                 }
                 if (lookForGroups) {
-                    val group = Utility.selectGroupPopup(serviceManager, network) ?: return@addActionListener
+                    val group = Utility.selectGroupPopup(network) ?: return@addActionListener
                     val groupNodeURIs = Utility.getNodeURIsForGroup(group)
                     query.returnDataFilter = { relation ->
                         (groupNodeURIs.contains(relation.fromNode.uri) || groupNodeURIs.contains(relation.toNode.uri))
                     }
                 }
 
-                serviceManager.taskManager?.execute(TaskIterator(query))
+                BGServiceManager.taskManager?.execute(TaskIterator(query))
             }
 
             parentMenu.add(item)
@@ -344,22 +344,22 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
                     BGRelationSearchResultsController(serviceManager, returnData, columnNames, network)
                 }
             }*/
-            val relationType = serviceManager.cache.getRelationTypeForURIandGraph("http://www.w3.org/2004/02/skos/core#related", "tf-tg") ?: throw Exception("Unable to find relation type in cache!")
+            val relationType = BGServiceManager.cache.getRelationTypeForURIandGraph("http://www.w3.org/2004/02/skos/core#related", "tf-tg") ?: throw Exception("Unable to find relation type in cache!")
             val direction = when (nodeType) {
                 BGNodeType.Protein -> BGRelationDirection.FROM
                 BGNodeType.Gene -> BGRelationDirection.TO
                 else -> {
                     throw Exception("Unable to search for TF-TG relations from a node that are not a protein or gene!")
                 }}
-            val query = BGFindRelationForNodeQuery(serviceManager, relationType, nodeUri, direction)
+            val query = BGFindRelationForNodeQuery(relationType, nodeUri, direction)
             if (lookForGroups) {
-                val group = Utility.selectGroupPopup(serviceManager, network) ?: return@addActionListener
+                val group = Utility.selectGroupPopup(network) ?: return@addActionListener
                 val groupNodeURIs = Utility.getNodeURIsForGroup(group)
                 query.returnDataFilter = { relation ->
                     (groupNodeURIs.contains(relation.fromNode.uri) || groupNodeURIs.contains(relation.toNode.uri))
                 }
             }
-            serviceManager.taskManager?.execute(TaskIterator(query))
+            BGServiceManager.taskManager?.execute(TaskIterator(query))
             Thread(Runnable {
                 val returnData = query.futureReturnData.get() as  BGReturnRelationsData
                 // TODO: The exception is no longer thrown to the TaskMonitor, need a popup to tell the user.
@@ -374,8 +374,8 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
                 }
                 val columnNames = arrayOf("protein", "relation", "gene")
 
-                BGLoadNodeDataFromBiogwDict.createAndRun(serviceManager, returnData.unloadedNodes, 200) {
-                    BGRelationSearchResultsController(serviceManager, returnData, columnNames, network)
+                BGLoadNodeDataFromBiogwDict.createAndRun(returnData.unloadedNodes, 200) {
+                    BGRelationSearchResultsController(returnData, columnNames, network)
                 }
             }).start()
         }
@@ -388,23 +388,23 @@ class BGNodeMenuActionsCMF(val gravity: Float, val serviceManager: BGServiceMana
 
         val searchTFTG = JMenuItem(menuItemText)
         searchTFTG.addActionListener {
-            val query = BGFindBinaryPPIsQuery(serviceManager, nodeUri)
+            val query = BGFindBinaryPPIsQuery(nodeUri)
             query.addCompletion {
                 val returnData = it as? BGReturnRelationsData ?: throw Exception("Invalid return data!")
                 if (returnData.relationsData.isEmpty()) throw Exception("No relations found.")
                 val columnNames = arrayOf("Protein", "Relation", "Protein")
-                BGLoadNodeDataFromBiogwDict.createAndRun(serviceManager, returnData.unloadedNodes,200) {
-                    BGRelationSearchResultsController(serviceManager, returnData, columnNames, network)
+                BGLoadNodeDataFromBiogwDict.createAndRun(returnData.unloadedNodes,200) {
+                    BGRelationSearchResultsController(returnData, columnNames, network)
                 }
             }
             if (lookForGroups) {
-                val group = Utility.selectGroupPopup(serviceManager, network) ?: return@addActionListener
+                val group = Utility.selectGroupPopup(network) ?: return@addActionListener
                 val groupNodeURIs = Utility.getNodeURIsForGroup(group)
                 query.returnDataFilter = { relation ->
                     (groupNodeURIs.contains(relation.fromNode.uri) || groupNodeURIs.contains(relation.toNode.uri))
                 }
             }
-            serviceManager.taskManager?.execute(TaskIterator(query))
+            BGServiceManager.taskManager?.execute(TaskIterator(query))
         }
         return searchTFTG
     }

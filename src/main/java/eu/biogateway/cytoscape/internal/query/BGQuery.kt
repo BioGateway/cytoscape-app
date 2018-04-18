@@ -82,7 +82,7 @@ abstract class BGTypedQuery(val type: BGQueryType, val serviceManager: BGService
 
 
 @Suppress("LocalVariableName")
-abstract class BGQuery(val serviceManager: BGServiceManager, var type: BGReturnType, val useMongoDb: Boolean = false): AbstractTask(), Runnable {
+abstract class BGQuery(var type: BGReturnType, val useMongoDb: Boolean = false): AbstractTask(), Runnable {
     var completionBlocks: ArrayList<(BGReturnData?) -> Unit> = ArrayList()
     var returnData: BGReturnData? = null
     var client = HttpClients.createDefault()!!
@@ -99,7 +99,7 @@ abstract class BGQuery(val serviceManager: BGServiceManager, var type: BGReturnT
             BGParsingType.PARSE_FUNCTION
         }
     }
-    val parser = serviceManager.dataModelController.parser
+    val parser = BGServiceManager.dataModelController.parser
     val futureReturnData = CompletableFuture<BGReturnData>()
 
     abstract fun generateQueryString(): String
@@ -168,7 +168,7 @@ abstract class BGQuery(val serviceManager: BGServiceManager, var type: BGReturnT
 
     override fun cancel() {
         client.close()
-        serviceManager.dataModelController.parser.cancel()
+        BGServiceManager.dataModelController.parser.cancel()
         super.cancel()
         throw Exception("Cancelled.")
     }
@@ -184,11 +184,11 @@ abstract class BGQuery(val serviceManager: BGServiceManager, var type: BGReturnT
 
     fun encodeUrl(): URL? {
         if (useMongoDb) {
-            return URL(serviceManager.dictionaryServerPath + "fetch")
+            return URL(BGServiceManager.dictionaryServerPath + "fetch")
         } else {
             val RETURN_TYPE_TSV = "text/tab-separated-values"
             val BIOPAX_DEFAULT_OPTIONS = "timeout=0&debug=on"
-            val queryURL = URL(serviceManager.serverPath + "?query=" + URLEncoder.encode(generateQueryString(), "UTF-8") + "&format=" + RETURN_TYPE_TSV + "&" + BIOPAX_DEFAULT_OPTIONS)
+            val queryURL = URL(BGServiceManager.serverPath + "?query=" + URLEncoder.encode(generateQueryString(), "UTF-8") + "&format=" + RETURN_TYPE_TSV + "&" + BIOPAX_DEFAULT_OPTIONS)
             return queryURL
         }
     }

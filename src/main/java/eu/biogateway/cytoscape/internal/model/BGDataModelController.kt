@@ -24,7 +24,7 @@ class BGQueryConstraintTreeNode(val constraint: BGQueryConstraint): DefaultMutab
 class BGSourceTreeNode(val source: BGDatasetSource): DefaultMutableTreeNode(source.name)
 
 
-class BGDataModelController(private val serviceManager: BGServiceManager) {
+class BGDataModelController() {
 
     internal inner class PreferencesManager {
 
@@ -159,8 +159,8 @@ class BGDataModelController(private val serviceManager: BGServiceManager) {
     val cache: BGCache
     private val preferencesManager = PreferencesManager()
     val settings = BGSettings()
-    val parser = BGParser(serviceManager)
-    val networkBuilder = BGNetworkBuilder(serviceManager)
+    val parser = BGParser()
+    val networkBuilder = BGNetworkBuilder()
 
     init {
         cache = BGCache()
@@ -368,7 +368,7 @@ class BGDataModelController(private val serviceManager: BGServiceManager) {
 
 
     private fun getNodeDataFromNetworks(uri: String): BGNode? {
-        val networks = serviceManager.networkManager?.networkSet ?: return null
+        val networks = BGServiceManager.networkManager?.networkSet ?: return null
         for (network in networks) {
             if (network.defaultNodeTable.getColumn(Constants.BG_FIELD_IDENTIFIER_URI) == null) {
                 continue
@@ -419,7 +419,7 @@ class BGDataModelController(private val serviceManager: BGServiceManager) {
 
     private fun getNodesFromDictionaryServer(nodeUris: Collection<String>): HashMap<String, BGNode> {
         if (nodeUris.isEmpty()) return HashMap()
-        val query = BGMultiNodeFetchMongoQuery(serviceManager, nodeUris)
+        val query = BGMultiNodeFetchMongoQuery(nodeUris)
         query.run()
         val data = query.futureReturnData.get() as BGReturnNodeData
 
@@ -435,9 +435,9 @@ class BGDataModelController(private val serviceManager: BGServiceManager) {
 
 
         val query = if (BG_SHOULD_USE_BG_DICT && (nodeType == BGNodeType.Protein || nodeType == BGNodeType.Gene || nodeType == BGNodeType.GO)) {
-            BGNodeFetchMongoQuery(serviceManager, uri)
+            BGNodeFetchMongoQuery(uri)
         } else {
-            BGNodeFetchQuery(serviceManager, uri)
+            BGNodeFetchQuery(uri)
         }
 
         query.run()
@@ -477,7 +477,7 @@ class BGDataModelController(private val serviceManager: BGServiceManager) {
         if (!metadataType.supportedRelations.contains(relation.relationType)) return
         val graph = relation.relationType.defaultGraphName ?: return
 
-        val query = BGFetchMetadataQuery(serviceManager, relation.fromNode.uri, relation.relationType.uri, relation.toNode.uri, graph, metadataType.relationUri)
+        val query = BGFetchMetadataQuery(relation.fromNode.uri, relation.relationType.uri, relation.toNode.uri, graph, metadataType.relationUri)
         query.run()
         val result = query.returnFuture.get() as BGReturnMetadata // <- This is also synchronous. Should not halt at this point though.
 
@@ -488,7 +488,7 @@ class BGDataModelController(private val serviceManager: BGServiceManager) {
         // Synchronous code! Will halt execution (Well, it's supposed to now...)
         val graph = relation.relationType.defaultGraphName
         if (graph.equals("intact")) {
-            val query = BGFetchMetadataQuery(serviceManager, relation.fromNode.uri, relation.relationType.uri, relation.toNode.uri, graph!!, BGMetadataTypeEnum.CONFIDENCE_VALUE.uri)
+            val query = BGFetchMetadataQuery(relation.fromNode.uri, relation.relationType.uri, relation.toNode.uri, graph!!, BGMetadataTypeEnum.CONFIDENCE_VALUE.uri)
             query.run() // <- This is synchronous.
             val result = query.returnFuture.get() as BGReturnMetadata // <- This is also synchronous. Should not halt at this point though.
             return result.values.first().toDouble() // <- Will throw an exception if the data isn't a double!
@@ -501,7 +501,7 @@ class BGDataModelController(private val serviceManager: BGServiceManager) {
             val queryFileUrl = URL(Constants.BG_CONFIG_FILE_URL)
             val connection = queryFileUrl.openConnection()
             val inputStream = connection.getInputStream()
-            BGConfigParser.parseXMLConfigFile(inputStream, serviceManager, cache)
+            BGConfigParser.parseXMLConfigFile(inputStream, cache)
         } catch (e: IOException) {
             e.printStackTrace()
         }

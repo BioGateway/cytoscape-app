@@ -18,7 +18,7 @@ import javax.swing.JMenuItem
  * @constructor Creates a new CyEdgeViewContextMenuFactory which can create CyMenuItems for right-clicked edges.
  *
  */
-class BGChangeEdgeTypeCMF(val gravity: Float, val serviceManager: BGServiceManager): CyEdgeViewContextMenuFactory {
+class BGChangeEdgeTypeCMF(val gravity: Float): CyEdgeViewContextMenuFactory {
 
     /**
      * Creates a CyMenuItem with actions which allows the user to change the relation type and URI of an edge.
@@ -35,8 +35,8 @@ class BGChangeEdgeTypeCMF(val gravity: Float, val serviceManager: BGServiceManag
         val edgeTable = netView?.model?.defaultEdgeTable
         val edgeUri = edgeTable?.getRow(edgeSuid)?.get(Constants.BG_FIELD_IDENTIFIER_URI, String::class.java) ?: throw Exception("Edge URI not found in CyNetwork")
 
-        for (key in serviceManager.cache.relationTypeMap.keys) {
-            val relationType = serviceManager.cache.relationTypeMap.get(key)
+        for (key in BGServiceManager.cache.relationTypeMap.keys) {
+            val relationType = BGServiceManager.cache.relationTypeMap.get(key)
             if (relationType != null) {
                 val item = JMenuItem(relationType.name)
                 item.addActionListener {

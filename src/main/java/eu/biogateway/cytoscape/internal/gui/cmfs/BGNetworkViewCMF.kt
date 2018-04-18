@@ -10,7 +10,7 @@ import org.cytoscape.model.CyTableUtil
 import org.cytoscape.view.model.CyNetworkView
 import javax.swing.JMenuItem
 
-class BGNetworkViewCMF(val gravity: Float, val serviceManager: BGServiceManager): CyNetworkViewContextMenuFactory {
+class BGNetworkViewCMF(val gravity: Float): CyNetworkViewContextMenuFactory {
     override fun createMenuItem(netView: CyNetworkView?): CyMenuItem {
 
         if (netView != null) {
@@ -22,10 +22,10 @@ class BGNetworkViewCMF(val gravity: Float, val serviceManager: BGServiceManager)
             }
             if (selectedNodes.size == 1) {
                 val node = selectedNodes[0]
-                val view = serviceManager.applicationManager?.currentNetworkView?.getNodeView(node)
-                return BGNodeMenuActionsCMF(gravity, serviceManager).createMenuItem(netView, view)
+                val view = BGServiceManager.applicationManager?.currentNetworkView?.getNodeView(node)
+                return BGNodeMenuActionsCMF(gravity).createMenuItem(netView, view)
             }
-            return BGMultiNodeQueryCMF(gravity, serviceManager).createMenuItem(netView)
+            return BGMultiNodeQueryCMF(gravity).createMenuItem(netView)
         }
         return CyMenuItem(null, gravity)
     }
@@ -33,10 +33,10 @@ class BGNetworkViewCMF(val gravity: Float, val serviceManager: BGServiceManager)
     private fun createLookupNodeMenu(network: CyNetwork, netView: CyNetworkView): JMenuItem {
         val item = JMenuItem("Add BioGateway node")
         item.addActionListener {
-            BGNodeLookupController(serviceManager, null) { node ->
+            BGNodeLookupController(null) { node ->
                 if (node != null) {
-                    serviceManager.dataModelController.networkBuilder.addBGNodesToNetwork(arrayListOf(node), network)
-                    Utility.reloadCurrentVisualStyleCurrentNetworkView(serviceManager)
+                    BGServiceManager.dataModelController.networkBuilder.addBGNodesToNetwork(arrayListOf(node), network)
+                    Utility.reloadCurrentVisualStyleCurrentNetworkView()
                 }
             }
         }

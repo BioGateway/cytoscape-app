@@ -9,7 +9,6 @@ import java.awt.*;
 @SuppressWarnings("FieldCanBeLocal")
 public class BGSettingsView {
     private final JFrame mainFrame;
-    private final BGServiceManager serviceManager;
     private final BGSettings settings;
     private JPanel panel2;
 
@@ -19,9 +18,8 @@ public class BGSettingsView {
     private JButton cancelButton;
 
 
-    public BGSettingsView(BGServiceManager serviceManager) {
-        this.serviceManager = serviceManager;
-        this.settings = serviceManager.getDataModelController().getSettings();
+    public BGSettingsView() {
+        this.settings = BGServiceManager.INSTANCE.getDataModelController().getSettings();
         $$$setupUI$$$();
         mainFrame = new JFrame("BioGateway Settings");
         mainFrame.setContentPane(this.panel2);

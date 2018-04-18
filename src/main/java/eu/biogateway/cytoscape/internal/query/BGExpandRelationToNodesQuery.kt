@@ -4,7 +4,7 @@ import eu.biogateway.cytoscape.internal.BGServiceManager
 import eu.biogateway.cytoscape.internal.model.BGRelationType
 import eu.biogateway.cytoscape.internal.parser.BGReturnType
 
-class BGExpandRelationToNodesQuery(serviceManager: BGServiceManager, val fromNode: String, val toNode: String, val relationType: BGRelationType, returnType: BGReturnType): BGRelationQuery(serviceManager, returnType) {
+class BGExpandRelationToNodesQuery(val fromNode: String, val toNode: String, val relationType: BGRelationType, returnType: BGReturnType): BGRelationQuery(returnType) {
 
     enum class GraphType(val graphName: String) {
         GOA("goa"),

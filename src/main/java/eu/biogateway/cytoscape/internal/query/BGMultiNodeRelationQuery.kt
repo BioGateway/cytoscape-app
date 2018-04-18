@@ -9,7 +9,7 @@ import eu.biogateway.cytoscape.internal.util.Utility
 import org.cytoscape.work.AbstractTask
 import org.cytoscape.work.TaskMonitor
 
-class BGMultiNodeRelationQuery(val serviceManager: BGServiceManager, val nodeUris: Collection<String>, val relationType: BGRelationType, val direction: BGRelationDirection): AbstractTask(), Runnable {
+class BGMultiNodeRelationQuery(val nodeUris: Collection<String>, val relationType: BGRelationType, val direction: BGRelationDirection): AbstractTask(), Runnable {
     private var taskMonitor: TaskMonitor? = null
     private var returnData: BGReturnRelationsData? = null
     private val completionBlocks = ArrayList<(BGReturnData?) -> Unit>()
@@ -85,7 +85,7 @@ class BGMultiNodeRelationQuery(val serviceManager: BGServiceManager, val nodeUri
         var unloadedNodes = HashSet<BGNode>()
 
         for (nodeUri in nodeUris) {
-            val query = BGFindRelationForNodeQuery(serviceManager, relationType, nodeUri, direction)
+            val query = BGFindRelationForNodeQuery(relationType, nodeUri, direction)
             query.returnDataFilter = returnDataFilter
             query.addCompletion {
                 val returnData = it as? BGReturnRelationsData ?: throw Exception("Expected relations data!")

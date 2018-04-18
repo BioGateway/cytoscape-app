@@ -4,7 +4,7 @@ import eu.biogateway.cytoscape.internal.BGServiceManager
 import eu.biogateway.cytoscape.internal.parser.BGReturnType
 
 /// Performs a fetch query for the values with the given relation URI for the given node, in the given graph.
-class BGFetchAttributeValuesQuery(serviceManager: BGServiceManager, val nodeUri: String, val relationUri: String, var graphName: String, val direction: BGRelationDirection) : BGQuery(serviceManager, BGReturnType.METADATA_FIELD) {
+class BGFetchAttributeValuesQuery(val nodeUri: String, val relationUri: String, var graphName: String, val direction: BGRelationDirection) : BGQuery(BGReturnType.METADATA_FIELD) {
 
 
 

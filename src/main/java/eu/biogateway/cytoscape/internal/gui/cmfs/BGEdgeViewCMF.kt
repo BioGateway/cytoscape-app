@@ -80,7 +80,7 @@ class BGEdgeViewCMF(val gravity: Float, val serviceManager: BGServiceManager): C
                 }
             }
             */
-            val query = BGFetchMetadataQuery(serviceManager, fromNodeUri, edgeUri, toNodeUri, sourceGraph ?: "?graph", BGMetadataTypeEnum.PUBMED_ID.uri)
+            val query = BGFetchMetadataQuery(fromNodeUri, edgeUri, toNodeUri, sourceGraph ?: "?graph", BGMetadataTypeEnum.PUBMED_ID.uri)
             serviceManager.taskManager?.execute(TaskIterator(query))
             Thread(Runnable {
                 val metadata = query.returnFuture.get() as BGReturnMetadata

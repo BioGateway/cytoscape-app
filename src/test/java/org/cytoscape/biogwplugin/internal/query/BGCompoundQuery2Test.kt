@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test
 
 internal class BGCompoundQuery2Test {
 
-    val serviceManager = BGServiceManager()
 
     @Test
     internal fun relationQueriesTest() {

@@ -3,7 +3,7 @@ package eu.biogateway.cytoscape.internal.query
 import eu.biogateway.cytoscape.internal.BGServiceManager
 import eu.biogateway.cytoscape.internal.parser.BGReturnType
 
-class BGNodeSearchQuery(serviceManager: BGServiceManager, val queryString: String, returnType: BGReturnType): BGQuery(serviceManager, returnType) {
+class BGNodeSearchQuery(val queryString: String, returnType: BGReturnType): BGQuery(returnType) {
 
     init {
         taskMonitorTitle = "Searching for nodes..."

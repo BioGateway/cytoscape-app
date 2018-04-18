@@ -4,7 +4,7 @@ import eu.biogateway.cytoscape.internal.BGServiceManager
 import eu.biogateway.cytoscape.internal.model.BGNodeType
 import eu.biogateway.cytoscape.internal.parser.BGReturnType
 
-class BGNodeURILookupQuery(serviceManager: BGServiceManager, val searchString: String, val useRegex: Boolean, val nodeType: BGNodeType): BGQuery(serviceManager, BGReturnType.NODE_LIST_DESCRIPTION_TAXON) {
+class BGNodeURILookupQuery(val searchString: String, val useRegex: Boolean, val nodeType: BGNodeType): BGQuery(BGReturnType.NODE_LIST_DESCRIPTION_TAXON) {
 
     init {
         taskMonitorTitle = "Searching for nodes..."

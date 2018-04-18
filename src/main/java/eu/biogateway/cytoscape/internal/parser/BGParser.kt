@@ -32,7 +32,7 @@ enum class BGReturnType(val paremeterCount: Int) {
 }
 
 
-class BGParser(private val serviceManager: BGServiceManager) {
+class BGParser() {
 
     var cancelled = false
     var nodeFetchThread: Thread? = null
@@ -102,7 +102,7 @@ class BGParser(private val serviceManager: BGServiceManager) {
         val unloadedNodes = HashSet<BGNode>()
         val unloadedUris = HashSet<String>()
         taskMonitor?.setTitle("Parsing relations...")
-        val server = serviceManager.dataModelController
+        val server = BGServiceManager.dataModelController
 
         val columnNames = when (returnType) {
             BGReturnType.RELATION_MULTIPART -> {

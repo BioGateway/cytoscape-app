@@ -13,12 +13,12 @@ import java.awt.image.ImageObserver
 import javax.swing.*
 
 
-class BGMultiQueryPanel(val serviceManager: BGServiceManager, val constraintPanel: BGQueryConstraintPanel): JPanel() {
+class BGMultiQueryPanel(val constraintPanel: BGQueryConstraintPanel): JPanel() {
 
     val deleteButtonTooltipText = "Delete this row."
 
     val variableManager = BGQueryVariableManager()
-    val relationTypes = serviceManager.cache.relationTypeDescriptions
+    val relationTypes = BGServiceManager.cache.relationTypeDescriptions
 
 
     init {
@@ -39,7 +39,7 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager, val constraintPane
 
         //val queryLine = BGMultiQueryLine(serviceManager, fromField, relationTypeBox, toField, variableManager)
 
-        val queryLine = BGMultiQueryAutocompleteLine(serviceManager, relationTypeBox, variableManager)
+        val queryLine = BGMultiQueryAutocompleteLine(relationTypeBox, variableManager)
 
         val deleteIcon = ImageIcon(this.javaClass.classLoader.getResource("delete.png"))
         val deleteButton = JButton(deleteIcon)
@@ -67,7 +67,7 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager, val constraintPane
         if (graph.relation.type != BGSPARQLParser.BGVariableType.URI) throw Exception("Relation type cannot be a variable!")
 
         val relationIdentifier = Utility.createRelationTypeIdentifier(graph.relation.value, graph.graph.value)
-        val relationType = serviceManager.cache.relationTypeMap.get(relationIdentifier) ?: serviceManager.cache.getRelationTypesForURI(graph.relation.value)?.first()
+        val relationType = BGServiceManager.cache.relationTypeMap.get(relationIdentifier) ?: BGServiceManager.cache.getRelationTypesForURI(graph.relation.value)?.first()
         if (relationType == null){
             throw Exception("Relation name not found!")
         }
@@ -276,7 +276,7 @@ class BGMultiQueryPanel(val serviceManager: BGServiceManager, val constraintPane
 
         for (triple in triples) {
             val graph = triple.second.defaultGraphName ?: continue
-            val pair = BGDatasetSource.generateSourceConstraint(serviceManager, triple.second, triple.first, triple.third, sourceConstraintCounter)
+            val pair = BGDatasetSource.generateSourceConstraint(triple.second, triple.first, triple.third, sourceConstraintCounter)
             sourceConstraintCounter++
 //            val relevantSources = serviceManager.cache.activeSources.filter { it.relationTypes.contains(triple.second) }
 //            if (relevantSources.count() == 0) continue

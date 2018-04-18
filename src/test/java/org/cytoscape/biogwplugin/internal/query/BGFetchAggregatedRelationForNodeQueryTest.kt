@@ -14,14 +14,14 @@ internal class BGFetchAggregatedRelationForNodeQueryTest {
 
     @Test
     internal fun goaRelationTest() {
-        val query = BGFetchAggregatedRelationForNodeQuery(BGServiceManager(), goaNode)
+        val query = BGFetchAggregatedRelationForNodeQuery(goaNode)
         Thread(query).start()
         validate(query.futureReturnData, 1)
     }
 
     @Test
     internal fun TFTGRelationTest() {
-        val query = BGFetchAggregatedRelationForNodeQuery(BGServiceManager(), tftgNode)
+        val query = BGFetchAggregatedRelationForNodeQuery(tftgNode)
         Thread(query).start()
         validate(query.futureReturnData, 1)
     }

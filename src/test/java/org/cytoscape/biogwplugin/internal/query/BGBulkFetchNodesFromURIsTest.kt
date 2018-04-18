@@ -12,18 +12,15 @@ internal class BGBulkFetchNodesFromURIsTest {
     private val uniprotIDs = arrayListOf("O15525", "P05181", "Q08257", "P09601")
     private val GOTerms = arrayListOf("GO_0034599", "GO_0036091", "GO_0055114", "GO_0043619")
 
-    private var serviceManager = BGServiceManager()
-
     @AfterEach
     internal fun tearDown() {
         // Reset the serviceManager
-        serviceManager = BGServiceManager()
     }
 
     @Test
     internal fun importUniprotNodesTest() {
         val uniprotNodeList = uniprotIDs.map { Utility.generateUniprotURI(it) }
-        val query = BGBulkImportNodesFromURIs(serviceManager, BGNodeType.Protein, uniprotNodeList)
+        val query = BGBulkImportNodesFromURIs(BGNodeType.Protein, uniprotNodeList)
         Thread(query).start()
         validate(query.futureReturnData, 4)
     }
@@ -31,7 +28,7 @@ internal class BGBulkFetchNodesFromURIsTest {
     @Test
     internal fun importGOTermsTest() {
         val goNodeList = GOTerms.map { Utility.generateGOTermURI(it) }
-        val query = BGBulkImportNodesFromURIs(serviceManager, BGNodeType.GO, goNodeList)
+        val query = BGBulkImportNodesFromURIs(BGNodeType.GO, goNodeList)
         Thread(query).start()
         validate(query.futureReturnData, 4)
     }

@@ -19,8 +19,6 @@ import java.awt.*;
 
 public class BGControlPanel extends JPanel implements CytoPanelComponent {
 
-
-    private BGServiceManager serviceManager;
     private JPanel mainPanel;
     private JComboBox comboBox1;
     private JPanel treePanel;
@@ -29,8 +27,7 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent {
     private JCheckBoxTree tree;
 
 
-    public BGControlPanel(BGServiceManager serviceManager) {
-        this.serviceManager = serviceManager;
+    public BGControlPanel() {
         this.add(mainPanel);
 
         setupTreePanel();
@@ -44,7 +41,7 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent {
 
     public void setupTreePanel() {
         treePanel.removeAll();
-        DefaultTreeModel model = serviceManager.getCache().getConfigPanelTreeModel();
+        DefaultTreeModel model = BGServiceManager.INSTANCE.getCache().getConfigPanelTreeModel();
         tree = new JCheckBoxTree(model);
         //tree.expandRow(0);
         tree.setRootVisible(false);
@@ -52,9 +49,9 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent {
 
         treePanel.add(tree);
 
-        tree.addCheckChangeEventListener(event -> serviceManager.getDataModelController().setActiveNodesForPaths(tree.getCheckedPaths()));
+        tree.addCheckChangeEventListener(event -> BGServiceManager.INSTANCE.getDataModelController().setActiveNodesForPaths(tree.getCheckedPaths()));
 
-        serviceManager.getDataModelController().setSelectionFromPreferences(tree);
+        BGServiceManager.INSTANCE.getDataModelController().setSelectionFromPreferences(tree);
 
         DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
         TreePath path = new TreePath(root.getPath());
@@ -63,10 +60,10 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent {
 
     private void setUpActions() {
         resetBioGatewayStyleButton.addActionListener(e -> {
-            Utility.INSTANCE.resetBioGatewayVisualStyle(serviceManager);
+            Utility.INSTANCE.resetBioGatewayVisualStyle();
         });
         reloadMetadataButton.addActionListener(e -> {
-            serviceManager.getDataModelController().getNetworkBuilder().reloadMetadataForRelationsInCurrentNetwork();
+            BGServiceManager.INSTANCE.getDataModelController().getNetworkBuilder().reloadMetadataForRelationsInCurrentNetwork();
         });
     }
 

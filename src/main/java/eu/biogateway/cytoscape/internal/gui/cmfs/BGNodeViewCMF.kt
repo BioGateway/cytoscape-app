@@ -8,7 +8,7 @@ import org.cytoscape.model.CyTableUtil
 import org.cytoscape.view.model.CyNetworkView
 import org.cytoscape.view.model.View
 
-class BGNodeViewCMF(val gravity: Float, val serviceManager: BGServiceManager): CyNodeViewContextMenuFactory {
+class BGNodeViewCMF(val gravity: Float): CyNodeViewContextMenuFactory {
     override fun createMenuItem(netView: CyNetworkView?, nodeView: View<CyNode>?): CyMenuItem {
         if (netView != null) {
             //val selectedNodes = ArrayList<String>()
@@ -16,10 +16,10 @@ class BGNodeViewCMF(val gravity: Float, val serviceManager: BGServiceManager): C
             val selectedNodes = CyTableUtil.getNodesInState(network, "selected", true)
 
             if (selectedNodes.size < 2) {
-                return BGNodeMenuActionsCMF(gravity, serviceManager).createMenuItem(netView, nodeView)
+                return BGNodeMenuActionsCMF(gravity).createMenuItem(netView, nodeView)
             }
 
-            return BGMultiNodeQueryCMF(gravity, serviceManager).createMenuItem(netView)
+            return BGMultiNodeQueryCMF(gravity).createMenuItem(netView)
         }
         return CyMenuItem(null, gravity)
     }

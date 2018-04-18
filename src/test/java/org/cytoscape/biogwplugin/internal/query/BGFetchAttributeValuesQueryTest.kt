@@ -10,7 +10,7 @@ internal class BGFetchAttributeValuesQueryTest {
 
     @Test
     internal fun fetchDescriptionTest() {
-        val query = BGFetchAttributeValuesQuery(BGServiceManager(), nodeUri, relationUri, "cco", BGRelationDirection.FROM)
+        val query = BGFetchAttributeValuesQuery(nodeUri, relationUri, "cco", BGRelationDirection.FROM)
         Thread(query).start()
 
         val data = query.futureReturnData.get() as BGReturnMetadata

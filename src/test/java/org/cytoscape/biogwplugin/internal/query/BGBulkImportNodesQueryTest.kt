@@ -12,7 +12,7 @@ internal class BGBulkImportNodesQueryTest {
     @Test
     internal fun geneNameSearchTest() {
 
-        val query = BGBulkImportNodesQuery(BGServiceManager(), geneNames, BGNodeType.Gene)
+        val query = BGBulkImportNodesQuery(geneNames, BGNodeType.Gene)
         Thread(query).start()
         validate(query.futureReturnData, 4)
     }

@@ -10,7 +10,7 @@ internal class BGFindAllRelationsForNodeQueryTest {
 
     @Test
     internal fun PPIFromTest() {
-        val query = BGFindAllRelationsForNodeQuery(BGServiceManager(), ppiUri, BGRelationDirection.FROM)
+        val query = BGFindAllRelationsForNodeQuery(ppiUri, BGRelationDirection.FROM)
         Thread(query).start()
         val data = query.futureReturnData.get() as BGReturnRelationsData
         println("[${this::class.java}] : Found "+ data.relationsData.count()+" relations.")

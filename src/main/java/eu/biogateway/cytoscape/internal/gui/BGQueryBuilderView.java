@@ -37,7 +37,6 @@ import static eu.biogateway.cytoscape.internal.gui.BGQueryBuilderController.*;
 public class BGQueryBuilderView implements ChangeListener {
     private final ActionListener listener;
     private final BGRelationResultViewTooltipDataSource tableTooltipDataSource;
-    private final BGServiceManager serviceManager;
 
     public HashMap<String, JComponent> parameterComponents = new HashMap<>();
 
@@ -123,12 +122,10 @@ public class BGQueryBuilderView implements ChangeListener {
     /**
      * @param listener
      * @param tableTooltipDataSource
-     * @param serviceManager
      */
-    public BGQueryBuilderView(ActionListener listener, BGRelationResultViewTooltipDataSource tableTooltipDataSource, BGServiceManager serviceManager) {
+    public BGQueryBuilderView(ActionListener listener, BGRelationResultViewTooltipDataSource tableTooltipDataSource) {
         this.listener = listener;
         this.tableTooltipDataSource = tableTooltipDataSource;
-        this.serviceManager = serviceManager;
         JFrame frame = new JFrame("Biogateway Query Builder");
         this.mainFrame = frame;
 
@@ -186,7 +183,7 @@ public class BGQueryBuilderView implements ChangeListener {
 
         filterSelectedCheckBox.addActionListener(e -> updateFilterBySelectedRows());
 
-        queryConstraintsPanel = new BGQueryConstraintPanel(serviceManager.getCache().getActiveConstraints());
+        queryConstraintsPanel = new BGQueryConstraintPanel(BGServiceManager.INSTANCE.getCache().getActiveConstraints());
     }
 
     private void setUpActionListeners() {
@@ -285,23 +282,23 @@ public class BGQueryBuilderView implements ChangeListener {
             JComponent component;
             switch (parameter.getType()) {
                 case GENE:
-                    component = new BGAutocompleteComboBox(serviceManager.getEndpoint(), () -> BGNodeType.Gene);
+                    component = new BGAutocompleteComboBox(BGServiceManager.INSTANCE.getEndpoint(), () -> BGNodeType.Gene);
                     break;
                 case TAXON:
-                    component = new BGAutocompleteComboBox(serviceManager.getEndpoint(), () -> BGNodeType.Taxon);
+                    component = new BGAutocompleteComboBox(BGServiceManager.INSTANCE.getEndpoint(), () -> BGNodeType.Taxon);
                     break;
                 case GO_TERM:
-                    component = new BGAutocompleteComboBox(serviceManager.getEndpoint(), () -> BGNodeType.GO);
+                    component = new BGAutocompleteComboBox(BGServiceManager.INSTANCE.getEndpoint(), () -> BGNodeType.GO);
                     break;
                 case PROTEIN:
-                    component = new BGAutocompleteComboBox(serviceManager.getEndpoint(), () -> BGNodeType.Protein);
+                    component = new BGAutocompleteComboBox(BGServiceManager.INSTANCE.getEndpoint(), () -> BGNodeType.Protein);
                     break;
                 case OPTIONAL_URI:
                     JTextField optionalField = new JTextField();
                     //optionalField.setPreferredSize(new Dimension(280, Utility.INSTANCE.getJTextFieldHeight()));
                     optionalField.setColumns(Constants.INSTANCE.getBG_QUERY_BUILDER_URI_FIELD_COLUMNS());
                     //component = optionalField;
-                    component = new BGOptionalURIField(optionalField, serviceManager);
+                    component = new BGOptionalURIField(optionalField);
                     break;
                 case TEXT:
                     JTextField field = new JTextField();
@@ -320,7 +317,7 @@ public class BGQueryBuilderView implements ChangeListener {
                     component = new BGRelationTypeField(comboBox);
                     break;
                 case RELATION_QUERY_ROW:
-                    component = new BGRelationQueryRow((String[]) parameter.getOptions().keySet().toArray(), serviceManager);
+                    component = new BGRelationQueryRow((String[]) parameter.getOptions().keySet().toArray());
                     break;
                 default:
                     // Crash..!
@@ -379,9 +376,9 @@ public class BGQueryBuilderView implements ChangeListener {
     }
 
     public void setUpMultiQueryPanel() {
-        this.queryConstraintsPanel = new BGQueryConstraintPanel(serviceManager.getCache().getActiveConstraints());
+        this.queryConstraintsPanel = new BGQueryConstraintPanel(BGServiceManager.INSTANCE.getCache().getActiveConstraints());
         queryConstraintsPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Query Constraints"));
-        this.multiQueryPanel = new BGMultiQueryPanel(serviceManager, queryConstraintsPanel);
+        this.multiQueryPanel = new BGMultiQueryPanel(queryConstraintsPanel);
         multiQueryPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Queries"));
         this.multiQueryPanel.addQueryLine();
         this.multiQueryContainer.add(queryConstraintsPanel, BorderLayout.NORTH);

@@ -5,7 +5,7 @@ import eu.biogateway.cytoscape.internal.model.BGNodeType
 import eu.biogateway.cytoscape.internal.parser.BGReturnType
 
 
-class BGBulkImportNodesQuery(serviceManager: BGServiceManager, val nodeList: Collection<String>, val nodeType: BGNodeType): BGQuery(serviceManager, BGReturnType.NODE_LIST_DESCRIPTION_TAXON) {
+class BGBulkImportNodesQuery(val nodeList: Collection<String>, val nodeType: BGNodeType): BGQuery(BGReturnType.NODE_LIST_DESCRIPTION_TAXON) {
 
     init {
         parseType = BGParsingType.TO_ARRAY

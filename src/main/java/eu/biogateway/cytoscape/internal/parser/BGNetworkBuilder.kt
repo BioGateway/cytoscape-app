@@ -84,6 +84,16 @@ fun CyEdge.setDoubleForColumnName(value: Double, columnName: String, table: CyTa
 fun CyEdge.setStringForColumnName(value: String, columnName: String, table: CyTable) {
     table.getRow(this.suid).set(columnName, value)
 }
+fun CyEdge.setStringListForColumnName(value: List<String>, columnName: String, table: CyTable) {
+    table.getRow(this.suid).set(columnName, value)
+}
+fun CyEdge.setDoubleListForColumnName(value: List<Double>, columnName: String, table: CyTable) {
+    table.getRow(this.suid).set(columnName, value)
+}
+fun CyEdge.setValueForColumnName(value: Any, columnName: String, table: CyTable) {
+    table.getRow(this.suid).set(columnName, value)
+}
+
 
 fun CyNode.setDoubleForColumnName(value: Double, columnName: String, table: CyTable) {
     table.getRow(this.suid).set(columnName, value)
@@ -91,13 +101,26 @@ fun CyNode.setDoubleForColumnName(value: Double, columnName: String, table: CyTa
 fun CyNode.setStringForColumnName(value: String, columnName: String, table: CyTable) {
     table.getRow(this.suid).set(columnName, value)
 }
+fun CyNode.setStringListForColumnName(value: List<String>, columnName: String, table: CyTable) {
+    table.getRow(this.suid).set(columnName, value)
+}
+fun CyNode.setIntForColumnName(value: Int, columnName: String, table: CyTable) {
+    table.getRow(this.suid).set(columnName, value)
+}
+fun CyNode.setBooleanForColumnName(value: Boolean, columnName: String, table: CyTable) {
+    table.getRow(this.suid).set(columnName, value)
+}
+fun CyNode.setValueForColumnName(value: Any, columnName: String, table: CyTable) {
+    table.getRow(this.suid).set(columnName, value)
+}
 
-class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
+
+class BGNetworkBuilder() {
 
 
     // TODO: Use this to hide some of the node metadata. Also add fields for the extra data.
     fun createNodeMetadataTable() {
-        val table = serviceManager.tableFactory?.createTable(Constants.BG_TABLE_NODE_METADATA, "suid", Long::class.java, false, true) ?: throw Exception("Unable to create metadata CyTable!")
+        val table = BGServiceManager.tableFactory?.createTable(Constants.BG_TABLE_NODE_METADATA, "suid", Long::class.java, false, true) ?: throw Exception("Unable to create metadata CyTable!")
         table.createColumn(Constants.BG_FIELD_NODE_PARENT_EDGE_ID, String::class.java, true)
     }
 
@@ -214,7 +237,7 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
 
         //netView.getEdgeView(model).setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, false)
         netView.updateView()
-        Utility.reloadCurrentVisualStyleCurrentNetworkView(serviceManager)
+        Utility.reloadCurrentVisualStyleCurrentNetworkView()
 
     }
 
@@ -228,12 +251,12 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
         val adjacentNodeExecutionTime = System.currentTimeMillis() - startTime
 
         // Get the associated BGNode
-        val node = serviceManager.dataModelController.searchForExistingNode(nodeUri)
+        val node = BGServiceManager.dataModelController.searchForExistingNode(nodeUri)
                 ?: throw Exception("Node not found!")
 
         val query: BGRelationQuery = when (node.type) {
-            BGNodeType.PPI -> BGFetchAggregatedPPIRelationForNodeQuery(serviceManager, nodeUri, adjacentNodeUris)
-            BGNodeType.TFTG, BGNodeType.GOA -> BGFetchAggregatedRelationForNodeQuery(serviceManager, node)
+            BGNodeType.PPI -> BGFetchAggregatedPPIRelationForNodeQuery(nodeUri, adjacentNodeUris)
+            BGNodeType.TFTG, BGNodeType.GOA -> BGFetchAggregatedRelationForNodeQuery(node)
             else -> {
                 return
                 //throw Exception("Cannot collapse nodes of this dataType!")
@@ -276,7 +299,7 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
 
         checkForMissingColumns(network.defaultEdgeTable, network.defaultNodeTable)
 
-        val node = serviceManager.dataModelController.searchForExistingNode(nodeUri) ?: return
+        val node = BGServiceManager.dataModelController.searchForExistingNode(nodeUri) ?: return
 
         createAggregatedEdgeForRelationNode(netView, nodeView)
 
@@ -313,7 +336,7 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
 
 
 
-        Utility.reloadCurrentVisualStyleCurrentNetworkView(serviceManager)
+        Utility.reloadCurrentVisualStyleCurrentNetworkView()
 
 
     }
@@ -349,7 +372,7 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
     }
 
     fun createNetwork(): CyNetwork {
-        val network = serviceManager.networkFactory?.createNetwork() ?: throw Exception("Unable to create network!")
+        val network = BGServiceManager.networkFactory?.createNetwork() ?: throw Exception("Unable to create network!")
         val nodeTable = network.defaultNodeTable
         val edgeTable = network.defaultEdgeTable
 
@@ -420,7 +443,7 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
             if (node == null) {
                 if (!bgNode.isLoaded) {
                     // This method is synchronous, so should be completed before the next line (addNodeToNetwork)
-                    serviceManager.dataModelController.loadDataForNode(bgNode)
+                    BGServiceManager.dataModelController.loadDataForNode(bgNode)
                 }
                 node = addNodeToNetwork(bgNode, network, nodeTable)
             }
@@ -515,19 +538,35 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
 
     private fun updateMetadataForNode(metadata: Set<BGNodeMetadata>, node: CyNode, nodeTable: CyTable) {
         for (metaData in metadata) {
-            if (BGNetworkTableHelper.assureThatNodeColumnExists(nodeTable,
+            if (BGNetworkTableHelper.assureThatColumnExists(nodeTable,
                             metaData.columnName,
                             metaData.dataType,
                             false)) {
-                if (metaData.dataType == BGTableDataType.DOUBLE) {
-                    (metaData.getValue() as Double?)?.let {
-                        node.setDoubleForColumnName(it, metaData.columnName, nodeTable)
+
+                when (metaData.dataType) {
+                    BGTableDataType.STRING -> (metaData.getValue() as String?)?.let {
+                        node.setValueForColumnName(it, metaData.columnName, nodeTable)
                     }
+                    BGTableDataType.DOUBLE -> (metaData.getValue() as Double?)?.let {
+                    node.setValueForColumnName(it, metaData.columnName, nodeTable)
                 }
-                if (metaData.dataType == BGTableDataType.STRING) {
-                    (metaData.getValue() as String?)?.let {
-                        node.setStringForColumnName(it, metaData.columnName, nodeTable)
-                    }
+                    BGTableDataType.INT -> (metaData.getValue() as Int?)?.let {
+                    node.setValueForColumnName(it, metaData.columnName, nodeTable)
+                }
+                    BGTableDataType.BOOLEAN -> (metaData.getValue() as Boolean?)?.let {
+                    node.setValueForColumnName(it, metaData.columnName, nodeTable)
+                }
+                    BGTableDataType.STRINGARRAY -> (metaData.getValue() as List<String>)?.let {
+                    node.setValueForColumnName(it, metaData.columnName, nodeTable)
+                }
+                    BGTableDataType.INTARRAY -> (metaData.getValue() as List<Int>)?.let {
+                    node.setValueForColumnName(it, metaData.columnName, nodeTable)
+                }
+                    BGTableDataType.DOUBLEARRAY -> (metaData.getValue() as List<Double>)?.let {
+                    node.setValueForColumnName(it, metaData.columnName, nodeTable)
+                }
+                    BGTableDataType.UNSUPPORTED -> throw Exception("Unsupported Data type.")
+
                 }
             }
         }
@@ -535,20 +574,44 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
 
     private fun updateMetadataForEdge(metadata: Map<String, BGRelationMetadata>, edge: CyEdge, edgeTable: CyTable) {
         for ((columnName, metaData) in metadata.iterator()) {
-            if (BGNetworkTableHelper.assureThatEdgeColumnExists(edgeTable,
+            if (BGNetworkTableHelper.assureThatColumnExists(edgeTable,
                             columnName,
                             metaData.dataType,
                             false)) {
-                if (metaData.dataType == BGTableDataType.DOUBLE) {
-                    metaData.numericValue?.let {
-                        edge.setDoubleForColumnName(it, columnName, edgeTable)
-                    }}
-                if (metaData.dataType == BGTableDataType.STRING) {
-                    metaData.stringValue?.let {
-                        // TODO: Remove this when the server stops using dummy URIs
-                        // TODO: Get the label name instead.
-                        edge.setStringForColumnName(it.replace("http://www.semantic-systems-biology.org/ssb/", ""), columnName, edgeTable)
-                    }}
+
+                when (metaData.dataType) {
+                    BGTableDataType.DOUBLE -> {
+                        metaData.numericValue?.let {
+                            edge.setDoubleForColumnName(it, columnName, edgeTable)
+                        }
+                    }
+                    BGTableDataType.STRING -> {
+                        metaData.stringValue?.let {
+                            // TODO: Remove this when the server stops using dummy URIs
+                            // TODO: Get the label name instead.
+                            //edge.setStringForColumnName(it.replace("http://www.semantic-systems-biology.org/ssb/", ""), columnName, edgeTable)
+                            edge.setStringForColumnName(it, columnName, edgeTable)
+                        }
+                    }
+                    BGTableDataType.INT -> (metaData.value as? Int)?.let {
+                        edge.setValueForColumnName(it, columnName, edgeTable)
+                    }
+                    BGTableDataType.BOOLEAN -> (metaData.value as? Boolean)?.let {
+                        edge.setValueForColumnName(it, columnName, edgeTable)
+                    }
+                    BGTableDataType.STRINGARRAY -> (metaData.value as? List<String>)?.let {
+                        edge.setValueForColumnName(it, columnName, edgeTable)
+                    }
+                    BGTableDataType.INTARRAY -> (metaData.value as? List<Int>)?.let {
+                        edge.setValueForColumnName(it, columnName, edgeTable)
+                    }
+                    BGTableDataType.DOUBLEARRAY -> {
+                        (metaData.value as? List<Double>)?.let {
+                            edge.setValueForColumnName(it, columnName, edgeTable)
+                        }
+                    }
+                    BGTableDataType.UNSUPPORTED -> throw Exception("Unsupported Data type.")
+                }
             }
         }
     }
@@ -561,18 +624,18 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
 
     fun reloadMetadataForRelationsInCurrentNetwork() {
         // Get the active metadata types.
-        val activeMetadataTypes = serviceManager.cache.activeMetadataTypes
+        val activeMetadataTypes = BGServiceManager.cache.activeMetadataTypes
         // Get a list of column names for the active metadata types.
         val activeColumnNames = activeMetadataTypes.map { it.name }
 
         // Get the CyEdges of the current network.
-        val network = serviceManager.applicationManager?.currentNetwork ?: return
+        val network = BGServiceManager.applicationManager?.currentNetwork ?: return
         val edgeTable = network.defaultEdgeTable
 
         // Attempt to recreate them as BGRelations in a Map<CyEdge, BGRelation>
         val relations = HashMap<BGPrimitiveRelation, CyEdge>()
         for (edge in network.edgeList) {
-            val relationType = serviceManager.cache.getRelationTypeForURIandGraph(edge.getUri(network), edge.getSourceGraph(network)) ?: continue
+            val relationType = BGServiceManager.cache.getRelationTypeForURIandGraph(edge.getUri(network), edge.getSourceGraph(network)) ?: continue
 
             // TODO: Check that these values exist! The URI table might not even be present!
             val fromUri = edge.source.getUri(network)
@@ -599,10 +662,10 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
         }
 
         if (unloadedRelations.size == 0) return
-        val query = BGLoadRelationMetadataQuery(serviceManager, unloadedRelations.keys, activeMetadataTypes) {
-            serviceManager.dataModelController.networkBuilder.updateEdgeTableMetadataForCyEdges(network, unloadedRelations)
+        val query = BGLoadRelationMetadataQuery(unloadedRelations.keys, activeMetadataTypes) {
+            BGServiceManager.dataModelController.networkBuilder.updateEdgeTableMetadataForCyEdges(network, unloadedRelations)
         }
-        serviceManager.execute(query)
+        BGServiceManager.execute(query)
     }
 
     private fun addNodeToNetwork(node: BGNode, network: CyNetwork, table: CyTable): CyNode {
@@ -664,24 +727,24 @@ class BGNetworkBuilder(private val serviceManager: BGServiceManager) {
         return edges
     }
 
-    fun createNetworkView(network: CyNetwork, serviceManager: BGServiceManager) {
-        if (serviceManager.dataModelController.settings.useBioGatewayLayoutStyleAsDefault) {
-            val view = serviceManager.adapter?.cyNetworkViewFactory?.createNetworkView(network)
+    fun createNetworkView(network: CyNetwork) {
+        if (BGServiceManager.dataModelController.settings.useBioGatewayLayoutStyleAsDefault) {
+            val view = BGServiceManager.adapter?.cyNetworkViewFactory?.createNetworkView(network)
 
-            val visualStyle = Utility.getOrCreateBioGatewayVisualStyle(serviceManager)
-            serviceManager.adapter?.visualMappingManager?.setVisualStyle(visualStyle, view)
-            serviceManager.viewManager?.addNetworkView(view)
+            val visualStyle = Utility.getOrCreateBioGatewayVisualStyle()
+            BGServiceManager.adapter?.visualMappingManager?.setVisualStyle(visualStyle, view)
+            BGServiceManager.viewManager?.addNetworkView(view)
 
-            val layoutManager = serviceManager.adapter?.cyLayoutAlgorithmManager
+            val layoutManager = BGServiceManager.adapter?.cyLayoutAlgorithmManager
             val defaultLayout = layoutManager?.defaultLayout
 
             val taskIterator = defaultLayout?.createTaskIterator(view, defaultLayout.defaultLayoutContext, view?.nodeViews?.toHashSet(), null)
-            serviceManager.taskManager?.execute(taskIterator)
+            BGServiceManager.taskManager?.execute(taskIterator)
 
         } else {
-            val createNetworkViewTaskFactory = serviceManager.createNetworkViewTaskFactory
+            val createNetworkViewTaskFactory = BGServiceManager.createNetworkViewTaskFactory
             val taskIterator = createNetworkViewTaskFactory?.createTaskIterator(setOf(network))
-            serviceManager.taskManager?.execute(taskIterator)
+            BGServiceManager.taskManager?.execute(taskIterator)
         }
     }
 }

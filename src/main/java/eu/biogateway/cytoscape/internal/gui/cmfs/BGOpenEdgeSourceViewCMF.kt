@@ -12,7 +12,7 @@ import org.cytoscape.view.model.View
 import org.cytoscape.work.TaskIterator
 import javax.swing.JMenuItem
 
-class BGOpenEdgeSourceViewCMF(val gravity: Float, val serviceManager: BGServiceManager): CyEdgeViewContextMenuFactory {
+class BGOpenEdgeSourceViewCMF(val gravity: Float): CyEdgeViewContextMenuFactory {
     override fun createMenuItem(netView: CyNetworkView?, edgeView: View<CyEdge>?): CyMenuItem {
         val edgeSuid = edgeView?.model?.suid
         val edgeTable = netView?.model?.defaultEdgeTable
@@ -36,14 +36,14 @@ class BGOpenEdgeSourceViewCMF(val gravity: Float, val serviceManager: BGServiceM
                     }
                 }
                 */
-            val query = BGFetchMetadataQuery(serviceManager,
+            val query = BGFetchMetadataQuery(
                     fromNodeUri,
                     edgeUri,
                     toNodeUri,
                     sourceGraph ?: "?graph",
                     BGMetadataTypeEnum.PUBMED_ID.uri)
 
-            serviceManager.taskManager?.execute(TaskIterator(query))
+            BGServiceManager.taskManager?.execute(TaskIterator(query))
 
 
 
