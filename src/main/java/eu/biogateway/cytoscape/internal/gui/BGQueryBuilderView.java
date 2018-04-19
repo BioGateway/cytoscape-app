@@ -270,7 +270,7 @@ public class BGQueryBuilderView implements ChangeListener {
         parameterComponents = new HashMap<>();
 
         //JLabel description = new JLabel(query.getDescription());
-       // description.setFont(description.getFont().deriveFont(Font.ITALIC));
+        // description.setFont(description.getFont().deriveFont(Font.ITALIC));
         //descriptionPanel.add(description);
 
         parameterPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), query.getDescription()));
@@ -475,7 +475,7 @@ public class BGQueryBuilderView implements ChangeListener {
         panel1.add(multiQueryContainer, BorderLayout.CENTER);
         final JPanel panel3 = new JPanel();
         panel3.setLayout(new BorderLayout(0, 0));
-        tabPanel.addTab("Bulk Import", panel3);
+        tabPanel.addTab("Bulk Query", panel3);
         final JPanel panel4 = new JPanel();
         panel4.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
         panel3.add(panel4, BorderLayout.SOUTH);
@@ -520,10 +520,12 @@ public class BGQueryBuilderView implements ChangeListener {
         panel9.add(panel10, BorderLayout.WEST);
         bulkImportTypeComboBox = new JComboBox();
         final DefaultComboBoxModel defaultComboBoxModel1 = new DefaultComboBoxModel();
-        defaultComboBoxModel1.addElement("Gene names");
-        defaultComboBoxModel1.addElement("Protein names");
         defaultComboBoxModel1.addElement("Uniprot IDs");
+        defaultComboBoxModel1.addElement("Entrez IDs");
+        defaultComboBoxModel1.addElement("ENSEMBL IDs");
+        defaultComboBoxModel1.addElement("Gene Symbols");
         defaultComboBoxModel1.addElement("GO terms");
+        defaultComboBoxModel1.addElement("Protein names");
         bulkImportTypeComboBox.setModel(defaultComboBoxModel1);
         panel10.add(bulkImportTypeComboBox);
         final JLabel label2 = new JLabel();

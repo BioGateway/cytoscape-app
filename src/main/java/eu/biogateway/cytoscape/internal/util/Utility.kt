@@ -159,6 +159,10 @@ object Utility {
         return "http://identifiers.org/uniprot/"+uniprotId
     }
 
+    fun generateEntrezURI(entrezId: String): String {
+        return "http://identifiers.org/ncbigene/"+entrezId
+    }
+
     fun generateGOTermURI(goTerm: String): String {
         val goTerm = goTerm.replace(":", "_")
         return "http://purl.obolibrary.org/obo/"+goTerm

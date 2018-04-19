@@ -593,7 +593,9 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
         NAME_SEARCH,
         UNIPROT_LOOKUP,
         GO_LOOKUP,
-        NOT_SET
+        NOT_SET,
+        ENTREZ_LOOKUP,
+        ENSEMBL_SEARCH
     }
 
     private fun runBulkImport() {
@@ -612,8 +614,16 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
 
         val selectedType = view.bulkImportTypeComboBox.selectedItem as? String
 
+
+//                Uniprot IDs
+//                Entrez IDs
+//                ENSEMBL IDs
+//                Gene Symbols
+//                GO terms
+//                Protein names
+
         val nodeType = when (selectedType) {
-            "Gene names" -> {
+            "Gene Symbols" -> {
                 queryType = QueryType.NAME_SEARCH
                 BGNodeType.Gene
             }
@@ -624,6 +634,14 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
             "Uniprot IDs" -> {
                 queryType = QueryType.UNIPROT_LOOKUP
                 BGNodeType.Protein
+            }
+            "Entrez IDs" -> {
+                queryType = QueryType.ENTREZ_LOOKUP
+                BGNodeType.Gene
+            }
+            "ENSEMBL IDs" -> {
+                queryType = QueryType.ENSEMBL_SEARCH
+                BGNodeType.Gene
             }
             "GO terms" -> {
                 queryType = QueryType.GO_LOOKUP
@@ -661,9 +679,21 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
                 query.addCompletion(queryCompletion)
                 BGServiceManager.taskManager?.execute(TaskIterator(query))
             }
+            BGQueryBuilderController.QueryType.ENTREZ_LOOKUP -> {
+                val entrezNodesList = nodeList.map { Utility.generateEntrezURI(it) }
+                val query = BGBulkImportNodesFromURIs(nodeType, entrezNodesList)
+                query.addCompletion(queryCompletion)
+                BGServiceManager.taskManager?.execute(TaskIterator(query))
+            }
+            BGQueryBuilderController.QueryType.ENSEMBL_SEARCH -> {
+                val query = BGBulkImportENSEMBLNodesQuery(nodeList, nodeType)
+                query.addCompletion(queryCompletion)
+                BGServiceManager.taskManager?.execute(TaskIterator(query))
+            }
             BGQueryBuilderController.QueryType.NOT_SET -> {
                 throw Exception("Invalid query type!")
             }
+
         }
     }
 
@@ -734,7 +764,10 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
                 BGQueryBuilderController.QueryType.NAME_SEARCH -> nodeNames.contains(line)
                 BGQueryBuilderController.QueryType.UNIPROT_LOOKUP -> nodeUris.contains(Utility.generateUniprotURI(line))
                 BGQueryBuilderController.QueryType.GO_LOOKUP -> nodeUris.contains(Utility.generateGOTermURI(line))
+                BGQueryBuilderController.QueryType.ENTREZ_LOOKUP -> nodeUris.contains(Utility.generateEntrezURI(line))
+                BGQueryBuilderController.QueryType.ENSEMBL_SEARCH -> true // TODO: Find a way to verify if the node was found.
                 BGQueryBuilderController.QueryType.NOT_SET -> false
+
             }
 
             if (match) {
