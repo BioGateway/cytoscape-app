@@ -3,6 +3,7 @@ package eu.biogateway.cytoscape.internal.model
 import eu.biogateway.cytoscape.internal.parser.getDescription
 import eu.biogateway.cytoscape.internal.parser.getName
 import eu.biogateway.cytoscape.internal.parser.getUri
+import eu.biogateway.cytoscape.internal.server.BGSuggestion
 import org.cytoscape.model.CyNetwork
 import org.cytoscape.model.CyNode
 
@@ -11,7 +12,7 @@ open class BGNode {
     val uri: String
     var isLoaded: Boolean = false
     val type: BGNodeType
-    var name: String? = null
+    var name: String
     var description: String? = null
     var taxon: String? = null
 
@@ -34,8 +35,16 @@ open class BGNode {
         this.cyNodes = ArrayList<CyNode>()
         if (!uri.startsWith("http")) {
             this.name = uri
+        } else {
+            this.name = ""
         }
         type = BGNode.static.nodeTypeForUri(uri)
+    }
+
+    constructor(suggestion: BGSuggestion) : this(suggestion._id) {
+        this.name = suggestion.prefLabel
+        this.description = suggestion.definition
+        this.taxon = suggestion.taxon
     }
 
     constructor(uri: String, name: String) : this(uri) {

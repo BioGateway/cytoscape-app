@@ -8,6 +8,7 @@ import eu.biogateway.cytoscape.internal.model.BGRelation
 import eu.biogateway.cytoscape.internal.parser.BGReturnType
 import eu.biogateway.cytoscape.internal.parser.BGSPARQLParser
 import eu.biogateway.cytoscape.internal.query.*
+import eu.biogateway.cytoscape.internal.server.BGSuggestion
 import eu.biogateway.cytoscape.internal.util.Constants
 import eu.biogateway.cytoscape.internal.util.Utility
 import eu.biogateway.cytoscape.internal.util.sanitizeParameter
@@ -657,7 +658,7 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
             val data = it as? BGReturnNodeData ?: throw Exception("Expected Node Data in return!")
             val nodes = data.nodeData.values
             setBulkImportTableData(nodes)
-            setBulkImportInputPaneColors(nodes, queryType)
+            setBulkImportInputPaneColors(nodes.map { BGSuggestion(it) }, queryType)
             Utility.fightForFocus(view.mainFrame)
         }
 
@@ -686,9 +687,15 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
                 BGServiceManager.taskManager?.execute(TaskIterator(query))
             }
             BGQueryBuilderController.QueryType.ENSEMBL_SEARCH -> {
-                val query = BGBulkImportENSEMBLNodesQuery(nodeList, nodeType)
-                query.addCompletion(queryCompletion)
-                BGServiceManager.taskManager?.execute(TaskIterator(query))
+//                val query = BGBulkImportENSEMBLNodesQuery(nodeList, nodeType)
+//                query.addCompletion(queryCompletion)
+//                BGServiceManager.taskManager?.execute(TaskIterator(query))
+
+                searchForEnsembleIDs(nodeList, nodeType) {
+                    setBulkImportTableData(it.map { BGNode(it) })
+                    setBulkImportInputPaneColors(it, queryType)
+                    Utility.fightForFocus(view.mainFrame)
+                }
             }
             BGQueryBuilderController.QueryType.NOT_SET -> {
                 throw Exception("Invalid query type!")
@@ -696,6 +703,16 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
 
         }
     }
+
+    private fun searchForEnsembleIDs(enembleIds: Collection<String>, type: BGNodeType, completion: (Collection<BGSuggestion>) -> Unit) {
+        val results = ArrayList<BGSuggestion>()
+        for (id in enembleIds) {
+            val suggestions = BGServiceManager.endpoint.getSuggestionsForFieldValue("ensembl_id", id, type.paremeterType.toLowerCase())
+            results.addAll(suggestions)
+        }
+        completion(results)
+    }
+
 
     private fun bulkImportToNetwork(currentNetwork: CyNetwork? = null) {
         var network = currentNetwork
@@ -749,13 +766,13 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
         }
     }
 
-    private fun setBulkImportInputPaneColors(nodes: Collection<BGNode>, queryType: QueryType) {
+    private fun setBulkImportInputPaneColors(suggestions: Collection<BGSuggestion>, queryType: QueryType) {
 
         val darkGreen = Color(34,139,34)
         val darkRed = Color(178,34,34)
 
-        val nodeNames = nodes.map { it.name ?: "" }.filter { !it.isEmpty() }.toHashSet()
-        val nodeUris = nodes.map { it.uri }.toHashSet()
+        val nodeNames = suggestions.map { it.prefLabel ?: "" }.filter { !it.isEmpty() }.toHashSet()
+        val nodeUris = suggestions.map { it._id }.toHashSet()
         val searchLines = view.bulkImportTextPane.text.split("\n").map { Utility.sanitizeParameter(it) }
         view.bulkImportTextPane.text = ""
 
@@ -765,7 +782,7 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
                 BGQueryBuilderController.QueryType.UNIPROT_LOOKUP -> nodeUris.contains(Utility.generateUniprotURI(line))
                 BGQueryBuilderController.QueryType.GO_LOOKUP -> nodeUris.contains(Utility.generateGOTermURI(line))
                 BGQueryBuilderController.QueryType.ENTREZ_LOOKUP -> nodeUris.contains(Utility.generateEntrezURI(line))
-                BGQueryBuilderController.QueryType.ENSEMBL_SEARCH -> true // TODO: Find a way to verify if the node was found.
+                BGQueryBuilderController.QueryType.ENSEMBL_SEARCH -> suggestions.map { it.ensembl_id }.contains(line)
                 BGQueryBuilderController.QueryType.NOT_SET -> false
 
             }

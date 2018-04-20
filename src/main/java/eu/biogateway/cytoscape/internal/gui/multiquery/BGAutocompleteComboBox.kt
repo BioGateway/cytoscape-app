@@ -3,21 +3,20 @@ package eu.biogateway.cytoscape.internal.gui.multiquery
 import eu.biogateway.cytoscape.internal.model.BGNodeType
 import eu.biogateway.cytoscape.internal.server.BGDictEndpoint
 import eu.biogateway.cytoscape.internal.server.SearchSuggestion
-import eu.biogateway.cytoscape.internal.server.Suggestion
+import eu.biogateway.cytoscape.internal.server.BGSuggestion
 import java.awt.Dimension
 import javax.swing.*
 import javax.swing.text.JTextComponent
 import java.awt.event.*
 import java.util.ArrayList
-import javax.xml.stream.events.Characters
 
 interface BGAutocompleteTypeProvider {
     fun provideType(): BGNodeType
 }
 
-class BGAutocompleteComboBox(private val endpoint: BGDictEndpoint, private val typeSource: () -> BGNodeType?) : JComboBox<Suggestion>(DefaultComboBoxModel<Suggestion>()) {
+class BGAutocompleteComboBox(private val endpoint: BGDictEndpoint, private val typeSource: () -> BGNodeType?) : JComboBox<BGSuggestion>(DefaultComboBoxModel<BGSuggestion>()) {
 
-    private val comboBoxModel: DefaultComboBoxModel<Suggestion>
+    private val comboBoxModel: DefaultComboBoxModel<BGSuggestion>
 
     var selectedUri: String? = null // This should be set when an item is selected.
 
@@ -34,14 +33,14 @@ class BGAutocompleteComboBox(private val endpoint: BGDictEndpoint, private val t
     }
 
     init {
-        this.comboBoxModel = this.model as DefaultComboBoxModel<Suggestion>
+        this.comboBoxModel = this.model as DefaultComboBoxModel<BGSuggestion>
         searchBoxEditorComponent = this.getEditor().editorComponent as JTextComponent
         this.preferredSize = Dimension(250, 20)
 
         val self = this
 
         this.addActionListener {
-            val selectedSuggestion = self.selectedItem as? Suggestion
+            val selectedSuggestion = self.selectedItem as? BGSuggestion
 
             if ((self.selectedItem as? String).equals("")) {
                 // Empty string is selected!
@@ -106,7 +105,7 @@ class BGAutocompleteComboBox(private val endpoint: BGDictEndpoint, private val t
         }
     }
 
-    private fun searchForTerm(term: String): ArrayList<Suggestion> {
+    private fun searchForTerm(term: String): ArrayList<BGSuggestion> {
 
         val type = typeSource() ?: return ArrayList()
 
@@ -115,7 +114,7 @@ class BGAutocompleteComboBox(private val endpoint: BGDictEndpoint, private val t
         } else endpoint.searchForPrefix(term, type.paremeterType.toLowerCase(), 20)
     }
 
-    private fun selectSuggestion(suggestion: Suggestion) {
+    private fun selectSuggestion(suggestion: BGSuggestion) {
         val prefLabel = suggestion.prefLabel
         val uri = suggestion._id
         searchSuggestion.searchString = prefLabel
