@@ -61,12 +61,11 @@ class BGAutocompleteComboBox(private val endpoint: BGDictEndpoint, private val t
             override fun keyReleased(e: KeyEvent) {
                 val key = e.keyChar
                 if ((Character.isLetterOrDigit(key) && !Character.isSpaceChar(key)) || e.keyCode == KeyEvent.VK_BACK_SPACE || e.keyCode == KeyEvent.VK_DELETE) {
+
                     val text = searchBoxEditorComponent.text
 
                     //self.maximumRowCount = 10
                     updateSearchComboBoxModel(text)
-
-
                 }
                 super.keyReleased(e)
             }
@@ -92,8 +91,11 @@ class BGAutocompleteComboBox(private val endpoint: BGDictEndpoint, private val t
             comboBoxModel.addElement(suggestions[i])
         }
 
-        this.showPopup()
-
+        if (text.isEmpty()) {
+            this.hidePopup()
+        } else {
+            this.showPopup()
+        }
     }
 
     fun getNameForSelectedURI() {
@@ -109,7 +111,7 @@ class BGAutocompleteComboBox(private val endpoint: BGDictEndpoint, private val t
 
         val type = typeSource() ?: return ArrayList()
 
-        return if (type == BGNodeType.GO || type == BGNodeType.Taxon || type == BGNodeType.Disease) {
+        return if (type == BGNodeType.GOTerm || type == BGNodeType.Taxon || type == BGNodeType.Disease) {
             endpoint.searchForLabel(term, type.paremeterType.toLowerCase(), 20)
         } else endpoint.searchForPrefix(term, type.paremeterType.toLowerCase(), 20)
     }

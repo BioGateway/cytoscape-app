@@ -1,7 +1,6 @@
 package eu.biogateway.cytoscape.internal.gui.multiquery
 
 import eu.biogateway.cytoscape.internal.BGServiceManager
-import eu.biogateway.cytoscape.internal.gui.BGColorComboBoxRenderer
 import eu.biogateway.cytoscape.internal.gui.BGColorableText
 import eu.biogateway.cytoscape.internal.gui.BGNodeLookupController
 import eu.biogateway.cytoscape.internal.gui.BGNodeTypeComboBoxRenderer
@@ -117,7 +116,7 @@ class BGMultiQueryAutocompleteLine(val relationTypeComboBox: JComboBox<BGRelatio
         toComboBox.toolTipText = variablesTooltipText
 
         //val types = arrayOf("Protein", "Gene", "GO-Term", "Taxon", "Disease", "All")
-        val types = arrayOf(BGNodeType.Protein, BGNodeType.Gene, BGNodeType.GO, BGNodeType.Taxon, BGNodeType.Disease)
+        val types = arrayOf(BGNodeType.Protein, BGNodeType.Gene, BGNodeType.GOTerm, BGNodeType.Taxon, BGNodeType.Disease)
         toTypeComboBox = JComboBox(types)
         fromTypeComboBox = JComboBox(types)
         fromTypeBoxRenderer = BGNodeTypeComboBoxRenderer(fromTypeComboBox)

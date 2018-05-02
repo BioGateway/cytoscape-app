@@ -288,7 +288,7 @@ public class BGQueryBuilderView implements ChangeListener {
                     component = new BGAutocompleteComboBox(BGServiceManager.INSTANCE.getEndpoint(), () -> BGNodeType.Taxon);
                     break;
                 case GO_TERM:
-                    component = new BGAutocompleteComboBox(BGServiceManager.INSTANCE.getEndpoint(), () -> BGNodeType.GO);
+                    component = new BGAutocompleteComboBox(BGServiceManager.INSTANCE.getEndpoint(), () -> BGNodeType.GOTerm);
                     break;
                 case PROTEIN:
                     component = new BGAutocompleteComboBox(BGServiceManager.INSTANCE.getEndpoint(), () -> BGNodeType.Protein);

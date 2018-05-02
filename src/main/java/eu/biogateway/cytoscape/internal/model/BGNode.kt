@@ -12,7 +12,13 @@ open class BGNode {
     val uri: String
     var isLoaded: Boolean = false
     val type: BGNodeType
-    var name: String
+    var name: String get() {
+        if (field.isEmpty()) {
+            return this.generateName()
+        } else {
+            return field
+        }}
+
     var description: String? = null
     var taxon: String? = null
 
@@ -48,7 +54,6 @@ open class BGNode {
     }
 
     constructor(uri: String, name: String) : this(uri) {
-
         this.name = name
     }
 
@@ -119,13 +124,15 @@ open class BGNode {
             return when {
                 uri.contains("uniprot") -> BGNodeType.Protein
                 uri.contains("ncbigene") -> BGNodeType.Gene
-                uri.contains("GO_") -> BGNodeType.GO
+                uri.contains("GO_") -> BGNodeType.GOTerm
                 uri.contains("NCBITaxon_") -> BGNodeType.Taxon
                 uri.contains("intact") -> BGNodeType.PPI
                 uri.contains("pubmed") -> BGNodeType.Pubmed
                 uri.contains("GOA_") -> BGNodeType.GOA
                 uri.contains("/omim/") -> BGNodeType.Disease
-                uri.contains("tf2tg") -> BGNodeType.TFTG // TODO: Need a better identifier!
+                uri.contains("ssb.biogateway.eu/rt/") -> BGNodeType.TFTG // TODO: Need a better identifier!
+                uri.contains("ssb.biogateway.eu/rt/") -> BGNodeType.TFTG // TODO: Need a better identifier!
+                uri.contains("ssb.biogateway.eu/tf/") -> BGNodeType.TF
                 else -> {
                     BGNodeType.Undefined
                 }

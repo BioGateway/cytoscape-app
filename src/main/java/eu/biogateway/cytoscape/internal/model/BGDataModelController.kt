@@ -434,7 +434,7 @@ class BGDataModelController() {
         val nodeType = BGNode.static.nodeTypeForUri(uri)
 
 
-        val query = if (BG_SHOULD_USE_BG_DICT && (nodeType == BGNodeType.Protein || nodeType == BGNodeType.Gene || nodeType == BGNodeType.GO)) {
+        val query = if (BG_SHOULD_USE_BG_DICT && (nodeType == BGNodeType.Protein || nodeType == BGNodeType.Gene || nodeType == BGNodeType.GOTerm)) {
             BGNodeFetchMongoQuery(uri)
         } else {
             BGNodeFetchQuery(uri)

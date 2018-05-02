@@ -646,7 +646,7 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
             }
             "GO terms" -> {
                 queryType = QueryType.GO_LOOKUP
-                BGNodeType.GO
+                BGNodeType.GOTerm
             }
             else -> {
                 //BGNodeType.Undefined

@@ -1,6 +1,5 @@
 package eu.biogateway.cytoscape.internal.query
 
-import eu.biogateway.cytoscape.internal.BGServiceManager
 import eu.biogateway.cytoscape.internal.model.BGNodeType
 import eu.biogateway.cytoscape.internal.parser.BGReturnType
 
@@ -14,7 +13,7 @@ class BGBulkImportENSEMBLNodesQuery(val ensmblIds: Collection<String>, val nodeT
         val nodeTypeGraph = when (nodeType) {
             BGNodeType.Gene -> "<refseq>"
             BGNodeType.Protein -> "<refprot>"
-            BGNodeType.GO -> "<go-basic>"
+            BGNodeType.GOTerm -> "<go-basic>"
             BGNodeType.Taxon -> "<cco>"
             else -> {
                 "?anyGraph"
@@ -71,7 +70,7 @@ class BGBulkImportNodesQuery(val nodeList: Collection<String>, val nodeType: BGN
         val nodeTypeGraph = when (nodeType) {
             BGNodeType.Gene -> "<refseq>"
             BGNodeType.Protein -> "<refprot>"
-            BGNodeType.GO -> "<go-basic>"
+            BGNodeType.GOTerm -> "<go-basic>"
             BGNodeType.Taxon -> "<cco>"
             else -> {
                 "?anyGraph"

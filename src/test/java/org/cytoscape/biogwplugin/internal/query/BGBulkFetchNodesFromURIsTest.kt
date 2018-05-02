@@ -1,6 +1,5 @@
 package eu.biogateway.cytoscape.internal.query
 
-import eu.biogateway.cytoscape.internal.BGServiceManager
 import eu.biogateway.cytoscape.internal.model.BGNodeType
 import eu.biogateway.cytoscape.internal.util.Utility
 import org.junit.jupiter.api.AfterEach
@@ -28,7 +27,7 @@ internal class BGBulkFetchNodesFromURIsTest {
     @Test
     internal fun importGOTermsTest() {
         val goNodeList = GOTerms.map { Utility.generateGOTermURI(it) }
-        val query = BGBulkImportNodesFromURIs(BGNodeType.GO, goNodeList)
+        val query = BGBulkImportNodesFromURIs(BGNodeType.GOTerm, goNodeList)
         Thread(query).start()
         validate(query.futureReturnData, 4)
     }

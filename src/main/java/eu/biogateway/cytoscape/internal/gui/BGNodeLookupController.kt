@@ -1,6 +1,5 @@
 package eu.biogateway.cytoscape.internal.gui
 
-import eu.biogateway.cytoscape.internal.BGServiceManager
 import eu.biogateway.cytoscape.internal.model.BGNode
 import eu.biogateway.cytoscape.internal.model.BGNodeType
 import eu.biogateway.cytoscape.internal.query.BGNodeFetchQuery
@@ -53,7 +52,7 @@ class BGNodeLookupController(parentComponent: JComponent?, defaultURI: String? =
         val nodeType = when (view.nodeTypeComboBox.selectedItem as String) {
             "Protein" -> BGNodeType.Protein
             "Gene" -> BGNodeType.Gene
-            "GO Term" -> BGNodeType.GO
+            "GO Term" -> BGNodeType.GOTerm
             "Taxon" -> BGNodeType.Taxon
             else -> BGNodeType.Undefined
         }
