@@ -673,11 +673,7 @@ class BGNetworkBuilder() {
         val cyNode = network.addNode()
         cyNode.setUri(node.uri, network)
         val name = node.name
-        if (name.isEmpty()) {
-            cyNode.setName(name, network)
-        } else {
-            cyNode.setName(node.generateName(), network)
-        }
+        cyNode.setName(name, network)
 
         cyNode.setType(node.type.paremeterType, network)
 

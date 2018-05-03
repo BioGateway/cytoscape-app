@@ -31,32 +31,38 @@ class BGVisualStyleBuilder(val serviceManager: BGServiceManager) {
         // Fonts
         val labelFont = Font("SansSerif", Font.PLAIN, 12)
 
-        val nodeShapes = hashMapOf<String, NodeShape>(
-                "Protein" to NodeShapeVisualProperty.ROUND_RECTANGLE,
-                "Gene" to NodeShapeVisualProperty.ELLIPSE,
-                "GO annotation" to NodeShapeVisualProperty.DIAMOND,
-                "Taxon" to NodeShapeVisualProperty.HEXAGON,
-                "PPI" to NodeShapeVisualProperty.TRIANGLE
-        )
-        val nodeColors = hashMapOf<String, Color>(
-                "Protein" to nodeLightBlue,
-                "Gene" to nodeLightYellow,
-                "PPI" to nodeLightGray
-        )
-        val edgeColors = hashMapOf<String, Color>(
-                "enables" to edgeGreen,
-                "has agent" to edgeTurquoise,
-                "encodes" to edgeDarkBlue,
-                "related" to edgeTurquoise,
-                "molecularly interacts with" to edgeTurquoise
-        )
-        val edgeLineTypes = hashMapOf<String, LineType>(
-                "enables" to LineTypeVisualProperty.EQUAL_DASH,
-                "encodes" to LineTypeVisualProperty.DOT,
-                "involved in" to LineTypeVisualProperty.EQUAL_DASH,
-                "molecularly interacts with" to LineTypeVisualProperty.EQUAL_DASH,
-                "has agent" to LineTypeVisualProperty.DOT
-        )
+//        val nodeShapes = hashMapOf<String, NodeShape>(
+//                "Protein" to NodeShapeVisualProperty.ROUND_RECTANGLE,
+//                "Gene" to NodeShapeVisualProperty.ELLIPSE,
+//                "GO annotation" to NodeShapeVisualProperty.DIAMOND,
+//                "Taxon" to NodeShapeVisualProperty.HEXAGON,
+//                "PPI" to NodeShapeVisualProperty.TRIANGLE
+//        )
+//        val nodeColors = hashMapOf<String, Color>(
+//                "Protein" to nodeLightBlue,
+//                "Gene" to nodeLightYellow,
+//                "PPI" to nodeLightGray
+//        )
+//        val edgeColors = hashMapOf<String, Color>(
+//                "enables" to edgeGreen,
+//                "has agent" to edgeTurquoise,
+//                "encodes" to edgeDarkBlue,
+//                "is related to" to edgeTurquoise,
+//                "molecularly interacts with" to edgeTurquoise
+//        )
+
+        val nodeColors = BGServiceManager.cache.visualStyleConfig.nodeColors
+        val edgeColors = BGServiceManager.cache.visualStyleConfig.edgeColors
+        val edgeLineTypes = BGServiceManager.cache.visualStyleConfig.edgeLineTypes
+        val nodeShapes = BGServiceManager.cache.visualStyleConfig.nodeShapes
+
+//        val edgeLineTypes = hashMapOf<String, LineType>(
+//                "enables" to LineTypeVisualProperty.EQUAL_DASH,
+//                "encodes" to LineTypeVisualProperty.DOT,
+//                "involved in" to LineTypeVisualProperty.EQUAL_DASH,
+//                "molecularly interacts with" to LineTypeVisualProperty.EQUAL_DASH,
+//                "has agent" to LineTypeVisualProperty.DOT
+//        )
         val edgeLineWidths = hashMapOf<String, Double>(
                 "true" to 4.0
         )
@@ -100,8 +106,8 @@ class BGVisualStyleBuilder(val serviceManager: BGServiceManager) {
         vs.addVisualMappingFunction(nodeLabelMapping)
 
         // Edge styles
-        val edgeColorMapping = discreteMappingFactory?.createVisualMappingFunction("name", String::class.java, BasicVisualLexicon.EDGE_UNSELECTED_PAINT) as DiscreteMapping<String, Paint>
-        val edgeLineTypeMapping = discreteMappingFactory.createVisualMappingFunction("name", String::class.java, BasicVisualLexicon.EDGE_LINE_TYPE) as DiscreteMapping<String, LineType>
+        val edgeColorMapping = discreteMappingFactory?.createVisualMappingFunction("identifier uri", String::class.java, BasicVisualLexicon.EDGE_UNSELECTED_PAINT) as DiscreteMapping<String, Paint>
+        val edgeLineTypeMapping = discreteMappingFactory.createVisualMappingFunction("identifier uri", String::class.java, BasicVisualLexicon.EDGE_LINE_TYPE) as DiscreteMapping<String, LineType>
         val edgeTooltipMapping = passthroughMappingFactory?.createVisualMappingFunction("name", String::class.java, BasicVisualLexicon.EDGE_TOOLTIP) as PassthroughMapping<String, String>
         val edgeWidthMapping = discreteMappingFactory.createVisualMappingFunction("Expandable", String::class.java, BasicVisualLexicon.EDGE_WIDTH) as DiscreteMapping<String, Double>
 

@@ -94,15 +94,16 @@ class BGNodeMenuActionsCMF(val gravity: Float): CyNodeViewContextMenuFactory {
         val RELATED_MATCH_URI = "http://www.w3.org/2004/02/skos/core#relatedMatch"
         val HAS_SOURCE_URI = "http://semanticscience.org/resource/SIO_000253"
         val REFERENCE_URI = "http://www.w3.org/2004/02/skos/core#reference"
+        val HAS_EVIDENCE_URI = "http://semanticscience.org/resource/SIO_000772"
 
 
         val nodeType = BGNode(nodeUri).type
 
         val relationUri = when (nodeType) {
-            BGNodeType.TFTG -> REFERENCE_URI
+            BGNodeType.TFTG -> HAS_EVIDENCE_URI
             BGNodeType.GOA -> RELATED_MATCH_URI
             else -> {
-                HAS_SOURCE_URI
+                HAS_EVIDENCE_URI
             }
         }
 

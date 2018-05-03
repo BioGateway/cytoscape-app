@@ -13,13 +13,13 @@ class BGFetchAttributeValuesQuery(val nodeUri: String, val relationUri: String, 
 
         return when (direction) {
             BGRelationDirection.TO -> "BASE <http://www.semantic-systems-biology.org/> \n" +
-                    "SELECT ?value\n" +
+                    "SELECT DISTINCT ?value\n" +
                     "WHERE {  \n" +
                     " GRAPH "+graphName+" {\n" +
                     "\t ?value <"+relationUri+"> <"+nodeUri+">\n" +
                     "}}"
             BGRelationDirection.FROM -> "BASE <http://www.semantic-systems-biology.org/> \n" +
-                    "SELECT ?value\n" +
+                    "SELECT DISTINCT ?value\n" +
                     "WHERE {  \n" +
                     " GRAPH "+graphName+" {\n" +
                     "\t <"+nodeUri+"> <"+relationUri+"> ?value\n" +

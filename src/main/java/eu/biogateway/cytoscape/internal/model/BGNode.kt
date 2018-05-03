@@ -78,11 +78,8 @@ open class BGNode {
         }
         if (type == BGNodeType.TFTG) {
             val suffix = uri.substringAfterLast("/")
-            val parts = suffix.split("_")
-            if (parts.size == 4) {
-                val label = parts[2] + " to " + parts[3] + " from PubmedId " + parts[0]
-                return label
-            }
+            val typeName = suffix.substringAfterLast("#")
+            return typeName
         }
         if (type == BGNodeType.GOA) {
             val suffix = uri.substringAfterLast("GOA_")

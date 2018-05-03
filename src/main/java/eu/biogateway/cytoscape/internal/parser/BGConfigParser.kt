@@ -5,6 +5,10 @@ import eu.biogateway.cytoscape.internal.model.*
 import eu.biogateway.cytoscape.internal.query.BGQueryParameter
 import eu.biogateway.cytoscape.internal.query.QueryTemplate
 import eu.biogateway.cytoscape.internal.model.BGDataModelController
+import org.cytoscape.view.presentation.property.LineTypeVisualProperty
+import org.cytoscape.view.presentation.property.NodeShapeVisualProperty
+import org.cytoscape.view.presentation.property.values.LineType
+import org.cytoscape.view.presentation.property.values.NodeShape
 import org.w3c.dom.Element
 import org.w3c.dom.Node
 import java.awt.Color
@@ -265,6 +269,52 @@ object BGConfigParser {
                 cache.queryConstraints.put(queryConstraint.id, queryConstraint)
             }
 
+
+            // Parse the visual style config:
+            val visualStyleNode = (doc.getElementsByTagName("visualStyle").item(0) as? Element) ?: throw Exception("visualStyle element not found in XML file!")
+
+            val visualStyleConfig = BGVisualStyleConfig()
+
+            val edgeColors = visualStyleNode.getElementsByTagName("edgeColor")
+            for (index in 0..edgeColors.length-1) {
+                val styleElement = edgeColors.item(index) as? Element ?: continue
+                val uri = styleElement.getAttribute("uri") ?: continue
+                if (uri.isEmpty()) continue
+                val colorString = styleElement.getAttribute("color") ?: continue
+                val color = if (!colorString.isEmpty()) Color.decode(colorString) else continue
+                visualStyleConfig.edgeColors.put(uri, color)
+            }
+            val nodeColors = visualStyleNode.getElementsByTagName("nodeColor")
+            for (index in 0..nodeColors.length-1) {
+                val styleElement = nodeColors.item(index) as? Element ?: continue
+                val type = styleElement.getAttribute("type") ?: continue
+                if (type.isEmpty()) continue
+                val colorString = styleElement.getAttribute("color") ?: continue
+                val color = if (!colorString.isEmpty()) Color.decode(colorString) else continue
+                visualStyleConfig.nodeColors.put(type, color)
+            }
+
+            val edgeLines = visualStyleNode.getElementsByTagName("edgeLine")
+            for (index in 0..edgeLines.length-1) {
+                val styleElement = edgeLines.item(index) as? Element ?: continue
+                val uri = styleElement.getAttribute("uri") ?: continue
+                if (uri.isEmpty()) continue
+                val lineTypeName = styleElement.getAttribute("lineType") ?: continue
+                val lineType = visualStyleConfig.lineTypeMapping.get(lineTypeName) ?: continue
+                visualStyleConfig.edgeLineTypes.put(uri, lineType)
+            }
+
+            val nodeShapes = visualStyleNode.getElementsByTagName("edgeLine")
+            for (index in 0..nodeShapes.length-1) {
+                val styleElement = nodeShapes.item(index) as? Element ?: continue
+                val type = styleElement.getAttribute("type") ?: continue
+                if (type.isEmpty()) continue
+                val nodeShapeName = styleElement.getAttribute("shape") ?: continue
+                val nodeShape = visualStyleConfig.nodeShapeMapping.get(nodeShapeName) ?: continue
+                visualStyleConfig.nodeShapes.put(type, nodeShape)
+            }
+
+            cache.visualStyleConfig = visualStyleConfig
 
             //cache.relationTypeMap = relationTypes
 

@@ -44,8 +44,9 @@ class BGExpandRelationToNodesQuery(val fromNode: String, val toNode: String, val
                 "SELECT distinct protein: <"+graphName+"> <http://semanticscience.org/resource/SIO_000062> ?a as ?a1 ?a as ?a2 <"+graphName+"> <http://semanticscience.org/resource/SIO_000291> gene: \n" +
                 "WHERE {  \n" +
                 " GRAPH <"+graphName+"> {  \n" +
-                "protein: <http://semanticscience.org/resource/SIO_000062> ?a .\n" +
-                "?a <http://semanticscience.org/resource/SIO_000291> gene: .\n" +
+                "protein: <http://semanticscience.org/resource/SIO_000062> ?int .\n" +
+                "?int <http://semanticscience.org/resource/SIO_000291> gene: .\n" +
+                "?a rdf:type ?int .\n" +
                 " }\n" +
                 "}"
     }

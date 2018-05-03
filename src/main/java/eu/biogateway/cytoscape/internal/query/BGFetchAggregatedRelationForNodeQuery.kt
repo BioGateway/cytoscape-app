@@ -50,8 +50,9 @@ class BGFetchAggregatedTFTGRelationForNodeQuery(val node: BGNode): BGRelationQue
                 "SELECT distinct ?tf graph: <http://semanticscience.org/resource/SIO_000001> ?tg \n" +
                 "WHERE {  \n" +
                 " GRAPH graph: {  \n" +
-                "  ?tf <http://semanticscience.org/resource/SIO_000062> node: .\n" +
-                "  node: <http://semanticscience.org/resource/SIO_000291> ?tg .\n" +
+                "  node: rdf:type ?int . \n"+
+                "  ?tf <http://semanticscience.org/resource/SIO_000062> ?int .\n" +
+                "  ?int <http://semanticscience.org/resource/SIO_000291> ?tg .\n" +
                 "}}"
     }
 }
