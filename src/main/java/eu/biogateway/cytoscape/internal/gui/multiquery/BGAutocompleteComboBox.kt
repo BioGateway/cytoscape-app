@@ -96,6 +96,9 @@ class BGAutocompleteComboBox(private val endpoint: BGDictEndpoint, private val t
         } else {
             this.showPopup()
         }
+
+        searchBoxEditorComponent.select(text.length,text.length)
+
     }
 
     fun getNameForSelectedURI() {

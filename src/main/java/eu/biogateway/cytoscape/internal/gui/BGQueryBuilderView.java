@@ -26,6 +26,7 @@ import javax.swing.text.StyleContext;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowEvent;
 import java.util.HashMap;
 
 import static eu.biogateway.cytoscape.internal.gui.BGQueryBuilderController.*;
@@ -384,6 +385,11 @@ public class BGQueryBuilderView implements ChangeListener {
         this.multiQueryContainer.add(queryConstraintsPanel, BorderLayout.NORTH);
         this.multiQueryContainer.add(multiQueryPanel, BorderLayout.CENTER);
         mainFrame.repaint();
+        if (BGServiceManager.INSTANCE.getCache().getActiveRelationTypes().isEmpty()) {
+            // No Datasets are enabled!
+            JOptionPane.showMessageDialog(mainFrame,"Select one or more relation types for the datasets in the BioGateway tab of the Control Panel.","No datasets selected!",JOptionPane.WARNING_MESSAGE);
+            mainFrame.dispatchEvent(new WindowEvent(mainFrame, WindowEvent.WINDOW_CLOSING));
+        }
     }
 
     public void appendToPane(JTextPane tp, String msg, Color textColor) {

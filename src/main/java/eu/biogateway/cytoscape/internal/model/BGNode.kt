@@ -130,7 +130,7 @@ open class BGNode {
                 uri.contains("pubmed") -> BGNodeType.Pubmed
                 uri.contains("GOA_") -> BGNodeType.GOA
                 uri.contains("/omim/") -> BGNodeType.Disease
-                uri.contains("ssb.biogateway.eu/rt/") -> BGNodeType.TFTG // TODO: Need a better identifier!
+                uri.contains("ssb.biogateway.eu/rgts/") -> BGNodeType.TFTG // TODO: Need a better identifier!
                 uri.contains("ssb.biogateway.eu/rt/") -> BGNodeType.TFTG // TODO: Need a better identifier!
                 uri.contains("ssb.biogateway.eu/tf/") -> BGNodeType.TF
                 else -> {

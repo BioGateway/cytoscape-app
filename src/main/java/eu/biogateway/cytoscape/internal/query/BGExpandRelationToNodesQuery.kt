@@ -18,6 +18,7 @@ class BGExpandRelationToNodesQuery(val fromNode: String, val toNode: String, val
 
         if (relationType.defaultGraphName == "goa") return generateQueryString("goa")
         if (relationType.defaultGraphName == "tf-tg") return generateQueryString("tf-tg")
+        if (relationType.defaultGraphName == "genex") return generateTFTGQueryString("genex")
         if (relationType.defaultGraphName == "intact") return generatePPIQueryString2()
 
         throw Exception("Missing or invalid default graph name!")
@@ -32,6 +33,19 @@ class BGExpandRelationToNodesQuery(val fromNode: String, val toNode: String, val
                 " GRAPH <"+graphName+"> {  \n" +
                 "\t ?a ?rel2 subject: .\n" +
                 "\t ?a ?rel1 object: .\n" +
+                " }\n" +
+                "}"
+    }
+
+    private fun generateTFTGQueryString(graphName: String): String {
+        return "BASE <http://www.semantic-systems-biology.org/> \n" +
+                "PREFIX gene: <"+toNode+">\n" +
+                "PREFIX protein: <"+fromNode+">\n" +
+                "SELECT distinct protein: <"+graphName+"> <http://semanticscience.org/resource/SIO_000062> ?a as ?a1 ?a as ?a2 <"+graphName+"> <http://semanticscience.org/resource/SIO_000291> gene: \n" +
+                "WHERE {  \n" +
+                " GRAPH <"+graphName+"> {  \n" +
+                "protein: <http://semanticscience.org/resource/SIO_000062> ?a .\n" +
+                "?a <http://semanticscience.org/resource/SIO_000291> gene: .\n" +
                 " }\n" +
                 "}"
     }

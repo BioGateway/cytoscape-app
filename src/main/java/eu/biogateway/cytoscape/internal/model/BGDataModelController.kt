@@ -31,11 +31,11 @@ class BGDataModelController() {
         var prefs = Preferences.userRoot().node("eu.biogateway.cytoscape.PreferencesManager")
 
         fun setSelected(path: String, identifier: String, selected: Boolean) {
-            prefs.putBoolean(path+":"+identifier, selected)
+            prefs.putBoolean((path+identifier).hashCode().toString(), selected)
         }
 
         fun getSelected(path: String, identifier: String): Boolean {
-            return prefs.getBoolean(path+":"+identifier, false)
+            return prefs.getBoolean((path+identifier).hashCode().toString(), false)
         }
     }
 
