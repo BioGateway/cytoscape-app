@@ -256,7 +256,8 @@ class BGNetworkBuilder() {
 
         val query: BGRelationQuery = when (node.type) {
             BGNodeType.PPI -> BGFetchAggregatedPPIRelationForNodeQuery(nodeUri, adjacentNodeUris)
-            BGNodeType.TFTG, BGNodeType.GOA -> BGFetchAggregatedRelationForNodeQuery(node)
+            BGNodeType.TFTG -> BGFetchAggregatedTFTGRelationForNodeQuery(node)
+            BGNodeType.GOA -> BGFetchAggregatedRelationForNodeQuery(node)
             else -> {
                 return
                 //throw Exception("Cannot collapse nodes of this dataType!")

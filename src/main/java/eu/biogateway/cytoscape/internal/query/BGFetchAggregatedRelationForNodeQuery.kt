@@ -32,6 +32,30 @@ class BGFetchAggregatedRelationForNodeQuery(val node: BGNode): BGRelationQuery(B
     }
 }
 
+class BGFetchAggregatedTFTGRelationForNodeQuery(val node: BGNode): BGRelationQuery(BGReturnType.RELATION_TRIPLE_GRAPHURI) {
+
+    override fun generateQueryString(): String {
+        val graphName = when (node.type) {
+            BGNodeType.PPI -> "intact"
+            BGNodeType.GOA -> "goa"
+            BGNodeType.TFTG -> "genex"
+            else -> {
+                throw Exception("Collapsing of this type is not supported!")
+            }
+        }
+
+        return "BASE <http://www.semantic-systems-biology.org/> \n" +
+                "PREFIX node: <"+node.uri+">\n" +
+                "PREFIX graph: <"+graphName+">  \n" +
+                "SELECT distinct ?tf graph: <http://semanticscience.org/resource/SIO_000001> ?tg \n" +
+                "WHERE {  \n" +
+                " GRAPH graph: {  \n" +
+                "  ?tf <http://semanticscience.org/resource/SIO_000062> node: .\n" +
+                "  node: <http://semanticscience.org/resource/SIO_000291> ?tg .\n" +
+                "}}"
+    }
+}
+
 class BGFetchAggregatedPPIRelationForNodeQuery(val nodeUri: String, val nodeFilter: Collection<String>): BGRelationQuery(BGReturnType.RELATION_TRIPLE_CONFIDENCE) {
 
     override fun generateQueryString(): String {
