@@ -16,6 +16,9 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import java.awt.*;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 public class BGControlPanel extends JPanel implements CytoPanelComponent {
 
@@ -46,6 +49,43 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent {
         //tree.expandRow(0);
         tree.setRootVisible(false);
         tree.setShowsRootHandles(true);
+
+        tree.rightClickCallback = mouseEvent -> {
+            TreePath tp = tree.getPathForLocation(mouseEvent.getX(), mouseEvent.getY());
+            if (tp == null) {
+                return;
+            }
+            int row = tree.getRowForPath(tp);
+            String nodeName = tp.getLastPathComponent().toString();
+            URI uri;
+            try {
+                uri = new URI(BGServiceManager.INSTANCE.getCache().getDatasetGraphs().get(nodeName));
+            } catch (URISyntaxException e) {
+                e.printStackTrace();
+                return;
+            }
+
+            JPopupMenu popupMenu = new JPopupMenu();
+            JMenuItem menuItem = new JMenuItem("Open " + nodeName + " graph description in browser.");
+
+            menuItem.addActionListener(actionEvent -> {
+                System.out.println("Right-clicked node with path: " + tp.toString());
+                if (Desktop.isDesktopSupported()) {
+                    try {
+                        Desktop.getDesktop().browse(uri);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+
+            popupMenu.add(menuItem);
+
+            tree.setSelectionRow(row);
+
+            popupMenu.show(mouseEvent.getComponent(), mouseEvent.getX(), mouseEvent.getY());
+
+        };
 
         treePanel.add(tree);
 

@@ -132,6 +132,7 @@ class BGDataModelController() {
 
         var queryTemplates = HashMap<String, QueryTemplate>()
         var visualStyleConfig: BGVisualStyleConfig = BGVisualStyleConfig()
+        var datasetGraphs = HashMap<String, String>()
 
         fun addNode(node: BGNode) {
             // Only add a node if it's not already been added.

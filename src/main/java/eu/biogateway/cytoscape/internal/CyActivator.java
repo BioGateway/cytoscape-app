@@ -93,11 +93,11 @@ public class CyActivator extends AbstractCyActivator {
         BGNodeViewCMF nodeViewCMF = new BGNodeViewCMF(0F);
         registerAllServices(bundleContext, nodeViewCMF, ezProps(PREFERRED_MENU, "BioGateway"));
 
-        BGChangeEdgeTypeCMF changeEdgeTypeCMF = new BGChangeEdgeTypeCMF(0F);
-        registerAllServices(bundleContext, changeEdgeTypeCMF, ezProps(PREFERRED_MENU, "BioGateway"));
+//        BGChangeEdgeTypeCMF changeEdgeTypeCMF = new BGChangeEdgeTypeCMF(0F);
+//        registerAllServices(bundleContext, changeEdgeTypeCMF, ezProps(PREFERRED_MENU, "BioGateway"));
 
-        BGOpenEdgeSourceViewCMF openPumedIdCMF = new BGOpenEdgeSourceViewCMF(1F);
-        registerAllServices(bundleContext, openPumedIdCMF, ezProps(PREFERRED_MENU, "BioGateway"));
+//        BGOpenEdgeSourceViewCMF openPumedIdCMF = new BGOpenEdgeSourceViewCMF(1F);
+//        registerAllServices(bundleContext, openPumedIdCMF, ezProps(PREFERRED_MENU, "BioGateway"));
 
         //BGExpandEdgeCMF expandEdgeCMF = new BGExpandEdgeCMF(0F, serviceManager);
         //registerAllServices(bundleContext, expandEdgeCMF, ezProps(PREFERRED_MENU, "BioGateway"));

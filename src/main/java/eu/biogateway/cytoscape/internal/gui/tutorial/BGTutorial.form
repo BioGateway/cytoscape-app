@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="eu.biogateway.cytoscape.internal.gui.tutorial.BGTutorial">
+  <grid id="27dc6" binding="rootPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
+    <constraints>
+      <xy x="20" y="20" width="500" height="400"/>
+    </constraints>
+    <properties/>
+    <border type="none"/>
+    <children>
+      <grid id="d7130" layout-manager="BorderLayout" hgap="0" vgap="0">
+        <constraints border-constraint="South"/>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <component id="fda2e" class="javax.swing.JButton" binding="nextButton" default-binding="true">
+            <constraints border-constraint="East"/>
+            <properties>
+              <text value="Next"/>
+            </properties>
+          </component>
+          <component id="1b584" class="javax.swing.JButton" binding="previousButton" default-binding="true">
+            <constraints border-constraint="West"/>
+            <properties>
+              <text value="Previous"/>
+            </properties>
+          </component>
+        </children>
+      </grid>
+      <grid id="d1cf2" binding="pagePanel" layout-manager="BorderLayout" hgap="0" vgap="0">
+        <constraints border-constraint="Center"/>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <grid id="ca4dc" binding="firstPagePanel" layout-manager="BorderLayout" hgap="0" vgap="0">
+            <constraints border-constraint="Center"/>
+            <properties/>
+            <border type="none"/>
+            <children/>
+          </grid>
+        </children>
+      </grid>
+      <grid id="eeac0" binding="headerPanel" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+        <constraints border-constraint="North"/>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <component id="e6249" class="javax.swing.JLabel">
+            <constraints/>
+            <properties>
+              <text value="Intro - Tutorial"/>
+            </properties>
+          </component>
+        </children>
+      </grid>
+    </children>
+  </grid>
+</form>

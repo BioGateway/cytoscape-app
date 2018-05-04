@@ -56,6 +56,10 @@ class BGLoadRelationMetadataQuery(val relations: Collection<BGPrimitiveRelation>
                 val dataType = metadataType.dataType
 
                 val metaData = when (dataType) {
+                    BGTableDataType.STRINGARRAY -> {
+                        val value = result.values.toList()
+                        BGRelationMetadata(metadataType, value)
+                    }
                     BGTableDataType.STRING -> {
                         // TODO: Handle arrays / multiple data points.
                         if (result.values.isNotEmpty()) {
@@ -66,6 +70,20 @@ class BGLoadRelationMetadataQuery(val relations: Collection<BGPrimitiveRelation>
                     BGTableDataType.DOUBLE -> {
                         val value = result.values.firstOrNull()
                         if (value != null) BGRelationMetadata(metadataType, value.toDouble()) else null
+
+                    }
+                    BGTableDataType.INT -> {
+                        val value = result.values.firstOrNull()
+                        if (value != null) BGRelationMetadata(metadataType, value.toInt()) else null
+                    }
+                    BGTableDataType.DOUBLEARRAY -> {
+                        val values = result.values.map { it.toDouble() }
+                        if (values.isNotEmpty()) BGRelationMetadata(metadataType, values) else null
+
+                    }
+                    BGTableDataType.INTARRAY -> {
+                        val values = result.values.map { it.toInt() }
+                        if (values.isNotEmpty()) BGRelationMetadata(metadataType, values) else null
 
                     }
                     else -> { throw Exception("Unsupported data type.")}

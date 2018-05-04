@@ -39,6 +39,21 @@ object BGConfigParser {
                 }
             }
 
+            // Parse the dataset graphs:
+            val graphsNode = (doc.getElementsByTagName("graphs").item(0) as? Element) ?: throw Exception("graphs element not found in XML file!")
+
+            val graphMap = HashMap<String, String>()
+
+            val graphs = graphsNode.getElementsByTagName("graph")
+            for (index in 0..graphs.length-1) {
+                val graphElement = graphs.item(index) as? Element ?: continue
+                val uri = graphElement.getAttribute("uri") ?: continue
+                if (uri.isEmpty()) continue
+                val name = graphElement.getAttribute("name") ?: continue
+                graphMap.put(name, uri)
+            }
+
+            cache.datasetGraphs = graphMap
 
             // Parse RelationTypes
             val relationTypesNode = (doc.getElementsByTagName("relationTypes").item(0) as? Element) ?: throw Exception("relationTypes element not found in XML file!")
@@ -304,7 +319,7 @@ object BGConfigParser {
                 visualStyleConfig.edgeLineTypes.put(uri, lineType)
             }
 
-            val nodeShapes = visualStyleNode.getElementsByTagName("edgeLine")
+            val nodeShapes = visualStyleNode.getElementsByTagName("nodeShape")
             for (index in 0..nodeShapes.length-1) {
                 val styleElement = nodeShapes.item(index) as? Element ?: continue
                 val type = styleElement.getAttribute("type") ?: continue

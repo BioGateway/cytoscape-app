@@ -7,6 +7,7 @@ import java.awt.Component;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.*;
+import java.util.function.Consumer;
 
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
@@ -20,7 +21,7 @@ public class JCheckBoxTree extends JTree {
 
     JCheckBoxTree selfPointer = this;
 
-
+    public Consumer<MouseEvent> rightClickCallback;
 
     // Defining data structure that will enable to fast check-indicate the state of each node
     // It totally replaces the "selection" mechanism of the JTree
@@ -161,18 +162,24 @@ public class JCheckBoxTree extends JTree {
         };
         // Calling checking mechanism on mouse click
         this.addMouseListener(new MouseListener() {
-            public void mouseClicked(MouseEvent arg0) {
-                TreePath tp = selfPointer.getPathForLocation(arg0.getX(), arg0.getY());
+            public void mouseClicked(MouseEvent e) {
+                TreePath tp = selfPointer.getPathForLocation(e.getX(), e.getY());
                 if (tp == null) {
                     return;
                 }
-                boolean checkMode = ! nodesCheckingState.get(tp).isSelected;
-                checkSubTree(tp, checkMode);
-                updatePredecessorsWithCheckMode(tp, checkMode);
-                // Firing the check change event
-                fireCheckChangeEvent(new CheckChangeEvent(tp));
-                // Repainting tree after the data structures were updated
-                selfPointer.repaint();
+                if (e.getButton() == MouseEvent.BUTTON1) {
+                    // Left-click action:
+                    boolean checkMode = !nodesCheckingState.get(tp).isSelected;
+                    checkSubTree(tp, checkMode);
+                    updatePredecessorsWithCheckMode(tp, checkMode);
+                    // Firing the check change event
+                    fireCheckChangeEvent(new CheckChangeEvent(tp));
+                    // Repainting tree after the data structures were updated
+                    selfPointer.repaint();
+                } else if (e.getButton() == MouseEvent.BUTTON3) {
+                    // Right click-action:
+                    rightClickCallback.accept(e);
+                }
             }
             public void mouseEntered(MouseEvent arg0) {
             }

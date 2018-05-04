@@ -274,7 +274,7 @@ class BGNetworkBuilder() {
             val data = it as BGReturnRelationsData
             val filteredRelations = data.relationsData.filter { adjacentNodeUris.contains(it.fromNodeUri) }.filter { adjacentNodeUris.contains(it.toNodeUri) }
 
-            addRelationsToNetwork(network, filteredRelations)
+            addRelationsToNetwork(network, filteredRelations, true)
 
             if (cyNodes != null) {
                 network.removeNodes(cyNodes)
@@ -424,7 +424,7 @@ class BGNetworkBuilder() {
 
 
 
-    fun addRelationsToNetwork(network: CyNetwork, relations: Collection<BGRelation>) {
+    fun addRelationsToNetwork(network: CyNetwork, relations: Collection<BGRelation>, reloadMetadata: Boolean = false) {
         val nodeTable = network.defaultNodeTable
         val edgeTable = network.defaultEdgeTable
 
@@ -453,6 +453,8 @@ class BGNetworkBuilder() {
 
         // Now we have all the CyNodes needed in the network to create the relations. Edges can be created.
 
+        val relationEdges = HashMap<BGPrimitiveRelation, CyEdge>()
+
         for (relation in relations) {
             val fromNode = cyNodes.get(relation.fromNode.uri) ?: throw Exception("CyNode not found!")
             val toNode = cyNodes.get(relation.toNode.uri) ?: throw Exception("CyNode not found!")
@@ -464,9 +466,14 @@ class BGNetworkBuilder() {
 //                    }
 //                }
                 val edge = addEdgeToNetwork(fromNode, toNode, network, edgeTable, relation.relationType, relation.edgeIdentifier, relation.metadata, relation.sourceGraph)
+                relationEdges[relation] = edge
             } else {
                 println("WARNING: Duplicate edges!")
             }
+        }
+
+        if (reloadMetadata) {
+            reloadMetadataForEdges(relationEdges, network)
         }
     }
 
@@ -623,6 +630,16 @@ class BGNetworkBuilder() {
         }
     }
 
+    fun reloadMetadataForEdges(relationEdges: Map<BGPrimitiveRelation, CyEdge>, network: CyNetwork) {
+        // Get the active metadata types.
+        val activeMetadataTypes = BGServiceManager.cache.activeMetadataTypes
+
+        val query = BGLoadRelationMetadataQuery(relationEdges.keys, activeMetadataTypes) {
+            BGServiceManager.dataModelController.networkBuilder.updateEdgeTableMetadataForCyEdges(network, relationEdges)
+        }
+        BGServiceManager.execute(query)
+    }
+
     fun reloadMetadataForRelationsInCurrentNetwork() {
         // Get the active metadata types.
         val activeMetadataTypes = BGServiceManager.cache.activeMetadataTypes
@@ -656,7 +673,8 @@ class BGNetworkBuilder() {
             val relevantRelations = relations.filter { metadataType.supportedRelations.contains(it.key.relationType) }
                     .filter {
                         // Filter out the CyEdges that have the data present.
-                        BGNetworkTableHelper.getStringForEdgeColumnName(it.value, metadataType.name, network).isNullOrEmpty()
+                        val value = BGNetworkTableHelper.getValueForEdgeColumnName(it.value, metadataType.name, network, Any::class.java)
+                        value == null
                     }
             // Add the remaining relations to a set.
             unloadedRelations.putAll(relevantRelations)

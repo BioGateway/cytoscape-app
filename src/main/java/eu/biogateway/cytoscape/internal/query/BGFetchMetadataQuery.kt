@@ -25,9 +25,7 @@ class BGFetchMetadataQuery(val fromNodeUri: String, val relationUri: String, val
                     .replace("@graph", graph)
             return "BASE <http://www.semantic-systems-biology.org/>  \n" +
                     "SELECT DISTINCT ?metadata\n" +
-                    "WHERE {\n" +
-                    sparqlQuery +
-                    "}"
+                    sparqlQuery
         }
 
         return "BASE <http://www.semantic-systems-biology.org/>  \n" +
