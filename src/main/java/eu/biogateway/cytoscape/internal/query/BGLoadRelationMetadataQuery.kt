@@ -90,7 +90,15 @@ class BGLoadRelationMetadataQuery(val relations: Collection<BGPrimitiveRelation>
                 }
                 // Add this metadata entry into the relation's metadata map.
                 metaData?.let {
-                    relation.metadata[metadataType.name] = it
+                    var data = it
+                    if (it.value is String) {
+                        val conversion = it.type?.conversions?.get(it.value)
+                        if (conversion != null) {
+                            data = BGRelationMetadata(it.dataType, conversion, it.type)
+                        }
+                    }
+
+                    relation.metadata[metadataType.name] = data
                 }
             }
         }

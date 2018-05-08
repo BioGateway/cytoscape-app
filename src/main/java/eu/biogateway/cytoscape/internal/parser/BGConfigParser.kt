@@ -128,8 +128,17 @@ object BGConfigParser {
                     val relationType = cache.getRelationTypeForURIandGraph(rtUri, rtGraph) ?: continue
                     relationTypes.add(relationType)
                 }
+                val conversions = HashMap<String, String>()
 
-                val metadataType = BGRelationMetadataType(id, label, dataType, relationUri, relationTypes, sparql)
+                val conversionList = metadataElement.getElementsByTagName("conversion")
+                for (j in 0..conversionList.length-1) {
+                    val cvrtElement = conversionList.item(j) as? Element ?: continue
+                    val fromValue = cvrtElement.getAttribute("fromValue") ?: continue
+                    val toValue = cvrtElement.getAttribute("toValue") ?: continue
+                    conversions.put(fromValue, toValue)
+                }
+
+                val metadataType = BGRelationMetadataType(id, label, dataType, relationUri, relationTypes, sparql, conversions)
 
                 cache.metadataTypes.put(metadataType.id, metadataType)
             }
