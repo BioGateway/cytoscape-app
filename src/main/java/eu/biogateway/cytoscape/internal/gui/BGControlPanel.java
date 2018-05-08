@@ -3,6 +3,7 @@ package eu.biogateway.cytoscape.internal.gui;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
+import eu.biogateway.cytoscape.internal.gui.conversion.BGImportExportController;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
@@ -27,6 +28,8 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent2 {
     private JPanel treePanel;
     private JButton resetBioGatewayStyleButton;
     private JButton reloadMetadataButton;
+    private JButton queryBuilderButton;
+    private JButton convertNetworkButton;
     private JCheckBoxTree tree;
 
 
@@ -105,6 +108,12 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent2 {
         reloadMetadataButton.addActionListener(e -> {
             BGServiceManager.INSTANCE.getDataModelController().getNetworkBuilder().reloadMetadataForRelationsInCurrentNetwork();
         });
+        queryBuilderButton.addActionListener(e -> {
+            new BGQueryBuilderController();
+        });
+        convertNetworkButton.addActionListener(e -> {
+            new BGImportExportController();
+        });
     }
 
 // CytoPanel implementations:
@@ -120,7 +129,9 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent2 {
     }
 
     @Override
-    public String getIdentifier() { return "biogatewayControlPanel"; }
+    public String getIdentifier() {
+        return "biogatewayControlPanel";
+    }
 
     @Override
     public String getTitle() {
@@ -157,7 +168,7 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent2 {
         treePanel.setLayout(new BorderLayout(0, 0));
         panel1.add(treePanel, BorderLayout.CENTER);
         final JPanel panel2 = new JPanel();
-        panel2.setLayout(new GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
+        panel2.setLayout(new GridLayoutManager(2, 2, new Insets(0, 0, 0, 0), -1, -1));
         mainPanel.add(panel2, BorderLayout.SOUTH);
         resetBioGatewayStyleButton = new JButton();
         resetBioGatewayStyleButton.setText("Reset Layout Style");
@@ -166,6 +177,12 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent2 {
         reloadMetadataButton = new JButton();
         reloadMetadataButton.setText("Reload Metadata");
         panel2.add(reloadMetadataButton, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        queryBuilderButton = new JButton();
+        queryBuilderButton.setText("Query Builder");
+        panel2.add(queryBuilderButton, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        convertNetworkButton = new JButton();
+        convertNetworkButton.setText("Convert Network");
+        panel2.add(convertNetworkButton, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
     }
 
     /**
