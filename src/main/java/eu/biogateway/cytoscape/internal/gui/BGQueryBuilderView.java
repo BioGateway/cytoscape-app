@@ -1,6 +1,7 @@
 package eu.biogateway.cytoscape.internal.gui;
 
 import eu.biogateway.cytoscape.internal.gui.tutorial.BGTutorial;
+import eu.biogateway.cytoscape.internal.util.Utility;
 import net.miginfocom.swing.MigLayout;
 import eu.biogateway.cytoscape.internal.BGServiceManager;
 import eu.biogateway.cytoscape.internal.gui.multiquery.BGAutocompleteComboBox;
@@ -390,6 +391,7 @@ public class BGQueryBuilderView implements ChangeListener {
             // No Datasets are enabled!
             JOptionPane.showMessageDialog(mainFrame, "Select one or more relation types for the datasets in the BioGateway tab of the Control Panel.", "No datasets selected!", JOptionPane.WARNING_MESSAGE);
             mainFrame.dispatchEvent(new WindowEvent(mainFrame, WindowEvent.WINDOW_CLOSING));
+            Utility.INSTANCE.selectBioGatewayControlPanelTab();
 //            BGTutorial tutorial = new BGTutorial();
         }
     }

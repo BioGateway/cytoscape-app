@@ -6,6 +6,9 @@ import eu.biogateway.cytoscape.internal.BGServiceManager
 import eu.biogateway.cytoscape.internal.model.BGNode
 import eu.biogateway.cytoscape.internal.model.BGRelation
 import eu.biogateway.cytoscape.internal.parser.getUri
+import org.cytoscape.application.swing.CytoPanelComponent
+import org.cytoscape.application.swing.CytoPanelComponent2
+import org.cytoscape.application.swing.CytoPanelName
 import org.cytoscape.group.CyGroup
 import org.cytoscape.model.CyNetwork
 import org.cytoscape.view.vizmap.VisualStyle
@@ -28,6 +31,12 @@ fun String.sanitizeParameter(): String {
 }
 
 object Utility {
+
+    fun selectBioGatewayControlPanelTab() {
+        val panel = BGServiceManager.adapter?.cySwingApplication?.getCytoPanel(CytoPanelName.WEST) ?: return
+        val index = panel.indexOfComponent("biogatewayControlPanel")
+        panel.selectedIndex = index
+    }
 
     fun removeNodesNotInRelationSet(nodes: Collection<BGNode>, relations: Collection<BGRelation>): Collection<BGNode> {
         var allNodes = relations.map { it.toNode }.toHashSet().union(relations.map { it.fromNode }.toHashSet())

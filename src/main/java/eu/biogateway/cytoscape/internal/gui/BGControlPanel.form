@@ -7,31 +7,6 @@
     <properties/>
     <border type="none"/>
     <children>
-      <grid id="d782d" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
-        <constraints border-constraint="North"/>
-        <properties/>
-        <border type="etched" title="Taxon">
-          <title-color color="-16777216"/>
-        </border>
-        <children>
-          <component id="1e56" class="javax.swing.JLabel">
-            <constraints/>
-            <properties>
-              <text value="Default Taxon: "/>
-            </properties>
-          </component>
-          <component id="52e09" class="javax.swing.JComboBox" binding="comboBox1" default-binding="true">
-            <constraints/>
-            <properties>
-              <model>
-                <item value="Homo Sapiens"/>
-                <item value="Mus Musculus"/>
-                <item value="Rattus Norwegicus"/>
-              </model>
-            </properties>
-          </component>
-        </children>
-      </grid>
       <grid id="ff7bd" layout-manager="BorderLayout" hgap="0" vgap="0">
         <constraints border-constraint="Center"/>
         <properties/>

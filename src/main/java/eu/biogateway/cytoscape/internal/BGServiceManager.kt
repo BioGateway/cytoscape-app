@@ -9,6 +9,7 @@ import eu.biogateway.cytoscape.internal.model.BGDataModelController
 import eu.biogateway.cytoscape.internal.model.BGNetworkConverter
 import eu.biogateway.cytoscape.internal.util.BGVisualStyleBuilder
 import eu.biogateway.cytoscape.internal.util.Constants
+import org.cytoscape.app.swing.CySwingAppAdapter
 import org.cytoscape.event.CyEventHelper
 import org.cytoscape.model.CyNetworkFactory
 import org.cytoscape.model.CyNetworkManager
@@ -34,7 +35,7 @@ object BGServiceManager {
     // This seems like a good place to store static properties.
     var bundleContext: BundleContext? = null
     var activator: CyActivator? = null
-    var adapter: CyAppAdapter? = null
+    var adapter: CySwingAppAdapter? = null
 
     var applicationManager: CyApplicationManager? = null
     var viewManager: CyNetworkViewManager? = null

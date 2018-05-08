@@ -48,15 +48,15 @@ class BGNodeMenuActionsCMF(val gravity: Float): CyNodeViewContextMenuFactory {
         when (node.type) {
             BGNodeType.Protein -> {
                 parentMenu.addSeparator()
-                parentMenu.add(createTFTGSearchMenu(network, BGNodeType.Protein, nodeUri))
-                parentMenu.addSeparator()
+//                parentMenu.add(createTFTGSearchMenu(network, BGNodeType.Protein, nodeUri))
+//                parentMenu.addSeparator()
                 parentMenu.add(createFetchAssociatedGeneOrProteinMenuItem(network, BGNodeType.Protein, nodeUri))
-                parentMenu.addSeparator()
-                parentMenu.add(createPPISearchMenu(network, nodeUri))
+//                parentMenu.addSeparator()
+//                parentMenu.add(createPPISearchMenu(network, nodeUri))
             }
             BGNodeType.Gene -> {
-                parentMenu.addSeparator()
-                parentMenu.add(createTFTGSearchMenu(network, BGNodeType.Gene, nodeUri))
+//                parentMenu.addSeparator()
+//                parentMenu.add(createTFTGSearchMenu(network, BGNodeType.Gene, nodeUri))
                 parentMenu.addSeparator()
                 parentMenu.add(createFetchAssociatedGeneOrProteinMenuItem(network, BGNodeType.Gene, nodeUri))
             }

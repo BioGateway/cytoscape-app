@@ -126,6 +126,7 @@ public class CyActivator extends AbstractCyActivator {
 
         CySwingAppAdapter adapter = getService(bundleContext, CySwingAppAdapter.class);
 
+
         BGServiceManager.INSTANCE.setBundleContext(bundleContext);
         BGServiceManager.INSTANCE.setActivator(this);
         BGServiceManager.INSTANCE.setAdapter(adapter);
