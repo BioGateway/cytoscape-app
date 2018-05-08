@@ -17,7 +17,7 @@ public class BGCreateAction extends AbstractCyAction {
 
     public BGCreateAction(String name, String enableFor, BGAction action) {
         super(name, BGServiceManager.INSTANCE.getApplicationManager(), enableFor, BGServiceManager.INSTANCE.getViewManager());
-        setPreferredMenu("Apps");
+        setPreferredMenu("Apps.BioGateway");
         this.action = action;
     }
 

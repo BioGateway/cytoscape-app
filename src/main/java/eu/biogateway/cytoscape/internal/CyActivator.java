@@ -43,7 +43,7 @@ public class CyActivator extends AbstractCyActivator {
         Properties properties = new Properties();
 		registerService(context, biogwPlugin, BiogwPlugin.class, properties);
 
-        BGCreateAction createQueryAction = new BGCreateAction("BioGateway Query", "always", new BGAction() {
+        BGCreateAction createQueryAction = new BGCreateAction("Query Builder", "always", new BGAction() {
             @Override
             public void action() {
                 BGQueryBuilderController queryBuilderController = new BGQueryBuilderController();
@@ -60,7 +60,7 @@ public class CyActivator extends AbstractCyActivator {
         // This action is disabled in the current build.
         //registerService(context, reloadCurrentStyleAction, CyAction.class, new Properties());
 
-        BGCreateAction openImportExport = new BGCreateAction("BioGateway: Import/Export", "always", new BGAction() {
+        BGCreateAction openImportExport = new BGCreateAction("Import/Export", "always", new BGAction() {
             @Override
             public void action() {
                 new BGImportExportController();
@@ -68,7 +68,7 @@ public class CyActivator extends AbstractCyActivator {
         });
         registerService(context, openImportExport, CyAction.class, new Properties());
 
-        BGCreateAction reloadDataModelAction = new BGCreateAction("BioGateway: Reload Config", "always", new BGAction() {
+        BGCreateAction reloadDataModelAction = new BGCreateAction("Reload Config", "always", new BGAction() {
             @Override
             public void action() {
                 BGServiceManager.INSTANCE.setDataModelController(new BGDataModelController());
