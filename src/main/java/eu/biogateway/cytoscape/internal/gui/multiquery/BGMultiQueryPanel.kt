@@ -179,10 +179,13 @@ class BGMultiQueryPanel(val constraintPanel: BGQueryConstraintPanel): JPanel() {
 
     fun generateSPARQLQuery(): String {
         val queryComponents = generateReturnValuesAndGraphQueries()
-        val queryWildcards = variableManager.usedVariables.values.toHashSet()
+        var queryWildcards = variableManager.usedVariables.values.toHashSet()
                 .sorted()
                 .map { "?"+it }
-                .reduce { acc, s -> acc+" "+s }
+                .fold("") { acc, s -> acc+" "+s }
+        if (queryWildcards.isEmpty()) {
+            queryWildcards = "<placeholder>"
+        }
         val header = "#QUERY <http://www.semantic-systems-biology.org/biogateway/endpoint>\n"
         val query = "BASE <http://www.semantic-systems-biology.org/>\n" +
                 "SELECT DISTINCT " + queryComponents.first + "\n" +
