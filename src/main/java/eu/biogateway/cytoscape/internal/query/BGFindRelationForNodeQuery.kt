@@ -1,6 +1,5 @@
 package eu.biogateway.cytoscape.internal.query
 
-import eu.biogateway.cytoscape.internal.BGServiceManager
 import eu.biogateway.cytoscape.internal.model.BGDatasetSource
 import eu.biogateway.cytoscape.internal.model.BGRelation
 import eu.biogateway.cytoscape.internal.model.BGRelationType
@@ -18,7 +17,7 @@ class BGFindRelationForNodeQuery(val relationType: BGRelationType, val nodeUri: 
     }
 
     val graphName: String get() {
-        relationType.defaultGraphName?.let {
+        relationType.defaultGraphURI?.let {
             if (it.isNotEmpty()) return "<"+it+">"
         }
         return "?graph"

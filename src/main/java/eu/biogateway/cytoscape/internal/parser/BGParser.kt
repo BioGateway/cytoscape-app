@@ -7,7 +7,6 @@ import eu.biogateway.cytoscape.internal.util.Constants
 import eu.biogateway.cytoscape.internal.util.sanitizeParameter
 import org.cytoscape.work.TaskMonitor
 import java.io.BufferedReader
-import kotlin.system.measureNanoTime
 import kotlin.system.measureTimeMillis
 
 /**
@@ -136,7 +135,7 @@ class BGParser() {
 
                 val relationType = server.cache.getRelationTypeForURIandGraph(relationUri, graphName) ?: BGRelationType(relationUri, relationUri, 0)
                 val relation = BGRelation(fromNode, relationType, toNode)
-                relationType.defaultGraphName?.let {
+                relationType.defaultGraphURI?.let {
                     relation.sourceGraph = it
                 }
                 val hash = relation.hashCode()
@@ -161,7 +160,7 @@ class BGParser() {
                 val relation = BGRelation(fromNode, relationType, toNode)
                 // TODO: Delete this line, see if it works still. It should.
                 relation.metadata[BGRelationMetadata.CONFIDENCE_VALUE.name] = BGRelationMetadata(BGTableDataType.DOUBLE, confidenceValue.toDouble())
-                relationType.defaultGraphName?.let {
+                relationType.defaultGraphURI?.let {
                     relation.sourceGraph = it
                 }
                 val hash = relation.hashCode()
@@ -187,7 +186,7 @@ class BGParser() {
                 // Note: Will ignore relation types it doesn't already know of.
                 if (relationType != null) {
                     val relation = BGRelation(fromNode, relationType, toNode)
-                    relationType.defaultGraphName?.let {
+                    relationType.defaultGraphURI?.let {
                         relation.sourceGraph = it
                     }
                     val hash = relation.hashCode()
@@ -220,7 +219,7 @@ class BGParser() {
                     // Note: Will ignore relation types it doesn't already know of.
                     if (relationType != null) {
                         val relation = BGRelation(fromNode, relationType, toNode)
-                        relationType.defaultGraphName?.let {
+                        relationType.defaultGraphURI?.let {
                             relation.sourceGraph = it
                         }
                         val hash = relation.hashCode()

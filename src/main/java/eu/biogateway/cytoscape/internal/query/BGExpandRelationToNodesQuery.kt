@@ -1,6 +1,5 @@
 package eu.biogateway.cytoscape.internal.query
 
-import eu.biogateway.cytoscape.internal.BGServiceManager
 import eu.biogateway.cytoscape.internal.model.BGRelationType
 import eu.biogateway.cytoscape.internal.parser.BGReturnType
 
@@ -16,10 +15,10 @@ class BGExpandRelationToNodesQuery(val fromNode: String, val toNode: String, val
     override fun generateQueryString(): String {
         if (!relationType.expandable) throw Exception("Relation type is not expandable!")
 
-        if (relationType.defaultGraphName == "goa") return generateQueryString("goa")
-        if (relationType.defaultGraphName == "tf-tg") return generateQueryString("tf-tg")
-        if (relationType.defaultGraphName == "genex") return generateTFTGQueryString("genex")
-        if (relationType.defaultGraphName == "intact") return generatePPIQueryString2()
+        if (relationType.defaultGraphURI == "goa") return generateQueryString("goa")
+        if (relationType.defaultGraphURI == "tf-tg") return generateQueryString("tf-tg")
+        if (relationType.defaultGraphURI == "genex") return generateTFTGQueryString("genex")
+        if (relationType.defaultGraphURI == "intact") return generatePPIQueryString2()
 
         throw Exception("Missing or invalid default graph name!")
     }

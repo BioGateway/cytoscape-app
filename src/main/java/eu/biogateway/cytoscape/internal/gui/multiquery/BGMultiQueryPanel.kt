@@ -4,12 +4,10 @@ import eu.biogateway.cytoscape.internal.BGServiceManager
 import eu.biogateway.cytoscape.internal.gui.BGColorComboBoxRenderer
 import eu.biogateway.cytoscape.internal.gui.BGColorableText
 import eu.biogateway.cytoscape.internal.model.*
-import eu.biogateway.cytoscape.internal.parser.BGNetworkTableHelper
 import eu.biogateway.cytoscape.internal.parser.BGSPARQLParser
 import eu.biogateway.cytoscape.internal.util.Constants
 import eu.biogateway.cytoscape.internal.util.Utility
 import java.awt.FlowLayout
-import java.awt.image.ImageObserver
 import javax.swing.*
 
 
@@ -237,7 +235,7 @@ class BGMultiQueryPanel(val constraintPanel: BGQueryConstraintPanel): JPanel() {
             val fromName = "?name_"+getSafeString(fromUri)
             val toName = "?name_"+getSafeString(toUri)
 
-            val graphName = relationType.defaultGraphName ?: generateGraphName(numberOfGraphQueries, relationType)
+            val graphName = relationType.defaultGraphURI ?: generateGraphName(numberOfGraphQueries, relationType)
 
             returnValues += fromRDFUri+" as ?"+getSafeString(fromUri)+numberOfGraphQueries+" <"+graphName+"> <"+relationType.uri+"> "+toRDFUri+" as ?"+getSafeString(toUri)+numberOfGraphQueries+" "
             graphQueries += generateSparqlGraph(numberOfGraphQueries, fromRDFUri, relationType, toRDFUri)
@@ -278,7 +276,7 @@ class BGMultiQueryPanel(val constraintPanel: BGQueryConstraintPanel): JPanel() {
 
 
         for (triple in triples) {
-            val graph = triple.second.defaultGraphName ?: continue
+            val graph = triple.second.defaultGraphURI ?: continue
             val pair = BGDatasetSource.generateSourceConstraint(triple.second, triple.first, triple.third, sourceConstraintCounter)
             sourceConstraintCounter++
 //            val relevantSources = serviceManager.cache.activeSources.filter { it.relationTypes.contains(triple.second) }
@@ -383,7 +381,7 @@ class BGMultiQueryPanel(val constraintPanel: BGQueryConstraintPanel): JPanel() {
     private fun generateGraphName(graphNumber: Int, relation: BGRelationType): String {
         var graphName = "?graph"+graphNumber
 
-        relation.defaultGraphName?.let {
+        relation.defaultGraphURI?.let {
             if (it.length > 0) {
                 graphName = "<"+it+">"
             }

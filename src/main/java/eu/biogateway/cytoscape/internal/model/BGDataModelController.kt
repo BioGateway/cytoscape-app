@@ -143,7 +143,7 @@ class BGDataModelController() {
 
         fun addRelationType(relationType: BGRelationType) {
             relationTypeMap.put(relationType.identifier, relationType)
-            relationType.defaultGraphName?.let {
+            relationType.defaultGraphURI?.let {
                 if (relationTypesForGraphs.containsKey(it)) {
                     relationTypesForGraphs[it]!![relationType.identifier] = relationType
                 } else {
@@ -191,7 +191,7 @@ class BGDataModelController() {
             cache.queryConstraintsRootNode.add(node)
         }
         for (relationType in cache.datasetSources.keys) {
-            val graph = relationType.defaultGraphName ?: "Unspecified"
+            val graph = relationType.defaultGraphURI ?: "Unspecified"
             val graphNode = getChildNode(graph, cache.sourcesRootNode)
             val relationTypeNode = getChildNode(relationType.name, graphNode)
             cache.datasetSources[relationType]?.let {
@@ -477,7 +477,7 @@ class BGDataModelController() {
 
     fun loadRelationMetadataForRelation(relation: BGRelation, metadataType: BGRelationMetadataType) {
         if (!metadataType.supportedRelations.contains(relation.relationType)) return
-        val graph = relation.relationType.defaultGraphName ?: return
+        val graph = relation.relationType.defaultGraphURI ?: return
 
         val query = BGFetchMetadataQuery(relation.fromNode.uri, relation.relationType.uri, relation.toNode.uri, graph, metadataType.relationUri)
         query.run()
@@ -488,7 +488,7 @@ class BGDataModelController() {
 
     fun getConfidenceScoreForRelation(relation: BGRelation): Double? {
         // Synchronous code! Will halt execution (Well, it's supposed to now...)
-        val graph = relation.relationType.defaultGraphName
+        val graph = relation.relationType.defaultGraphURI
         if (graph.equals("intact")) {
             val query = BGFetchMetadataQuery(relation.fromNode.uri, relation.relationType.uri, relation.toNode.uri, graph!!, BGMetadataTypeEnum.CONFIDENCE_VALUE.uri)
             query.run() // <- This is synchronous.

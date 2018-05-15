@@ -63,6 +63,7 @@ object BGConfigParser {
                 val element = rList.item(index) as? Element ?: continue
                 val name = element.getAttribute("name")
                 val defaultGraph = element.getAttribute("defaultGraph")
+                val graphLabel = element.getAttribute("graphLabel")
                 val arbitraryLength = element.getAttribute("arbitraryLength").equals("true")
                 val directed = !element.getAttribute("directed").equals("false")
                 val expandable = element.getAttribute("expandable").equals("true")
@@ -73,7 +74,7 @@ object BGConfigParser {
                 val color = if (colorString.length > 0) Color.decode(colorString) else Color.BLACK
 
                 if (name != null && uri != null) {
-                    val relationType = BGRelationType(uri, name, index, color ,defaultGraph, arbitraryLength, directed, expandable, fromType, toType)
+                    val relationType = BGRelationType(uri, name, index, color ,defaultGraph, graphLabel, arbitraryLength, directed, expandable, fromType, toType)
                     cache.addRelationType(relationType)
                 }
             }
