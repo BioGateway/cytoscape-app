@@ -150,9 +150,9 @@ class BGMultiQueryPanel(val constraintPanel: BGQueryConstraintPanel): JPanel() {
     }
 
     fun validateNodeTypeConsistency(): String? {
-        val nodeVariableTypes = HashMap<String, BGNodeType>()
+        val nodeVariableTypes = HashMap<String, BGNodeTypeNew>()
 
-        fun checkLineParameter(comboBox: JComboBox<String>, nodeType: BGNodeType?): String? {
+        fun checkLineParameter(comboBox: JComboBox<String>, nodeType: BGNodeTypeNew?): String? {
             if (nodeType == null) return null
             if (comboBox.selectedItem == Constants.BG_QUERYBUILDER_ENTITY_LABEL) return null
             val variable = comboBox.selectedItem as? String ?: return null
@@ -165,10 +165,10 @@ class BGMultiQueryPanel(val constraintPanel: BGQueryConstraintPanel): JPanel() {
         }
 
         for (line in queryLines) {
-            checkLineParameter(line.fromComboBox, line.fromTypeComboBox.selectedItem as? BGNodeType)?.let {
+            checkLineParameter(line.fromComboBox, line.fromTypeComboBox.selectedItem as? BGNodeTypeNew)?.let {
                 return "Type inconcistency: Variable $it"
             }
-            checkLineParameter(line.toComboBox, line.toTypeComboBox.selectedItem as? BGNodeType)?.let {
+            checkLineParameter(line.toComboBox, line.toTypeComboBox.selectedItem as? BGNodeTypeNew)?.let {
                 return "Type inconcistency: Variable $it"
             }
         }

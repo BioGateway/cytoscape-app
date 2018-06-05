@@ -4,7 +4,7 @@ import eu.biogateway.cytoscape.internal.BGServiceManager
 import eu.biogateway.cytoscape.internal.gui.BGColorableText
 import eu.biogateway.cytoscape.internal.gui.BGNodeLookupController
 import eu.biogateway.cytoscape.internal.gui.BGNodeTypeComboBoxRenderer
-import eu.biogateway.cytoscape.internal.model.BGNodeType
+import eu.biogateway.cytoscape.internal.model.BGNodeTypeNew
 import eu.biogateway.cytoscape.internal.model.BGRelationType
 import eu.biogateway.cytoscape.internal.util.Constants
 import java.awt.Color
@@ -19,8 +19,8 @@ class BGMultiQueryAutocompleteLine(val relationTypeComboBox: JComboBox<BGRelatio
     val fromComboBox: JComboBox<String>
     val toComboBox: JComboBox<String>
 
-    val fromTypeComboBox: JComboBox<BGNodeType>
-    val toTypeComboBox: JComboBox<BGNodeType>
+    val fromTypeComboBox: JComboBox<BGNodeTypeNew>
+    val toTypeComboBox: JComboBox<BGNodeTypeNew>
     val fromTypeBoxRenderer: BGNodeTypeComboBoxRenderer
     val toTypeBoxRenderer: BGNodeTypeComboBoxRenderer
 
@@ -49,7 +49,7 @@ class BGMultiQueryAutocompleteLine(val relationTypeComboBox: JComboBox<BGRelatio
         }
     }
 
-    fun updateColorForIncorrectNodeTypes(fromType: BGNodeType?, toType: BGNodeType?) {
+    fun updateColorForIncorrectNodeTypes(fromType: BGNodeTypeNew?, toType: BGNodeTypeNew?) {
 
         fromType?.let {
             fromTypeBoxRenderer.acceptedNodeTypes = arrayListOf(it)
@@ -116,7 +116,10 @@ class BGMultiQueryAutocompleteLine(val relationTypeComboBox: JComboBox<BGRelatio
         toComboBox.toolTipText = variablesTooltipText
 
         //val types = arrayOf("Protein", "Gene", "GO-Term", "Taxon", "Disease", "All")
-        val types = arrayOf(BGNodeType.Protein, BGNodeType.Gene, BGNodeType.GOTerm, BGNodeType.Taxon, BGNodeType.Disease)
+
+        val types = BGServiceManager.cache.nodeTypes.values.filter { it.autocompleteType != null }.toTypedArray()
+
+        //val types = arrayOf(BGNodeType.Protein, BGNodeType.Gene, BGNodeType.GOTerm, BGNodeType.Taxon, BGNodeType.Disease)
         toTypeComboBox = JComboBox(types)
         fromTypeComboBox = JComboBox(types)
         fromTypeBoxRenderer = BGNodeTypeComboBoxRenderer(fromTypeComboBox)
@@ -126,13 +129,13 @@ class BGMultiQueryAutocompleteLine(val relationTypeComboBox: JComboBox<BGRelatio
         toTypeComboBox.renderer = toTypeBoxRenderer
 
         fromSearchBox = BGAutocompleteComboBox(BGServiceManager.endpoint) {
-            (fromTypeComboBox.selectedItem as? BGNodeType)?.let {
-                BGNodeType.forName(it.paremeterType)
+            (fromTypeComboBox.selectedItem as? BGNodeTypeNew)?.let {
+                it
             }
         }
         toSearchBox = BGAutocompleteComboBox(BGServiceManager.endpoint) {
-            (toTypeComboBox.selectedItem as? BGNodeType)?.let {
-                BGNodeType.forName(it.paremeterType)
+            (toTypeComboBox.selectedItem as? BGNodeTypeNew)?.let {
+                it
             }
         }
 

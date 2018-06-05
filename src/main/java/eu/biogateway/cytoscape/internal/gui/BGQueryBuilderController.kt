@@ -3,7 +3,7 @@ package eu.biogateway.cytoscape.internal.gui
 import eu.biogateway.cytoscape.internal.BGServiceManager
 import eu.biogateway.cytoscape.internal.gui.multiquery.BGAutocompleteComboBox
 import eu.biogateway.cytoscape.internal.model.BGNode
-import eu.biogateway.cytoscape.internal.model.BGNodeType
+import eu.biogateway.cytoscape.internal.model.BGNodeTypeNew
 import eu.biogateway.cytoscape.internal.model.BGRelation
 import eu.biogateway.cytoscape.internal.parser.BGReturnType
 import eu.biogateway.cytoscape.internal.parser.BGSPARQLParser
@@ -122,6 +122,7 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
     //private var relationList = ArrayList<BGRelation>()
 
     private var currentQuery: QueryTemplate? = null
+    private var currentQueryType: BGReturnType? = null
 
     private var currentReturnData: BGReturnData? = null
     //private var currentResultsInTable = HashMap<String, BGResultRow>()
@@ -307,13 +308,15 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
         return queryString
     }
 
-    private fun importSelectedResults(net: CyNetwork?, returnType: BGReturnType) {
+    private fun importSelectedResults(net: CyNetwork?) {
         var network = net // Need to redeclare it to make it mutable.
         val server = BGServiceManager.dataModelController
         // 1. Get the selected lines from the table.
         val nodes = HashMap<String, BGNode>()
         val relations = ArrayList<BGRelation>()
 //        val model = view.resultTable.model as DefaultTableModel
+
+        val returnType = currentQuery?.returnType ?: currentQueryType
 
         for (rowNumber in view.resultTable.selectedRows) {
 
@@ -443,20 +446,24 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
         return null
     }
 
-    private fun filterRelationsToNodesInCurrentNetwork(filterOn: Boolean) {
+    private fun filterRelationsToNodesInCurrentNetwork(fromFilter: Boolean, toFilter: Boolean) {
 
         val returnData = currentReturnData as? BGReturnRelationsData ?: return
         val relationsFound = returnData.relationsData
 
-        if (filterOn) {
+        if (fromFilter || toFilter) {
             val network = BGServiceManager.applicationManager?.currentNetwork
             val allNodeUris = network?.defaultNodeTable?.getColumn(Constants.BG_FIELD_IDENTIFIER_URI)?.getValues(String::class.java)
             var relations = ArrayList<BGRelation>()
             for (result in relationsFound) {
                 if (allNodeUris != null) {
-                if (allNodeUris.contains(result.toNode.uri) || allNodeUris.contains(result.fromNode.uri)) {
-                    relations.add(result)
-                }
+                    if (toFilter && fromFilter) {
+                        if (allNodeUris.contains(result.toNode.uri) && allNodeUris.contains(result.fromNode.uri)) {
+                            relations.add(result)
+                        }
+                    } else if (toFilter && allNodeUris.contains(result.toNode.uri) || fromFilter && allNodeUris.contains(result.fromNode.uri)) {
+                        relations.add(result)
+                    }
                 }
             }
             setRelationTableData(relations)
@@ -591,6 +598,7 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
     }
 
     private enum class QueryType {
+        GENE_SYMBOL,
         NAME_SEARCH,
         UNIPROT_LOOKUP,
         GO_LOOKUP,
@@ -600,7 +608,7 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
     }
 
     private fun runBulkImport() {
-        var queryType = QueryType.NOT_SET
+        var queryType: QueryType
 
         var nodeList = view.bulkImportTextPane.text.split("\n")
         nodeList = nodeList.map { Utility.sanitizeParameter(it) }
@@ -615,7 +623,6 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
 
         val selectedType = view.bulkImportTypeComboBox.selectedItem as? String
 
-
 //                Uniprot IDs
 //                Entrez IDs
 //                ENSEMBL IDs
@@ -623,30 +630,30 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
 //                GO terms
 //                Protein names
 
-        val nodeType = when (selectedType) {
+        val nodeType: BGNodeTypeNew = when (selectedType) {
             "Gene Symbols" -> {
-                queryType = QueryType.NAME_SEARCH
-                BGNodeType.Gene
+                queryType = QueryType.GENE_SYMBOL
+                BGServiceManager.cache.nodeTypes.get("gene") ?: throw Exception("Invalid node type!")
             }
             "Protein names" -> {
                 queryType = QueryType.NAME_SEARCH
-                BGNodeType.Protein
+                BGServiceManager.cache.nodeTypes.get("protein") ?: throw Exception("Invalid node type!")
             }
             "Uniprot IDs" -> {
                 queryType = QueryType.UNIPROT_LOOKUP
-                BGNodeType.Protein
+                BGServiceManager.cache.nodeTypes.get("protein") ?: throw Exception("Invalid node type!")
             }
             "Entrez IDs" -> {
                 queryType = QueryType.ENTREZ_LOOKUP
-                BGNodeType.Gene
+                BGServiceManager.cache.nodeTypes.get("gene") ?: throw Exception("Invalid node type!")
             }
             "ENSEMBL IDs" -> {
                 queryType = QueryType.ENSEMBL_SEARCH
-                BGNodeType.Gene
+                BGServiceManager.cache.nodeTypes.get("gene") ?: throw Exception("Invalid node type!")
             }
             "GO terms" -> {
                 queryType = QueryType.GO_LOOKUP
-                BGNodeType.GOTerm
+                BGServiceManager.cache.nodeTypes.get("go_term") ?: throw Exception("Invalid node type!")
             }
             else -> {
                 //BGNodeType.Undefined
@@ -663,6 +670,11 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
         }
 
         when (queryType) {
+            QueryType.GENE_SYMBOL -> {
+                val query = BGMultiNodeFetchMongoQuery(nodeList, "genesForSymbols")
+                query.addCompletion(queryCompletion)
+                BGServiceManager.execute(query)
+            }
             QueryType.NAME_SEARCH -> {
                 val query = BGBulkImportNodesQuery(nodeList, nodeType)
                 query.addCompletion(queryCompletion)
@@ -704,10 +716,10 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
         }
     }
 
-    private fun searchForEnsembleIDs(enembleIds: Collection<String>, type: BGNodeType, completion: (Collection<BGSuggestion>) -> Unit) {
+    private fun searchForEnsembleIDs(enembleIds: Collection<String>, type: BGNodeTypeNew, completion: (Collection<BGSuggestion>) -> Unit) {
         val results = ArrayList<BGSuggestion>()
         for (id in enembleIds) {
-            val suggestions = BGServiceManager.endpoint.getSuggestionsForFieldValue("ensembl_id", id, type.paremeterType.toLowerCase())
+            val suggestions = BGServiceManager.endpoint.getSuggestionsForFieldValue("ensembl_id", id, type.id.toLowerCase())
             results.addAll(suggestions)
         }
         completion(results)
@@ -784,7 +796,7 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
                 BGQueryBuilderController.QueryType.ENTREZ_LOOKUP -> nodeUris.contains(Utility.generateEntrezURI(line))
                 BGQueryBuilderController.QueryType.ENSEMBL_SEARCH -> suggestions.map { it.ensembl_id }.contains(line)
                 BGQueryBuilderController.QueryType.NOT_SET -> false
-
+                BGQueryBuilderController.QueryType.GENE_SYMBOL -> nodeNames.contains(line)
             }
 
             if (match) {
@@ -821,6 +833,7 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
 
             val queryType = BGReturnType.RELATION_MULTIPART
             val query = BGMultiRelationsQuery(queryString, queryType)
+            currentQueryType = queryType
 
             query.addCompletion {
                 val data = it as? BGReturnRelationsData ?: throw Exception("Expected Relation Data in return!")
@@ -904,9 +917,9 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
             ACTION_CHANGED_QUERY -> updateSelectedQuery()
             ACTION_IMPORT_TO_SELECTED -> {
                 val network = BGServiceManager.applicationManager?.currentNetwork
-                importSelectedResults(network, currentQuery!!.returnType)
+                importSelectedResults(network)
             }
-            ACTION_IMPORT_TO_NEW -> importSelectedResults(null, currentQuery!!.returnType)
+            ACTION_IMPORT_TO_NEW -> importSelectedResults(null)
             ACTION_ADD_MULTIQUERY_LINE -> addMultiQueryLine()
             ACTION_RUN_MULTIQUERY -> runMultiQuery()
             ACTION_GENERATE_SPARQL -> {
@@ -916,8 +929,9 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
             ACTION_WRITE_SPARQL -> saveSPARQLToFile()
             ACTION_LOAD_SPARQL -> loadSPARQLFromFile()
             ACTION_FILTER_EDGES_TO_EXISTING -> {
-                val box = e.source as? JCheckBox ?: throw Exception("Expected JCheckBox!")
-                filterRelationsToNodesInCurrentNetwork(box.isSelected)
+                val fromFilter = view.filterRelationsFROMExistingCheckBox.isSelected
+                val toFilter = view.filterRelationsToExistingCheckBox.isSelected
+                filterRelationsToNodesInCurrentNetwork(fromFilter, toFilter)
             }
             ACTION_SELECT_UPSTREAM_RELATIONS -> selectUpstreamRelations()
             ACTION_RUN_BULK_IMPORT -> runBulkImport()

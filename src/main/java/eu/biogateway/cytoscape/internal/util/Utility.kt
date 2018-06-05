@@ -89,8 +89,12 @@ object Utility {
 
     fun createRelationTypeIdentifier(uri: String, graph: String): String {
 
-        val graphName = graph.split("/").last()
-        val identifier = graphName.replace("<", "").replace(">", "") + ":" + uri
+        // TODO: WORKAROUND HERE!
+        val graphName = when (graph.contains("biogateway.eu")) {
+            false -> graph.split("/").last()
+            true -> graph
+        }
+        val identifier = graphName.replace("<", "").replace(">", "") + "::" + uri
 
         return identifier
     }

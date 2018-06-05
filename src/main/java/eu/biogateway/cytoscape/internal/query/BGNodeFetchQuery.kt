@@ -1,27 +1,26 @@
 package eu.biogateway.cytoscape.internal.query
 
-import eu.biogateway.cytoscape.internal.BGServiceManager
 import eu.biogateway.cytoscape.internal.parser.BGReturnType
 import java.io.BufferedReader
 import java.io.InputStreamReader
 
-class BGNodeFetchMongoQuery(val nodeUri: String): BGQuery(BGReturnType.NODE_LIST_DESCRIPTION, true) {
+class BGNodeFetchMongoQuery(val nodeUri: String): BGQuery(BGReturnType.NODE_LIST_DESCRIPTION, "fetch") {
 
     override fun generateQueryString(): String {
 
-        return "{ \"returnType\": \"tsv\", \"uris\": [\"" + nodeUri + "\"] }"
+        return "{ \"returnType\": \"tsv\", \"terms\": [\"" + nodeUri + "\"] }"
     }
 }
 
-class BGMultiNodeFetchMongoQuery(val nodeUris: Collection<String>): BGQuery(BGReturnType.NODE_LIST_DESCRIPTION, true) {
+class BGMultiNodeFetchMongoQuery(val searchTerms: Collection<String>, queryType: String): BGQuery(BGReturnType.NODE_LIST_DESCRIPTION, queryType) {
 
     override fun generateQueryString(): String {
-        val nodeUriList = nodeUris.map { "\"" + it + "\"" }.reduce { list, node -> list + ", "+node}
-        return "{ \"returnType\": \"tsv\", \"uris\": [" + nodeUriList + "]}"
+        val terms = searchTerms.map { "\"$it\"" }.reduce { list, node -> list + ", "+node}
+        return "{ \"returnType\": \"tsv\", \"terms\": [$terms]}"
     }
 }
 
-class BGNodeFetchQuery(val nodeUri: String): BGQuery(BGReturnType.NODE_LIST_DESCRIPTION, false) {
+class BGNodeFetchQuery(val nodeUri: String): BGQuery(BGReturnType.NODE_LIST_DESCRIPTION ) {
 
     /// This is running synchronously and without the main HTTPClient.
 

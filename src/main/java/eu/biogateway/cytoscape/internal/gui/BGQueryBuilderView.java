@@ -1,13 +1,13 @@
 package eu.biogateway.cytoscape.internal.gui;
 
 import eu.biogateway.cytoscape.internal.gui.tutorial.BGTutorial;
+import eu.biogateway.cytoscape.internal.model.BGNodeTypeNew;
 import eu.biogateway.cytoscape.internal.util.Utility;
 import net.miginfocom.swing.MigLayout;
 import eu.biogateway.cytoscape.internal.BGServiceManager;
 import eu.biogateway.cytoscape.internal.gui.multiquery.BGAutocompleteComboBox;
 import eu.biogateway.cytoscape.internal.gui.multiquery.BGMultiQueryPanel;
 import eu.biogateway.cytoscape.internal.gui.multiquery.BGQueryConstraintPanel;
-import eu.biogateway.cytoscape.internal.model.BGNodeType;
 import eu.biogateway.cytoscape.internal.query.BGQueryParameter;
 import eu.biogateway.cytoscape.internal.query.QueryTemplate;
 import eu.biogateway.cytoscape.internal.util.Constants;
@@ -77,6 +77,7 @@ public class BGQueryBuilderView implements ChangeListener {
     private JButton bulkImportSelectedNodesNewButton;
     private JButton bulkImportSelectedCurrentButton;
     private JTextField bulkFilterTextField;
+    private JCheckBox filterRelationsFROMExistingCheckBox;
     private BGQueryConstraintPanel queryConstraintsPanel;
     private TableRowSorter<TableModel> sorter;
     private final DocumentListener filterDocumentListener = new DocumentListener() {
@@ -200,6 +201,8 @@ public class BGQueryBuilderView implements ChangeListener {
         importToSelectedNetworkButton.setActionCommand(Companion.getACTION_IMPORT_TO_SELECTED());
         filterRelationsToExistingCheckBox.addActionListener(listener);
         filterRelationsToExistingCheckBox.setActionCommand(Companion.getACTION_FILTER_EDGES_TO_EXISTING());
+        filterRelationsFROMExistingCheckBox.addActionListener(listener);
+        filterRelationsFROMExistingCheckBox.setActionCommand(Companion.getACTION_FILTER_EDGES_TO_EXISTING());
 
         runChainQueryButton.addActionListener(listener);
         runChainQueryButton.setActionCommand(Companion.getACTION_RUN_MULTIQUERY());
@@ -283,9 +286,13 @@ public class BGQueryBuilderView implements ChangeListener {
 
             JLabel label = new JLabel(parameter.getName() + ": ");
             JComponent component;
+
+
+            // TODO: FIX THIS CODE SO IT WORKS WITH DYNAMIC NODE TYPES.
+            /*
             switch (parameter.getType()) {
                 case GENE:
-                    component = new BGAutocompleteComboBox(BGServiceManager.INSTANCE.getEndpoint(), () -> BGNodeType.Gene);
+                    component = new BGAutocompleteComboBox(BGServiceManager.INSTANCE.getEndpoint(), () -> BGServiceManager.INSTANCE.getCache().getNodeTypes().get());
                     break;
                 case TAXON:
                     component = new BGAutocompleteComboBox(BGServiceManager.INSTANCE.getEndpoint(), () -> BGNodeType.Taxon);
@@ -352,6 +359,7 @@ public class BGQueryBuilderView implements ChangeListener {
             parameterComponents.put(parameter.getId(), component);
             parameterPanel.add(label);
             parameterPanel.add(component);
+            */
         }
         mainFrame.repaint();
     }
@@ -444,6 +452,14 @@ public class BGQueryBuilderView implements ChangeListener {
 
     public BGQueryConstraintPanel getQueryConstraintsPanel() {
         return queryConstraintsPanel;
+    }
+
+    public JCheckBox getFilterRelationsToExistingCheckBox() {
+        return filterRelationsToExistingCheckBox;
+    }
+
+    public JCheckBox getFilterRelationsFROMExistingCheckBox() {
+        return filterRelationsFROMExistingCheckBox;
     }
 
     /**
@@ -607,8 +623,11 @@ public class BGQueryBuilderView implements ChangeListener {
         importToSelectedNetworkButton.setText("Import to selected Network");
         panel16.add(importToSelectedNetworkButton);
         filterRelationsToExistingCheckBox = new JCheckBox();
-        filterRelationsToExistingCheckBox.setText("Only show relations to nodes in current network");
+        filterRelationsToExistingCheckBox.setText("Only relations TO nodes in current network");
         panel16.add(filterRelationsToExistingCheckBox);
+        filterRelationsFROMExistingCheckBox = new JCheckBox();
+        filterRelationsFROMExistingCheckBox.setText("Only relations FROM nodes in current network");
+        panel16.add(filterRelationsFROMExistingCheckBox);
         final JPanel panel17 = new JPanel();
         panel17.setLayout(new BorderLayout(0, 0));
         panel15.add(panel17, BorderLayout.NORTH);

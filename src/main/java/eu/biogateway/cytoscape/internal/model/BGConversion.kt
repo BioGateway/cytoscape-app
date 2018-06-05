@@ -18,7 +18,7 @@ class BGConversionQuery(val sparqlQuery: String): BGQuery(BGReturnType.METADATA_
     }
 }
 
-class BGIdentifierConversion(val nodeType: BGNodeType, type: BGConversionType, sourceNetwork: CyNetwork, sourceColumn: CyColumn, destinationFieldName: String): BGConversion(type, sourceNetwork, sourceColumn, destinationFieldName) {
+class BGIdentifierConversion(val nodeType: BGNodeTypeNew, type: BGConversionType, sourceNetwork: CyNetwork, sourceColumn: CyColumn, destinationFieldName: String): BGConversion(type, sourceNetwork, sourceColumn, destinationFieldName) {
 
 }
 open class BGConversion(val type: BGConversionType, val sourceNetwork: CyNetwork, val sourceColumn: CyColumn, val destinationFieldName: String) {
@@ -72,7 +72,7 @@ open class BGConversion(val type: BGConversionType, val sourceNetwork: CyNetwork
             }
             BGConversionType.LookupMethod.DICT_EXACT_LOOKUP -> {
                 val nodeConversion = type as? BGNodeConversionType ?: return null //  Only valid for node conversions.
-                val suggestions = serviceManager.endpoint.searchForLabel(data, nodeConversion.nodeType.paremeterType.toLowerCase(), 1)
+                val suggestions = serviceManager.endpoint.searchForLabel(data, nodeConversion.nodeType.id.toLowerCase(), 1)
                 if (suggestions.isNotEmpty()) {
                     suggestions.first()._id
                 } else {

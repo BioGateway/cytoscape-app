@@ -1,6 +1,5 @@
 package eu.biogateway.cytoscape.internal.gui;
 
-import eu.biogateway.cytoscape.internal.model.BGNodeType;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -54,7 +53,7 @@ public class BGNodeLookupView {
     }
 
     private void setupUI() {
-        BGNodeType.values();
+
         searchButton.addActionListener(listener);
         searchButton.setActionCommand(ACTION_SEARCH);
         useURIButton.setActionCommand(ACTION_SELECT_NODE);
@@ -97,10 +96,6 @@ public class BGNodeLookupView {
 
     private void filterRows() {
         sorter.setRowFilter(RowFilter.regexFilter("(?i)" + filterTextField.getText()));
-    }
-
-    public JCheckBox getRegexCheckBox() {
-        return regexCheckBox;
     }
 
     public JFrame getMainFrame() {
@@ -146,15 +141,13 @@ public class BGNodeLookupView {
         final JPanel panel3 = new JPanel();
         panel3.setLayout(new FlowLayout(FlowLayout.RIGHT, 5, 5));
         panel2.add(panel3, BorderLayout.EAST);
-        regexCheckBox = new JCheckBox();
-        regexCheckBox.setText("Regex");
-        panel3.add(regexCheckBox);
         nodeTypeComboBox = new JComboBox();
         final DefaultComboBoxModel defaultComboBoxModel1 = new DefaultComboBoxModel();
         defaultComboBoxModel1.addElement("Protein");
         defaultComboBoxModel1.addElement("Gene");
-        defaultComboBoxModel1.addElement("GO Term");
+        defaultComboBoxModel1.addElement("GO-Term");
         defaultComboBoxModel1.addElement("Taxon");
+        defaultComboBoxModel1.addElement("Disease");
         nodeTypeComboBox.setModel(defaultComboBoxModel1);
         panel3.add(nodeTypeComboBox);
         searchButton = new JButton();

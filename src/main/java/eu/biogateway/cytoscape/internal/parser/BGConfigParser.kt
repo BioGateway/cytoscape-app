@@ -52,8 +52,33 @@ object BGConfigParser {
                 val name = graphElement.getAttribute("name") ?: continue
                 graphMap.put(name, uri)
             }
-
             cache.datasetGraphs = graphMap
+
+
+            // Parse the nodetypes:
+
+            val nodeTypeNode = (doc.getElementsByTagName("nodetypes").item(0) as? Element) ?: throw Exception("nodetypes element not found in XML file!")
+
+
+            val nodeTypes = nodeTypeNode.getElementsByTagName("type")
+            for (index in 0..nodeTypes.length-1) {
+                val nodeTypeElement = nodeTypes.item(index) as? Element ?: continue
+                val id = nodeTypeElement.getAttribute("id") ?: continue
+                if (id.isEmpty()) continue
+
+                // TODO: The null-checks are useless, as non-existing attributes will be returned as empty strings.
+                val name = nodeTypeElement.getAttribute("name")
+                val uriPattern = nodeTypeElement.getAttribute("uriPattern")
+                val nodeTypeClassId = nodeTypeElement.getAttribute("class")
+                val nodeTypeClass = BGNodeTypeNew.BGNodeTypeClass.forId(nodeTypeClassId) ?: continue
+                val metadataGraph = if (nodeTypeElement.getAttribute("metadatagraph").isNotEmpty()) nodeTypeElement.getAttribute("metadatagraph") else null
+                val autocompleteTypeId = nodeTypeElement.getAttribute("autocompleteType")
+                val autocompleteType = BGNodeTypeNew.BGAutoCompleteType.forId(autocompleteTypeId)
+
+                val nodeType = BGNodeTypeNew(id, name, uriPattern, nodeTypeClass, metadataGraph, autocompleteType)
+                cache.nodeTypes.put(id, nodeType)
+            }
+
 
             // Parse RelationTypes
             val relationTypesNode = (doc.getElementsByTagName("relationTypes").item(0) as? Element) ?: throw Exception("relationTypes element not found in XML file!")
@@ -68,13 +93,18 @@ object BGConfigParser {
                 val directed = !element.getAttribute("directed").equals("false")
                 val expandable = element.getAttribute("expandable").equals("true")
                 val uri = element.textContent
-                val fromType = BGNodeType.forName(element.getAttribute("fromType"))
-                val toType = BGNodeType.forName(element.getAttribute("toType"))
+                val fromType = cache.nodeTypes.get(element.getAttribute("fromType"))
+                val toType = cache.nodeTypes.get(element.getAttribute("toType"))
                 val colorString = element.getAttribute("color")
                 val color = if (colorString.length > 0) Color.decode(colorString) else Color.BLACK
 
+                var graph: BGGraph? = null
+                if (defaultGraph != null) {
+                    graph = BGGraph(defaultGraph, graphLabel)
+                }
+
                 if (name != null && uri != null) {
-                    val relationType = BGRelationType(uri, name, index, color ,defaultGraph, graphLabel, arbitraryLength, directed, expandable, fromType, toType)
+                    val relationType = BGRelationType(uri, name, index, color , graph, arbitraryLength, directed, expandable, fromType, toType)
                     cache.addRelationType(relationType)
                 }
             }
@@ -194,7 +224,7 @@ object BGConfigParser {
                     val conversion = parseConversionElement(BGConversionType.ConversionDirection.IMPORT, node) ?: continue
 
                     val typeString = node.getAttribute("type") ?: continue
-                    val nodeType = BGNodeType.forName(typeString) ?: continue
+                    val nodeType = BGServiceManager.cache.nodeTypes.get(typeString) ?: continue
 
                     val nodeConversion = BGNodeConversionType(nodeType, conversion) ?: continue
 
@@ -220,7 +250,7 @@ object BGConfigParser {
                     val conversion = parseConversionElement(BGConversionType.ConversionDirection.EXPORT, node) ?: continue
 
                     val typeString = node.getAttribute("type") ?: continue
-                    val nodeType = BGNodeType.forName(typeString) ?: continue
+                    val nodeType = BGServiceManager.cache.nodeTypes.get(typeString) ?: continue
 
                     val nodeConversion = BGNodeConversionType(nodeType, conversion) ?: continue
 

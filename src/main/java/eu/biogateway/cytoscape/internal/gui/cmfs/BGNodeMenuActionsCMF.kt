@@ -6,7 +6,7 @@ import eu.biogateway.cytoscape.internal.BGServiceManager
 import eu.biogateway.cytoscape.internal.gui.BGQueryBuilderController
 import eu.biogateway.cytoscape.internal.gui.BGRelationSearchResultsController
 import eu.biogateway.cytoscape.internal.model.BGNode
-import eu.biogateway.cytoscape.internal.model.BGNodeType
+import eu.biogateway.cytoscape.internal.model.BGNodeTypeNew
 import eu.biogateway.cytoscape.internal.query.*
 import eu.biogateway.cytoscape.internal.util.Constants
 import eu.biogateway.cytoscape.internal.util.Utility
@@ -45,28 +45,20 @@ class BGNodeMenuActionsCMF(val gravity: Float): CyNodeViewContextMenuFactory {
         parentMenu.addSeparator() // Weird bug that doesn't show even numbered menu items, so we're adding a separator (that won't be shown) as a workaround.
         parentMenu.add(createRelationSearchMenu("Fetch relations TO node", network, nodeUri, BGRelationDirection.TO))
 
-        when (node.type) {
-            BGNodeType.Protein -> {
-                parentMenu.addSeparator()
-//                parentMenu.add(createTFTGSearchMenu(network, BGNodeType.Protein, nodeUri))
-//                parentMenu.addSeparator()
-                parentMenu.add(createFetchAssociatedGeneOrProteinMenuItem(network, BGNodeType.Protein, nodeUri))
-//                parentMenu.addSeparator()
-//                parentMenu.add(createPPISearchMenu(network, nodeUri))
-            }
-            BGNodeType.Gene -> {
-//                parentMenu.addSeparator()
-//                parentMenu.add(createTFTGSearchMenu(network, BGNodeType.Gene, nodeUri))
-                parentMenu.addSeparator()
-                parentMenu.add(createFetchAssociatedGeneOrProteinMenuItem(network, BGNodeType.Gene, nodeUri))
-            }
-            BGNodeType.PPI, BGNodeType.GOA, BGNodeType.TFTG -> {
-                createPubmedURIMenuList(network, nodeUri)?.let {
+        when (node.type.typeClass) {
+            BGNodeTypeNew.BGNodeTypeClass.ENTITY -> {
+                createFetchAssociatedGeneOrProteinMenuItem(network, node.type, nodeUri)?.let {
                     parentMenu.addSeparator()
                     parentMenu.add(it)
                 }
             }
-            else -> {
+            BGNodeTypeNew.BGNodeTypeClass.STATEMENT,
+            BGNodeTypeNew.BGNodeTypeClass.PPI_STATEMENT,
+            BGNodeTypeNew.BGNodeTypeClass.TFTG_STATEMENT-> {
+                createPubmedURIMenuList(network, nodeUri)?.let {
+                    parentMenu.addSeparator()
+                    parentMenu.add(it)
+                }
             }
         }
 
@@ -99,9 +91,9 @@ class BGNodeMenuActionsCMF(val gravity: Float): CyNodeViewContextMenuFactory {
 
         val nodeType = BGNode(nodeUri).type
 
-        val relationUri = when (nodeType) {
-            BGNodeType.TFTG -> HAS_EVIDENCE_URI
-            BGNodeType.GOA -> RELATED_MATCH_URI
+        val relationUri = when (nodeType.id) {
+            "tftg" -> HAS_EVIDENCE_URI
+            "goa" -> RELATED_MATCH_URI
             else -> {
                 HAS_EVIDENCE_URI
             }
@@ -113,9 +105,10 @@ class BGNodeMenuActionsCMF(val gravity: Float): CyNodeViewContextMenuFactory {
         query.run()
         val data = query.returnData as? BGReturnMetadata ?: return null
 
-        val validResults = data.values.filter { it.toLowerCase().contains("pubmed") }
+        //TODO: This is assuming that PubMed nodes are not using URIs, but just PubMedID's.
+        val validURLs = data.values.filter { it.toLowerCase().contains("pubmed") }
 
-        val validURLs = validResults.map { it.replace("PubMed:", "http://identifiers.org/pubmed/") }
+        //val validURLs = validResults.map { "http://identifiers.org/pubmed/"+it }
 
         if (validURLs.size == 0) return null
 
@@ -170,7 +163,7 @@ class BGNodeMenuActionsCMF(val gravity: Float): CyNodeViewContextMenuFactory {
     }
 
     // Experimental functionality allowing users to search for relations to or from a CyGroup:
-    fun createSearchGroupMenu(description: String, network: CyNetwork, nodeType: BGNodeType, nodeUri: String): JMenu {
+    /*fun createSearchGroupMenu(description: String, network: CyNetwork, nodeType: BGNodeTypeNew, nodeUri: String): JMenu {
         val parentMenu = JMenu(description)
         parentMenu.add(createRelationSearchMenu("Fetch relations FROM node", network, nodeUri, BGRelationDirection.FROM, true))
         parentMenu.add(createRelationSearchMenu("Fetch relations TO node", network, nodeUri, BGRelationDirection.TO, true))
@@ -182,7 +175,7 @@ class BGNodeMenuActionsCMF(val gravity: Float): CyNodeViewContextMenuFactory {
             parentMenu.add(createPPISearchMenu(network, nodeUri, true))
         }
         return parentMenu
-    }
+    }*/
 
     protected fun createOpenQueryBuilderWithSelectedURIsMenu(nodeUri: String): JMenuItem {
         val item = JMenuItem("Use node URI in query builder")
@@ -194,19 +187,19 @@ class BGNodeMenuActionsCMF(val gravity: Float): CyNodeViewContextMenuFactory {
         return item
     }
 
-    protected fun createFetchAssociatedGeneOrProteinMenuItem(network: CyNetwork, nodeType: BGNodeType, nodeUri: String): JMenuItem {
-        var menuItemText = when (nodeType) {
-            BGNodeType.Gene -> "Get associated proteins"
-            BGNodeType.Protein -> "Get associated genes"
+    protected fun createFetchAssociatedGeneOrProteinMenuItem(network: CyNetwork, nodeType: BGNodeTypeNew, nodeUri: String): JMenuItem? {
+        var menuItemText = when (nodeType.id) {
+            "gene" -> "Get associated proteins"
+            "protein" -> "Get associated genes"
             else -> {
-                ""
+                return null
             }
         }
-        val direction = when (nodeType) {
-            BGNodeType.Protein -> BGRelationDirection.TO
-            BGNodeType.Gene -> BGRelationDirection.FROM
+        val direction = when (nodeType.id) {
+            "protein" -> BGRelationDirection.TO
+            "gene" -> BGRelationDirection.FROM
             else -> {
-                throw Exception("Must be gene or protein!")
+                return null
             }
         }
         val encodesIdentifier = Utility.createRelationTypeIdentifier("http://semanticscience.org/resource/SIO_010078", "refseq")
@@ -281,7 +274,7 @@ class BGNodeMenuActionsCMF(val gravity: Float): CyNodeViewContextMenuFactory {
 
             // Skip the relations that cannot return data:
             val nodeType = BGNode(nodeUri, "").type
-            if (nodeType != BGNodeType.Undefined) {
+            if (nodeType != BGNodeTypeNew.UNDEFINED) {
                 if (direction == BGRelationDirection.FROM && relationType.fromType != null && nodeType != relationType.fromType) continue
                 if (direction == BGRelationDirection.TO && relationType.toType != null && nodeType != relationType.toType) continue
             }
@@ -319,7 +312,7 @@ class BGNodeMenuActionsCMF(val gravity: Float): CyNodeViewContextMenuFactory {
         return parentMenu
     }
 
-    protected fun createTFTGSearchMenu(network: CyNetwork, nodeType: BGNodeType, nodeUri: String, lookForGroups: Boolean = false): JMenuItem {
+    /*protected fun createTFTGSearchMenu(network: CyNetwork, nodeType: BGNodeType, nodeUri: String, lookForGroups: Boolean = false): JMenuItem {
 
         var menuItemText = ""
 
@@ -331,7 +324,7 @@ class BGNodeMenuActionsCMF(val gravity: Float): CyNodeViewContextMenuFactory {
 
         val searchTFTG = JMenuItem(menuItemText)
         searchTFTG.addActionListener {
-            /*
+            *//*
             val query = BGFindGraphRelationForNodeQuery(serviceManager, nodeType, nodeUri)
             query.addCompletion {
                 val returnData = it as? BGReturnRelationsData ?: throw Exception("Invalid return data!")
@@ -344,7 +337,7 @@ class BGNodeMenuActionsCMF(val gravity: Float): CyNodeViewContextMenuFactory {
                 BGLoadUnloadedNodes.createAndRun(serviceManager, returnData.unloadedNodes) {
                     BGRelationSearchResultsController(serviceManager, returnData, columnNames, network)
                 }
-            }*/
+            }*//*
             val relationType = BGServiceManager.cache.getRelationTypeForURIandGraph("http://www.w3.org/2004/02/skos/core#related", "tf-tg") ?: throw Exception("Unable to find relation type in cache!")
             val direction = when (nodeType) {
                 BGNodeType.Protein -> BGRelationDirection.FROM
@@ -381,7 +374,7 @@ class BGNodeMenuActionsCMF(val gravity: Float): CyNodeViewContextMenuFactory {
             }).start()
         }
         return searchTFTG
-    }
+    }*/
 
     protected fun createPPISearchMenu(network: CyNetwork, nodeUri: String, lookForGroups: Boolean = false): JMenuItem {
 

@@ -1,9 +1,9 @@
 package eu.biogateway.cytoscape.internal.query
 
-import eu.biogateway.cytoscape.internal.model.BGNodeType
+import eu.biogateway.cytoscape.internal.model.BGNodeTypeNew
 import eu.biogateway.cytoscape.internal.parser.BGReturnType
 
-class BGBulkImportNodesFromURIs(val nodeType: BGNodeType, val nodeUris: Collection<String>): BGQuery(BGReturnType.NODE_LIST_DESCRIPTION_TAXON) {
+class BGBulkImportNodesFromURIs(val nodeType: BGNodeTypeNew, val nodeUris: Collection<String>): BGQuery(BGReturnType.NODE_LIST_DESCRIPTION_TAXON) {
 
     init {
         taskMonitorTitle = "Searching for nodes..."
@@ -11,15 +11,8 @@ class BGBulkImportNodesFromURIs(val nodeType: BGNodeType, val nodeUris: Collecti
     }
 
     override fun generateQueryString(): String {
-        val nodeTypeGraph = when (nodeType) {
-            BGNodeType.Gene -> "<refseq>"
-            BGNodeType.Protein -> "<refprot>"
-            BGNodeType.GOTerm -> "<go-basic>"
-            BGNodeType.Taxon -> "<cco>"
-            else -> {
-                "?anyGraph"
-            }
-        }
+
+        val nodeTypeGraph = if (nodeType.metadataGraph != null) "<" +nodeType.metadataGraph+">" else "?anyGraph"
 
         var uriList = ""
         for (nodeName in nodeUris) {
@@ -28,16 +21,16 @@ class BGBulkImportNodesFromURIs(val nodeType: BGNodeType, val nodeUris: Collecti
         uriList = uriList.removeSuffix(",")
 
 
-        val taxaGraph = when (nodeType) {
-            BGNodeType.Gene, BGNodeType.Protein -> "?uri inheres_in: ?taxon . \n } GRAPH taxaGraph: {\n" +
+        val taxaGraph = when (nodeType.id) {
+            "gene", "protein" -> "?uri inheres_in: ?taxon . \n } GRAPH taxaGraph: {\n" +
                     "?taxon rdfs:subClassOf sio:SIO_010000 . \n" +
                     "?taxon skos:prefLabel ?taxaName }\n"
             else -> {
                 "\n }"
             }
         }
-        val taxaName = when (nodeType) {
-            BGNodeType.Protein, BGNodeType.Gene -> "?taxaName"
+        val taxaName = when (nodeType.id) {
+            "gene", "protein" -> "?taxaName"
             else -> {
                 "'N/A'"
             }

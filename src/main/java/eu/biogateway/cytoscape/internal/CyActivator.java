@@ -68,7 +68,7 @@ public class CyActivator extends AbstractCyActivator {
         });
         registerService(context, openImportExport, CyAction.class, new Properties());
 
-        BGCreateAction reloadDataModelAction = new BGCreateAction("Reload Config", "always", new BGAction() {
+        BGCreateAction reloadDataModelAction = new BGCreateAction("DEBUG: Reload Config", "always", new BGAction() {
             @Override
             public void action() {
                 BGServiceManager.INSTANCE.setDataModelController(new BGDataModelController());

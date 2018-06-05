@@ -1,5 +1,6 @@
 package eu.biogateway.cytoscape.internal.model
 
+import eu.biogateway.cytoscape.internal.BGServiceManager
 import eu.biogateway.cytoscape.internal.parser.getDescription
 import eu.biogateway.cytoscape.internal.parser.getName
 import eu.biogateway.cytoscape.internal.parser.getUri
@@ -11,7 +12,7 @@ open class BGNode {
 
     val uri: String
     var isLoaded: Boolean = false
-    val type: BGNodeType
+    val type: BGNodeTypeNew
     var name: String get() {
         if (field.isEmpty()) {
             return this.generateName()
@@ -73,6 +74,8 @@ open class BGNode {
 
     fun generateName(): String {
 
+        // TODO: Remove this code.
+        /*
         if (type == BGNodeType.Pubmed) {
             return "Pubmed ID " + uri.substringAfterLast("/")
         }
@@ -87,7 +90,7 @@ open class BGNode {
             if (parts.size == 3) {
                 return "GO: " + parts[1]
             }
-        }
+        }*/
 
         if (uri.startsWith("http://")) {
             val suffix = uri.substringAfterLast("/")
@@ -117,23 +120,12 @@ open class BGNode {
     }
 
     object static {
-        fun nodeTypeForUri(uri: String): BGNodeType {
-            return when {
-                uri.contains("uniprot") -> BGNodeType.Protein
-                uri.contains("ncbigene") -> BGNodeType.Gene
-                uri.contains("GO_") -> BGNodeType.GOTerm
-                uri.contains("NCBITaxon_") -> BGNodeType.Taxon
-                uri.contains("intact") -> BGNodeType.PPI
-                uri.contains("pubmed") -> BGNodeType.Pubmed
-                uri.contains("GOA_") -> BGNodeType.GOA
-                uri.contains("/omim/") -> BGNodeType.Disease
-                uri.contains("ssb.biogateway.eu/rgts/") -> BGNodeType.TFTG // TODO: Need a better identifier!
-                uri.contains("ssb.biogateway.eu/rt/") -> BGNodeType.TFTG // TODO: Need a better identifier!
-                uri.contains("ssb.biogateway.eu/tf/") -> BGNodeType.TF
-                else -> {
-                    BGNodeType.Undefined
-                }
-            }
+        fun nodeTypeForUri(uri: String): BGNodeTypeNew {
+
+            val matchingTypes = BGServiceManager.cache.nodeTypes.values.filter { it.uriPattern != null && uri.contains(it.uriPattern) }
+
+            if (matchingTypes.size == 1) return matchingTypes.first()
+            return BGNodeTypeNew.UNDEFINED
         }
     }
 }

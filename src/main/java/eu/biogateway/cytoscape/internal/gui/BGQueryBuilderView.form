@@ -338,7 +338,13 @@
                       <component id="34e70" class="javax.swing.JCheckBox" binding="filterRelationsToExistingCheckBox">
                         <constraints/>
                         <properties>
-                          <text value="Only show relations to nodes in current network"/>
+                          <text value="Only relations TO nodes in current network"/>
+                        </properties>
+                      </component>
+                      <component id="c7028" class="javax.swing.JCheckBox" binding="filterRelationsFROMExistingCheckBox">
+                        <constraints/>
+                        <properties>
+                          <text value="Only relations FROM nodes in current network"/>
                         </properties>
                       </component>
                     </children>

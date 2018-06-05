@@ -2,22 +2,22 @@ package eu.biogateway.cytoscape.internal.gui.conversion
 
 import eu.biogateway.cytoscape.internal.BGServiceManager
 import eu.biogateway.cytoscape.internal.model.BGNodeConversionType
-import eu.biogateway.cytoscape.internal.model.BGNodeType
+import eu.biogateway.cytoscape.internal.model.BGNodeTypeNew
 import org.cytoscape.model.CyColumn
 import java.awt.FlowLayout
 import javax.swing.DefaultComboBoxModel
 import javax.swing.JComboBox
 import javax.swing.JPanel
 
-class BGImportIdentifierLine(val nodeTypes: Array<BGNodeType>, val columns: Array<CyColumn>, val conversionTypes: Array<BGNodeConversionType>): JPanel() {
+class BGImportIdentifierLine(val nodeTypes: Array<BGNodeTypeNew>, val columns: Array<CyColumn>, val conversionTypes: Array<BGNodeConversionType>): JPanel() {
 
-    val nodeTypeComboBox: JComboBox<BGNodeType>
+    val nodeTypeComboBox: JComboBox<BGNodeTypeNew>
     val sourceColumnComboBox = JComboBox(columns)
     val importConversionTypeComboBox: JComboBox<BGNodeConversionType>
 
 
-    val nodeType: BGNodeType get() {
-        return nodeTypeComboBox.selectedItem as BGNodeType
+    val nodeType: BGNodeTypeNew get() {
+        return nodeTypeComboBox.selectedItem as BGNodeTypeNew
     }
 
     val sourceColumn: CyColumn get() {
@@ -49,7 +49,7 @@ class BGImportIdentifierLine(val nodeTypes: Array<BGNodeType>, val columns: Arra
     }
 
     fun updateForNodeTypeSelected() {
-        val nodeType = nodeTypeComboBox.selectedItem as? BGNodeType ?: return
+        val nodeType = nodeTypeComboBox.selectedItem as? BGNodeTypeNew ?: return
 
         val model = importConversionTypeComboBox.model as DefaultComboBoxModel
         model.removeAllElements()

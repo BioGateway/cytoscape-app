@@ -7,6 +7,7 @@ package eu.biogateway.cytoscape.internal.util
 
 object Constants {
     val PROFILING = false
+    val TEST_SERVER = true
 
     val BG_SELECTED_ACTIVE_RELATION_TYPES = "biogatewayPluginActiveRelationTypes"
     val BG_SHOULD_USE_BG_DICT = true
@@ -20,8 +21,15 @@ object Constants {
     val BG_FIELD_EDGE_EXPANDABLE = "Expandable"
     val BG_FIELD_PUBMED_URI = "Pubmed uri"
     val BG_TABLE_NODE_METADATA = "Biogateway Node Metadata Table"
-    val BG_CONFIG_FILE_URL = "https://www.dropbox.com/s/ad4nyuqjtchsjcc/BiogatewayQueries_Dropbox.xml?dl=1"
-  //  val BG_CONFIG_FILE_URL = "https://bitbucket.org/druglogics/biogw_cytoscape/raw/b429639d3440fde532d2b8c8f43cf54888560950/BiogatewayQueries.xml?at=master"
+    val BG_CONFIG_FILE_URL: String get() {
+        return if (TEST_SERVER) {
+            "https://www.dropbox.com/s/lrw0ue4ikzy5u61/BiogatewayQueries_Dropbox_Beta.xml?dl=1"
+        } else {
+            "https://www.dropbox.com/s/ad4nyuqjtchsjcc/BiogatewayQueries_Dropbox.xml?dl=1"
+        }
+    }
+
+    //  val BG_CONFIG_FILE_URL = "https://bitbucket.org/druglogics/biogw_cytoscape/raw/b429639d3440fde532d2b8c8f43cf54888560950/BiogatewayQueries.xml?at=master"
     val SERVER_PATH = "http://www.semantic-systems-biology.org/biogateway/endpoint"
     val DICTIONARY_SERVER_PATH = "http://localhost:3002/"
     val BG_FIELD_SOURCE_GRAPH = "Source Graph"

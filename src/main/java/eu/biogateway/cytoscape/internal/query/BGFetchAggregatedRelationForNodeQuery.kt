@@ -1,48 +1,67 @@
 package eu.biogateway.cytoscape.internal.query
 
-import eu.biogateway.cytoscape.internal.BGServiceManager
 import eu.biogateway.cytoscape.internal.model.BGNode
-import eu.biogateway.cytoscape.internal.model.BGNodeType
 import eu.biogateway.cytoscape.internal.parser.BGReturnType
-import org.w3c.dom.traversal.NodeFilter
 
 /// Returns the relation described by the expanded relation node.
-class BGFetchAggregatedRelationForNodeQuery(val node: BGNode): BGRelationQuery(BGReturnType.RELATION_TRIPLE_GRAPHURI) {
+class BGFetchAggregatedRelationForNodeQuery(val node: BGNode, val relationIdentifier: String): BGRelationQuery(BGReturnType.RELATION_TRIPLE_GRAPHURI) {
 
     override fun generateQueryString(): String {
-        val graphName = when (node.type) {
-            BGNodeType.PPI -> "intact"
-            BGNodeType.GOA -> "goa"
-            BGNodeType.TFTG -> "tf-tg"
-            else -> {
-                throw Exception("Collapsing of this type is not supported!")
-            }
+        val graphName = node.type.metadataGraph ?: throw Exception("Collapsing of this type is not supported!")
+
+        var relationIdentifierParts = relationIdentifier.split("::")
+        var graphUri: String = relationIdentifierParts.getOrElse(0) { "" }
+        val relationUri = relationIdentifierParts.getOrElse(1) {"http://ssb.biogateway.eu/unknown"}
+
+        if (graphUri.isEmpty()) {
+            graphUri = "?graph"
         }
+
 
         return "BASE <http://www.semantic-systems-biology.org/> \n" +
                 "PREFIX node: <"+node.uri+">\n" +
                 "PREFIX graph: <"+graphName+">  \n" +
+                "SELECT distinct ?agent graph: ?predicate ?target \n" +
+                "WHERE {  \n" +
+                " GRAPH graph: {  \n" +
+                "  node: rdf:type ?sen . \n"+
+                "  ?sen <http://semanticscience.org/resource/SIO_000139> ?agent .\n" +
+                "  ?sen <http://semanticscience.org/resource/SIO_000291> ?target .\n" +
+                "  ?agent ?predicate ?target . \n"+
+                "}}"
+
+
+        /*return "BASE <http://www.semantic-systems-biology.org/> \n" +
+                "PREFIX sio: <http://semanticscience.org/resource/>\n" +
+                "PREFIX node: <${node.uri}> \n" +
+                "PREFIX graph: <$graphUri> \n" +
                 "SELECT distinct ?subject graph: ?predicate ?object \n" +
                 "WHERE {  \n" +
                 " GRAPH graph: {  \n" +
                 "  node: rdf:subject ?subject .\n" +
                 "  node: rdf:object ?object .\n" +
                 "  node: rdf:predicate ?predicate .\n" +
-                "}}"
+                "}}"*/
+
+//        return "BASE <http://www.semantic-systems-biology.org/> \n" +
+//                "PREFIX node: <${node.uri}>\n" +
+//                "PREFIX graph: <$graphUri>  \n" +
+//                "SELECT distinct ?from graph: <$relationUri> ?to \n" +
+//                "WHERE {  \n" +
+//                " GRAPH graph: {  \n" +
+//                "  node: rdf:type ?int . \n"+
+//                "  ?from <http://semanticscience.org/resource/SIO_000062> ?int .\n" +
+//                "  ?int <http://semanticscience.org/resource/SIO_000291> ?to .\n" +
+//                "}}"
     }
-}
+    }
+
 
 class BGFetchAggregatedTFTGRelationForNodeQuery(val node: BGNode): BGRelationQuery(BGReturnType.RELATION_TRIPLE_GRAPHURI) {
 
     override fun generateQueryString(): String {
-        val graphName = when (node.type) {
-            BGNodeType.PPI -> "intact"
-            BGNodeType.GOA -> "goa"
-            BGNodeType.TFTG -> "genex"
-            else -> {
-                throw Exception("Collapsing of this type is not supported!")
-            }
-        }
+        val graphName = node.type.metadataGraph ?: throw Exception("Collapsing of this type is not supported!")
+
 
         return "BASE <http://www.semantic-systems-biology.org/> \n" +
                 "PREFIX node: <"+node.uri+">\n" +

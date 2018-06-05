@@ -235,7 +235,10 @@ class BGMultiNodeQueryCMF(val gravity: Float): CyNetworkViewContextMenuFactory {
         val parentMenu = JMenu(description)
 
         // Will only create the menu if the config is loaded.
-        for (relationType in BGServiceManager.cache.relationTypeMap.values.sortedBy { it.number }) {
+
+
+
+        for (relationType in BGServiceManager.cache.activeRelationTypes.sortedBy { it.number }) {
             val item = JMenuItem(relationType.description)
 
             item.addActionListener {

@@ -82,7 +82,7 @@ abstract class BGTypedQuery(val type: BGQueryType, val serviceManager: BGService
 
 
 @Suppress("LocalVariableName")
-abstract class BGQuery(var type: BGReturnType, val useMongoDb: Boolean = false): AbstractTask(), Runnable {
+abstract class BGQuery(var type: BGReturnType, val dictionarySearchType: String? = null): AbstractTask(), Runnable {
     var completionBlocks: ArrayList<(BGReturnData?) -> Unit> = ArrayList()
     var returnData: BGReturnData? = null
     var client = HttpClients.createDefault()!!
@@ -115,7 +115,7 @@ abstract class BGQuery(var type: BGReturnType, val useMongoDb: Boolean = false):
         val uri = encodeUrl()?.toURI()
         if (uri != null) {
 
-            val httpRequest = when (useMongoDb) {
+            val httpRequest = when (!dictionarySearchType.isNullOrEmpty()) {
                 true -> {
                     val post = HttpPost(uri)
                     val json = generateQueryString()
@@ -183,8 +183,8 @@ abstract class BGQuery(var type: BGReturnType, val useMongoDb: Boolean = false):
     }
 
     fun encodeUrl(): URL? {
-        if (useMongoDb) {
-            return URL(BGServiceManager.dictionaryServerPath + "fetch")
+        if (!dictionarySearchType.isNullOrEmpty()) {
+            return URL(BGServiceManager.dictionaryServerPath + dictionarySearchType)
         } else {
             val RETURN_TYPE_TSV = "text/tab-separated-values"
             val BIOPAX_DEFAULT_OPTIONS = "timeout=0&debug=on"

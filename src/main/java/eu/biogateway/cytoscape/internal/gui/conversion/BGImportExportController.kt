@@ -92,7 +92,7 @@ class BGImportExportController() {
                 .filter { identifierConversions.map { it.dataType }.contains(getDataTypeForColumn(it))}
                 .sortedBy { it.name }.toTypedArray()
 
-        val nodeTypes = identifierConversions.map { it.nodeType }.toHashSet().toTypedArray().sortedArray()
+        val nodeTypes = identifierConversions.map { it.nodeType }.toHashSet().toTypedArray().sortedBy{ it.id }.toTypedArray()
         val identifierLine = BGImportIdentifierLine(nodeTypes, identifierColumns, identifierConversions)
         val deleteIcon = ImageIcon(this.javaClass.classLoader.getResource("delete.png"))
         val deleteButton = JButton(deleteIcon)

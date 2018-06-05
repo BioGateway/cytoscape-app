@@ -52,6 +52,8 @@ class BGDataModelController() {
             return null
         }
 
+        var nodeTypes = HashMap<String, BGNodeTypeNew>()
+
         var importNodeConversionTypes: Collection<BGNodeConversionType>? = null
         var importEdgeConversionTypes: Collection<BGConversionType>? = null
         var exportNodeConversionTypes: Collection<BGConversionType>? = null
@@ -75,7 +77,7 @@ class BGDataModelController() {
         var nodeCache = HashMap<String, BGNode>()
 
         var relationTypeMap = HashMap<String, BGRelationType>()
-        var relationTypesForGraphs = HashMap<String, HashMap<String, BGRelationType>>()
+        var relationTypesForGraphs = HashMap<BGGraph, HashMap<String, BGRelationType>>()
 
 
         //var relationTypesRootNode = arrayOf("intact", "tf-tg", "goa", "refprot").toHashSet()
@@ -143,7 +145,7 @@ class BGDataModelController() {
 
         fun addRelationType(relationType: BGRelationType) {
             relationTypeMap.put(relationType.identifier, relationType)
-            relationType.defaultGraphURI?.let {
+            relationType.defaultGraph?.let {
                 if (relationTypesForGraphs.containsKey(it)) {
                     relationTypesForGraphs[it]!![relationType.identifier] = relationType
                 } else {
@@ -172,7 +174,7 @@ class BGDataModelController() {
 
     fun createGraphTreeRootnode() {
         for (graph in cache.relationTypesForGraphs.keys) {
-            val graphNode = if (graph.isNotBlank()) DefaultMutableTreeNode(graph) else DefaultMutableTreeNode("Unspecified")
+            val graphNode = if (graph.name.isNotBlank()) DefaultMutableTreeNode(graph) else DefaultMutableTreeNode("Unspecified")
             cache.relationTypesForGraphs[graph]?.let {
                 for (relationType in it.values) {
                     val childNode = BGRelationTypeTreeNode(relationType)
@@ -288,8 +290,8 @@ class BGDataModelController() {
         //return set
     }
 
-    fun setActivationForRelationType(graphName: String, relationTypeName: String, isActive: Boolean) {
-        val relationTypes = cache.relationTypesForGraphs.get(graphName)?.map { it.value }?.filter { it.name.equals(relationTypeName) }
+    fun setActivationForRelationType(graph: BGGraph, relationTypeName: String, isActive: Boolean) {
+        val relationTypes = cache.relationTypesForGraphs.get(graph)?.map { it.value }?.filter { it.name.equals(relationTypeName) }
         if (relationTypes?.size == 1) {
             if (isActive) {
                 activateRelationType(relationTypes.first())
@@ -421,7 +423,7 @@ class BGDataModelController() {
 
     private fun getNodesFromDictionaryServer(nodeUris: Collection<String>): HashMap<String, BGNode> {
         if (nodeUris.isEmpty()) return HashMap()
-        val query = BGMultiNodeFetchMongoQuery(nodeUris)
+        val query = BGMultiNodeFetchMongoQuery(nodeUris, "fetch")
         query.run()
         val data = query.futureReturnData.get() as BGReturnNodeData
 
@@ -436,7 +438,7 @@ class BGDataModelController() {
         val nodeType = BGNode.static.nodeTypeForUri(uri)
 
 
-        val query = if (BG_SHOULD_USE_BG_DICT && (nodeType == BGNodeType.Protein || nodeType == BGNodeType.Gene || nodeType == BGNodeType.GOTerm)) {
+        val query = if (BG_SHOULD_USE_BG_DICT && (nodeType.autocompleteType != null)) {
             BGNodeFetchMongoQuery(uri)
         } else {
             BGNodeFetchQuery(uri)

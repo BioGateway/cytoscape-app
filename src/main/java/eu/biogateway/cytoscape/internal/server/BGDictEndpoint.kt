@@ -96,6 +96,10 @@ class BGDictEndpoint(internal var endpointUrl: String) {
         }
     }
 
+    fun getGenesWithSymbols(symbols: Collection<String>): ArrayList<BGSuggestion> {
+        return ArrayList()
+    }
+
     fun searchForLabel(term: String, type: String, limit: Int): ArrayList<BGSuggestion> {
 
         if (term.length == 0) {

@@ -3,39 +3,29 @@ package eu.biogateway.cytoscape.internal.model
 import eu.biogateway.cytoscape.internal.gui.BGColorableText
 import java.awt.Color
 
-/**
- * Created by sholmas on 26/05/2017.
- */
-
-
 class BGExternalRelationType(name: String): BGRelationType("External", name, 0)
 
 
-open class BGRelationType(val uri: String, val name: String, val number: Int, override val textColor: Color = Color.BLACK, val defaultGraphURI: String? = null, val defaultGraphLabel: String? = null, val arbitraryLength: Boolean = false, val directed: Boolean = true, val expandable: Boolean = false, val fromType: BGNodeType? = null, val toType: BGNodeType? = null): BGColorableText {
-
+open class BGRelationType(val uri: String, val name: String, val number: Int, override val textColor: Color = Color.BLACK, val defaultGraph: BGGraph? = null, val arbitraryLength: Boolean = false, val directed: Boolean = true, val expandable: Boolean = false, val fromType: BGNodeTypeNew? = null, val toType: BGNodeTypeNew? = null, val symmetrical: Boolean = false): BGColorableText {
 
     val description: String get() {
-        if (defaultGraphLabel != null && defaultGraphLabel.isNotEmpty()) {
-            return "$defaultGraphLabel: $name"
-        }
-        return when (defaultGraphURI != null && defaultGraphURI.isNotEmpty()) {
-            true -> defaultGraphURI!!.toUpperCase() + ": "+name
-            false -> name
+        if (defaultGraph != null) {
+            return "${defaultGraph.name}: $name"
+        } else {
+            return name
         }
     }
 
     val interaction: String get() {
-        return when (defaultGraphURI.isNullOrEmpty()) {
-            true -> name
-            false -> defaultGraphURI+":"+name
-        }
+        return description
     }
 
+
     val identifier: String get() {
-        return when (defaultGraphURI.isNullOrEmpty()) {
-            true -> uri
-            false -> defaultGraphURI+":"+uri
+        if (defaultGraph != null) {
+            return "${defaultGraph.uri}::$uri"
         }
+        return uri
     }
 
     override fun toString(): String {
@@ -47,5 +37,8 @@ open class BGRelationType(val uri: String, val name: String, val number: Int, ov
             true -> "<$uri>*"
             false -> "<$uri>"
         }
+    }
+    val defaultGraphURI: String? get() {
+        return defaultGraph?.uri
     }
 }

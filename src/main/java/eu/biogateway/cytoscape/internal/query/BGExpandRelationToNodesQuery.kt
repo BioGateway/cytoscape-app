@@ -15,27 +15,64 @@ class BGExpandRelationToNodesQuery(val fromNode: String, val toNode: String, val
     override fun generateQueryString(): String {
         if (!relationType.expandable) throw Exception("Relation type is not expandable!")
 
-        if (relationType.defaultGraphURI == "goa") return generateQueryString("goa")
-        if (relationType.defaultGraphURI == "tf-tg") return generateQueryString("tf-tg")
-        if (relationType.defaultGraphURI == "genex") return generateTFTGQueryString("genex")
-        if (relationType.defaultGraphURI == "intact") return generatePPIQueryString2()
+        val graphUri = relationType.defaultGraphURI ?: throw Exception("Missing or invalid default graph name!")
 
-        throw Exception("Missing or invalid default graph name!")
+
+        //if (graphUri.contains("gnex")) return generateTFTGQueryString(graphUri)
+
+        return when (relationType.directed) {
+            true -> generateQueryString(graphUri)
+            false -> generateUndirectedQueryString(graphUri)
+        }
+
+//        return when (uri) {
+//            "http://ssb.biogateway.eu/graph/gnex" -> generateTFTGQueryString(uri)
+//            "genex" -> generateTFTGQueryString(uri)
+//            "intact" -> generatePPIQueryString2()
+//            else -> {
+//                generateQueryString(uri)
+//            }
+//        }
+
+//        if (relationType.defaultGraphURI == "goa") return generateQueryString("goa")
+//        if (relationType.defaultGraphURI == "tf-tg") return generateQueryString("tf-tg")
+//        if (relationType.defaultGraphURI == "genex") return generateTFTGQueryString()
+//        if (relationType.defaultGraphURI == "intact") return generatePPIQueryString2()
+
+
     }
 
-    private fun generateQueryString(graphName: String): String {
+    private fun generateUndirectedQueryString(graphUri: String): String {
         return "BASE <http://www.semantic-systems-biology.org/> \n" +
-                "PREFIX object: <"+toNode+">\n" +
-                "PREFIX subject: <"+fromNode+">\n" +
-                "SELECT distinct ?a as ?a1 <"+graphName+"> ?rel1 object: ?a as ?a2 <"+graphName+"> ?rel2 subject:\n" +
+                "PREFIX object: <$toNode>\n" +
+                "PREFIX subject: <$fromNode>\n" +
+                "PREFIX has_participant: <http://semanticscience.org/resource/SIO_000132>\n"+
+                "SELECT distinct ?a as ?a1 <$graphUri> has_participant: object: ?a as ?a2 <$graphUri> has_participant: subject:\n" +
                 "WHERE {  \n" +
-                " GRAPH <"+graphName+"> {  \n" +
-                "\t ?a ?rel2 subject: .\n" +
-                "\t ?a ?rel1 object: .\n" +
+                " GRAPH <$graphUri> {  \n" +
+                "\t ?a has_participant: subject: .\n" +
+                "\t ?a has_participant: object: .\n" +
                 " }\n" +
                 "}"
     }
 
+    private fun generateQueryString(graphName: String): String {
+        return "BASE <http://www.semantic-systems-biology.org/> \n" +
+                "PREFIX is_participant_in: <http://semanticscience.org/resource/SIO_000062> \n"+
+                "PREFIX has_target: <http://semanticscience.org/resource/SIO_000291> \n"+
+                "PREFIX object: <"+toNode+">\n" +
+                "PREFIX subject: <"+fromNode+">\n" +
+                "SELECT distinct subject: <"+graphName+"> is_participant_in: ?a as ?a1 ?a as ?a2 <"+graphName+"> has_target: object:\n" +
+                "WHERE {  \n" +
+                " GRAPH <"+graphName+"> {  \n" +
+                "\t subject: is_participant_in: ?sentence .\n" +
+                "\t ?sentence has_target: object: .\n" +
+                "\t ?a rdf:type ?sentence . \n" +
+                " }\n" +
+                "}"
+    }
+
+    /*
     private fun generateTFTGQueryString(graphName: String): String {
         return "BASE <http://www.semantic-systems-biology.org/> \n" +
                 "PREFIX gene: <"+toNode+">\n" +
@@ -73,17 +110,18 @@ class BGExpandRelationToNodesQuery(val fromNode: String, val toNode: String, val
 
     }
 
-    private fun generatePPIQueryString2(): String {
+    private fun generatePPIQueryString2(graphUri: String): String {
         return "BASE <http://www.semantic-systems-biology.org/> \n" +
-                "PREFIX object: <"+toNode+">\n" +
-                "PREFIX subject: <"+fromNode+">\n" +
-                "PREFIX has_agent: <http://semanticscience.org/resource/SIO_000139>\n"+
-                "SELECT distinct ?a as ?a1 <intact> has_agent: object: ?a as ?a2 <intact> has_agent: subject:\n" +
+                "PREFIX object: <$toNode>\n" +
+                "PREFIX subject: <$fromNode>\n" +
+                "PREFIX has_participant: <http://semanticscience.org/resource/SIO_000132>\n"+
+                "SELECT distinct ?a as ?a1 <$graphUri> has_participant: object: ?a as ?a2 <$graphUri> has_participant: subject:\n" +
                 "WHERE {  \n" +
                 " GRAPH <intact> {  \n" +
-                "\t ?a has_agent: subject: .\n" +
-                "\t ?a has_agent: object: .\n" +
+                "\t ?a has_participant: subject: .\n" +
+                "\t ?a has_participant: object: .\n" +
                 " }\n" +
                 "}"
     }
+    */
 }

@@ -1,7 +1,9 @@
 package eu.biogateway.cytoscape.internal.gui
 
+import eu.biogateway.cytoscape.internal.BGServiceManager
 import eu.biogateway.cytoscape.internal.model.BGNode
-import eu.biogateway.cytoscape.internal.model.BGNodeType
+import eu.biogateway.cytoscape.internal.model.BGNodeTypeNew
+import eu.biogateway.cytoscape.internal.model.BGRelation
 import eu.biogateway.cytoscape.internal.query.BGNodeFetchQuery
 import eu.biogateway.cytoscape.internal.query.BGNodeURILookupQuery
 import eu.biogateway.cytoscape.internal.query.BGParsingType
@@ -17,7 +19,7 @@ import javax.swing.table.DefaultTableModel
 class BGNodeLookupController(parentComponent: JComponent?, defaultURI: String? = null, val completion: (BGNode?) -> Unit): ActionListener {
 
     private val view = BGNodeLookupView(this, parentComponent)
-    private var nodesFound = HashMap<String, BGNode>()
+    private var nodesFound: Map<String, BGNode> = HashMap<String, BGNode>()
 
     init {
         val table = view.resultTable.model as DefaultTableModel
@@ -29,7 +31,7 @@ class BGNodeLookupController(parentComponent: JComponent?, defaultURI: String? =
         table.setColumnIdentifiers(columnNames)
     }
 
-    private fun loadResultsIntoTable(nodesFound: HashMap<String, BGNode>) {
+    private fun loadResultsIntoTable(nodesFound: Map<String, BGNode>) {
         val tableModel = view.resultTable.model as DefaultTableModel
 
         for (i in tableModel.rowCount -1 downTo 0) {
@@ -46,30 +48,36 @@ class BGNodeLookupController(parentComponent: JComponent?, defaultURI: String? =
 
     private fun searchForNodes() {
 
-        val searchString = view.searchField.text
-        val useRegex = view.regexCheckBox.isSelected
+        val searchLimit = 100
 
-        val nodeType = when (view.nodeTypeComboBox.selectedItem as String) {
-            "Protein" -> BGNodeType.Protein
-            "Gene" -> BGNodeType.Gene
-            "GO Term" -> BGNodeType.GOTerm
-            "Taxon" -> BGNodeType.Taxon
-            else -> BGNodeType.Undefined
-        }
+        val searchString = view.searchField.text
+
+//        val nodeType = when (view.nodeTypeComboBox.selectedItem as String) {
+//            "Protein" -> BGNodeType.Protein
+//            "Gene" -> BGNodeType.Gene
+//            "GO Term" -> BGNodeType.GOTerm
+//            "Taxon" -> BGNodeType.Taxon
+//            else -> BGNodeType.Undefined
+//        }
+        val nodeTypeName = view.nodeTypeComboBox.selectedItem as String
+        val nodeType = BGServiceManager.cache.nodeTypes[nodeTypeName.toLowerCase()] ?: throw Exception("Unsupported node type.")
+        val useInfix = if (nodeType.autocompleteType == BGNodeTypeNew.BGAutoCompleteType.INFIX) true else false
 
         when (view.nameOrURIComboBox.selectedIndex) {
             0 -> {
                 // Label search
-                val query = BGNodeURILookupQuery(searchString, useRegex, nodeType)
-                query.addCompletion {
-                    val data = it as? BGReturnNodeData ?: return@addCompletion
-                    if (data.nodeData.count() == 0) {
-                        JOptionPane.showMessageDialog(view.mainFrame, "No entities found.")
-                    }
-                    loadResultsIntoTable(data.nodeData)
+
+                val suggestions = when (useInfix) {
+                    true -> BGServiceManager.endpoint.searchForLabel (searchString, nodeType.id, searchLimit)
+                    false -> BGServiceManager.endpoint.searchForPrefix(searchString, nodeType.id, searchLimit)
                 }
-                // TODO: Use the built-in task manager?
-                query.run()
+
+
+                val data = suggestions.map { it._id to BGNode(it) }.toMap()
+                if (data.values.count() == 0) {
+                    JOptionPane.showMessageDialog(view.mainFrame, "No entities found.")
+                }
+                loadResultsIntoTable(data)
             }
             1 -> {
                 // URI Lookup

@@ -246,6 +246,15 @@ class BGNetworkBuilder() {
         val nodeUri = nodeView.model.getUri(network)
         val cyNode = nodeView.model
 
+        val parentEdgeId = cyNode.getParentEdgeId(network)
+        val cyNodes = if (parentEdgeId.isNotBlank()) getCyNodesWithValue(network, network.defaultNodeTable, Constants.BG_FIELD_NODE_PARENT_EDGE_ID, parentEdgeId) else null
+
+        var relationIdentifier = if (parentEdgeId.isNotBlank()) parentEdgeId.split(";")[1]
+        else {
+            ""
+        }
+
+
         val startTime = System.currentTimeMillis()
         val adjacentNodeUris = network.getAdjacentEdgeIterable(cyNode, CyEdge.Type.ANY).fold(HashSet<CyNode>()) { acc, cyEdge -> acc.union(setOf(cyEdge.source, cyEdge.target)).toHashSet() }.map { it.getUri(network) }
         val adjacentNodeExecutionTime = System.currentTimeMillis() - startTime
@@ -254,12 +263,12 @@ class BGNetworkBuilder() {
         val node = BGServiceManager.dataModelController.searchForExistingNode(nodeUri)
                 ?: throw Exception("Node not found!")
 
-        val query: BGRelationQuery = when (node.type) {
-            BGNodeType.PPI -> BGFetchAggregatedPPIRelationForNodeQuery(nodeUri, adjacentNodeUris)
-            BGNodeType.TFTG -> BGFetchAggregatedTFTGRelationForNodeQuery(node)
-            BGNodeType.GOA -> BGFetchAggregatedRelationForNodeQuery(node)
+        val query: BGRelationQuery = when (node.type.id) {
+            "ppi" -> BGFetchAggregatedPPIRelationForNodeQuery(nodeUri, adjacentNodeUris)
+            "tftg" -> BGFetchAggregatedTFTGRelationForNodeQuery(node)
+            //BGNodeType.GOA -> BGFetchAggregatedRelationForNodeQuery(node)
             else -> {
-                return
+                BGFetchAggregatedRelationForNodeQuery(node, relationIdentifier)
                 //throw Exception("Cannot collapse nodes of this dataType!")
             }
         }
@@ -267,8 +276,6 @@ class BGNetworkBuilder() {
         network.removeEdges(network.getAdjacentEdgeIterable(cyNode, CyEdge.Type.ANY).toHashSet())
 
 
-        val parentEdgeId = cyNode.getParentEdgeId(network)
-        val cyNodes = if (parentEdgeId.isNotBlank()) getCyNodesWithValue(network, network.defaultNodeTable, Constants.BG_FIELD_NODE_PARENT_EDGE_ID, parentEdgeId) else null
 
         query.addCompletion {
             val data = it as BGReturnRelationsData
@@ -693,7 +700,7 @@ class BGNetworkBuilder() {
         val name = node.name
         cyNode.setName(name, network)
 
-        cyNode.setType(node.type.paremeterType, network)
+        cyNode.setType(node.type.name, network)
 
         node.description?.let { cyNode.setDescription(it, network)}
         // TODO: WARNING: Unknown behaviour if the CyNodes CyNetwork is deleted!

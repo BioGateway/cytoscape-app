@@ -48,6 +48,7 @@ class BGRelationSearchResultsController(private val returnData: BGReturnRelation
         for (result in relationsFound) {
             model.addRow(result.asArray())
         }
+        view.mainFrame.title = "BioGateway: Found ${relationsFound.count()} relations."
     }
 
 
