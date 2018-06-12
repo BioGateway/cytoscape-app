@@ -106,8 +106,7 @@ class BGNodeMenuActionsCMF(val gravity: Float): CyNodeViewContextMenuFactory {
         val data = query.returnData as? BGReturnMetadata ?: return null
 
         //TODO: This is assuming that PubMed nodes are not using URIs, but just PubMedID's.
-        val validURLs = data.values.filter { it.toLowerCase().contains("pubmed") }
-
+        val validURLs = data.values.filter { it.toLowerCase().contains("pubmed") }.map { it.replace("PubMed:", "http://identifiers.org/pubmed/") }
         //val validURLs = validResults.map { "http://identifiers.org/pubmed/"+it }
 
         if (validURLs.size == 0) return null
