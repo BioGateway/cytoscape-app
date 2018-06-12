@@ -68,23 +68,7 @@
             <constraints border-constraint="West"/>
             <properties/>
             <border type="none"/>
-            <children>
-              <component id="c5baf" class="javax.swing.JButton" binding="selectRelationsLeadingToButton" default-binding="true">
-                <constraints/>
-                <properties>
-                  <horizontalTextPosition value="11"/>
-                  <text value="Select relations leading to selection"/>
-                  <toolTipText value="Select all relations leading to the relations currently selected."/>
-                </properties>
-              </component>
-              <component id="b5cf9" class="javax.swing.JCheckBox" binding="filterSelectedCheckBox" default-binding="true">
-                <constraints/>
-                <properties>
-                  <text value="Filter selected"/>
-                  <toolTipText value="Only show currently selected relations."/>
-                </properties>
-              </component>
-            </children>
+            <children/>
           </grid>
         </children>
       </grid>

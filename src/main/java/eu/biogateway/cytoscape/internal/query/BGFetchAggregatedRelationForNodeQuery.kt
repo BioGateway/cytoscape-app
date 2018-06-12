@@ -17,7 +17,7 @@ class BGFetchAggregatedRelationForNodeQuery(val node: BGNode, val relationIdenti
             graphUri = "?graph"
         }
 
-
+        /*
         return "BASE <http://www.semantic-systems-biology.org/> \n" +
                 "PREFIX node: <"+node.uri+">\n" +
                 "PREFIX graph: <"+graphName+">  \n" +
@@ -29,9 +29,9 @@ class BGFetchAggregatedRelationForNodeQuery(val node: BGNode, val relationIdenti
                 "  ?sen <http://semanticscience.org/resource/SIO_000291> ?target .\n" +
                 "  ?agent ?predicate ?target . \n"+
                 "}}"
+        */
 
-
-        /*return "BASE <http://www.semantic-systems-biology.org/> \n" +
+        return "BASE <http://www.semantic-systems-biology.org/> \n" +
                 "PREFIX sio: <http://semanticscience.org/resource/>\n" +
                 "PREFIX node: <${node.uri}> \n" +
                 "PREFIX graph: <$graphUri> \n" +
@@ -41,7 +41,7 @@ class BGFetchAggregatedRelationForNodeQuery(val node: BGNode, val relationIdenti
                 "  node: rdf:subject ?subject .\n" +
                 "  node: rdf:object ?object .\n" +
                 "  node: rdf:predicate ?predicate .\n" +
-                "}}"*/
+                "}}"
 
 //        return "BASE <http://www.semantic-systems-biology.org/> \n" +
 //                "PREFIX node: <${node.uri}>\n" +

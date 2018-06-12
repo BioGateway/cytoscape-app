@@ -13,9 +13,12 @@ import org.w3c.dom.Element
 import org.w3c.dom.Node
 import java.awt.Color
 import java.io.InputStream
+import javax.swing.JOptionPane
 import javax.xml.parsers.DocumentBuilderFactory
 
 object BGConfigParser {
+
+    /// Parses the config file from the input stream. Returns an error message if something went wrong, returns null if everything went well.
     fun parseXMLConfigFile(stream: InputStream, cache: BGDataModelController.BGCache) {
 
         val queryTemplateHashMap = java.util.HashMap<String, QueryTemplate>()
@@ -224,7 +227,7 @@ object BGConfigParser {
                     val conversion = parseConversionElement(BGConversionType.ConversionDirection.IMPORT, node) ?: continue
 
                     val typeString = node.getAttribute("type") ?: continue
-                    val nodeType = BGServiceManager.cache.nodeTypes.get(typeString) ?: continue
+                    val nodeType = cache.nodeTypes.get(typeString) ?: continue
 
                     val nodeConversion = BGNodeConversionType(nodeType, conversion) ?: continue
 
@@ -250,7 +253,7 @@ object BGConfigParser {
                     val conversion = parseConversionElement(BGConversionType.ConversionDirection.EXPORT, node) ?: continue
 
                     val typeString = node.getAttribute("type") ?: continue
-                    val nodeType = BGServiceManager.cache.nodeTypes.get(typeString) ?: continue
+                    val nodeType = cache.nodeTypes.get(typeString) ?: continue
 
                     val nodeConversion = BGNodeConversionType(nodeType, conversion) ?: continue
 

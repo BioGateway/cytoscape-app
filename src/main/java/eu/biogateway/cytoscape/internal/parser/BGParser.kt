@@ -181,20 +181,18 @@ class BGParser() {
                 if (!fromNode.isLoaded) unloadedNodes.add(fromNode)
                 val toNode = server.getNodeFromCacheOrNetworks(BGNode(toNodeUri))
                 if (!toNode.isLoaded) unloadedNodes.add(toNode)
-                val relationType = server.cache.getRelationTypeForURIandGraph(relationUri, graphName)
+                var relationType = server.cache.getRelationTypeForURIandGraph(relationUri, graphName) ?: BGRelationType(relationUri, relationUri, 0)
 
-                // Note: Will ignore relation types it doesn't already know of.
-                if (relationType != null) {
-                    val relation = BGRelation(fromNode, relationType, toNode)
-                    relationType.defaultGraphURI?.let {
-                        relation.sourceGraph = it
-                    }
-                    val hash = relation.hashCode()
-                    if (relationMap[hash] == null) {
-                        relationMap[hash] = relation
-                    }
-                    relationArray.add(relation)
+                val relation = BGRelation(fromNode, relationType, toNode)
+                relationType.defaultGraphURI?.let {
+                    relation.sourceGraph = it
                 }
+                val hash = relation.hashCode()
+                if (relationMap[hash] == null) {
+                    relationMap[hash] = relation
+                }
+                relationArray.add(relation)
+
             } else if (returnType == BGReturnType.RELATION_MULTIPART) {
                 var fromNodeIndex = 0
                 while (fromNodeIndex < lineColumns.size-3) {
@@ -214,20 +212,16 @@ class BGParser() {
                         unloadedNodes.add(toNode)
                         unloadedUris.add(toNodeUri)
                     }
-                    val relationType = server.cache.getRelationTypeForURIandGraph(relationUri, graphName)
-
-                    // Note: Will ignore relation types it doesn't already know of.
-                    if (relationType != null) {
-                        val relation = BGRelation(fromNode, relationType, toNode)
-                        relationType.defaultGraphURI?.let {
-                            relation.sourceGraph = it
-                        }
-                        val hash = relation.hashCode()
-                        if (relationMap[hash] == null) {
-                            relationMap[hash] = relation
-                        }
-                        relationArray.add(relation)
+                    var relationType = server.cache.getRelationTypeForURIandGraph(relationUri, graphName) ?: BGRelationType(relationUri, relationUri, 0)
+                    val relation = BGRelation(fromNode, relationType, toNode)
+                    relationType.defaultGraphURI?.let {
+                        relation.sourceGraph = it
                     }
+                    val hash = relation.hashCode()
+                    if (relationMap[hash] == null) {
+                        relationMap[hash] = relation
+                    }
+                    relationArray.add(relation)
                 }
             }
         }

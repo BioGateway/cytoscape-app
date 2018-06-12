@@ -55,6 +55,8 @@ object BGServiceManager {
 
     val networkConverter = BGNetworkConverter(this)
     var dataModelController: BGDataModelController
+
+    // NOTE! THIS IS NULL BEFORE THE DATAMODELCONTROLLER IS INITIALIZED!
     val cache: BGDataModelController.BGCache get() {
         return dataModelController.cache
     }

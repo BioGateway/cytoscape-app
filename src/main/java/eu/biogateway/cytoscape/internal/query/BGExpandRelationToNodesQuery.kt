@@ -18,21 +18,20 @@ class BGExpandRelationToNodesQuery(val fromNode: String, val toNode: String, val
         val graphUri = relationType.defaultGraphURI ?: throw Exception("Missing or invalid default graph name!")
 
 
-        //if (graphUri.contains("gnex")) return generateTFTGQueryString(graphUri)
+        if (graphUri.contains("gnex")) return generateTFTGQueryStringOld(graphUri)
 
-        return when (relationType.directed) {
-            true -> generateQueryString(graphUri)
-            false -> generateUndirectedQueryString(graphUri)
-        }
-
-//        return when (uri) {
-//            "http://ssb.biogateway.eu/graph/gnex" -> generateTFTGQueryString(uri)
-//            "genex" -> generateTFTGQueryString(uri)
-//            "intact" -> generatePPIQueryString2()
-//            else -> {
-//                generateQueryString(uri)
-//            }
+//        return when (relationType.directed) {
+//            true -> generateQueryString(graphUri)
+//            false -> generateUndirectedQueryString(graphUri)
 //        }
+
+        return when (graphUri) {
+            "genex" -> generateTFTGQueryStringOld(graphUri)
+            "intact" -> generatePPIQueryString(graphUri)
+            else -> {
+                generateQueryStringOld(graphUri)
+            }
+        }
 
 //        if (relationType.defaultGraphURI == "goa") return generateQueryString("goa")
 //        if (relationType.defaultGraphURI == "tf-tg") return generateQueryString("tf-tg")
@@ -49,9 +48,36 @@ class BGExpandRelationToNodesQuery(val fromNode: String, val toNode: String, val
                 "PREFIX has_participant: <http://semanticscience.org/resource/SIO_000132>\n"+
                 "SELECT distinct ?a as ?a1 <$graphUri> has_participant: object: ?a as ?a2 <$graphUri> has_participant: subject:\n" +
                 "WHERE {  \n" +
-                " GRAPH <$graphUri> {  \n" +
-                "\t ?a has_participant: subject: .\n" +
-                "\t ?a has_participant: object: .\n" +
+                "GRAPH <$graphUri> {  \n" +
+                " ?a has_participant: subject: .\n" +
+                " ?a has_participant: object: .\n" +
+                " }\n" +
+                "}"
+    }
+
+    private fun generateQueryStringOld(graphName: String): String {
+        return "BASE <http://www.semantic-systems-biology.org/> \n" +
+                "PREFIX object: <"+toNode+">\n" +
+                "PREFIX subject: <"+fromNode+">\n" +
+                "SELECT distinct ?a as ?a1 <"+graphName+"> ?rel1 object: ?a as ?a2 <"+graphName+"> ?rel2 subject:\n" +
+                "WHERE {  \n" +
+                " GRAPH <"+graphName+"> {  \n" +
+                "\t ?a ?rel2 subject: .\n" +
+                "\t ?a ?rel1 object: .\n" +
+                " }\n" +
+                "}"
+    }
+
+    private fun generateTFTGQueryStringOld(graphName: String): String {
+        return "BASE <http://www.semantic-systems-biology.org/> \n" +
+                "PREFIX gene: <"+toNode+">\n" +
+                "PREFIX protein: <"+fromNode+">\n" +
+                "SELECT distinct protein: <"+graphName+"> <http://semanticscience.org/resource/SIO_000062> ?a as ?a1 ?a as ?a2 <"+graphName+"> <http://semanticscience.org/resource/SIO_000291> gene: \n" +
+                "WHERE {  \n" +
+                " GRAPH <"+graphName+"> {  \n" +
+                "protein: <http://semanticscience.org/resource/SIO_000062> ?int .\n" +
+                "?int <http://semanticscience.org/resource/SIO_000291> gene: .\n" +
+                "?a rdf:type ?int .\n" +
                 " }\n" +
                 "}"
     }
@@ -60,19 +86,19 @@ class BGExpandRelationToNodesQuery(val fromNode: String, val toNode: String, val
         return "BASE <http://www.semantic-systems-biology.org/> \n" +
                 "PREFIX is_participant_in: <http://semanticscience.org/resource/SIO_000062> \n"+
                 "PREFIX has_target: <http://semanticscience.org/resource/SIO_000291> \n"+
-                "PREFIX object: <"+toNode+">\n" +
-                "PREFIX subject: <"+fromNode+">\n" +
-                "SELECT distinct subject: <"+graphName+"> is_participant_in: ?a as ?a1 ?a as ?a2 <"+graphName+"> has_target: object:\n" +
+                "PREFIX object: <$toNode>\n" +
+                "PREFIX subject: <$fromNode>\n" +
+                "SELECT distinct subject: <$graphName> is_participant_in: ?a as ?a1 ?a as ?a2 <$graphName> has_target: object:\n" +
                 "WHERE {  \n" +
-                " GRAPH <"+graphName+"> {  \n" +
-                "\t subject: is_participant_in: ?sentence .\n" +
-                "\t ?sentence has_target: object: .\n" +
-                "\t ?a rdf:type ?sentence . \n" +
+                "GRAPH <$graphName> {  \n" +
+                " subject: is_participant_in: ?sentence .\n" +
+                " ?sentence has_target: object: .\n" +
+                " ?a rdf:type ?sentence . \n" +
                 " }\n" +
                 "}"
     }
 
-    /*
+
     private fun generateTFTGQueryString(graphName: String): String {
         return "BASE <http://www.semantic-systems-biology.org/> \n" +
                 "PREFIX gene: <"+toNode+">\n" +
@@ -91,23 +117,18 @@ class BGExpandRelationToNodesQuery(val fromNode: String, val toNode: String, val
         return ""
     }
 
-    private fun generatePPIQueryString(): String {
+    private fun generatePPIQueryString(graphUri: String): String {
         return "BASE <http://www.semantic-systems-biology.org/> \n" +
+                "PREFIX object: <$toNode>\n" +
+                "PREFIX subject: <$fromNode>\n" +
                 "PREFIX has_agent: <http://semanticscience.org/resource/SIO_000139>\n"+
-                "SELECT DISTINCT ?ppi <intact> has_agent: ?node \n" +
-                "WHERE {\n" +
-            //    "FILTER (?count = 2)\n" +
-                "GRAPH <intact> {\n" +
-                "?ppi has_agent: ?node . }\n" +
-                "{\n" +
-                "SELECT ?ppi count(?node) as ?count\n" +
+                "SELECT distinct ?a as ?a1 <$graphUri> has_agent: object: ?a as ?a2 <$graphUri> has_agent: subject:\n" +
                 "WHERE {  \n" +
-                "GRAPH <intact> {  \n" +
-                "?ppi has_agent: <" + fromNode + "> .\n" +
-                "?ppi has_agent: <" + toNode + "> .\n" +
-                "?ppi has_agent: ?node .\n" +
-                "}}}}"
-
+                " GRAPH <$graphUri> {  \n" +
+                "\t ?a has_agent: subject: .\n" +
+                "\t ?a has_agent: object: .\n" +
+                " }\n" +
+                "}"
     }
 
     private fun generatePPIQueryString2(graphUri: String): String {
@@ -123,5 +144,5 @@ class BGExpandRelationToNodesQuery(val fromNode: String, val toNode: String, val
                 " }\n" +
                 "}"
     }
-    */
+
 }

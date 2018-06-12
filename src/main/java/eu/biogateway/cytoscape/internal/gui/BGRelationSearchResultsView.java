@@ -16,6 +16,7 @@ public class BGRelationSearchResultsView {
     public static final String ACTION_IMPORT = "import nodes";
     public static final String ACTION_IMPORT_BETWEEN_EXISTING = "import relations to exsisting nodes";
 
+
     private final ActionListener listener;
     private JFrame mainFrame;
     private JPanel panel1;
@@ -23,10 +24,24 @@ public class BGRelationSearchResultsView {
     private JTable resultTable;
     private JButton importRelationsBetweenExistingButton;
     private JTextField filterTextField;
-    private JButton selectRelationsLeadingToButton;
-    private JCheckBox filterSelectedCheckBox;
     private TableRowSorter<TableModel> sorter;
     private final BGRelationResultViewTooltipDataSource tooltipDataSource;
+    private DocumentListener filterDocumentListener = new DocumentListener() {
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            filterRows();
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            filterRows();
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            filterRows();
+        }
+    };
 
     public BGRelationSearchResultsView(ActionListener listener, BGRelationResultViewTooltipDataSource tooltipDataSource) {
         this.listener = listener;
@@ -47,6 +62,7 @@ public class BGRelationSearchResultsView {
         importButton.addActionListener(listener);
         importRelationsBetweenExistingButton.setActionCommand(ACTION_IMPORT_BETWEEN_EXISTING);
         importRelationsBetweenExistingButton.addActionListener(listener);
+
         DefaultTableModel tableModel = new DefaultTableModel() {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -68,27 +84,47 @@ public class BGRelationSearchResultsView {
         resultTable.setModel(tableModel);
         resultTable.setRowSorter(sorter);
 
-        filterTextField.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                filterRows();
-            }
+        filterTextField.getDocument().addDocumentListener(filterDocumentListener);
+    }
 
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                filterRows();
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                filterRows();
-            }
-        });
+    public void clearFilterField() {
+        filterTextField.setText("");
     }
 
     private void filterRows() {
         sorter.setRowFilter(RowFilter.regexFilter("(?i)" + filterTextField.getText()));
     }
+
+
+    private void filterBySelectedRows(Boolean shouldFilterBySelected) {
+        if (shouldFilterBySelected) {
+            filterTextField.getDocument().removeDocumentListener(filterDocumentListener);
+            clearFilterField();
+            filterTextField.setEnabled(false);
+
+            sorter.setRowFilter(new RowFilter<TableModel, Integer>() {
+                @Override
+                public boolean include(Entry<? extends TableModel, ? extends Integer> entry) {
+                    // Slightly inefficient code, but should not be noticeable with normal data sets.
+                    int modelRow = entry.getIdentifier();
+                    int viewRow = resultTable.convertRowIndexToView(modelRow);
+                    int[] selectedRows = resultTable.getSelectedRows();
+                    for (int selectedRow : selectedRows) {
+                        if (selectedRow == viewRow) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            });
+
+        } else {
+            filterTextField.getDocument().addDocumentListener(filterDocumentListener);
+            filterTextField.setEnabled(true);
+            filterRows();
+        }
+    }
+
 
     public JFrame getMainFrame() {
         return mainFrame;
@@ -151,15 +187,6 @@ public class BGRelationSearchResultsView {
         final JPanel panel5 = new JPanel();
         panel5.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
         panel3.add(panel5, BorderLayout.WEST);
-        selectRelationsLeadingToButton = new JButton();
-        selectRelationsLeadingToButton.setHorizontalTextPosition(11);
-        selectRelationsLeadingToButton.setText("Select relations leading to selection");
-        selectRelationsLeadingToButton.setToolTipText("Select all relations leading to the relations currently selected.");
-        panel5.add(selectRelationsLeadingToButton);
-        filterSelectedCheckBox = new JCheckBox();
-        filterSelectedCheckBox.setText("Filter selected");
-        filterSelectedCheckBox.setToolTipText("Only show currently selected relations.");
-        panel5.add(filterSelectedCheckBox);
     }
 
     /**

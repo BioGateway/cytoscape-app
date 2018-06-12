@@ -13,6 +13,7 @@ import java.io.IOException
 import java.net.URL
 import java.util.concurrent.TimeUnit
 import java.util.prefs.Preferences
+import javax.swing.JOptionPane
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.MutableTreeNode
@@ -505,7 +506,10 @@ class BGDataModelController() {
             val queryFileUrl = URL(Constants.BG_CONFIG_FILE_URL)
             val connection = queryFileUrl.openConnection()
             val inputStream = connection.getInputStream()
-            BGConfigParser.parseXMLConfigFile(inputStream, cache)
+            val error = BGConfigParser.parseXMLConfigFile(inputStream, cache)
+            error?.let {
+                JOptionPane.showMessageDialog(null, "Unable to load the config file! \n $it")
+            }
         } catch (e: IOException) {
             e.printStackTrace()
         }

@@ -60,6 +60,10 @@ public class BGImportExportView {
         return sourceNetworkComboBox;
     }
 
+    public JFrame getMainFrame() {
+        return mainFrame;
+    }
+
     private void createUIComponents() {
         // TODO: place custom component creation code here
         nodeImportsPanel = new JPanel();

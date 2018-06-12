@@ -7,10 +7,8 @@ import org.cytoscape.model.CyColumn
 import org.cytoscape.model.CyNetwork
 import java.awt.FlowLayout
 import java.awt.GridBagConstraints
-import javax.swing.DefaultComboBoxModel
-import javax.swing.ImageIcon
-import javax.swing.JButton
-import javax.swing.JPanel
+import java.awt.event.WindowEvent
+import javax.swing.*
 
 class BGImportExportController() {
 
@@ -36,7 +34,10 @@ class BGImportExportController() {
                 view.sourceNetworkComboBox.model.selectedItem = network
             }
         } else {
-            view.sourceNetworkComboBox.model = DefaultComboBoxModel(arrayOf("No networks found."))
+            //view.sourceNetworkComboBox.model = DefaultComboBoxModel(arrayOf("No networks found."))
+            JOptionPane.showMessageDialog(view.mainFrame, "No networks found. Create one or more Cytoscape networks before restarting this tool.", "No networks found", JOptionPane.WARNING_MESSAGE)
+            view.mainFrame.dispatchEvent(WindowEvent(view.mainFrame, WindowEvent.WINDOW_CLOSING))
+
         }
 
         view.sourceNetworkComboBox.addActionListener {

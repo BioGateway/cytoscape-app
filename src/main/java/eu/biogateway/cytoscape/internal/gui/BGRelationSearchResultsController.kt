@@ -51,7 +51,6 @@ class BGRelationSearchResultsController(private val returnData: BGReturnRelation
         view.mainFrame.title = "BioGateway: Found ${relationsFound.count()} relations."
     }
 
-
     private fun importSelected() {
         val relations = ArrayList<BGRelation>()
         for (row in view.resultTable.selectedRows) {
