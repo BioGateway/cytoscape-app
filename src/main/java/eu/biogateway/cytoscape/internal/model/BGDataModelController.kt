@@ -506,10 +506,7 @@ class BGDataModelController() {
             val queryFileUrl = URL(Constants.BG_CONFIG_FILE_URL)
             val connection = queryFileUrl.openConnection()
             val inputStream = connection.getInputStream()
-            val error = BGConfigParser.parseXMLConfigFile(inputStream, cache)
-            error?.let {
-                JOptionPane.showMessageDialog(null, "Unable to load the config file! \n $it")
-            }
+            BGConfigParser.parseXMLConfigFile(inputStream, cache)
         } catch (e: IOException) {
             e.printStackTrace()
         }
