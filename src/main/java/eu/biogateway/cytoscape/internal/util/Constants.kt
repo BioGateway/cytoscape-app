@@ -40,5 +40,5 @@ object Constants {
     val BG_PREFERENCES_LAST_FOLDER = "biogatewayPluginLastOpenedFolder"
     val BG_RELATION_COUNT_WARNING_LIMIT = 50000
     val BG_QUERY_BUILDER_URI_FIELD_COLUMNS = 20
-    val BG_QUERYBUILDER_ENTITY_LABEL = "Entity:"
+    //val BG_QUERYBUILDER_ENTITY_LABEL = "Entity:"
 }

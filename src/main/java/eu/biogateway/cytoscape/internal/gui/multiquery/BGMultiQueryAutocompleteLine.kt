@@ -16,8 +16,8 @@ class BGMultiQueryAutocompleteLine(val relationTypeComboBox: JComboBox<BGRelatio
     val searchButtonTooltipText = "Search for entity URIs."
     val variablesTooltipText = "Choose URI to specify an entity, or pick a variable letter to find matching entities."
 
-    val fromComboBox: JComboBox<String>
-    val toComboBox: JComboBox<String>
+    val fromComboBox: JComboBox<BGQueryVariable>
+    val toComboBox: JComboBox<BGQueryVariable>
 
     val fromTypeComboBox: JComboBox<BGNodeTypeNew>
     val toTypeComboBox: JComboBox<BGNodeTypeNew>
@@ -76,9 +76,9 @@ class BGMultiQueryAutocompleteLine(val relationTypeComboBox: JComboBox<BGRelatio
         updateColorForIncorrectNodeTypes(relationType?.fromType, relationType?.toType)
     }
 
-    fun updateComboBox(comboBox: JComboBox<String>, typeComboBox: JComponent, searchComboBox: JComponent) {
-        val selectedVariable = comboBox.model.selectedItem as String
-        if (selectedVariable == Constants.BG_QUERYBUILDER_ENTITY_LABEL) {
+    fun updateComboBox(comboBox: JComboBox<BGQueryVariable>, typeComboBox: JComponent, searchComboBox: JComponent) {
+        val selectedVariable = comboBox.model.selectedItem as BGQueryVariable
+        if (selectedVariable == BGQueryVariable.Entity) {
             // Make sure that the old variable is freed up.
             variableManager.unRegisterUseOfVariableForComponent(comboBox)
             variableManager.URIcomboBoxes.add(comboBox)
@@ -248,8 +248,8 @@ class BGMultiQueryAutocompleteLine(val relationTypeComboBox: JComboBox<BGRelatio
 
     var fromUri: String?
         get() = {
-            val selectedItem = fromComboBox.selectedItem as String
-            if (selectedItem == Constants.BG_QUERYBUILDER_ENTITY_LABEL) {
+            val selectedItem = fromComboBox.selectedItem as BGQueryVariable
+            if (selectedItem == BGQueryVariable.Entity) {
                 /*
                 if (this.fromSearchBox.text.length == 0) {
                     null
@@ -258,7 +258,7 @@ class BGMultiQueryAutocompleteLine(val relationTypeComboBox: JComboBox<BGRelatio
                 }*/
                 this.currentFromUri
             } else {
-                "?"+selectedItem
+                "?"+selectedItem.value
             }
         }()
         set(value) {
@@ -269,8 +269,8 @@ class BGMultiQueryAutocompleteLine(val relationTypeComboBox: JComboBox<BGRelatio
         }
     var toUri: String?
         get() = {
-            val selectedItem = toComboBox.selectedItem as String
-            if (selectedItem == Constants.BG_QUERYBUILDER_ENTITY_LABEL) {
+            val selectedItem = toComboBox.selectedItem as BGQueryVariable
+            if (selectedItem == BGQueryVariable.Entity) {
                 /*
                 if (this.toSearchBox.text.length == 0) {
                     null
@@ -279,7 +279,7 @@ class BGMultiQueryAutocompleteLine(val relationTypeComboBox: JComboBox<BGRelatio
                 }*/
                 this.currentToUri
             } else {
-                "?"+selectedItem
+                "?"+selectedItem.value
             }
         }()
         set(value) {

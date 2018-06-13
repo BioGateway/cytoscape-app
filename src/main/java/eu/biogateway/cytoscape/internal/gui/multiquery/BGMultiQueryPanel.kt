@@ -74,11 +74,11 @@ class BGMultiQueryPanel(val constraintPanel: BGQueryConstraintPanel): JPanel() {
         when (graph.from.type) {
             BGSPARQLParser.BGVariableType.URI -> {
                 queryLine.fromUri = graph.from.value
-                queryLine.fromComboBox.selectedItem = Constants.BG_QUERYBUILDER_ENTITY_LABEL
+                queryLine.fromComboBox.selectedItem = BGQueryVariable.Entity
                 queryLine.fromTypeComboBox.selectedItem = BGNode(graph.from.value).type
             }
             BGSPARQLParser.BGVariableType.Variable -> {
-                queryLine.fromComboBox.selectedItem = graph.from.value
+                queryLine.fromComboBox.selectedItem = variableManager.getVariable(graph.from.value)
             }
             BGSPARQLParser.BGVariableType.INVALID -> throw Exception("Unable to parse invalid values!")
         }
@@ -86,12 +86,12 @@ class BGMultiQueryPanel(val constraintPanel: BGQueryConstraintPanel): JPanel() {
         when (graph.to.type) {
             BGSPARQLParser.BGVariableType.URI -> {
                 queryLine.toUri = graph.to.value
-                queryLine.toComboBox.selectedItem = Constants.BG_QUERYBUILDER_ENTITY_LABEL
+                queryLine.toComboBox.selectedItem = BGQueryVariable.Entity
                 queryLine.toTypeComboBox.selectedItem = BGNode(graph.to.value).type
 
             }
             BGSPARQLParser.BGVariableType.Variable -> {
-                queryLine.toComboBox.selectedItem = graph.to.value
+                queryLine.toComboBox.selectedItem = variableManager.getVariable(graph.to.value)
             }
             BGSPARQLParser.BGVariableType.INVALID -> throw Exception("Unable to parse invalid values!")
         }
@@ -132,7 +132,7 @@ class BGMultiQueryPanel(val constraintPanel: BGQueryConstraintPanel): JPanel() {
             val line = addQueryLine()
             //line.relationTypeComboBox.selectedItem = null
             line.fromTypeComboBox.selectedItem = BGNode(uri).type
-            line.fromComboBox.selectedItem = Constants.BG_QUERYBUILDER_ENTITY_LABEL
+            line.fromComboBox.selectedItem = BGQueryVariable.Entity
             line.fromUri = uri
         }
     }
@@ -150,12 +150,13 @@ class BGMultiQueryPanel(val constraintPanel: BGQueryConstraintPanel): JPanel() {
     }
 
     fun validateNodeTypeConsistency(): String? {
-        val nodeVariableTypes = HashMap<String, BGNodeTypeNew>()
+        val nodeVariableTypes = HashMap<BGQueryVariable, BGNodeTypeNew>()
 
-        fun checkLineParameter(comboBox: JComboBox<String>, nodeType: BGNodeTypeNew?): String? {
+        fun checkLineParameter(comboBox: JComboBox<BGQueryVariable>, nodeType: BGNodeTypeNew?): String? {
             if (nodeType == null) return null
-            if (comboBox.selectedItem == Constants.BG_QUERYBUILDER_ENTITY_LABEL) return null
-            val variable = comboBox.selectedItem as? String ?: return null
+            val variable = comboBox.selectedItem as? BGQueryVariable ?: return null
+            //if (variable.value == Constants.BG_QUERYBUILDER_ENTITY_LABEL) return null
+            if (variable == BGQueryVariable.Entity) return null
             val oldType = nodeVariableTypes.get(variable)
             oldType?.let {
                 if (it != nodeType) return "$variable is expected to be both $it and $nodeType"
@@ -178,8 +179,8 @@ class BGMultiQueryPanel(val constraintPanel: BGQueryConstraintPanel): JPanel() {
     fun generateSPARQLQuery(): String {
         val queryComponents = generateReturnValuesAndGraphQueries()
         var queryWildcards = variableManager.usedVariables.values.toHashSet()
-                .sorted()
-                .map { "?"+it }
+                .sortedBy { it.name }
+                .map { "?"+it.value }
                 .fold("") { acc, s -> acc+" "+s }
         if (queryWildcards.isEmpty()) {
             queryWildcards = "<placeholder>"
@@ -262,7 +263,7 @@ class BGMultiQueryPanel(val constraintPanel: BGQueryConstraintPanel): JPanel() {
             constraintQueries[key]?.add(sparql)
         }
 
-        val usedVariables = variableManager.usedVariables.values.toHashSet().map { "?"+it }.toTypedArray()
+        val usedVariables = variableManager.usedVariables.values.toHashSet().map { "?"+it.value }.toTypedArray()
         var uniqueVariablesFilter = ""
 
         for (i in 0..(usedVariables.size-1)) {

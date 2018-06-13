@@ -4,14 +4,37 @@ import eu.biogateway.cytoscape.internal.util.Constants
 import javax.swing.DefaultComboBoxModel
 import javax.swing.JComboBox
 
-class BGQueryVariableManager {
-    val possibleVariables = "ABCDEFGHIJKLMNOPQRST".toCharArray().map { it.toString() }
-    var usedVariables = HashMap<JComboBox<String>, String>()
-    var URIcomboBoxes = HashSet<JComboBox<String>>()
-    var previouslyAssignedVariable: String = "A"
+open class BGQueryVariable(val value: String) {
+    val name: String get() = "Set $value"
 
-    fun getNextFreeVariable(): String? {
-        for (variable in possibleVariables) {
+    override fun toString(): String {
+        return name
+    }
+
+    override fun hashCode(): Int {
+        return name.hashCode()
+    }
+
+    class BGQueryEntity(value: String): BGQueryVariable(value) {
+        override fun toString(): String {
+            return value
+        }
+    }
+
+    companion object {
+        val Entity: BGQueryVariable = BGQueryEntity("Entity:")
+    }
+}
+
+class BGQueryVariableManager {
+    val possibleVariableValues = "ABCDEFGHIJKLMNOPQRST".toCharArray().map { it.toString() }
+    val possibleVariables = possibleVariableValues.associateBy( {it}, {BGQueryVariable(it)} )
+    var usedVariables = HashMap<JComboBox<BGQueryVariable>, BGQueryVariable>()
+    var URIcomboBoxes = HashSet<JComboBox<BGQueryVariable>>()
+    var previouslyAssignedVariable = possibleVariables.values.sortedBy { it.name }.first()
+
+    fun getNextFreeVariable(): BGQueryVariable? {
+        for (variable in possibleVariables.values) {
             if (!usedVariables.values.contains(variable)) {
                 // The variable is not taken by any component!
                 return variable
@@ -20,16 +43,20 @@ class BGQueryVariableManager {
         return null
     }
 
-    private fun getUsedVariables(): Array<String> {
-        return usedVariables.values.toHashSet().sorted().toTypedArray()
+    fun getVariable(value: String): BGQueryVariable? {
+        return possibleVariables[value]
     }
 
-    fun unRegisterUseOfVariableForComponent(jComboBox: JComboBox<String>) {
+    private fun getUsedVariables(): Array<BGQueryVariable> {
+        return usedVariables.values.toHashSet().sortedBy{ it.name }.toTypedArray()
+    }
+
+    fun unRegisterUseOfVariableForComponent(jComboBox: JComboBox<BGQueryVariable>) {
         usedVariables.remove(jComboBox)
         updateComboBoxModels()
     }
 
-    fun registerUseOfVariableForComponent(variable: String, jComboBox: JComboBox<String>) {
+    fun registerUseOfVariableForComponent(variable: BGQueryVariable, jComboBox: JComboBox<BGQueryVariable>) {
         usedVariables[jComboBox] = variable
         previouslyAssignedVariable = variable
 
@@ -39,7 +66,7 @@ class BGQueryVariableManager {
     private fun updateComboBoxModels() {
         val comboBoxes = usedVariables.keys + URIcomboBoxes
         for (comboBox in comboBoxes) {
-            val model = comboBox.model as DefaultComboBoxModel<String>
+            val model = comboBox.model as DefaultComboBoxModel<BGQueryVariable>
             val selected = model.selectedItem
             val lastIndex = model.size -1
             var containsNextVariable = false
@@ -63,11 +90,11 @@ class BGQueryVariableManager {
         }
     }
 
-    fun getShownVariables(): Array<String> {
-        var usedVariables = getUsedVariables().map { it.toString() }.toTypedArray()
-        var nextFreeChar = getNextFreeVariable().toString()
-        var shownVariables = arrayOf(Constants.BG_QUERYBUILDER_ENTITY_LABEL) + usedVariables
-        nextFreeChar.let {
+    fun getShownVariables(): Array<BGQueryVariable> {
+        var usedVariables = getUsedVariables()
+        var nextFreeChar = getNextFreeVariable()
+        var shownVariables = arrayOf(BGQueryVariable.Entity) + usedVariables
+        nextFreeChar?.let {
             shownVariables += it
         }
         return shownVariables
