@@ -2,6 +2,7 @@ package eu.biogateway.cytoscape.internal.gui
 
 import eu.biogateway.cytoscape.internal.BGServiceManager
 import eu.biogateway.cytoscape.internal.gui.multiquery.BGAutocompleteComboBox
+import eu.biogateway.cytoscape.internal.model.BGExampleQuery
 import eu.biogateway.cytoscape.internal.model.BGNode
 import eu.biogateway.cytoscape.internal.model.BGNodeTypeNew
 import eu.biogateway.cytoscape.internal.model.BGRelation
@@ -133,8 +134,15 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
 
     init {
         this.view = BGQueryBuilderView(this, this)
-        this.queries = BGServiceManager.dataModelController.cache.queryTemplates
+        this.queries = BGServiceManager.dataModelController.config.queryTemplates
         updateUIAfterXMLLoad()
+
+        view.exampleQueryBox.addActionListener {
+            val selected = view.exampleQueryBox.selectedItem as BGExampleQuery
+            if (!selected.placeholder) {
+                loadSPARQLString(selected.sparql)
+            }
+        }
     }
 
     private fun updateUIAfterXMLLoad() {
@@ -142,6 +150,12 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
         for (queryName in queries.keys) {
             view.querySelectionBox.addItem(queryName)
         }
+        view.exampleQueryBox.removeAllItems()
+        view.exampleQueryBox.addItem(BGExampleQuery("Load example query...", "", true))
+        for (example in BGServiceManager.config.exampleQueries) {
+            view.exampleQueryBox.addItem(example)
+        }
+
         view.setUpMultiQueryPanel()
     }
 
@@ -382,7 +396,7 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
         }
         */
 
-        val query = BGLoadRelationMetadataQuery(relations, BGServiceManager.cache.activeMetadataTypes) {
+        val query = BGLoadRelationMetadataQuery(relations, BGServiceManager.config.activeMetadataTypes) {
             buildNetwork()
         }
         BGServiceManager.execute(query)
@@ -509,7 +523,7 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
         val sparqlCode = view.sparqlTextArea.text
         if (sparqlCode.isEmpty()) return
 
-        val queryGraphs = BGSPARQLParser.parseSPARQLCode(sparqlCode, BGServiceManager.cache.relationTypeMap)
+        val queryGraphs = BGSPARQLParser.parseSPARQLCode(sparqlCode, BGServiceManager.config.relationTypeMap)
 
         if (queryGraphs.first.isEmpty()) {
             JOptionPane.showMessageDialog(view.mainFrame, "Unable to parse any queries from current SPARQL.")
@@ -525,8 +539,11 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
     private fun loadSPARQLFromFile() {
         val file = openFileChooser() ?: return
         val sparqlCode = file.readText()
+        loadSPARQLString(sparqlCode)
+    }
 
-        val queryGraphs = BGSPARQLParser.parseSPARQLCode(sparqlCode, BGServiceManager.cache.relationTypeMap)
+    private fun loadSPARQLString(sparqlCode: String) {
+        val queryGraphs = BGSPARQLParser.parseSPARQLCode(sparqlCode, BGServiceManager.config.relationTypeMap)
         view.multiQueryPanel.loadQueryGraphs(queryGraphs)
     }
 
@@ -633,27 +650,27 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
         val nodeType: BGNodeTypeNew = when (selectedType) {
             "Gene Symbols" -> {
                 queryType = QueryType.GENE_SYMBOL
-                BGServiceManager.cache.nodeTypes.get("gene") ?: throw Exception("Invalid node type!")
+                BGServiceManager.config.nodeTypes.get("gene") ?: throw Exception("Invalid node type!")
             }
             "Protein names" -> {
                 queryType = QueryType.NAME_SEARCH
-                BGServiceManager.cache.nodeTypes.get("protein") ?: throw Exception("Invalid node type!")
+                BGServiceManager.config.nodeTypes.get("protein") ?: throw Exception("Invalid node type!")
             }
             "Uniprot IDs" -> {
                 queryType = QueryType.UNIPROT_LOOKUP
-                BGServiceManager.cache.nodeTypes.get("protein") ?: throw Exception("Invalid node type!")
+                BGServiceManager.config.nodeTypes.get("protein") ?: throw Exception("Invalid node type!")
             }
             "Entrez IDs" -> {
                 queryType = QueryType.ENTREZ_LOOKUP
-                BGServiceManager.cache.nodeTypes.get("gene") ?: throw Exception("Invalid node type!")
+                BGServiceManager.config.nodeTypes.get("gene") ?: throw Exception("Invalid node type!")
             }
             "ENSEMBL IDs" -> {
                 queryType = QueryType.ENSEMBL_SEARCH
-                BGServiceManager.cache.nodeTypes.get("gene") ?: throw Exception("Invalid node type!")
+                BGServiceManager.config.nodeTypes.get("gene") ?: throw Exception("Invalid node type!")
             }
             "GO terms" -> {
                 queryType = QueryType.GO_LOOKUP
-                BGServiceManager.cache.nodeTypes.get("go_term") ?: throw Exception("Invalid node type!")
+                BGServiceManager.config.nodeTypes.get("go_term") ?: throw Exception("Invalid node type!")
             }
             else -> {
                 //BGNodeType.Undefined

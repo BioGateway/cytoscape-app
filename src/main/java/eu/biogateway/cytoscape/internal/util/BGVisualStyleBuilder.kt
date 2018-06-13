@@ -51,10 +51,10 @@ class BGVisualStyleBuilder(val serviceManager: BGServiceManager) {
 //                "molecularly interacts with" to edgeTurquoise
 //        )
 
-        val nodeColors = BGServiceManager.cache.visualStyleConfig.nodeColors
-        val edgeColors = BGServiceManager.cache.visualStyleConfig.edgeColors
-        val edgeLineTypes = BGServiceManager.cache.visualStyleConfig.edgeLineTypes
-        val nodeShapes = BGServiceManager.cache.visualStyleConfig.nodeShapes
+        val nodeColors = BGServiceManager.config.visualStyleConfig.nodeColors
+        val edgeColors = BGServiceManager.config.visualStyleConfig.edgeColors
+        val edgeLineTypes = BGServiceManager.config.visualStyleConfig.edgeLineTypes
+        val nodeShapes = BGServiceManager.config.visualStyleConfig.nodeShapes
 
 //        val edgeLineTypes = hashMapOf<String, LineType>(
 //                "enables" to LineTypeVisualProperty.EQUAL_DASH,

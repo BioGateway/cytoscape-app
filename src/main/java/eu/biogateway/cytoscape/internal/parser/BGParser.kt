@@ -133,7 +133,7 @@ class BGParser() {
                 val toNode = server.getNodeFromCacheOrNetworks(BGNode(toNodeUri))
                 if (!toNode.isLoaded) unloadedNodes.add(toNode)
 
-                val relationType = server.cache.getRelationTypeForURIandGraph(relationUri, graphName) ?: BGRelationType(relationUri, relationUri, 0)
+                val relationType = server.config.getRelationTypeForURIandGraph(relationUri, graphName) ?: BGRelationType(relationUri, relationUri, 0)
                 val relation = BGRelation(fromNode, relationType, toNode)
                 relationType.defaultGraphURI?.let {
                     relation.sourceGraph = it
@@ -156,7 +156,7 @@ class BGParser() {
                 val toNode = server.getNodeFromCacheOrNetworks(BGNode(toNodeUri))
                 if (!toNode.isLoaded) unloadedNodes.add(toNode)
 
-                val relationType = server.cache.getRelationTypeForURIandGraph(relationUri, graphName) ?: BGRelationType(relationUri, relationUri, 0)
+                val relationType = server.config.getRelationTypeForURIandGraph(relationUri, graphName) ?: BGRelationType(relationUri, relationUri, 0)
                 val relation = BGRelation(fromNode, relationType, toNode)
                 // TODO: Delete this line, see if it works still. It should.
                 relation.metadata[BGRelationMetadata.CONFIDENCE_VALUE.name] = BGRelationMetadata(BGTableDataType.DOUBLE, confidenceValue.toDouble())
@@ -181,7 +181,7 @@ class BGParser() {
                 if (!fromNode.isLoaded) unloadedNodes.add(fromNode)
                 val toNode = server.getNodeFromCacheOrNetworks(BGNode(toNodeUri))
                 if (!toNode.isLoaded) unloadedNodes.add(toNode)
-                var relationType = server.cache.getRelationTypeForURIandGraph(relationUri, graphName) ?: BGRelationType(relationUri, relationUri, 0)
+                var relationType = server.config.getRelationTypeForURIandGraph(relationUri, graphName) ?: BGRelationType(relationUri, relationUri, 0)
 
                 val relation = BGRelation(fromNode, relationType, toNode)
                 relationType.defaultGraphURI?.let {
@@ -212,7 +212,7 @@ class BGParser() {
                         unloadedNodes.add(toNode)
                         unloadedUris.add(toNodeUri)
                     }
-                    var relationType = server.cache.getRelationTypeForURIandGraph(relationUri, graphName) ?: BGRelationType(relationUri, relationUri, 0)
+                    var relationType = server.config.getRelationTypeForURIandGraph(relationUri, graphName) ?: BGRelationType(relationUri, relationUri, 0)
                     val relation = BGRelation(fromNode, relationType, toNode)
                     relationType.defaultGraphURI?.let {
                         relation.sourceGraph = it

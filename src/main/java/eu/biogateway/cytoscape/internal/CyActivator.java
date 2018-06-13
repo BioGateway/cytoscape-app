@@ -121,7 +121,7 @@ public class CyActivator extends AbstractCyActivator {
 	private void setupServiceManager(BundleContext bundleContext) {
         CyNetworkManager networkManager = getService(bundleContext, CyNetworkManager.class);
 
-        // This will also create a BGDataModelController object, which creates a BGCache object and loads the XML file from the dataModelController.
+        // This will also create a BGDataModelController object, which creates a BGConfig object and loads the XML file from the dataModelController.
         // The XML file is loaded SYNCHRONOUSLY, because we actually want to wait for it to load before loading the plugin.
 
         CySwingAppAdapter adapter = getService(bundleContext, CySwingAppAdapter.class);

@@ -2,9 +2,7 @@ package eu.biogateway.cytoscape.internal.gui;
 
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
-import com.intellij.uiDesigner.core.Spacer;
 import eu.biogateway.cytoscape.internal.gui.conversion.BGImportExportController;
-import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
 import eu.biogateway.cytoscape.internal.libs.JCheckBoxTree;
@@ -13,7 +11,6 @@ import eu.biogateway.cytoscape.internal.util.Utility;
 
 
 import javax.swing.*;
-import javax.swing.border.TitledBorder;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
@@ -30,6 +27,8 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent2 {
     private JButton reloadMetadataButton;
     private JButton queryBuilderButton;
     private JButton convertNetworkButton;
+    private JScrollPane scrollPane;
+    private JPanel rootPanel;
     private JCheckBoxTree tree;
 
 
@@ -47,7 +46,7 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent2 {
 
     public void setupTreePanel() {
         treePanel.removeAll();
-        DefaultTreeModel model = BGServiceManager.INSTANCE.getCache().getConfigPanelTreeModel();
+        DefaultTreeModel model = BGServiceManager.INSTANCE.getConfig().getConfigPanelTreeModel();
         tree = new JCheckBoxTree(model);
         //tree.expandRow(0);
         tree.setRootVisible(false);
@@ -62,7 +61,7 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent2 {
             String nodeName = tp.getLastPathComponent().toString();
             URI uri;
             try {
-                uri = new URI(BGServiceManager.INSTANCE.getCache().getDatasetGraphs().get(nodeName));
+                uri = new URI(BGServiceManager.INSTANCE.getConfig().getDatasetGraphs().get(nodeName));
             } catch (URISyntaxException e) {
                 e.printStackTrace();
                 return;
@@ -158,8 +157,15 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent2 {
      * @noinspection ALL
      */
     private void $$$setupUI$$$() {
+        rootPanel = new JPanel();
+        rootPanel.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
+        scrollPane = new JScrollPane();
+        scrollPane.setHorizontalScrollBarPolicy(31);
+        scrollPane.setVerticalScrollBarPolicy(20);
+        rootPanel.add(scrollPane, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         mainPanel = new JPanel();
         mainPanel.setLayout(new BorderLayout(0, 0));
+        scrollPane.setViewportView(mainPanel);
         final JPanel panel1 = new JPanel();
         panel1.setLayout(new BorderLayout(0, 0));
         mainPanel.add(panel1, BorderLayout.CENTER);
@@ -189,6 +195,6 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent2 {
      * @noinspection ALL
      */
     public JComponent $$$getRootComponent$$$() {
-        return mainPanel;
+        return rootPanel;
     }
 }

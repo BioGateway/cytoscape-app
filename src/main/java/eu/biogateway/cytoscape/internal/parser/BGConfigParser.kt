@@ -5,21 +5,16 @@ import eu.biogateway.cytoscape.internal.model.*
 import eu.biogateway.cytoscape.internal.query.BGQueryParameter
 import eu.biogateway.cytoscape.internal.query.QueryTemplate
 import eu.biogateway.cytoscape.internal.model.BGDataModelController
-import org.cytoscape.view.presentation.property.LineTypeVisualProperty
-import org.cytoscape.view.presentation.property.NodeShapeVisualProperty
-import org.cytoscape.view.presentation.property.values.LineType
-import org.cytoscape.view.presentation.property.values.NodeShape
 import org.w3c.dom.Element
 import org.w3c.dom.Node
 import java.awt.Color
 import java.io.InputStream
-import javax.swing.JOptionPane
 import javax.xml.parsers.DocumentBuilderFactory
 
 object BGConfigParser {
 
     /// Parses the config file from the input stream. Returns an error message if something went wrong, returns null if everything went well.
-    fun parseXMLConfigFile(stream: InputStream, cache: BGDataModelController.BGCache) {
+    fun parseXMLConfigFile(stream: InputStream, config: BGConfig) {
 
         val queryTemplateHashMap = java.util.HashMap<String, QueryTemplate>()
         val dbFactory = DocumentBuilderFactory.newInstance()
@@ -55,7 +50,7 @@ object BGConfigParser {
                 val name = graphElement.getAttribute("name") ?: continue
                 graphMap.put(name, uri)
             }
-            cache.datasetGraphs = graphMap
+            config.datasetGraphs = graphMap
 
 
             // Parse the nodetypes:
@@ -79,7 +74,7 @@ object BGConfigParser {
                 val autocompleteType = BGNodeTypeNew.BGAutoCompleteType.forId(autocompleteTypeId)
 
                 val nodeType = BGNodeTypeNew(id, name, uriPattern, nodeTypeClass, metadataGraph, autocompleteType)
-                cache.nodeTypes.put(id, nodeType)
+                config.nodeTypes.put(id, nodeType)
             }
 
 
@@ -96,8 +91,8 @@ object BGConfigParser {
                 val directed = !element.getAttribute("directed").equals("false")
                 val expandable = element.getAttribute("expandable").equals("true")
                 val uri = element.textContent
-                val fromType = cache.nodeTypes.get(element.getAttribute("fromType"))
-                val toType = cache.nodeTypes.get(element.getAttribute("toType"))
+                val fromType = config.nodeTypes.get(element.getAttribute("fromType"))
+                val toType = config.nodeTypes.get(element.getAttribute("toType"))
                 val colorString = element.getAttribute("color")
                 val color = if (colorString.length > 0) Color.decode(colorString) else Color.BLACK
 
@@ -108,7 +103,7 @@ object BGConfigParser {
 
                 if (name != null && uri != null) {
                     val relationType = BGRelationType(uri, name, index, color , graph, arbitraryLength, directed, expandable, fromType, toType)
-                    cache.addRelationType(relationType)
+                    config.addRelationType(relationType)
                 }
             }
 
@@ -120,7 +115,7 @@ object BGConfigParser {
                 val rtElement = relationTypeList.item(j) as? Element ?: continue
                 val rtGraph = rtElement.getAttribute("graph") ?: continue
                 val rtUri = rtElement.getAttribute("uri") ?: continue
-                val relationType = cache.getRelationTypeForURIandGraph(rtUri, rtGraph) ?: continue
+                val relationType = config.getRelationTypeForURIandGraph(rtUri, rtGraph) ?: continue
 
                 val sourcesList = rtElement.getElementsByTagName("source") ?: throw Exception()
 
@@ -129,10 +124,10 @@ object BGConfigParser {
                     val name = element.getAttribute("name") ?: continue
                     val uri = element.getAttribute("uri") ?: continue
                     val source = BGDatasetSource(uri, name, relationType)
-                    if (!cache.datasetSources.containsKey(relationType)) {
-                        cache.datasetSources[relationType] = HashSet()
+                    if (!config.datasetSources.containsKey(relationType)) {
+                        config.datasetSources[relationType] = HashSet()
                     }
-                    cache.datasetSources[relationType]?.add(source)
+                    config.datasetSources[relationType]?.add(source)
                 }
             }
 
@@ -159,7 +154,7 @@ object BGConfigParser {
                     val rtElement = relationTypeList.item(j) as? Element ?: continue
                     val rtGraph = rtElement.getAttribute("graph") ?: continue
                     val rtUri = rtElement.textContent
-                    val relationType = cache.getRelationTypeForURIandGraph(rtUri, rtGraph) ?: continue
+                    val relationType = config.getRelationTypeForURIandGraph(rtUri, rtGraph) ?: continue
                     relationTypes.add(relationType)
                 }
                 val conversions = HashMap<String, String>()
@@ -174,7 +169,7 @@ object BGConfigParser {
 
                 val metadataType = BGRelationMetadataType(id, label, dataType, relationUri, relationTypes, sparql, conversions)
 
-                cache.metadataTypes.put(metadataType.id, metadataType)
+                config.metadataTypes.put(metadataType.id, metadataType)
             }
 
 
@@ -227,7 +222,7 @@ object BGConfigParser {
                     val conversion = parseConversionElement(BGConversionType.ConversionDirection.IMPORT, node) ?: continue
 
                     val typeString = node.getAttribute("type") ?: continue
-                    val nodeType = cache.nodeTypes.get(typeString) ?: continue
+                    val nodeType = config.nodeTypes.get(typeString) ?: continue
 
                     val nodeConversion = BGNodeConversionType(nodeType, conversion) ?: continue
 
@@ -253,7 +248,7 @@ object BGConfigParser {
                     val conversion = parseConversionElement(BGConversionType.ConversionDirection.EXPORT, node) ?: continue
 
                     val typeString = node.getAttribute("type") ?: continue
-                    val nodeType = cache.nodeTypes.get(typeString) ?: continue
+                    val nodeType = config.nodeTypes.get(typeString) ?: continue
 
                     val nodeConversion = BGNodeConversionType(nodeType, conversion) ?: continue
 
@@ -261,12 +256,12 @@ object BGConfigParser {
                 }
             }
 
-            cache.importEdgeConversionTypes = importEdgeConversions
-            cache.importNodeConversionTypes = importNodeConversions
-            cache.exportEdgeConversionTypes = exportEdgeConversions
-            cache.exportNodeConversionTypes = exportNodeConversions
+            config.importEdgeConversionTypes = importEdgeConversions
+            config.importNodeConversionTypes = importNodeConversions
+            config.exportEdgeConversionTypes = exportEdgeConversions
+            config.exportNodeConversionTypes = exportNodeConversions
 
-            // Parse QueryConstraints. Must be after parsing RelationTypes, as it relies on finding relation types in cache.
+            // Parse QueryConstraints. Must be after parsing RelationTypes, as it relies on finding relation types in config.
 
             val queryConstraintNode = (doc.getElementsByTagName("queryConstraints").item(0) as? Element) ?: throw Exception("queryConstraints element not found in XML file!")
             val constraintList = queryConstraintNode.getElementsByTagName("constraint")
@@ -307,7 +302,7 @@ object BGConfigParser {
                         val rtElement = relationTypeList.item(j) as? Element ?: continue
                         val rtGraph = rtElement.getAttribute("graph") ?: continue
                         val rtUri = rtElement.textContent
-                        val relationType = cache.getRelationTypeForURIandGraph(rtUri, rtGraph) ?: continue
+                        val relationType = config.getRelationTypeForURIandGraph(rtUri, rtGraph) ?: continue
                         relationTypes.add(relationType)
                     }
                     val action = BGQueryConstraint.ConstraintAction(actionParameter, actionGraph, relationTypes, sparqlString)
@@ -324,8 +319,26 @@ object BGConfigParser {
                         queryConstraint.options.add(option)
                     }
                 }
-                cache.queryConstraints.put(queryConstraint.id, queryConstraint)
+                config.queryConstraints.put(queryConstraint.id, queryConstraint)
             }
+
+            // Parse example queries
+
+            val exampleQueryNode = (doc.getElementsByTagName("exampleQueries").item(0) as? Element) ?: throw Exception("exampleQueries element not found in XML file!")
+            val exampleQueryElements = exampleQueryNode.getElementsByTagName("query")
+
+            for (index in 0..exampleQueryElements.length-1) {
+                val queryElement = exampleQueryElements.item(index) as? Element ?: continue
+                val name = queryElement.getAttribute("name")
+                val sparql = queryElement.textContent.replace("\t", "")
+
+                if (name.isNullOrEmpty()) continue
+                if (sparql.isNullOrEmpty()) continue
+
+                val exampleQuery = BGExampleQuery(name, sparql)
+                config.exampleQueries.add(exampleQuery)
+            }
+
 
 
             // Parse the visual style config:
@@ -372,9 +385,9 @@ object BGConfigParser {
                 visualStyleConfig.nodeShapes.put(type, nodeShape)
             }
 
-            cache.visualStyleConfig = visualStyleConfig
+            config.visualStyleConfig = visualStyleConfig
 
-            //cache.relationTypeMap = relationTypes
+            //config.relationTypeMap = relationTypes
 
             // Will crash if the queryList tag isn't present.
             val queryList = (doc.getElementsByTagName("queryList").item(0) as? Element) ?: throw Exception("queryList element not found in XML file!")
@@ -463,6 +476,6 @@ object BGConfigParser {
             // TODO Auto-generated catch block
             e.printStackTrace()
         }
-        cache.queryTemplates = queryTemplateHashMap
+        config.queryTemplates = queryTemplateHashMap
     }
 }

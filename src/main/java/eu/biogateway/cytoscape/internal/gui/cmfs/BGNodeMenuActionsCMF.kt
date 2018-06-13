@@ -21,7 +21,6 @@ import java.awt.datatransfer.StringSelection
 import java.net.URI
 import javax.swing.JMenu
 import javax.swing.JMenuItem
-import javax.swing.JOptionPane
 
 /**
  * Created by sholmas on 06/07/2017.
@@ -141,8 +140,8 @@ class BGNodeMenuActionsCMF(val gravity: Float): CyNodeViewContextMenuFactory {
 
         val HAS_SOURCE_URI = "http://semanticscience.org/resource/SIO_000253"
         val RELATED_MATCH_URI = "http://www.w3.org/2004/02/skos/core#relatedMatch"
-        val hasSourceType = BGServiceManager.cache.getRelationTypesForURI(HAS_SOURCE_URI)?.first() ?: throw Exception("Relation type not found in cache!")
-        val relatedMatchType = BGServiceManager.cache.getRelationTypesForURI(RELATED_MATCH_URI)?.first() ?: throw Exception("Relation type not found in cache!")
+        val hasSourceType = BGServiceManager.config.getRelationTypesForURI(HAS_SOURCE_URI)?.first() ?: throw Exception("Relation type not found in config!")
+        val relatedMatchType = BGServiceManager.config.getRelationTypesForURI(RELATED_MATCH_URI)?.first() ?: throw Exception("Relation type not found in config!")
 
         val relationTypes = arrayListOf(hasSourceType, relatedMatchType)
 
@@ -202,7 +201,7 @@ class BGNodeMenuActionsCMF(val gravity: Float): CyNodeViewContextMenuFactory {
             }
         }
         val encodesIdentifier = Utility.createRelationTypeIdentifier("http://semanticscience.org/resource/SIO_010078", "refseq")
-        val relationType = BGServiceManager.dataModelController.cache.relationTypeMap.get(encodesIdentifier) ?: throw Exception("Relation type with identifier: "+encodesIdentifier+" not found in cache.")
+        val relationType = BGServiceManager.dataModelController.config.relationTypeMap.get(encodesIdentifier) ?: throw Exception("Relation type with identifier: "+encodesIdentifier+" not found in config.")
         val menuItem = JMenuItem(menuItemText)
 
         menuItem.addActionListener {
@@ -268,8 +267,8 @@ class BGNodeMenuActionsCMF(val gravity: Float): CyNodeViewContextMenuFactory {
         parentMenu.add(searchAllItem)
 
         // Will only create the menu if the config is loaded.
-        //for (relationType in serviceManager.cache.relationTypeMap.values.sortedBy { it.number }) {
-        for (relationType in BGServiceManager.cache.filteredRelationTypeMap.values.sortedBy { it.number }) {
+        //for (relationType in serviceManager.config.relationTypeMap.values.sortedBy { it.number }) {
+        for (relationType in BGServiceManager.config.filteredRelationTypeMap.values.sortedBy { it.number }) {
 
             // Skip the relations that cannot return data:
             val nodeType = BGNode(nodeUri, "").type
@@ -337,7 +336,7 @@ class BGNodeMenuActionsCMF(val gravity: Float): CyNodeViewContextMenuFactory {
                     BGRelationSearchResultsController(serviceManager, returnData, columnNames, network)
                 }
             }*//*
-            val relationType = BGServiceManager.cache.getRelationTypeForURIandGraph("http://www.w3.org/2004/02/skos/core#related", "tf-tg") ?: throw Exception("Unable to find relation type in cache!")
+            val relationType = BGServiceManager.config.getRelationTypeForURIandGraph("http://www.w3.org/2004/02/skos/core#related", "tf-tg") ?: throw Exception("Unable to find relation type in config!")
             val direction = when (nodeType) {
                 BGNodeType.Protein -> BGRelationDirection.FROM
                 BGNodeType.Gene -> BGRelationDirection.TO

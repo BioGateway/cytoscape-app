@@ -36,18 +36,6 @@
                       <text value="Generate SPARQL"/>
                     </properties>
                   </component>
-                  <component id="6eb46" class="javax.swing.JButton" binding="loadQueryButton" default-binding="true">
-                    <constraints/>
-                    <properties>
-                      <text value="Load Query"/>
-                    </properties>
-                  </component>
-                  <component id="61d45" class="javax.swing.JButton" binding="saveQueryButton" default-binding="true">
-                    <constraints/>
-                    <properties>
-                      <text value="Save Query"/>
-                    </properties>
-                  </component>
                   <component id="55426" class="javax.swing.JButton" binding="runChainQueryButton">
                     <constraints/>
                     <properties>
@@ -61,6 +49,29 @@
                 <properties/>
                 <border type="none"/>
                 <children/>
+              </grid>
+              <grid id="3034d" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="0">
+                <constraints border-constraint="North"/>
+                <properties/>
+                <border type="none" title="Stored Queries"/>
+                <children>
+                  <component id="97470" class="javax.swing.JComboBox" binding="exampleQueryBox">
+                    <constraints/>
+                    <properties/>
+                  </component>
+                  <component id="6eb46" class="javax.swing.JButton" binding="loadQueryButton" default-binding="true">
+                    <constraints/>
+                    <properties>
+                      <text value="Load Query"/>
+                    </properties>
+                  </component>
+                  <component id="61d45" class="javax.swing.JButton" binding="saveQueryButton" default-binding="true">
+                    <constraints/>
+                    <properties>
+                      <text value="Save Query"/>
+                    </properties>
+                  </component>
+                </children>
               </grid>
             </children>
           </grid>

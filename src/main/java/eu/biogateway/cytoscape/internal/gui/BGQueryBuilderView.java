@@ -1,16 +1,12 @@
 package eu.biogateway.cytoscape.internal.gui;
 
-import eu.biogateway.cytoscape.internal.gui.tutorial.BGTutorial;
-import eu.biogateway.cytoscape.internal.model.BGNodeTypeNew;
 import eu.biogateway.cytoscape.internal.util.Utility;
 import net.miginfocom.swing.MigLayout;
 import eu.biogateway.cytoscape.internal.BGServiceManager;
-import eu.biogateway.cytoscape.internal.gui.multiquery.BGAutocompleteComboBox;
 import eu.biogateway.cytoscape.internal.gui.multiquery.BGMultiQueryPanel;
 import eu.biogateway.cytoscape.internal.gui.multiquery.BGQueryConstraintPanel;
 import eu.biogateway.cytoscape.internal.query.BGQueryParameter;
 import eu.biogateway.cytoscape.internal.query.QueryTemplate;
-import eu.biogateway.cytoscape.internal.util.Constants;
 import eu.biogateway.cytoscape.internal.util.SortedComboBoxModel;
 
 import javax.swing.*;
@@ -78,6 +74,7 @@ public class BGQueryBuilderView implements ChangeListener {
     private JButton bulkImportSelectedCurrentButton;
     private JTextField bulkFilterTextField;
     private JCheckBox filterRelationsFROMExistingCheckBox;
+    private JComboBox exampleQueryBox;
     private BGQueryConstraintPanel queryConstraintsPanel;
     private TableRowSorter<TableModel> sorter;
     private final DocumentListener filterDocumentListener = new DocumentListener() {
@@ -187,7 +184,7 @@ public class BGQueryBuilderView implements ChangeListener {
 
         filterSelectedCheckBox.addActionListener(e -> updateFilterBySelectedRows());
 
-        queryConstraintsPanel = new BGQueryConstraintPanel(BGServiceManager.INSTANCE.getCache().getActiveConstraints());
+        queryConstraintsPanel = new BGQueryConstraintPanel(BGServiceManager.INSTANCE.getConfig().getActiveConstraints());
     }
 
     private void setUpActionListeners() {
@@ -292,7 +289,7 @@ public class BGQueryBuilderView implements ChangeListener {
             /*
             switch (parameter.getType()) {
                 case GENE:
-                    component = new BGAutocompleteComboBox(BGServiceManager.INSTANCE.getEndpoint(), () -> BGServiceManager.INSTANCE.getCache().getNodeTypes().get());
+                    component = new BGAutocompleteComboBox(BGServiceManager.INSTANCE.getEndpoint(), () -> BGServiceManager.INSTANCE.getConfig().getNodeTypes().get());
                     break;
                 case TAXON:
                     component = new BGAutocompleteComboBox(BGServiceManager.INSTANCE.getEndpoint(), () -> BGNodeType.Taxon);
@@ -387,7 +384,7 @@ public class BGQueryBuilderView implements ChangeListener {
     }
 
     public void setUpMultiQueryPanel() {
-        this.queryConstraintsPanel = new BGQueryConstraintPanel(BGServiceManager.INSTANCE.getCache().getActiveConstraints());
+        this.queryConstraintsPanel = new BGQueryConstraintPanel(BGServiceManager.INSTANCE.getConfig().getActiveConstraints());
         queryConstraintsPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Query Constraints"));
         this.multiQueryPanel = new BGMultiQueryPanel(queryConstraintsPanel);
         multiQueryPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Queries"));
@@ -395,7 +392,7 @@ public class BGQueryBuilderView implements ChangeListener {
         this.multiQueryContainer.add(queryConstraintsPanel, BorderLayout.NORTH);
         this.multiQueryContainer.add(multiQueryPanel, BorderLayout.CENTER);
         mainFrame.repaint();
-        if (BGServiceManager.INSTANCE.getCache().getActiveRelationTypes().isEmpty()) {
+        if (BGServiceManager.INSTANCE.getConfig().getActiveRelationTypes().isEmpty()) {
             // No Datasets are enabled!
             JOptionPane.showMessageDialog(mainFrame, "Select one or more relation types for the datasets in the BioGateway tab of the Control Panel.", "No datasets selected!", JOptionPane.WARNING_MESSAGE);
             mainFrame.dispatchEvent(new WindowEvent(mainFrame, WindowEvent.WINDOW_CLOSING));
@@ -436,6 +433,10 @@ public class BGQueryBuilderView implements ChangeListener {
 
     public JComboBox getQuerySelectionBox() {
         return querySelectionBox;
+    }
+
+    public JComboBox getExampleQueryBox() {
+        return exampleQueryBox;
     }
 
     public JTextPane getBulkImportTextPane() {
@@ -487,12 +488,6 @@ public class BGQueryBuilderView implements ChangeListener {
         generateSPARQLButton = new JButton();
         generateSPARQLButton.setText("Generate SPARQL");
         panel2.add(generateSPARQLButton);
-        loadQueryButton = new JButton();
-        loadQueryButton.setText("Load Query");
-        panel2.add(loadQueryButton);
-        saveQueryButton = new JButton();
-        saveQueryButton.setText("Save Query");
-        panel2.add(saveQueryButton);
         runChainQueryButton = new JButton();
         runChainQueryButton.setText("Run Query");
         panel2.add(runChainQueryButton);
@@ -500,50 +495,62 @@ public class BGQueryBuilderView implements ChangeListener {
         multiQueryContainer.setLayout(new BorderLayout(0, 0));
         panel1.add(multiQueryContainer, BorderLayout.CENTER);
         final JPanel panel3 = new JPanel();
-        panel3.setLayout(new BorderLayout(0, 0));
-        tabPanel.addTab("Bulk Query", panel3);
+        panel3.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
+        panel1.add(panel3, BorderLayout.NORTH);
+        panel3.setBorder(BorderFactory.createTitledBorder("Stored Queries"));
+        exampleQueryBox = new JComboBox();
+        panel3.add(exampleQueryBox);
+        loadQueryButton = new JButton();
+        loadQueryButton.setText("Load Query");
+        panel3.add(loadQueryButton);
+        saveQueryButton = new JButton();
+        saveQueryButton.setText("Save Query");
+        panel3.add(saveQueryButton);
         final JPanel panel4 = new JPanel();
-        panel4.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        panel3.add(panel4, BorderLayout.SOUTH);
+        panel4.setLayout(new BorderLayout(0, 0));
+        tabPanel.addTab("Bulk Query", panel4);
+        final JPanel panel5 = new JPanel();
+        panel5.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        panel4.add(panel5, BorderLayout.SOUTH);
         bulkSearchButton = new JButton();
         bulkSearchButton.setText("Bulk Search");
-        panel4.add(bulkSearchButton);
+        panel5.add(bulkSearchButton);
         bulkImportSelectedNodesNewButton = new JButton();
         bulkImportSelectedNodesNewButton.setText("Import selected nodes to new network");
-        panel4.add(bulkImportSelectedNodesNewButton);
+        panel5.add(bulkImportSelectedNodesNewButton);
         bulkImportSelectedCurrentButton = new JButton();
         bulkImportSelectedCurrentButton.setText("Import selected nodes to current network");
-        panel4.add(bulkImportSelectedCurrentButton);
-        final JPanel panel5 = new JPanel();
-        panel5.setLayout(new BorderLayout(0, 0));
-        panel3.add(panel5, BorderLayout.CENTER);
+        panel5.add(bulkImportSelectedCurrentButton);
         final JPanel panel6 = new JPanel();
         panel6.setLayout(new BorderLayout(0, 0));
-        panel5.add(panel6, BorderLayout.WEST);
+        panel4.add(panel6, BorderLayout.CENTER);
+        final JPanel panel7 = new JPanel();
+        panel7.setLayout(new BorderLayout(0, 0));
+        panel6.add(panel7, BorderLayout.WEST);
         final JScrollPane scrollPane1 = new JScrollPane();
-        panel6.add(scrollPane1, BorderLayout.CENTER);
+        panel7.add(scrollPane1, BorderLayout.CENTER);
         bulkImportTextPane = new JTextPane();
         scrollPane1.setViewportView(bulkImportTextPane);
         final JLabel label1 = new JLabel();
         label1.setText("  Paste genes/proteins here:  ");
-        panel6.add(label1, BorderLayout.NORTH);
-        final JPanel panel7 = new JPanel();
-        panel7.setLayout(new BorderLayout(0, 0));
-        panel5.add(panel7, BorderLayout.CENTER);
+        panel7.add(label1, BorderLayout.NORTH);
+        final JPanel panel8 = new JPanel();
+        panel8.setLayout(new BorderLayout(0, 0));
+        panel6.add(panel8, BorderLayout.CENTER);
         final JScrollPane scrollPane2 = new JScrollPane();
-        panel7.add(scrollPane2, BorderLayout.CENTER);
+        panel8.add(scrollPane2, BorderLayout.CENTER);
         bulkImportResultTable = new JTable();
         bulkImportResultTable.setAutoCreateRowSorter(false);
         scrollPane2.setViewportView(bulkImportResultTable);
-        final JPanel panel8 = new JPanel();
-        panel8.setLayout(new BorderLayout(0, 0));
-        panel3.add(panel8, BorderLayout.EAST);
         final JPanel panel9 = new JPanel();
         panel9.setLayout(new BorderLayout(0, 0));
-        panel3.add(panel9, BorderLayout.NORTH);
+        panel4.add(panel9, BorderLayout.EAST);
         final JPanel panel10 = new JPanel();
-        panel10.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
-        panel9.add(panel10, BorderLayout.WEST);
+        panel10.setLayout(new BorderLayout(0, 0));
+        panel4.add(panel10, BorderLayout.NORTH);
+        final JPanel panel11 = new JPanel();
+        panel11.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
+        panel10.add(panel11, BorderLayout.WEST);
         bulkImportTypeComboBox = new JComboBox();
         final DefaultComboBoxModel defaultComboBoxModel1 = new DefaultComboBoxModel();
         defaultComboBoxModel1.addElement("Uniprot IDs");
@@ -553,19 +560,19 @@ public class BGQueryBuilderView implements ChangeListener {
         defaultComboBoxModel1.addElement("GO terms");
         defaultComboBoxModel1.addElement("Protein names");
         bulkImportTypeComboBox.setModel(defaultComboBoxModel1);
-        panel10.add(bulkImportTypeComboBox);
+        panel11.add(bulkImportTypeComboBox);
         final JLabel label2 = new JLabel();
         label2.setText("to import:");
-        panel10.add(label2);
-        final JPanel panel11 = new JPanel();
-        panel11.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        panel9.add(panel11, BorderLayout.EAST);
+        panel11.add(label2);
+        final JPanel panel12 = new JPanel();
+        panel12.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        panel10.add(panel12, BorderLayout.EAST);
         final JLabel label3 = new JLabel();
         label3.setText("Filter results:");
-        panel11.add(label3);
+        panel12.add(label3);
         bulkFilterTextField = new JTextField();
         bulkFilterTextField.setColumns(10);
-        panel11.add(bulkFilterTextField);
+        panel12.add(bulkFilterTextField);
         queryPanel = new JPanel();
         queryPanel.setLayout(new BorderLayout(0, 0));
         tabPanel.addTab("Predefined Queries", queryPanel);
@@ -575,20 +582,20 @@ public class BGQueryBuilderView implements ChangeListener {
         runQueryButton = new JButton();
         runQueryButton.setText("Run Query");
         buttonPanel.add(runQueryButton);
-        final JPanel panel12 = new JPanel();
-        panel12.setLayout(new BorderLayout(0, 0));
-        queryPanel.add(panel12, BorderLayout.CENTER);
-        parameterPanel = new JPanel();
-        parameterPanel.setLayout(new GridBagLayout());
-        panel12.add(parameterPanel, BorderLayout.CENTER);
         final JPanel panel13 = new JPanel();
         panel13.setLayout(new BorderLayout(0, 0));
-        panel12.add(panel13, BorderLayout.NORTH);
+        queryPanel.add(panel13, BorderLayout.CENTER);
+        parameterPanel = new JPanel();
+        parameterPanel.setLayout(new GridBagLayout());
+        panel13.add(parameterPanel, BorderLayout.CENTER);
+        final JPanel panel14 = new JPanel();
+        panel14.setLayout(new BorderLayout(0, 0));
+        panel13.add(panel14, BorderLayout.NORTH);
         descriptionPanel = new JPanel();
         descriptionPanel.setLayout(new BorderLayout(0, 0));
-        panel13.add(descriptionPanel, BorderLayout.SOUTH);
+        panel14.add(descriptionPanel, BorderLayout.SOUTH);
         querySelectionBox = new JComboBox();
-        panel13.add(querySelectionBox, BorderLayout.NORTH);
+        panel14.add(querySelectionBox, BorderLayout.NORTH);
         sparqlPanel = new JPanel();
         sparqlPanel.setLayout(new BorderLayout(0, 0));
         tabPanel.addTab("SPARQL Code", sparqlPanel);
@@ -596,65 +603,65 @@ public class BGQueryBuilderView implements ChangeListener {
         sparqlPanel.add(scrollPane3, BorderLayout.CENTER);
         sparqlTextArea = new JTextArea();
         scrollPane3.setViewportView(sparqlTextArea);
-        final JPanel panel14 = new JPanel();
-        panel14.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        sparqlPanel.add(panel14, BorderLayout.SOUTH);
+        final JPanel panel15 = new JPanel();
+        panel15.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        sparqlPanel.add(panel15, BorderLayout.SOUTH);
         parseSPARQLButton = new JButton();
         parseSPARQLButton.setText("Parse SPARQL to Biogateway Query");
-        panel14.add(parseSPARQLButton);
+        panel15.add(parseSPARQLButton);
         resultPanel = new JPanel();
         resultPanel.setLayout(new BorderLayout(0, 0));
         tabPanel.addTab("Query Result", resultPanel);
-        final JPanel panel15 = new JPanel();
-        panel15.setLayout(new BorderLayout(0, 0));
-        resultPanel.add(panel15, BorderLayout.CENTER);
+        final JPanel panel16 = new JPanel();
+        panel16.setLayout(new BorderLayout(0, 0));
+        resultPanel.add(panel16, BorderLayout.CENTER);
         final JScrollPane scrollPane4 = new JScrollPane();
-        panel15.add(scrollPane4, BorderLayout.CENTER);
+        panel16.add(scrollPane4, BorderLayout.CENTER);
         resultTable.setAutoCreateRowSorter(false);
         resultTable.setFillsViewportHeight(false);
         scrollPane4.setViewportView(resultTable);
-        final JPanel panel16 = new JPanel();
-        panel16.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        panel15.add(panel16, BorderLayout.SOUTH);
+        final JPanel panel17 = new JPanel();
+        panel17.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        panel16.add(panel17, BorderLayout.SOUTH);
         importToNewButton = new JButton();
         importToNewButton.setText("Import to new Network");
-        panel16.add(importToNewButton);
+        panel17.add(importToNewButton);
         importToSelectedNetworkButton = new JButton();
         importToSelectedNetworkButton.setText("Import to selected Network");
-        panel16.add(importToSelectedNetworkButton);
+        panel17.add(importToSelectedNetworkButton);
         filterRelationsToExistingCheckBox = new JCheckBox();
         filterRelationsToExistingCheckBox.setText("Only relations TO nodes in current network");
-        panel16.add(filterRelationsToExistingCheckBox);
+        panel17.add(filterRelationsToExistingCheckBox);
         filterRelationsFROMExistingCheckBox = new JCheckBox();
         filterRelationsFROMExistingCheckBox.setText("Only relations FROM nodes in current network");
-        panel16.add(filterRelationsFROMExistingCheckBox);
-        final JPanel panel17 = new JPanel();
-        panel17.setLayout(new BorderLayout(0, 0));
-        panel15.add(panel17, BorderLayout.NORTH);
+        panel17.add(filterRelationsFROMExistingCheckBox);
         final JPanel panel18 = new JPanel();
-        panel18.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        panel17.add(panel18, BorderLayout.WEST);
+        panel18.setLayout(new BorderLayout(0, 0));
+        panel16.add(panel18, BorderLayout.NORTH);
+        final JPanel panel19 = new JPanel();
+        panel19.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        panel18.add(panel19, BorderLayout.WEST);
         selectUpstreamRelationsButton = new JButton();
         selectUpstreamRelationsButton.setHorizontalTextPosition(11);
         selectUpstreamRelationsButton.setText("Select relations leading to selection");
         selectUpstreamRelationsButton.setToolTipText("Select all relations leading to the relations currently selected.");
-        panel18.add(selectUpstreamRelationsButton);
+        panel19.add(selectUpstreamRelationsButton);
         filterSelectedCheckBox = new JCheckBox();
         filterSelectedCheckBox.setText("Filter selected");
         filterSelectedCheckBox.setToolTipText("Only show currently selected relations.");
-        panel18.add(filterSelectedCheckBox);
-        final JPanel panel19 = new JPanel();
-        panel19.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        panel17.add(panel19, BorderLayout.EAST);
-        final JLabel label4 = new JLabel();
-        label4.setText("Filter results:");
-        panel19.add(label4);
-        filterResultsTextField = new JTextField();
-        filterResultsTextField.setColumns(10);
-        panel19.add(filterResultsTextField);
+        panel19.add(filterSelectedCheckBox);
         final JPanel panel20 = new JPanel();
         panel20.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        mainPanel.add(panel20, BorderLayout.NORTH);
+        panel18.add(panel20, BorderLayout.EAST);
+        final JLabel label4 = new JLabel();
+        label4.setText("Filter results:");
+        panel20.add(label4);
+        filterResultsTextField = new JTextField();
+        filterResultsTextField.setColumns(10);
+        panel20.add(filterResultsTextField);
+        final JPanel panel21 = new JPanel();
+        panel21.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        mainPanel.add(panel21, BorderLayout.NORTH);
     }
 
     /**

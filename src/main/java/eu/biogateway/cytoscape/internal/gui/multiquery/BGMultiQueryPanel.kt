@@ -16,7 +16,7 @@ class BGMultiQueryPanel(val constraintPanel: BGQueryConstraintPanel): JPanel() {
     val deleteButtonTooltipText = "Delete this row."
 
     val variableManager = BGQueryVariableManager()
-    val relationTypes = BGServiceManager.cache.relationTypeDescriptions
+    val relationTypes = BGServiceManager.config.relationTypeDescriptions
 
 
     init {
@@ -65,7 +65,7 @@ class BGMultiQueryPanel(val constraintPanel: BGQueryConstraintPanel): JPanel() {
         if (graph.relation.type != BGSPARQLParser.BGVariableType.URI) throw Exception("Relation type cannot be a variable!")
 
         val relationIdentifier = Utility.createRelationTypeIdentifier(graph.relation.value, graph.graph.value)
-        val relationType = BGServiceManager.cache.relationTypeMap.get(relationIdentifier) ?: BGServiceManager.cache.getRelationTypesForURI(graph.relation.value)?.first()
+        val relationType = BGServiceManager.config.relationTypeMap.get(relationIdentifier) ?: BGServiceManager.config.getRelationTypesForURI(graph.relation.value)?.first()
         if (relationType == null){
             throw Exception("Relation name not found!")
         }
@@ -279,7 +279,7 @@ class BGMultiQueryPanel(val constraintPanel: BGQueryConstraintPanel): JPanel() {
             val graph = triple.second.defaultGraphURI ?: continue
             val pair = BGDatasetSource.generateSourceConstraint(triple.second, triple.first, triple.third, sourceConstraintCounter)
             sourceConstraintCounter++
-//            val relevantSources = serviceManager.cache.activeSources.filter { it.relationTypes.contains(triple.second) }
+//            val relevantSources = serviceManager.config.activeSources.filter { it.relationTypes.contains(triple.second) }
 //            if (relevantSources.count() == 0) continue
 //            val uri = "?sourceConstraint"+sourceConstraintCounter
 //            sourceConstraintCounter++

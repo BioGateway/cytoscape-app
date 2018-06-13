@@ -117,7 +117,7 @@ class BGMultiQueryAutocompleteLine(val relationTypeComboBox: JComboBox<BGRelatio
 
         //val types = arrayOf("Protein", "Gene", "GO-Term", "Taxon", "Disease", "All")
 
-        val types = BGServiceManager.cache.nodeTypes.values.filter { it.autocompleteType != null }.toTypedArray()
+        val types = BGServiceManager.config.nodeTypes.values.filter { it.autocompleteType != null }.toTypedArray()
 
         //val types = arrayOf(BGNodeType.Protein, BGNodeType.Gene, BGNodeType.GOTerm, BGNodeType.Taxon, BGNodeType.Disease)
         toTypeComboBox = JComboBox(types)

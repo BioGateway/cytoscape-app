@@ -516,11 +516,11 @@ class BGNetworkBuilder() {
 
         val relationType = when (graph != null) {
             true -> {
-                serviceManager.cache.getRelationTypeForURIandGraph(relationUri, graph!!)
+                serviceManager.config.getRelationTypeForURIandGraph(relationUri, graph!!)
                         ?: BGRelationType(relationUri, relationUri, 0)
             }
             false -> {
-                serviceManager.cache.getRelationTypesForURI(relationUri)?.first()
+                serviceManager.config.getRelationTypesForURI(relationUri)?.first()
                         ?: BGRelationType(relationUri, relationUri, 0)
             }
         }
@@ -639,7 +639,7 @@ class BGNetworkBuilder() {
 
     fun reloadMetadataForEdges(relationEdges: Map<BGPrimitiveRelation, CyEdge>, network: CyNetwork) {
         // Get the active metadata types.
-        val activeMetadataTypes = BGServiceManager.cache.activeMetadataTypes
+        val activeMetadataTypes = BGServiceManager.config.activeMetadataTypes
 
         val query = BGLoadRelationMetadataQuery(relationEdges.keys, activeMetadataTypes) {
             BGServiceManager.dataModelController.networkBuilder.updateEdgeTableMetadataForCyEdges(network, relationEdges)
@@ -649,7 +649,7 @@ class BGNetworkBuilder() {
 
     fun reloadMetadataForRelationsInCurrentNetwork() {
         // Get the active metadata types.
-        val activeMetadataTypes = BGServiceManager.cache.activeMetadataTypes
+        val activeMetadataTypes = BGServiceManager.config.activeMetadataTypes
         // Get a list of column names for the active metadata types.
         val activeColumnNames = activeMetadataTypes.map { it.name }
 
@@ -660,7 +660,7 @@ class BGNetworkBuilder() {
         // Attempt to recreate them as BGRelations in a Map<CyEdge, BGRelation>
         val relations = HashMap<BGPrimitiveRelation, CyEdge>()
         for (edge in network.edgeList) {
-            val relationType = BGServiceManager.cache.getRelationTypeForURIandGraph(edge.getUri(network), edge.getSourceGraph(network)) ?: continue
+            val relationType = BGServiceManager.config.getRelationTypeForURIandGraph(edge.getUri(network), edge.getSourceGraph(network)) ?: continue
 
             // TODO: Check that these values exist! The URI table might not even be present!
             val fromUri = edge.source.getUri(network)

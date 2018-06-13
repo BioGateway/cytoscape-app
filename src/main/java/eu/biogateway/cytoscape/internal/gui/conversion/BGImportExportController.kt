@@ -81,7 +81,7 @@ class BGImportExportController() {
 
     fun addIdentifierLine() {
         val network = network ?: return
-        val importNodeConversions = BGServiceManager.cache.importNodeConversionTypes ?: return
+        val importNodeConversions = BGServiceManager.config.importNodeConversionTypes ?: return
         val nodeColumns = network.defaultNodeTable.columns
         val identifierConversions = importNodeConversions
                 .filter { it.biogwId.equals("identifier uri") }
@@ -172,15 +172,15 @@ class BGImportExportController() {
     }
 
     fun addOutputConversionLine() {
-        val edgeConversions = BGServiceManager.cache.exportEdgeConversionTypes ?: return
-        val nodeConversions = BGServiceManager.cache.exportNodeConversionTypes ?: return
+        val edgeConversions = BGServiceManager.config.exportEdgeConversionTypes ?: return
+        val nodeConversions = BGServiceManager.config.exportNodeConversionTypes ?: return
 
         addConversionLine(nodeConversions, edgeConversions, exportConversionLines, view.convertColumnsPanel, convertBottomPadPanel)
     }
 
     fun addImportConversionLine() {
-        val edgeConversions = BGServiceManager.cache.importEdgeConversionTypes ?: return
-        val nodeConversions = BGServiceManager.cache.importNodeConversionTypes ?: return
+        val edgeConversions = BGServiceManager.config.importEdgeConversionTypes ?: return
+        val nodeConversions = BGServiceManager.config.importNodeConversionTypes ?: return
         addConversionLine(nodeConversions, edgeConversions, importConversionLines, view.nodeImportsPanel, importBottomPadPanel)
     }
 

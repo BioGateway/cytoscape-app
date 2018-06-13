@@ -30,8 +30,8 @@ class BGEdgeViewCMF(val gravity: Float, val serviceManager: BGServiceManager): C
         val edgeTable = netView?.model?.defaultEdgeTable
         val edgeUri = edgeTable?.getRow(edgeSuid)?.get(Constants.BG_FIELD_IDENTIFIER_URI, String::class.java) ?: throw Exception("Edge URI not found in CyNetwork")
 
-        for (key in serviceManager.cache.relationTypeMap.keys) {
-            val relationType = serviceManager.cache.relationTypeMap.get(key)
+        for (key in serviceManager.config.relationTypeMap.keys) {
+            val relationType = serviceManager.config.relationTypeMap.get(key)
             if (relationType != null) {
                 val item = JMenuItem(relationType.name)
                 item.addActionListener {

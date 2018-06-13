@@ -3,9 +3,7 @@ package eu.biogateway.cytoscape.internal.gui
 import eu.biogateway.cytoscape.internal.BGServiceManager
 import eu.biogateway.cytoscape.internal.model.BGNode
 import eu.biogateway.cytoscape.internal.model.BGNodeTypeNew
-import eu.biogateway.cytoscape.internal.model.BGRelation
 import eu.biogateway.cytoscape.internal.query.BGNodeFetchQuery
-import eu.biogateway.cytoscape.internal.query.BGNodeURILookupQuery
 import eu.biogateway.cytoscape.internal.query.BGParsingType
 import eu.biogateway.cytoscape.internal.query.BGReturnNodeData
 import eu.biogateway.cytoscape.internal.util.Utility
@@ -60,7 +58,7 @@ class BGNodeLookupController(parentComponent: JComponent?, defaultURI: String? =
 //            else -> BGNodeType.Undefined
 //        }
         val nodeTypeName = view.nodeTypeComboBox.selectedItem as String
-        val nodeType = BGServiceManager.cache.nodeTypes[nodeTypeName.toLowerCase()] ?: throw Exception("Unsupported node type.")
+        val nodeType = BGServiceManager.config.nodeTypes[nodeTypeName.toLowerCase()] ?: throw Exception("Unsupported node type.")
         val useInfix = if (nodeType.autocompleteType == BGNodeTypeNew.BGAutoCompleteType.INFIX) true else false
 
         when (view.nameOrURIComboBox.selectedIndex) {

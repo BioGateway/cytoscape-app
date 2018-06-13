@@ -31,7 +31,7 @@ class BGExpandEdgeDoubleClickEVTF(): EdgeViewTaskFactory {
         val fromNodeUri = edge.source.getUri(network)
         val toNodeUri = edge.target.getUri(network)
         val edgeUri = edge.getUri(network)
-        val relationType = BGServiceManager.cache.getRelationTypeForURIandGraph(edge.getUri(network), edge.getSourceGraph(network)) ?: throw Exception("RelationType not found in cache!")
+        val relationType = BGServiceManager.config.getRelationTypeForURIandGraph(edge.getUri(network), edge.getSourceGraph(network)) ?: throw Exception("RelationType not found in config!")
 
         //val query = BGFindBinaryPPIsBetweenNodesQuery(serviceManager, fromNodeUri, toNodeUri)
 
@@ -76,7 +76,7 @@ class BGExpandEdgeDoubleClickEVTF(): EdgeViewTaskFactory {
         val edge = edgeView.model
         val network = networkView.model
 
-        val relationType = BGServiceManager.cache.getRelationTypeForURIandGraph(edge.getUri(network), edge.getSourceGraph(network))
+        val relationType = BGServiceManager.config.getRelationTypeForURIandGraph(edge.getUri(network), edge.getSourceGraph(network))
 
         if (relationType == null) return false
         return relationType.expandable

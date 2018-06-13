@@ -238,7 +238,7 @@ class BGMultiNodeQueryCMF(val gravity: Float): CyNetworkViewContextMenuFactory {
 
 
 
-        for (relationType in BGServiceManager.cache.activeRelationTypes.sortedBy { it.number }) {
+        for (relationType in BGServiceManager.config.activeRelationTypes.sortedBy { it.number }) {
             val item = JMenuItem(relationType.description)
 
             item.addActionListener {

@@ -2,9 +2,9 @@ package eu.biogateway.cytoscape.internal
 
 import eu.biogateway.cytoscape.internal.server.BGDictEndpoint
 import org.apache.http.impl.client.HttpClients
-import org.cytoscape.app.CyAppAdapter
 import org.cytoscape.application.CyApplicationManager
 import eu.biogateway.cytoscape.internal.gui.BGControlPanel
+import eu.biogateway.cytoscape.internal.model.BGConfig
 import eu.biogateway.cytoscape.internal.model.BGDataModelController
 import eu.biogateway.cytoscape.internal.model.BGNetworkConverter
 import eu.biogateway.cytoscape.internal.util.BGVisualStyleBuilder
@@ -57,8 +57,8 @@ object BGServiceManager {
     var dataModelController: BGDataModelController
 
     // NOTE! THIS IS NULL BEFORE THE DATAMODELCONTROLLER IS INITIALIZED!
-    val cache: BGDataModelController.BGCache get() {
-        return dataModelController.cache
+    val config: BGConfig get() {
+        return dataModelController.config
     }
 
     var httpClient = HttpClients.createDefault()

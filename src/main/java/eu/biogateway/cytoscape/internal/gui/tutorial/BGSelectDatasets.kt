@@ -5,7 +5,6 @@ import eu.biogateway.cytoscape.internal.libs.JCheckBoxTree
 
 import javax.swing.*
 import javax.swing.tree.DefaultMutableTreeNode
-import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.TreePath
 import java.awt.*
 import java.io.IOException
@@ -38,7 +37,7 @@ class BGSelectDatasets : JPanel() {
 
     private fun setupTreePanel() {
         datasetsTreePanel.removeAll()
-        val model = BGServiceManager.cache.configPanelTreeModel
+        val model = BGServiceManager.config.configPanelTreeModel
         val tree = JCheckBoxTree(model)
         //tree.expandRow(0);
         tree.isRootVisible = false
@@ -53,7 +52,7 @@ class BGSelectDatasets : JPanel() {
             val nodeName = tp!!.lastPathComponent.toString()
             val uri: URI
             try {
-                uri = URI(BGServiceManager.cache.datasetGraphs[nodeName])
+                uri = URI(BGServiceManager.config.datasetGraphs[nodeName])
             } catch (e: URISyntaxException) {
                 e.printStackTrace()
                 return@Consumer
