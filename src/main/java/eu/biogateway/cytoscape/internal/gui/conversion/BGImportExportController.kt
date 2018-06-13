@@ -220,6 +220,8 @@ class BGImportExportController() {
                 .map {
                     BGConversion(it.conversionType, network, it.sourceColumn!!, it.destinationColumnName)
                 }
-        BGServiceManager.networkConverter.exportNetwork(network, nodeConversions, edgeConversions)
+        //BGServiceManager.networkConverter.exportNetworkToCopy(network, nodeConversions, edgeConversions)
+        BGServiceManager.networkConverter.addExportColumns(network, nodeConversions, edgeConversions)
+
     }
 }

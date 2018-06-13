@@ -3,8 +3,7 @@ package eu.biogateway.cytoscape.internal.parser
 import eu.biogateway.cytoscape.internal.BGServiceManager
 import eu.biogateway.cytoscape.internal.model.*
 import eu.biogateway.cytoscape.internal.query.BGQueryParameter
-import eu.biogateway.cytoscape.internal.query.QueryTemplate
-import eu.biogateway.cytoscape.internal.model.BGDataModelController
+import eu.biogateway.cytoscape.internal.query.BGQueryTemplate
 import org.w3c.dom.Element
 import org.w3c.dom.Node
 import java.awt.Color
@@ -16,7 +15,7 @@ object BGConfigParser {
     /// Parses the config file from the input stream. Returns an error message if something went wrong, returns null if everything went well.
     fun parseXMLConfigFile(stream: InputStream, config: BGConfig) {
 
-        val queryTemplateHashMap = java.util.HashMap<String, QueryTemplate>()
+        val queryTemplateHashMap = java.util.HashMap<String, BGQueryTemplate>()
         val dbFactory = DocumentBuilderFactory.newInstance()
         try {
             val dBuilder = dbFactory.newDocumentBuilder()
@@ -413,7 +412,7 @@ object BGConfigParser {
                         }
                     }
 
-                    val query = QueryTemplate(queryName, queryDescription, sparqlString, returnType)
+                    val query = BGQueryTemplate(queryName, queryDescription, sparqlString, returnType)
                     val parameterList = qElement.getElementsByTagName("parameter")
 
                     for (pIndex in 0..parameterList.length - 1) {

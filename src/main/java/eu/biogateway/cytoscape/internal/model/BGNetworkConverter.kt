@@ -3,7 +3,9 @@ package eu.biogateway.cytoscape.internal.model
 import eu.biogateway.cytoscape.internal.BGServiceManager
 import eu.biogateway.cytoscape.internal.parser.BGNetworkTableHelper
 import eu.biogateway.cytoscape.internal.parser.getUri
+import org.cytoscape.model.CyEdge
 import org.cytoscape.model.CyNetwork
+import org.cytoscape.model.CyNode
 import javax.swing.JOptionPane
 
 class BGNetworkConverter(val serviceManager: BGServiceManager) {
@@ -139,7 +141,64 @@ class BGNetworkConverter(val serviceManager: BGServiceManager) {
         networkBuilder.createNetworkView(destinationNetwork)
     }
 
-    fun exportNetwork(sourceNetwork: CyNetwork, nodeConversions: Collection<BGConversion>, edgeConversions: Collection<BGConversion>) {
+    fun addExportColumns(network: CyNetwork, nodeConversions: Collection<BGConversion>, edgeConversions: Collection<BGConversion>) {
+        val networkBuilder = serviceManager.dataModelController.networkBuilder
+
+        // Fetch the extra node metadata from the source network:
+        val nodeMetadata = HashMap<CyNode, HashSet<BGNodeMetadata>>()
+        for (cyNode in network.nodeList) {
+            loop@ for (conversion in nodeConversions) {
+                val result = when (conversion.type.dataType) {
+                    BGTableDataType.DOUBLE -> {
+                        val value =  BGNetworkTableHelper.getDoubleForNodeColumnName(cyNode, conversion.sourceColumn.name, network) ?: continue@loop
+                        conversion.runForDataString(serviceManager, value.toString())?.toDouble() ?: continue@loop
+                    }
+                    BGTableDataType.STRING -> {
+                        val value =  BGNetworkTableHelper.getStringForNodeColumnName(cyNode, conversion.sourceColumn.name, network) ?: continue@loop
+                        conversion.runForDataString(serviceManager, value) ?: continue@loop
+                    }
+                    else -> null } ?: continue
+
+                val metadata = BGNodeMetadata(conversion.type.dataType, result, conversion.destinationFieldName)
+                    if (!nodeMetadata.containsKey(cyNode)) {
+                        nodeMetadata[cyNode] = HashSet()
+                    }
+                    nodeMetadata[cyNode]?.add(metadata)
+                }
+            }
+
+        networkBuilder.updateMetadataForCyNodes(nodeMetadata, network.defaultNodeTable)
+
+        // TODO: Add support for conveting edge data.
+
+        /*
+        val edgeMetadata = HashMap<CyEdge, HashSet<BGRelationMetadata>>()
+
+        for (cyEdge in network.edgeList) {
+            loop@ for (conversion in edgeConversions) {
+                val result = when (conversion.type.dataType) {
+                    BGTableDataType.DOUBLE -> {
+                        val value =  BGNetworkTableHelper.getDoubleForEdgeColumnName(cyEdge, conversion.sourceColumn.name, network) ?: continue@loop
+                        conversion.runForDataString(serviceManager, value.toString())?.toDouble() ?: continue@loop
+                    }
+                    BGTableDataType.STRING -> {
+                        val value =  BGNetworkTableHelper.getStringForEdgeColumnName(cyEdge, conversion.sourceColumn.name, network) ?: continue@loop
+                        conversion.runForDataString(serviceManager, value) ?: continue@loop
+                    }
+                    else -> null } ?: continue
+
+                val metadata = BGRelationMetadata(conversion.type.dataType, result)
+                // TODO: Complete this.
+            }
+        }
+        */
+
+
+        }
+
+
+
+    fun exportNetworkToCopy(sourceNetwork: CyNetwork, nodeConversions: Collection<BGConversion>, edgeConversions: Collection<BGConversion>) {
 
         val networkBuilder = serviceManager.dataModelController.networkBuilder
         val network = networkBuilder.createNetwork()
@@ -188,6 +247,7 @@ class BGNetworkConverter(val serviceManager: BGServiceManager) {
                 }
             }
         }
+
 
         // Add the new nodes to the network together with metadata:
         networkBuilder.addBGNodesToNetworkWithMetadata(newNodes.values, nodeMetadata, network)

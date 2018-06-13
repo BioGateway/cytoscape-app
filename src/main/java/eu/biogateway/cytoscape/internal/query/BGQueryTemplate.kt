@@ -3,7 +3,7 @@ package eu.biogateway.cytoscape.internal.query
 import eu.biogateway.cytoscape.internal.parser.BGReturnType
 import java.util.ArrayList
 
-class QueryTemplate(var name: String, var description: String, var sparqlString: String, var returnType: BGReturnType) {
+class BGQueryTemplate(var name: String, var description: String, var sparqlString: String, var returnType: BGReturnType) {
 
     var parameters = ArrayList<BGQueryParameter>()
 

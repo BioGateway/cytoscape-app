@@ -6,7 +6,7 @@ import eu.biogateway.cytoscape.internal.BGServiceManager;
 import eu.biogateway.cytoscape.internal.gui.multiquery.BGMultiQueryPanel;
 import eu.biogateway.cytoscape.internal.gui.multiquery.BGQueryConstraintPanel;
 import eu.biogateway.cytoscape.internal.query.BGQueryParameter;
-import eu.biogateway.cytoscape.internal.query.QueryTemplate;
+import eu.biogateway.cytoscape.internal.query.BGQueryTemplate;
 import eu.biogateway.cytoscape.internal.util.SortedComboBoxModel;
 
 import javax.swing.*;
@@ -265,7 +265,7 @@ public class BGQueryBuilderView implements ChangeListener {
         });
     }
 
-    public void generateParameterFields(QueryTemplate query) {
+    public void generateParameterFields(BGQueryTemplate query) {
         // Clear old data:
         parameterPanel.removeAll();
         descriptionPanel.removeAll();

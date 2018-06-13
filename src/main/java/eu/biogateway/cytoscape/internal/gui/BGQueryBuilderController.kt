@@ -122,7 +122,7 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
 
     //private var relationList = ArrayList<BGRelation>()
 
-    private var currentQuery: QueryTemplate? = null
+    private var currentQuery: BGQueryTemplate? = null
     private var currentQueryType: BGReturnType? = null
 
     private var currentReturnData: BGReturnData? = null
@@ -130,7 +130,7 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
     private var currentResultsInTable = HashMap<Int, BGResultRow>()
     private var currentBulkImportNodes = HashMap<Int, BGNode>()
 
-    private var  queries = HashMap<String, QueryTemplate>()
+    private var  queries = HashMap<String, BGQueryTemplate>()
 
     init {
         this.view = BGQueryBuilderView(this, this)
@@ -293,7 +293,7 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
         }
     }
 
-    private fun createQueryString(currentQuery: QueryTemplate): String? {
+    private fun createQueryString(currentQuery: BGQueryTemplate): String? {
         var queryString = currentQuery.sparqlString
 
         // First do all checkboxes, then everything else.

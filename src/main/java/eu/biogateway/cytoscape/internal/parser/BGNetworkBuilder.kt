@@ -416,6 +416,18 @@ class BGNetworkBuilder() {
         }
     }
 
+    fun updateMetadataForCyNodes(metadata: HashMap<CyNode, HashSet<BGNodeMetadata>>, table: CyTable) {
+        for (entry in metadata) {
+            updateMetadataForNode(entry.value, entry.key, table)
+        }
+    }
+
+    fun updateMetadataForCyEdges(metadata: HashMap<CyEdge, HashMap<String, BGRelationMetadata>>, table: CyTable) {
+        for (entry in metadata) {
+            updateMetadataForEdge(entry.value, entry.key, table)
+        }
+    }
+
     fun addBGNodesToNetworkWithMetadata(nodes: Collection<BGNode>, metadata: Map<BGNode, Set<BGNodeMetadata>>, network: CyNetwork) {
 
         val nodeTable = network.defaultNodeTable

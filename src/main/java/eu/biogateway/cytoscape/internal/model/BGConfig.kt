@@ -1,6 +1,6 @@
 package eu.biogateway.cytoscape.internal.model
 
-import eu.biogateway.cytoscape.internal.query.QueryTemplate
+import eu.biogateway.cytoscape.internal.query.BGQueryTemplate
 import eu.biogateway.cytoscape.internal.util.Utility
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel
@@ -79,7 +79,7 @@ class BGConfig {
         return relationTypes
     }
 
-    var queryTemplates = HashMap<String, QueryTemplate>()
+    var queryTemplates = HashMap<String, BGQueryTemplate>()
     var visualStyleConfig: BGVisualStyleConfig = BGVisualStyleConfig()
     var datasetGraphs = HashMap<String, String>()
 
