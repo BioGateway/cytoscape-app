@@ -4,11 +4,15 @@ import eu.biogateway.cytoscape.internal.model.BGNodeTypeNew
 import eu.biogateway.cytoscape.internal.server.BGDictEndpoint
 import eu.biogateway.cytoscape.internal.server.SearchSuggestion
 import eu.biogateway.cytoscape.internal.server.BGSuggestion
+import org.apache.commons.lang3.SystemUtils
 import java.awt.Dimension
 import javax.swing.*
 import javax.swing.text.JTextComponent
 import java.awt.event.*
 import java.util.ArrayList
+import sun.swing.SwingUtilities2.stringWidth
+
+
 
 class BGAutocompleteComboBox(private val endpoint: BGDictEndpoint, private val typeSource: () -> BGNodeTypeNew?) : JComboBox<BGSuggestion>(DefaultComboBoxModel<BGSuggestion>()) {
 
@@ -125,5 +129,16 @@ class BGAutocompleteComboBox(private val endpoint: BGDictEndpoint, private val t
         this.hidePopup()
         this.selectedIndex = 0
         println("Selected $prefLabel with URI: $uri")
+    }
+
+
+    override fun getSize(): Dimension {
+
+        val dim = super.getSize()
+
+        if (SystemUtils.IS_OS_WINDOWS || SystemUtils.IS_OS_LINUX) {
+            dim.width = 500
+        }
+        return dim
     }
 }

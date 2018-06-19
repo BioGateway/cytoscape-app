@@ -22,6 +22,7 @@ import java.net.URL
 import java.net.URLEncoder
 import javax.swing.JFrame
 import org.cytoscape.model.subnetwork.CyRootNetwork
+import java.awt.Dimension
 import javax.swing.JComboBox
 import javax.swing.JOptionPane
 
@@ -31,6 +32,56 @@ fun String.sanitizeParameter(): String {
 }
 
 object Utility {
+
+    fun scaleDimensionHeight(dimension: Dimension, height: Int): Dimension {
+        if (height == 0) return dimension
+        val scaleFactor = height / dimension.height
+        return Dimension(dimension.width * scaleFactor, dimension.height * scaleFactor)
+    }
+
+    fun scaleDimensionWidth(dimension: Dimension, width: Int): Dimension {
+        val scaleFactor = width / dimension.width
+        return Dimension(dimension.width * scaleFactor, dimension.height * scaleFactor)
+    }
+
+    fun openBrowser(url: String) {
+
+        val os = System.getProperty("os.name").toLowerCase()
+        val rt = Runtime.getRuntime()
+
+        try {
+
+            if (os.indexOf("win") >= 0) {
+
+                // this doesn't support showing urls in the form of "page.html#nameLink"
+                rt.exec("rundll32 url.dll,FileProtocolHandler $url")
+
+            } else if (os.indexOf("mac") >= 0) {
+
+                rt.exec("open $url")
+
+            } else if (os.indexOf("nix") >= 0 || os.indexOf("nux") >= 0) {
+
+                // Do a best guess on unix until we get a platform independent way
+                // Build a list of browsers to try, in this order.
+                val browsers = arrayOf("epiphany", "firefox", "mozilla", "konqueror", "netscape", "opera", "links", "lynx")
+
+                // Build a command string which looks like "browser1 "url" || browser2 "url" ||..."
+                val cmd = StringBuffer()
+                for (i in browsers.indices)
+                    cmd.append((if (i == 0) "" else " || ") + browsers[i] + " \"" + url + "\" ")
+
+                rt.exec(arrayOf("sh", "-c", cmd.toString()))
+
+            } else {
+                return
+            }
+        } catch (e: Exception) {
+            return
+        }
+
+        return
+    }
 
     fun selectBioGatewayControlPanelTab() {
         val panel = BGServiceManager.adapter?.cySwingApplication?.getCytoPanel(CytoPanelName.WEST) ?: return

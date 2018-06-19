@@ -7,7 +7,9 @@ import eu.biogateway.cytoscape.internal.gui.BGNodeTypeComboBoxRenderer
 import eu.biogateway.cytoscape.internal.model.BGNodeTypeNew
 import eu.biogateway.cytoscape.internal.model.BGRelationType
 import eu.biogateway.cytoscape.internal.util.Constants
+import eu.biogateway.cytoscape.internal.util.Utility
 import java.awt.Color
+import java.awt.Dimension
 import java.awt.FlowLayout
 import javax.swing.*
 
@@ -163,6 +165,7 @@ class BGMultiQueryAutocompleteLine(val relationTypeComboBox: JComboBox<BGRelatio
 
         val searchIcon = ImageIcon(this.javaClass.classLoader.getResource("search.png"))
         val fromUriSearchButton = JButton(searchIcon)
+
         fromUriSearchButton.toolTipText = searchButtonTooltipText
         fromUriSearchButton.addActionListener {
             val lookupController = BGNodeLookupController(this) {

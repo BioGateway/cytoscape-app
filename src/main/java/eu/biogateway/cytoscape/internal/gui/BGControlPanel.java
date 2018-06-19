@@ -72,12 +72,18 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent2 {
 
             menuItem.addActionListener(actionEvent -> {
                 System.out.println("Right-clicked node with path: " + tp.toString());
+                try {
                 if (Desktop.isDesktopSupported()) {
-                    try {
+
                         Desktop.getDesktop().browse(uri);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+
+                } else {
+                    // Ubuntu
+                    Runtime runtime = Runtime.getRuntime();
+                    runtime.exec("/usr/bin/firefox -new-window " + uri);
+                }
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             });
 

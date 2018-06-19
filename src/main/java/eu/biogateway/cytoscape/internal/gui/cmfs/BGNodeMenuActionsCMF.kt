@@ -10,6 +10,7 @@ import eu.biogateway.cytoscape.internal.model.BGNodeTypeNew
 import eu.biogateway.cytoscape.internal.query.*
 import eu.biogateway.cytoscape.internal.util.Constants
 import eu.biogateway.cytoscape.internal.util.Utility
+import org.apache.commons.lang3.SystemUtils
 import org.cytoscape.model.CyNetwork
 import org.cytoscape.model.CyNode
 import org.cytoscape.view.model.CyNetworkView
@@ -18,6 +19,7 @@ import org.cytoscape.work.TaskIterator
 import java.awt.Desktop
 import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
+import java.io.IOException
 import java.net.URI
 import javax.swing.JMenu
 import javax.swing.JMenuItem
@@ -423,10 +425,25 @@ class BGNodeMenuActionsCMF(val gravity: Float): CyNodeViewContextMenuFactory {
                 // TODO: THIS IS JUST A TEST. DO NOT USE!
                 val uri = nodeUri.replace("semantic-systems-biology.org/", "semantic-systems-biology.org:8080/")
 
-                if (Desktop.isDesktopSupported()) {
-                    Desktop.getDesktop().browse(URI(uri))
+
+                if (SystemUtils.IS_OS_LINUX) {
+                        // Ubuntu
+                        val runtime = Runtime.getRuntime()
+                        runtime.exec("/usr/bin/firefox -new-window $uri")
+
+                } else {
+
+                try {
+                    if (Desktop.isDesktopSupported()) {
+
+                        Desktop.getDesktop().browse(URI(uri))
+
+                    }
+                } catch (e: IOException) {
+                    e.printStackTrace()
                 }
-            }
+
+            }}
             return menuItem
         }
         return null
