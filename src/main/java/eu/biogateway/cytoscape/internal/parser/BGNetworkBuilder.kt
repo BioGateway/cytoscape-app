@@ -264,14 +264,15 @@ class BGNetworkBuilder() {
                 ?: throw Exception("Node not found!")
 
         val query: BGRelationQuery = when (node.type.id) {
-            "ppi" -> BGFetchAggregatedPPIRelationForNodeQuery(nodeUri, adjacentNodeUris)
-            "tftg" -> BGFetchAggregatedTFTGRelationForNodeQuery(node)
+            "ppi" -> BGFetchAggregatedUndirectedRelationForNodeQuery(node, relationIdentifier)
+            //"tftg" -> BGFetchAggregatedTFTGRelationForNodeQuery(node)
             //BGNodeType.GOA -> BGFetchAggregatedRelationForNodeQuery(node)
             else -> {
                 BGFetchAggregatedRelationForNodeQuery(node, relationIdentifier)
                 //throw Exception("Cannot collapse nodes of this dataType!")
             }
         }
+        //val query: BGRelationQuery = when (node.type.typeClass)
 
         network.removeEdges(network.getAdjacentEdgeIterable(cyNode, CyEdge.Type.ANY).toHashSet())
 

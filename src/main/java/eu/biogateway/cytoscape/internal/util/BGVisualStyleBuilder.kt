@@ -110,9 +110,15 @@ class BGVisualStyleBuilder(val serviceManager: BGServiceManager) {
         val edgeLineTypeMapping = discreteMappingFactory.createVisualMappingFunction("identifier uri", String::class.java, BasicVisualLexicon.EDGE_LINE_TYPE) as DiscreteMapping<String, LineType>
         val edgeTooltipMapping = passthroughMappingFactory?.createVisualMappingFunction("name", String::class.java, BasicVisualLexicon.EDGE_TOOLTIP) as PassthroughMapping<String, String>
         val edgeWidthMapping = discreteMappingFactory.createVisualMappingFunction("Expandable", String::class.java, BasicVisualLexicon.EDGE_WIDTH) as DiscreteMapping<String, Double>
+        val edgeSourceArrowMapping = discreteMappingFactory.createVisualMappingFunction("identifier uri", String::class.java, BasicVisualLexicon.EDGE_SOURCE_ARROW_SHAPE) as DiscreteMapping<String, ArrowShape>
 
-        val edgeSourceArrowMapping = discreteMappingFactory.createVisualMappingFunction("name", String::class.java, BasicVisualLexicon.EDGE_SOURCE_ARROW_SHAPE) as DiscreteMapping<String, ArrowShape>
-        edgeSourceArrowMapping.putMapValue("molecularly interacts with", ArrowShapeVisualProperty.ARROW)
+        for (relationType in BGServiceManager.config.relationTypeMap.values) {
+            if (!relationType.directed) {
+                edgeSourceArrowMapping.putMapValue(relationType.uri, ArrowShapeVisualProperty.ARROW)
+            }
+        }
+
+
 
         for ((name, color) in edgeColors) {
             edgeColorMapping.putMapValue(name, color)

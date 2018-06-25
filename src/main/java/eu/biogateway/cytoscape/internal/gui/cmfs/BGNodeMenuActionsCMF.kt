@@ -202,8 +202,11 @@ class BGNodeMenuActionsCMF(val gravity: Float): CyNodeViewContextMenuFactory {
                 return null
             }
         }
-        val encodesIdentifier = Utility.createRelationTypeIdentifier("http://semanticscience.org/resource/SIO_010078", "refseq")
-        val relationType = BGServiceManager.dataModelController.config.relationTypeMap.get(encodesIdentifier) ?: throw Exception("Relation type with identifier: "+encodesIdentifier+" not found in config.")
+        val graphUri = BGServiceManager.config.datasetGraphs.get("refseq") ?: return null
+        val encodesIdentifier = Utility.createRelationTypeIdentifier("http://semanticscience.org/resource/SIO_010078", graphUri)
+
+        val relationType = BGServiceManager.dataModelController.config.relationTypeMap.get(encodesIdentifier) ?: return null
+        //throw Exception("Relation type with identifier: "+encodesIdentifier+" not found in config.")
         val menuItem = JMenuItem(menuItemText)
 
         menuItem.addActionListener {

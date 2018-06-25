@@ -407,6 +407,4 @@ class BGMultiQueryPanel(val constraintPanel: BGQueryConstraintPanel): JPanel() {
         }
         return nameQueryLines
     }
-
-
 }

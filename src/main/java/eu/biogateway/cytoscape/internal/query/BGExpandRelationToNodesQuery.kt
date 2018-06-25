@@ -18,20 +18,20 @@ class BGExpandRelationToNodesQuery(val fromNode: String, val toNode: String, val
         val graphUri = relationType.defaultGraphURI ?: throw Exception("Missing or invalid default graph name!")
 
 
-        if (graphUri.contains("gnex")) return generateTFTGQueryStringOld(graphUri)
+        //if (graphUri.contains("gnex")) return generateTFTGQueryStringOld(graphUri)
 
-//        return when (relationType.directed) {
-//            true -> generateQueryString(graphUri)
-//            false -> generateUndirectedQueryString(graphUri)
-//        }
-
-        return when (graphUri) {
-            "genex" -> generateTFTGQueryStringOld(graphUri)
-            "intact" -> generatePPIQueryString(graphUri)
-            else -> {
-                generateQueryStringOld(graphUri)
-            }
+        return when (relationType.directed) {
+            true -> generateQueryString(graphUri)
+            false -> generateUndirectedQueryStringNew(graphUri)
         }
+
+//        return when (graphUri) {
+//            "genex" -> generateTFTGQueryStringOld(graphUri)
+//            "intact" -> generatePPIQueryString(graphUri)
+//            else -> {
+//                generateQueryStringOld(graphUri)
+//            }
+//        }
 
 //        if (relationType.defaultGraphURI == "goa") return generateQueryString("goa")
 //        if (relationType.defaultGraphURI == "tf-tg") return generateQueryString("tf-tg")
@@ -53,6 +53,20 @@ class BGExpandRelationToNodesQuery(val fromNode: String, val toNode: String, val
                 " ?a has_participant: object: .\n" +
                 " }\n" +
                 "}"
+    }
+
+    private fun generateUndirectedQueryStringNew(graphUri: String): String {
+        return "BASE <http://www.semantic-systems-biology.org/> \n" +
+                "PREFIX object: <$toNode>\n" +
+                "PREFIX subject: <$fromNode>\n" +
+                "PREFIX has_agent: <http://semanticscience.org/resource/SIO_000139>\n"+
+                "SELECT distinct ?instance as ?a1 <$graphUri> has_agent: object: ?instance as ?a2 <$graphUri> has_agent: subject:\n" +
+                "WHERE {  \n" +
+                "GRAPH <$graphUri> {  \n" +
+                "?statement has_agent: subject: .\n" +
+                "?statement has_agent: object: .\n" +
+                "?instance rdf:type ?statement .\n"+
+                "}}"
     }
 
     private fun generateQueryStringOld(graphName: String): String {
@@ -84,16 +98,16 @@ class BGExpandRelationToNodesQuery(val fromNode: String, val toNode: String, val
 
     private fun generateQueryString(graphName: String): String {
         return "BASE <http://www.semantic-systems-biology.org/> \n" +
-                "PREFIX is_participant_in: <http://semanticscience.org/resource/SIO_000062> \n"+
+                "PREFIX has_agent: <http://semanticscience.org/resource/SIO_000139>\n"+
                 "PREFIX has_target: <http://semanticscience.org/resource/SIO_000291> \n"+
                 "PREFIX object: <$toNode>\n" +
                 "PREFIX subject: <$fromNode>\n" +
-                "SELECT distinct subject: <$graphName> is_participant_in: ?a as ?a1 ?a as ?a2 <$graphName> has_target: object:\n" +
+                "SELECT distinct ?instance as ?i1 <$graphName> has_agent: subject: ?instance as ?i2 <$graphName> has_target: object:\n" +
                 "WHERE {  \n" +
                 "GRAPH <$graphName> {  \n" +
-                " subject: is_participant_in: ?sentence .\n" +
+                " ?sentence has_agent: subject: .\n" +
                 " ?sentence has_target: object: .\n" +
-                " ?a rdf:type ?sentence . \n" +
+                " ?instance rdf:type ?sentence . \n" +
                 " }\n" +
                 "}"
     }
