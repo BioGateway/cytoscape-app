@@ -6,8 +6,19 @@ open class BGPrimitiveRelation(val fromNodeUri: String, val relationType: BGRela
     val metadata = HashMap<String, BGRelationMetadata>()
 }
 
+class BGPath(val id: Int) {
+    var relations = HashSet<BGRelation>()
+
+    fun add(relation: BGRelation) {
+        relations.add(relation)
+        relation.paths.add(this)
+    }
+}
+
 class BGRelation(val fromNode: BGNode, relationType: BGRelationType, val toNode: BGNode): BGPrimitiveRelation(fromNode.uri, relationType, toNode.uri) {
 
+
+    var paths = HashSet<BGPath>()
 
     val edgeIdentifier: String
         get() = fromNode.uri+";"+relationType.identifier+";"+toNode.uri

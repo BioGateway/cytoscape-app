@@ -35,7 +35,7 @@ object Constants {
     val BG_FIELD_SOURCE_GRAPH = "Source Graph"
     val BG_FIELD_CONFIDENCE = "Confidence Value"
     val BG_LOAD_NODE_WARNING_LIMIT = 1000
-    val BG_BULK_IMPORT_WARNING_LIMIT = 100
+    val BG_BULK_IMPORT_WARNING_LIMIT = 10000
     val BG_FILE_EXTENSION = "bgwsparql"
     val BG_PREFERENCES_LAST_FOLDER = "biogatewayPluginLastOpenedFolder"
     val BG_RELATION_COUNT_WARNING_LIMIT = 50000

@@ -12,15 +12,7 @@ class BGNodeFetchMongoQuery(val nodeUri: String): BGQuery(BGReturnType.NODE_LIST
     }
 }
 
-class BGMultiNodeFetchMongoQuery(val searchTerms: Collection<String>, queryType: String): BGQuery(BGReturnType.NODE_LIST_DESCRIPTION, queryType) {
-
-    override fun generateQueryString(): String {
-        val terms = searchTerms.map { "\"$it\"" }.reduce { list, node -> list + ", "+node}
-        return "{ \"returnType\": \"tsv\", \"terms\": [$terms]}"
-    }
-}
-
-class BGNodeFetchQuery(val nodeUri: String): BGQuery(BGReturnType.NODE_LIST_DESCRIPTION ) {
+class BGNodeFetchQuery(val nodeUri: String): BGQuery(BGReturnType.NODE_LIST_DESCRIPTION) {
 
     /// This is running synchronously and without the main HTTPClient.
 

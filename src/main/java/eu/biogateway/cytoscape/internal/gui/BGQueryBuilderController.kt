@@ -150,6 +150,9 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
         for (queryName in queries.keys) {
             view.querySelectionBox.addItem(queryName)
         }
+        if (queries.size == 0) {
+            view.tabPanel.remove(view.queryPanel)
+        }
         view.exampleQueryBox.removeAllItems()
         view.exampleQueryBox.addItem(BGExampleQuery("Load example query...", "", true))
         for (example in BGServiceManager.config.exampleQueries) {
@@ -278,12 +281,12 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
                 if (data is BGReturnRelationsData) {
                     BGLoadUnloadedNodes.createAndRun(data.unloadedNodes) {
                         setRelationTableData(data.relationsData)
-                        view.tabPanel.selectedIndex = TAB_PANEL_RESULTS_INDEX
+                        view.tabPanel.selectedComponent = view.resultPanel// Open the result tab.
                         Utility.fightForFocus(view.mainFrame)
                     }
                     return@addCompletion
                 } else {
-                    view.tabPanel.selectedIndex = TAB_PANEL_RESULTS_INDEX // Open the result tab.
+                    view.tabPanel.selectedComponent = view.resultPanel// Open the result tab.
                     Utility.fightForFocus(view.mainFrame)
                 }
             }
@@ -529,7 +532,7 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
             JOptionPane.showMessageDialog(view.mainFrame, "Unable to parse any queries from current SPARQL.")
         }
         view.multiQueryPanel.loadQueryGraphs(queryGraphs)
-        view.tabPanel.selectedIndex = TAB_PANEL_BUILD_QUERY_INDEX
+        view.tabPanel.selectedComponent = view.buildQueryPanel
     }
 
     override fun stateChanged(e: ChangeEvent?) {
@@ -797,6 +800,7 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
 
     private fun setBulkImportInputPaneColors(suggestions: Collection<BGSuggestion>, queryType: QueryType) {
 
+        var numberOfMatches = 0
         val darkGreen = Color(34,139,34)
         val darkRed = Color(178,34,34)
 
@@ -818,10 +822,12 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
 
             if (match) {
                 view.appendToPane(view.bulkImportTextPane, line+"\n", Color.BLACK)
+                numberOfMatches++
             } else {
                 view.appendToPane(view.bulkImportTextPane, line+"\n", darkRed)
             }
         }
+        view.bulkSearchResultLabel.text = "$numberOfMatches / ${searchLines.size} nodes found."
     }
 
     fun addMultiQueryLinesForURIs(uris: Collection<String>) {
@@ -862,7 +868,7 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
                 BGLoadNodeDataFromBiogwDict.createAndRun(data.unloadedNodes, 500) {
                     setRelationTableData(data.relationsData)
                     view.mainFrame.title = "BioGateway Query Builder - "+data.relationsData.size+" relations found."
-                    view.tabPanel.selectedIndex = TAB_PANEL_RESULTS_INDEX // Open the result tab.
+                    view.tabPanel.selectedComponent = view.resultPanel // Open the result tab.
                     // Try the darnest to make the window appear on top!
                     Utility.fightForFocus(view.mainFrame)
                 }
@@ -876,29 +882,82 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
         view.addMultiQueryLine()
     }
 
-    private fun selectUpstreamRelations() {
+    private fun selectRelationsInPaths() {
         // Keep working with the model's indices, translate from table immediately.
         view.clearFilterField()
 
+
+        // 1. Get the selected rows.
         val selectedRows = view.resultTable.selectedRows.map { view.resultTable.convertRowIndexToModel(it) }.toHashSet()
 
-        var upstreamRelationRows = findUpstreamsRelations(selectedRows).toHashSet()
+        (currentResultsInTable[1] as? BGRelationResultRow)?.let {
+            it.relation
+        }
+        // 2. Get the relations of these rows.
+        val selectedRelations = selectedRows.map { currentResultsInTable[it] as? BGRelationResultRow }
+                .filterNotNull()
+                .map { it.relation }
 
-        var newRowCount = upstreamRelationRows.size
-        var infiniteLoopLimiter = 100 // In case something bad happens, it will only loop 100 times before giving up.
+        // 3. Get all relations in the paths of these relations.
+        val relationsInPath = selectedRelations.map {  it.paths.map { it.relations }.reduce { acc, hashSet -> acc.union(hashSet).toHashSet() }}
+                .reduce { acc, hashSet ->  acc.union(hashSet).toHashSet()}
 
-        var newRows = upstreamRelationRows
-
-        while (newRowCount != 0 && infiniteLoopLimiter-- > 0) {
-            newRows = findUpstreamsRelations(newRows).toHashSet()
-            newRowCount = newRows.subtract(upstreamRelationRows).size
-            upstreamRelationRows = upstreamRelationRows.union(newRows).toHashSet()
+        // 4. Get all the rows of these relations
+        val rowsInPath = currentResultsInTable.filter {
+            val relationRow = it.value as? BGRelationResultRow
+            relationsInPath.contains(relationRow?.relation)
         }
 
-        for (modelRow in upstreamRelationRows) {
+        // 5. Select those rows.
+        for (modelRow in rowsInPath.keys) {
             val row = view.resultTable.convertRowIndexToView(modelRow)
             view.resultTable.addRowSelectionInterval(row, row)
         }
+
+
+//        var upstreamRelationRows = findUpstreamsRelations(selectedRows).toHashSet()
+//
+//        var newRowCount = upstreamRelationRows.size
+//        var infiniteLoopLimiter = 100 // In case something bad happens, it will only loop 100 times before giving up.
+//
+//        var newRows = upstreamRelationRows
+//
+//        while (newRowCount != 0 && infiniteLoopLimiter-- > 0) {
+//            newRows = findUpstreamsRelations(newRows).toHashSet()
+//            newRowCount = newRows.subtract(upstreamRelationRows).size
+//            upstreamRelationRows = upstreamRelationRows.union(newRows).toHashSet()
+//        }
+//
+//        for (modelRow in upstreamRelationRows) {
+//            val row = view.resultTable.convertRowIndexToView(modelRow)
+//            view.resultTable.addRowSelectionInterval(row, row)
+//        }
+    }
+
+    private fun findRelationsInCommonPaths(selectedRows: Collection<Int>): Collection<Int> {
+        var matchingRows = ArrayList<Int>()
+        for (rowNumber in selectedRows) {
+            val resultRow = currentResultsInTable[rowNumber]
+            val relation = (resultRow as? BGRelationResultRow)?.relation
+            if (relation != null) {
+                val relationsInPath = relation.paths.fold(HashSet<BGRelation>(), {acc, bgPath ->  acc.union(bgPath.relations).toHashSet()})
+
+//                val fromNodeUri = relation.fromNode.uri
+//                matchingRows.addAll(getRowsWithRelationsTo(fromNodeUri))
+            }
+        }
+        return matchingRows
+    }
+
+
+    private fun getIndexesForRelations(rows: Collection<Int>, relations: Collection<BGRelation>): Collection<Int> {
+        var matchingRows = ArrayList<Int>()
+        for (row in rows) {
+            val resultRow = currentResultsInTable[row]
+            val relation = (resultRow as? BGRelationResultRow)?.relation
+            if (relations.contains(relation)) matchingRows.add(row)
+        }
+        return matchingRows
     }
 
     private fun findUpstreamsRelations(selectedRows: Collection<Int>): Collection<Int> {
@@ -940,7 +999,7 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
             ACTION_ADD_MULTIQUERY_LINE -> addMultiQueryLine()
             ACTION_RUN_MULTIQUERY -> runMultiQuery()
             ACTION_GENERATE_SPARQL -> {
-                if (generateSPARQLCode() != null) view.tabPanel.selectedIndex = TAB_PANEL_SPARQL_INDEX
+                if (generateSPARQLCode() != null) view.tabPanel.selectedComponent = view.sparqlPanel
             }
             ACTION_PARSE_SPARQL -> parseSPARQLCode()
             ACTION_WRITE_SPARQL -> saveSPARQLToFile()
@@ -950,7 +1009,7 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
                 val toFilter = view.filterRelationsToExistingCheckBox.isSelected
                 filterRelationsToNodesInCurrentNetwork(fromFilter, toFilter)
             }
-            ACTION_SELECT_UPSTREAM_RELATIONS -> selectUpstreamRelations()
+            ACTION_SELECT_UPSTREAM_RELATIONS -> selectRelationsInPaths()
             ACTION_RUN_BULK_IMPORT -> runBulkImport()
             ACTION_BULK_IMPORT_TO_NEW_NETWORK -> bulkImportToNetwork()
             ACTION_BULK_IMPORT_TO_CURRENT_NETWORK -> bulkImportToNetwork(BGServiceManager.applicationManager?.currentNetwork)
@@ -973,13 +1032,9 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
         val ACTION_WRITE_SPARQL = "writeSPARQLToFile"
         val ACTION_RUN_MULTIQUERY = "runMultiQuery"
         val ACTION_ADD_MULTIQUERY_LINE = "addMultiRelation"
-        val ACTION_SELECT_UPSTREAM_RELATIONS = "selectUpstreamRelations"
+        val ACTION_SELECT_UPSTREAM_RELATIONS = "selectRelationsInPaths"
         val UNIPROT_PREFIX = "http://identifiers.org/uniprot/"
         val ONTOLOGY_PREFIX = "http://purl.obolibrary.org/obo/"
         val ACTION_FILTER_EDGES_TO_EXISTING = "filter relations to exsisting nodes"
-        val TAB_PANEL_BUILD_QUERY_INDEX = 0
-        val TAB_PANEL_PREDEFINED_INDEX = 2
-        val TAB_PANEL_SPARQL_INDEX = 3
-        val TAB_PANEL_RESULTS_INDEX = 4
     }
 }

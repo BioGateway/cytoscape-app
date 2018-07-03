@@ -115,104 +115,30 @@ class BGParser() {
         val relationSet = HashSet<BGRelation>()
         val relationMap = HashMap<Int, BGRelation>()
         val relationArray = ArrayList<BGRelation>()
+        val pathSet = HashSet<BGPath>()
+        var lineNumber = 0
 
         reader.forEachLine {
-            val parseLineTime = measureTimeMillis {
+            lineNumber++
             if (cancelled) throw Exception("Cancelled.")
             val lineColumns = it.split("\t").dropLastWhile { it.isEmpty() }.toTypedArray()
+            val path = BGPath(lineNumber)
+            pathSet.add(path)
             if (lineColumns.size != returnType.paremeterCount && returnType != BGReturnType.RELATION_MULTIPART) throw Exception("Number of columns in data array must match the parameter count of the query type!")
 
-            if (returnType == BGReturnType.RELATION_TRIPLE_GRAPHURI) {
-                val fromNodeUri = lineColumns[0].replace("\"", "")
-                val graphName = lineColumns[1].replace("\"", "")
-                val relationUri = lineColumns[2].replace("\"", "")
-                val toNodeUri = lineColumns[3].replace("\"", "")
-
-                val fromNode = server.getNodeFromCacheOrNetworks(BGNode(fromNodeUri))
-                if (!fromNode.isLoaded) unloadedNodes.add(fromNode)
-                val toNode = server.getNodeFromCacheOrNetworks(BGNode(toNodeUri))
-                if (!toNode.isLoaded) unloadedNodes.add(toNode)
-
-                val relationType = server.config.getRelationTypeForURIandGraph(relationUri, graphName) ?: BGRelationType(relationUri, relationUri, 0)
-                val relation = BGRelation(fromNode, relationType, toNode)
-                relationType.defaultGraphURI?.let {
-                    relation.sourceGraph = it
-                }
-                val hash = relation.hashCode()
-                if (relationMap[hash] == null) {
-                    relationMap[hash] = relation
-                }
-                relationArray.add(relation)
-
-            } else if (returnType == BGReturnType.RELATION_TRIPLE_CONFIDENCE) {
-                val fromNodeUri = lineColumns[0].replace("\"", "")
-                val graphName = lineColumns[1].replace("\"", "")
-                val relationUri = lineColumns[2].replace("\"", "")
-                val toNodeUri = lineColumns[3].replace("\"", "")
-                val confidenceValue = lineColumns[4].replace("\"", "")
-
-                val fromNode = server.getNodeFromCacheOrNetworks(BGNode(fromNodeUri))
-                if (!fromNode.isLoaded) unloadedNodes.add(fromNode)
-                val toNode = server.getNodeFromCacheOrNetworks(BGNode(toNodeUri))
-                if (!toNode.isLoaded) unloadedNodes.add(toNode)
-
-                val relationType = server.config.getRelationTypeForURIandGraph(relationUri, graphName) ?: BGRelationType(relationUri, relationUri, 0)
-                val relation = BGRelation(fromNode, relationType, toNode)
-                // TODO: Delete this line, see if it works still. It should.
-                relation.metadata[BGRelationMetadata.CONFIDENCE_VALUE.name] = BGRelationMetadata(BGTableDataType.DOUBLE, confidenceValue.toDouble())
-                relationType.defaultGraphURI?.let {
-                    relation.sourceGraph = it
-                }
-                val hash = relation.hashCode()
-                if (relationMap[hash] == null) {
-                    relationMap[hash] = relation
-                }
-                relationArray.add(relation)
-
-            } else if (returnType == BGReturnType.RELATION_TRIPLE_NAMED) {
-                val fromNodeUri = lineColumns[0].replace("\"", "")
-                val fromNodeName = lineColumns[1].replace("\"", "")
-                val graphName = lineColumns[2].replace("\"", "")
-                val relationUri = lineColumns[3].replace("\"", "")
-                val toNodeUri = lineColumns[4].replace("\"", "")
-                val toNodeName = lineColumns[5].replace("\"", "")
-
-                val fromNode = server.getNodeFromCacheOrNetworks(BGNode(fromNodeUri))
-                if (!fromNode.isLoaded) unloadedNodes.add(fromNode)
-                val toNode = server.getNodeFromCacheOrNetworks(BGNode(toNodeUri))
-                if (!toNode.isLoaded) unloadedNodes.add(toNode)
-                var relationType = server.config.getRelationTypeForURIandGraph(relationUri, graphName) ?: BGRelationType(relationUri, relationUri, 0)
-
-                val relation = BGRelation(fromNode, relationType, toNode)
-                relationType.defaultGraphURI?.let {
-                    relation.sourceGraph = it
-                }
-                val hash = relation.hashCode()
-                if (relationMap[hash] == null) {
-                    relationMap[hash] = relation
-                }
-                relationArray.add(relation)
-
-            } else if (returnType == BGReturnType.RELATION_MULTIPART) {
-                var fromNodeIndex = 0
-                while (fromNodeIndex < lineColumns.size-3) {
-                    val fromNodeUri = lineColumns[fromNodeIndex+0].replace("\"", "")
-                    val graphName = lineColumns[fromNodeIndex+1].replace("\"", "")
-                    val relationUri = lineColumns[fromNodeIndex+2].replace("\"", "")
-                    val toNodeUri = lineColumns[fromNodeIndex+3].replace("\"", "")
-                    fromNodeIndex += 4
+            when (returnType) {
+                BGReturnType.RELATION_TRIPLE_GRAPHURI -> {
+                    val fromNodeUri = lineColumns[0].replace("\"", "")
+                    val graphName = lineColumns[1].replace("\"", "")
+                    val relationUri = lineColumns[2].replace("\"", "")
+                    val toNodeUri = lineColumns[3].replace("\"", "")
 
                     val fromNode = server.getNodeFromCacheOrNetworks(BGNode(fromNodeUri))
-                    if (!fromNode.isLoaded) {
-                        unloadedNodes.add(fromNode)
-                        unloadedUris.add(fromNodeUri)
-                    }
+                    if (!fromNode.isLoaded) unloadedNodes.add(fromNode)
                     val toNode = server.getNodeFromCacheOrNetworks(BGNode(toNodeUri))
-                    if (!toNode.isLoaded) {
-                        unloadedNodes.add(toNode)
-                        unloadedUris.add(toNodeUri)
-                    }
-                    var relationType = server.config.getRelationTypeForURIandGraph(relationUri, graphName) ?: BGRelationType(relationUri, relationUri, 0)
+                    if (!toNode.isLoaded) unloadedNodes.add(toNode)
+
+                    val relationType = server.config.getRelationTypeForURIandGraph(relationUri, graphName) ?: BGRelationType(relationUri, relationUri, 0)
                     val relation = BGRelation(fromNode, relationType, toNode)
                     relationType.defaultGraphURI?.let {
                         relation.sourceGraph = it
@@ -222,10 +148,97 @@ class BGParser() {
                         relationMap[hash] = relation
                     }
                     relationArray.add(relation)
+
+                }
+                BGReturnType.RELATION_TRIPLE_CONFIDENCE -> {
+                    val fromNodeUri = lineColumns[0].replace("\"", "")
+                    val graphName = lineColumns[1].replace("\"", "")
+                    val relationUri = lineColumns[2].replace("\"", "")
+                    val toNodeUri = lineColumns[3].replace("\"", "")
+                    val confidenceValue = lineColumns[4].replace("\"", "")
+
+                    val fromNode = server.getNodeFromCacheOrNetworks(BGNode(fromNodeUri))
+                    if (!fromNode.isLoaded) unloadedNodes.add(fromNode)
+                    val toNode = server.getNodeFromCacheOrNetworks(BGNode(toNodeUri))
+                    if (!toNode.isLoaded) unloadedNodes.add(toNode)
+
+                    val relationType = server.config.getRelationTypeForURIandGraph(relationUri, graphName) ?: BGRelationType(relationUri, relationUri, 0)
+                    val relation = BGRelation(fromNode, relationType, toNode)
+                    // TODO: Delete this line, see if it works still. It should.
+                    relation.metadata[BGRelationMetadata.CONFIDENCE_VALUE.name] = BGRelationMetadata(BGTableDataType.DOUBLE, confidenceValue.toDouble())
+                    relationType.defaultGraphURI?.let {
+                        relation.sourceGraph = it
+                    }
+                    val hash = relation.hashCode()
+                    if (relationMap[hash] == null) {
+                        relationMap[hash] = relation
+                    }
+                    relationArray.add(relation)
+
+                }
+                BGReturnType.RELATION_TRIPLE_NAMED -> {
+                    val fromNodeUri = lineColumns[0].replace("\"", "")
+                    val fromNodeName = lineColumns[1].replace("\"", "")
+                    val graphName = lineColumns[2].replace("\"", "")
+                    val relationUri = lineColumns[3].replace("\"", "")
+                    val toNodeUri = lineColumns[4].replace("\"", "")
+                    val toNodeName = lineColumns[5].replace("\"", "")
+
+                    val fromNode = server.getNodeFromCacheOrNetworks(BGNode(fromNodeUri))
+                    if (!fromNode.isLoaded) unloadedNodes.add(fromNode)
+                    val toNode = server.getNodeFromCacheOrNetworks(BGNode(toNodeUri))
+                    if (!toNode.isLoaded) unloadedNodes.add(toNode)
+                    var relationType = server.config.getRelationTypeForURIandGraph(relationUri, graphName) ?: BGRelationType(relationUri, relationUri, 0)
+
+                    val relation = BGRelation(fromNode, relationType, toNode)
+                    relationType.defaultGraphURI?.let {
+                        relation.sourceGraph = it
+                    }
+                    val hash = relation.hashCode()
+                    if (relationMap[hash] == null) {
+                        relationMap[hash] = relation
+                    }
+                    relationArray.add(relation)
+
+                }
+                BGReturnType.RELATION_MULTIPART -> {
+                    var fromNodeIndex = 0
+                    while (fromNodeIndex < lineColumns.size-3) {
+                        val fromNodeUri = lineColumns[fromNodeIndex+0].replace("\"", "")
+                        val graphName = lineColumns[fromNodeIndex+1].replace("\"", "")
+                        val relationUri = lineColumns[fromNodeIndex+2].replace("\"", "")
+                        val toNodeUri = lineColumns[fromNodeIndex+3].replace("\"", "")
+                        fromNodeIndex += 4
+
+                        val fromNode = server.getNodeFromCacheOrNetworks(BGNode(fromNodeUri))
+                        if (!fromNode.isLoaded) {
+                            unloadedNodes.add(fromNode)
+                            unloadedUris.add(fromNodeUri)
+                        }
+                        val toNode = server.getNodeFromCacheOrNetworks(BGNode(toNodeUri))
+                        if (!toNode.isLoaded) {
+                            unloadedNodes.add(toNode)
+                            unloadedUris.add(toNodeUri)
+                        }
+                        var relationType = server.config.getRelationTypeForURIandGraph(relationUri, graphName) ?: BGRelationType(relationUri, relationUri, 0)
+
+                        // TODO: R
+                        val relation = BGRelation(fromNode, relationType, toNode)
+                        relationType.defaultGraphURI?.let {
+                            relation.sourceGraph = it
+                        }
+                        val hash = relation.hashCode()
+                        val existingRelation = relationMap[hash]
+                        if (existingRelation == null) {
+                            relationMap[hash] = relation
+                            path.add(relation)
+                        } else {
+                            path.add(existingRelation)
+                        }
+                       // relationArray.add(relation)
+                    }
                 }
             }
-        }
-            if (Constants.PROFILING) println("Line parse time: "+parseLineTime+"ms.")
         }
 
 

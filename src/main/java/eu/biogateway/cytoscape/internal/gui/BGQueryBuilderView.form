@@ -12,7 +12,7 @@
         <properties/>
         <border type="none"/>
         <children>
-          <grid id="1ccbb" layout-manager="BorderLayout" hgap="0" vgap="0">
+          <grid id="1ccbb" binding="buildQueryPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
             <constraints>
               <tabbedpane title="Build Query"/>
             </constraints>
@@ -75,7 +75,7 @@
               </grid>
             </children>
           </grid>
-          <grid id="f0eaf" layout-manager="BorderLayout" hgap="0" vgap="0">
+          <grid id="f0eaf" binding="bulkQueryPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
             <constraints>
               <tabbedpane title="Bulk Query"/>
             </constraints>
@@ -134,6 +134,13 @@
                           <text value="  Paste genes/proteins here:  "/>
                         </properties>
                       </component>
+                      <component id="8d49f" class="javax.swing.JLabel" binding="bulkSearchResultLabel">
+                        <constraints border-constraint="South"/>
+                        <properties>
+                          <horizontalAlignment value="0"/>
+                          <text value="0 / 0 nodes found."/>
+                        </properties>
+                      </component>
                     </children>
                   </grid>
                   <grid id="a5101" layout-manager="BorderLayout" hgap="0" vgap="0">
@@ -182,8 +189,6 @@
                             <item value="Entrez IDs"/>
                             <item value="ENSEMBL IDs"/>
                             <item value="Gene Symbols"/>
-                            <item value="GO terms"/>
-                            <item value="Protein names"/>
                           </model>
                         </properties>
                       </component>
@@ -315,20 +320,6 @@
                 <properties/>
                 <border type="none"/>
                 <children>
-                  <scrollpane id="6d909">
-                    <constraints border-constraint="Center"/>
-                    <properties/>
-                    <border type="none"/>
-                    <children>
-                      <component id="c341a" class="javax.swing.JTable" binding="resultTable" custom-create="true">
-                        <constraints/>
-                        <properties>
-                          <autoCreateRowSorter value="false"/>
-                          <fillsViewportHeight value="false"/>
-                        </properties>
-                      </component>
-                    </children>
-                  </scrollpane>
                   <grid id="6980a" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
                     <constraints border-constraint="South"/>
                     <properties/>
@@ -374,7 +365,7 @@
                             <constraints/>
                             <properties>
                               <horizontalTextPosition value="11"/>
-                              <text value="Select relations leading to selection"/>
+                              <text value="Select paths of selection"/>
                               <toolTipText value="Select all relations leading to the relations currently selected."/>
                             </properties>
                           </component>
@@ -408,6 +399,17 @@
                       </grid>
                     </children>
                   </grid>
+                  <scrollpane id="88678">
+                    <constraints border-constraint="Center"/>
+                    <properties/>
+                    <border type="none"/>
+                    <children>
+                      <component id="b3758" class="javax.swing.JTable" binding="resultTable">
+                        <constraints/>
+                        <properties/>
+                      </component>
+                    </children>
+                  </scrollpane>
                 </children>
               </grid>
             </children>

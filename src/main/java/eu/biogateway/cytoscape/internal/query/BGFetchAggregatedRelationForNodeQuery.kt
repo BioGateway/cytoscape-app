@@ -21,17 +21,29 @@ class BGFetchAggregatedRelationForNodeQuery(val node: BGNode, val relationIdenti
 
         return  "BASE <http://www.semantic-systems-biology.org/> \n" +
                 "PREFIX sio: <http://semanticscience.org/resource/>\n" +
+                "SELECT DISTINCT ?subject $graphUri ?predicate ?object \n" +
+                "WHERE {\n" +
+                "GRAPH $graphUri {\n" +
+                "<${node.uri}> rdf:type ?statement .\n" +
+                "?statement rdf:subject ?subject .\n" +
+                "?statement rdf:object ?object .\n" +
+                "?statement rdf:predicate ?predicate .\n" +
+                "}}"
+
+/*
+        return  "BASE <http://www.semantic-systems-biology.org/> \n" +
+                "PREFIX sio: <http://semanticscience.org/resource/>\n" +
                 "SELECT DISTINCT ?subject $graphUri ?relation ?object \n" +
                 "WHERE {\n" +
                 "GRAPH $graphUri {\n" +
-                "<${node.uri}> rdf:type ?type .\n" +
-                "?type sio:SIO_000139 ?subject .\n" +
-                "?type sio:SIO_000291 ?object .\n" +
+                "<${node.uri}> sio:SIO_000139 ?subject .\n" +
+                "<${node.uri}> sio:SIO_000291 ?object .\n" +
                 "?subject ?relation ?object .\n" +
                 "}}"
+*/
     }}
 
-class BGFetchAggregatedUndirectedRelationForNodeQuery(val node: BGNode, val relationIdentifier: String): BGRelationQuery(BGReturnType.RELATION_TRIPLE_GRAPHURI) {
+class BGFetchAggregatedUndirectedRelationForNodeQuery(val node: BGNode, val relationIdentifier: String, val fromUri: String, val toUri: String): BGRelationQuery(BGReturnType.RELATION_TRIPLE_GRAPHURI) {
 
     override fun generateQueryString(): String {
         val graphName = node.type.metadataGraph ?: throw Exception("Collapsing of this type is not supported!")
@@ -40,6 +52,9 @@ class BGFetchAggregatedUndirectedRelationForNodeQuery(val node: BGNode, val rela
         var graphUri: String = relationIdentifierParts.getOrElse(0) { "" }
         val relationUri = relationIdentifierParts.getOrNull(1)
 
+
+
+
         graphUri = if (graphUri.isEmpty()) {
             "?graph"
         } else {
@@ -47,31 +62,20 @@ class BGFetchAggregatedUndirectedRelationForNodeQuery(val node: BGNode, val rela
         }
 
 
-        if (relationUri != null) {
-
             return "BASE <http://www.semantic-systems-biology.org/> \n" +
                     "PREFIX sio: <http://semanticscience.org/resource/>\n" +
-                    "SELECT DISTINCT ?subject $graphUri <$relationUri> ?object \n" +
+                    "SELECT DISTINCT ?subject $graphUri ?relationUri ?object \n" +
                     "WHERE {\n" +
                     "GRAPH $graphUri {\n" +
-                    "<${node.uri}> rdf:type ?type .\n" +
-                    "?type sio:SIO_000139 ?subject .\n" +
-                    "?type sio:SIO_000139 ?object .\n" +
+                    "?instance rdfs:seeAlso? <${node.uri}> .\n" +
+                    "?instance rdf:type ?statement .\n" +
+                    "?statement rdf:subject ?subject .\n" +
+                    "?statement rdf:object ?object .\n" +
+                    "?statement rdf:predicate ?relationUri .\n"+
                     "}\n" +
-                    "FILTER (?subject!=?object) }"
-        } else {
-            return "BASE <http://www.semantic-systems-biology.org/> \n" +
-                    "PREFIX sio: <http://semanticscience.org/resource/>\n" +
-                    "SELECT DISTINCT ?subject $graphUri ?relation ?object \n" +
-                    "WHERE {\n" +
-                    "GRAPH $graphUri {\n" +
-                    "<${node.uri}> rdf:type ?type .\n" +
-                    "?type sio:SIO_000139 ?subject .\n" +
-                    "?type sio:SIO_000139 ?object .\n" +
-                    "?subject ?relation ?object .\n" +
-                    "}\n" +
-                    "FILTER (?subject!=?object) }"
-        }
+                    "FILTER (?subject IN (<$fromUri>, <$toUri>)) \n" +
+                    "FILTER (?object IN (<$fromUri>, <$toUri>)) \n" +
+                    "FILTER (?subject != ?object) }\n"
     }
 }
 

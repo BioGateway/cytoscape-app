@@ -82,7 +82,7 @@ abstract class BGTypedQuery(val type: BGQueryType, val serviceManager: BGService
 
 
 @Suppress("LocalVariableName")
-abstract class BGQuery(var type: BGReturnType, val dictionarySearchType: String? = null): AbstractTask(), Runnable {
+abstract class BGQuery(var type: BGReturnType, val dictionarySearchMethod: String? = null): AbstractTask(), Runnable {
     var completionBlocks: ArrayList<(BGReturnData?) -> Unit> = ArrayList()
     var returnData: BGReturnData? = null
     var client = HttpClients.createDefault()!!
@@ -90,7 +90,7 @@ abstract class BGQuery(var type: BGReturnType, val dictionarySearchType: String?
     var taskMonitorTitle = "Searching..."
     var parsingBlock: ((BufferedReader) -> Unit)? = null
     var parseType = when (type) {
-        BGReturnType.NODE_LIST, BGReturnType.NODE_LIST_DESCRIPTION -> BGParsingType.TO_ARRAY
+        BGReturnType.NODE_LIST, BGReturnType.NODE_LIST_DESCRIPTION, BGReturnType.NODE_LIST_DESCRIPTION_TAXON -> BGParsingType.TO_ARRAY
         BGReturnType.RELATION_TRIPLE_GRAPHURI -> BGParsingType.RELATIONS
         BGReturnType.RELATION_MULTIPART -> BGParsingType.RELATIONS
         BGReturnType.PUBMED_ID -> BGParsingType.TO_ARRAY
@@ -115,7 +115,7 @@ abstract class BGQuery(var type: BGReturnType, val dictionarySearchType: String?
         val uri = encodeUrl()?.toURI()
         if (uri != null) {
 
-            val httpRequest = when (!dictionarySearchType.isNullOrEmpty()) {
+            val httpRequest = when (!dictionarySearchMethod.isNullOrEmpty()) {
                 true -> {
                     val post = HttpPost(uri)
                     val json = generateQueryString()
@@ -183,8 +183,8 @@ abstract class BGQuery(var type: BGReturnType, val dictionarySearchType: String?
     }
 
     fun encodeUrl(): URL? {
-        if (!dictionarySearchType.isNullOrEmpty()) {
-            return URL(BGServiceManager.dictionaryServerPath + dictionarySearchType)
+        if (!dictionarySearchMethod.isNullOrEmpty()) {
+            return URL(BGServiceManager.dictionaryServerPath + dictionarySearchMethod)
         } else {
             val RETURN_TYPE_TSV = "text/tab-separated-values"
             val BIOPAX_DEFAULT_OPTIONS = "timeout=0&debug=on"

@@ -249,11 +249,20 @@ class BGNetworkBuilder() {
         val parentEdgeId = cyNode.getParentEdgeId(network)
         val cyNodes = if (parentEdgeId.isNotBlank()) getCyNodesWithValue(network, network.defaultNodeTable, Constants.BG_FIELD_NODE_PARENT_EDGE_ID, parentEdgeId) else null
 
-        var relationIdentifier = if (parentEdgeId.isNotBlank()) parentEdgeId.split(";")[1]
+        val fromUri = if (parentEdgeId.isNotBlank()) parentEdgeId.split(";")[0]
+        else {
+            null
+        }
+        val relationIdentifier = if (parentEdgeId.isNotBlank()) parentEdgeId.split(";")[1]
         else {
             ""
         }
-
+        val toUri = if (parentEdgeId.isNotBlank()) parentEdgeId.split(";")[2]
+        else {
+            null
+        }
+        if (fromUri == null) throw Exception("Invalid fromUri!")
+        if (toUri == null) throw Exception("Invalid toUri!")
 
         val startTime = System.currentTimeMillis()
         val adjacentNodeUris = network.getAdjacentEdgeIterable(cyNode, CyEdge.Type.ANY).fold(HashSet<CyNode>()) { acc, cyEdge -> acc.union(setOf(cyEdge.source, cyEdge.target)).toHashSet() }.map { it.getUri(network) }
@@ -263,16 +272,12 @@ class BGNetworkBuilder() {
         val node = BGServiceManager.dataModelController.searchForExistingNode(nodeUri)
                 ?: throw Exception("Node not found!")
 
-        val query: BGRelationQuery = when (node.type.id) {
-            "ppi" -> BGFetchAggregatedUndirectedRelationForNodeQuery(node, relationIdentifier)
-            //"tftg" -> BGFetchAggregatedTFTGRelationForNodeQuery(node)
-            //BGNodeType.GOA -> BGFetchAggregatedRelationForNodeQuery(node)
+        val query: BGRelationQuery = when (node.type.typeClass) {
+            BGNodeTypeNew.BGNodeTypeClass.UNDIRECTED_STATEMENT -> BGFetchAggregatedUndirectedRelationForNodeQuery(node, relationIdentifier, fromUri, toUri)
             else -> {
                 BGFetchAggregatedRelationForNodeQuery(node, relationIdentifier)
-                //throw Exception("Cannot collapse nodes of this dataType!")
             }
         }
-        //val query: BGRelationQuery = when (node.type.typeClass)
 
         network.removeEdges(network.getAdjacentEdgeIterable(cyNode, CyEdge.Type.ANY).toHashSet())
 

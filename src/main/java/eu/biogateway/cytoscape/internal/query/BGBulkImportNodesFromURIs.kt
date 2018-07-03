@@ -1,9 +1,58 @@
 package eu.biogateway.cytoscape.internal.query
 
+import eu.biogateway.cytoscape.internal.model.BGNode
 import eu.biogateway.cytoscape.internal.model.BGNodeTypeNew
 import eu.biogateway.cytoscape.internal.parser.BGReturnType
+import java.util.concurrent.TimeUnit
 
 class BGBulkImportNodesFromURIs(val nodeType: BGNodeTypeNew, val nodeUris: Collection<String>): BGQuery(BGReturnType.NODE_LIST_DESCRIPTION_TAXON) {
+
+
+    override fun run() {
+        searchDictionaryForNodes()
+        futureReturnData.complete(returnData)
+        runCompletions()
+    }
+
+    override fun generateQueryString(): String {
+        // This class overrides run() so it will not need this method.
+        return ""
+    }
+
+    private fun searchDictionaryForNodes() {
+        // This will fetch the nodes, but with taxa as URIs
+        val query = BGMultiNodeFetchMongoQuery(nodeUris, "fetch", nodeType.id, arrayListOf("taxon"), BGReturnType.NODE_LIST_DESCRIPTION_TAXON)
+        query.run()
+        val nodeResults = query.futureReturnData.get(10, TimeUnit.SECONDS) as BGReturnNodeData
+        val taxonUris = nodeResults.nodeData.map { it.value.taxon }.filterNotNull().toHashSet()
+        val taxaMap = searchDictionaryForTaxa(taxonUris)
+
+        // For the results, we want to use the taxa names instead of URIs where possible.
+        for (node in nodeResults.nodeData.values) {
+            node.taxon?.let {
+                node.taxon = taxaMap[it] ?: node.taxon
+            }
+        }
+
+        // We return the nodes that we got from the node fetch query above.
+        returnData = nodeResults
+    }
+
+    private fun searchDictionaryForTaxa(taxonUris: Collection<String>): HashMap<String, String> {
+        val query = BGMultiNodeFetchMongoQuery(taxonUris, "fetch", "taxon")
+        val taxaNames = HashMap<String, String>()
+        query.run()
+        val taxons = query.futureReturnData.get() as BGReturnNodeData
+        for ((uri, node) in taxons.nodeData) {
+            taxaNames[uri] = node.name
+        }
+        return taxaNames
+    }
+
+}
+
+
+class BGBulkImportNodesFromURIsOld(val nodeType: BGNodeTypeNew, val nodeUris: Collection<String>): BGQuery(BGReturnType.NODE_LIST_DESCRIPTION_TAXON) {
 
     init {
         taskMonitorTitle = "Searching for nodes..."

@@ -1,6 +1,5 @@
 package eu.biogateway.cytoscape.internal.query
 
-import eu.biogateway.cytoscape.internal.BGServiceManager
 import eu.biogateway.cytoscape.internal.parser.BGReturnType
 
 /// Performs a fetch query for the values with the given relation URI for the given node, in the given graph.

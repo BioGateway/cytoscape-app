@@ -54,8 +54,7 @@ class BGNodeMenuActionsCMF(val gravity: Float): CyNodeViewContextMenuFactory {
                 }
             }
             BGNodeTypeNew.BGNodeTypeClass.STATEMENT,
-            BGNodeTypeNew.BGNodeTypeClass.PPI_STATEMENT,
-            BGNodeTypeNew.BGNodeTypeClass.TFTG_STATEMENT-> {
+            BGNodeTypeNew.BGNodeTypeClass.UNDIRECTED_STATEMENT-> {
                 createPubmedURIMenuList(network, nodeUri)?.let {
                     parentMenu.addSeparator()
                     parentMenu.add(it)
@@ -92,13 +91,7 @@ class BGNodeMenuActionsCMF(val gravity: Float): CyNodeViewContextMenuFactory {
 
         val nodeType = BGNode(nodeUri).type
 
-        val relationUri = when (nodeType.id) {
-            "tftg" -> HAS_EVIDENCE_URI
-            "goa" -> RELATED_MATCH_URI
-            else -> {
-                HAS_EVIDENCE_URI
-            }
-        }
+        val relationUri = HAS_EVIDENCE_URI
 
 
 

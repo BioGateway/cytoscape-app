@@ -1,6 +1,5 @@
 package eu.biogateway.cytoscape.internal.query
 
-import eu.biogateway.cytoscape.internal.BGServiceManager
 import eu.biogateway.cytoscape.internal.parser.BGReturnType
 
 class BGNodeSearchQuery(val queryString: String, returnType: BGReturnType): BGQuery(returnType) {

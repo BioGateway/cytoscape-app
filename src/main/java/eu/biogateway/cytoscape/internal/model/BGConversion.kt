@@ -3,7 +3,6 @@ package eu.biogateway.cytoscape.internal.model
 import eu.biogateway.cytoscape.internal.BGServiceManager
 import eu.biogateway.cytoscape.internal.parser.BGReturnType
 import eu.biogateway.cytoscape.internal.query.*
-import jdk.nashorn.internal.runtime.regexp.joni.constants.NodeType
 import org.cytoscape.model.CyColumn
 import org.cytoscape.model.CyNetwork
 import java.util.concurrent.TimeUnit

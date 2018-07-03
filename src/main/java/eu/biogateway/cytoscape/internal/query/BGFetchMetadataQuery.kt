@@ -21,7 +21,8 @@ class BGFetchMetadataQuery(val fromNodeUri: String, val relationUri: String, val
             val sparqlQuery = sparql
                     .replace("@fromUri", fromNodeUri)
                     .replace("@toUri", toNodeUri)
-                    .replace("@relationUri", metadataRelationUri)
+                    .replace("@relationUri", relationUri) // The URI of the relation that this metadata belongs to.
+                    .replace("@metadataRelationUri", metadataRelationUri) // The URI for fetching the metadata itself.
                     .replace("@graph", graph)
             return "BASE <http://www.semantic-systems-biology.org/>  \n" +
                     "SELECT DISTINCT ?metadata\n" +
@@ -31,7 +32,7 @@ class BGFetchMetadataQuery(val fromNodeUri: String, val relationUri: String, val
         return "BASE <http://www.semantic-systems-biology.org/>  \n" +
                 "SELECT DISTINCT ?metadata\n" +
                 "WHERE {\n" +
-                "GRAPH ?graph {  \n" +
+                "GRAPH $graph {  \n" +
                 "?triple rdf:subject <"+fromNodeUri+"> .  \n" +
                 "?triple rdf:predicate <"+relationUri+"> .  \n" +
                 "?triple rdf:object <"+toNodeUri+"> . \n" +

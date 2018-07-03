@@ -24,16 +24,14 @@ class BGNodeTypeNew(val id: String, val name: String, val uriPattern: String?, v
     enum class BGNodeTypeClass(val id: String) {
         ENTITY("entity"),
         STATEMENT("statement"),
-        PPI_STATEMENT("ppi_statement"),
-        TFTG_STATEMENT("tftg_statement");
+        UNDIRECTED_STATEMENT("undirected_statement");
 
         companion object {
             fun forId(id: String): BGNodeTypeClass? {
                 return when (id.toLowerCase()) {
                     "entity" -> ENTITY
                     "statement" -> STATEMENT
-                    "ppi_statement" -> PPI_STATEMENT
-                    "tftg_statement" -> TFTG_STATEMENT
+                    "undirected_statement" -> UNDIRECTED_STATEMENT
                     else -> null
                 }}
         }
