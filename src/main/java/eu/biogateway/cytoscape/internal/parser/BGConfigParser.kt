@@ -4,6 +4,7 @@ import eu.biogateway.cytoscape.internal.BGServiceManager
 import eu.biogateway.cytoscape.internal.model.*
 import eu.biogateway.cytoscape.internal.query.BGQueryParameter
 import eu.biogateway.cytoscape.internal.query.BGQueryTemplate
+import jdk.nashorn.internal.runtime.regexp.joni.constants.NodeType
 import org.w3c.dom.Element
 import org.w3c.dom.Node
 import java.awt.Color
@@ -47,7 +48,7 @@ object BGConfigParser {
                 val uri = graphElement.getAttribute("uri") ?: continue
                 if (uri.isEmpty()) continue
                 val name = graphElement.getAttribute("name") ?: continue
-                graphMap.put(name, uri)
+                graphMap[name] = uri
             }
             config.datasetGraphs = graphMap
 
@@ -73,7 +74,7 @@ object BGConfigParser {
                 val autocompleteType = BGNodeTypeNew.BGAutoCompleteType.forId(autocompleteTypeId)
 
                 val nodeType = BGNodeTypeNew(id, name, uriPattern, nodeTypeClass, metadataGraph, autocompleteType)
-                config.nodeTypes.put(id, nodeType)
+                config.nodeTypes[id] = nodeType
             }
 
 
@@ -163,12 +164,12 @@ object BGConfigParser {
                     val cvrtElement = conversionList.item(j) as? Element ?: continue
                     val fromValue = cvrtElement.getAttribute("fromValue") ?: continue
                     val toValue = cvrtElement.getAttribute("toValue") ?: continue
-                    conversions.put(fromValue, toValue)
+                    conversions[fromValue] = toValue
                 }
 
                 val metadataType = BGRelationMetadataType(id, label, dataType, relationUri, relationTypes, sparql, conversions)
 
-                config.metadataTypes.put(metadataType.id, metadataType)
+                config.metadataTypes[metadataType.id] = metadataType
             }
 
 
@@ -215,15 +216,21 @@ object BGConfigParser {
                 }
 
                 val nodes = importNode.getElementsByTagName("node")
-                for (index in 0..nodes.length -1 ) {
+                loop@ for (index in 0..nodes.length -1 ) {
                     val node = nodes.item(index) as? Element ?: continue
 
                     val conversion = parseConversionElement(BGConversionType.ConversionDirection.IMPORT, node) ?: continue
 
                     val typeString = node.getAttribute("type") ?: continue
-                    val nodeType = config.nodeTypes.get(typeString) ?: continue
 
-                    val nodeConversion = BGNodeConversionType(nodeType, conversion) ?: continue
+                    val nodeType = when (typeString == "undefined") {
+                        true -> BGNodeTypeNew.UNDEFINED
+                        false -> {
+                            config.nodeTypes.get(typeString) ?: continue@loop
+                        }
+                    }
+
+                    val nodeConversion = BGNodeConversionType(nodeType, conversion)
 
                     importNodeConversions.add(nodeConversion)
                 }
@@ -318,7 +325,7 @@ object BGConfigParser {
                         queryConstraint.options.add(option)
                     }
                 }
-                config.queryConstraints.put(queryConstraint.id, queryConstraint)
+                config.queryConstraints[queryConstraint.id] = queryConstraint
             }
 
             // Parse example queries
@@ -352,7 +359,7 @@ object BGConfigParser {
                 if (uri.isEmpty()) continue
                 val colorString = styleElement.getAttribute("color") ?: continue
                 val color = if (!colorString.isEmpty()) Color.decode(colorString) else continue
-                visualStyleConfig.edgeColors.put(uri, color)
+                visualStyleConfig.edgeColors[uri] = color
             }
             val nodeColors = visualStyleNode.getElementsByTagName("nodeColor")
             for (index in 0..nodeColors.length-1) {
@@ -361,7 +368,7 @@ object BGConfigParser {
                 if (type.isEmpty()) continue
                 val colorString = styleElement.getAttribute("color") ?: continue
                 val color = if (!colorString.isEmpty()) Color.decode(colorString) else continue
-                visualStyleConfig.nodeColors.put(type, color)
+                visualStyleConfig.nodeColors[type] = color
             }
 
             val edgeLines = visualStyleNode.getElementsByTagName("edgeLine")
@@ -371,7 +378,7 @@ object BGConfigParser {
                 if (uri.isEmpty()) continue
                 val lineTypeName = styleElement.getAttribute("lineType") ?: continue
                 val lineType = visualStyleConfig.lineTypeMapping.get(lineTypeName) ?: continue
-                visualStyleConfig.edgeLineTypes.put(uri, lineType)
+                visualStyleConfig.edgeLineTypes[uri] = lineType
             }
 
             val nodeShapes = visualStyleNode.getElementsByTagName("nodeShape")
@@ -381,8 +388,18 @@ object BGConfigParser {
                 if (type.isEmpty()) continue
                 val nodeShapeName = styleElement.getAttribute("shape") ?: continue
                 val nodeShape = visualStyleConfig.nodeShapeMapping.get(nodeShapeName) ?: continue
-                visualStyleConfig.nodeShapes.put(type, nodeShape)
+                visualStyleConfig.nodeShapes[type] = nodeShape
+
+                val nodeWidth = styleElement.getAttribute("width").toDoubleOrNull()
+                if (nodeWidth != null) {
+                    visualStyleConfig.nodeWidths[type] = nodeWidth
+                }
+                val nodeHeight = styleElement.getAttribute("height").toDoubleOrNull()
+                if (nodeHeight != null) {
+                    visualStyleConfig.nodeHeights[type] = nodeHeight
+                }
             }
+
 
             config.visualStyleConfig = visualStyleConfig
 
@@ -469,7 +486,7 @@ object BGConfigParser {
 
                             query.addParameter(qParameter)
                         } }
-                    queryTemplateHashMap.put(queryName, query)
+                    queryTemplateHashMap[queryName] = query
                 } }
         } catch (e: Exception) {
             // TODO Auto-generated catch block

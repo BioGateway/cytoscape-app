@@ -33,6 +33,14 @@ class BGDataModelController() {
         fun getSelected(path: String, identifier: String): Boolean {
             return prefs.getBoolean((path+identifier).hashCode().toString(), false)
         }
+
+        fun setDefaultDouble(identifier: String, value: Double) {
+            prefs.putDouble("defaults_$identifier", value)
+        }
+        fun getDefaultDouble(identifier: String): Double {
+            val value = prefs.getDouble("defaults_$identifier", 12.0)
+            return value
+        }
     }
 
 
@@ -56,6 +64,7 @@ class BGDataModelController() {
         config = BGConfig()
         loadXMLFileFromServer()
         createGraphTreeRootnode()
+        BGServiceManager.controlPanel?.setupConstraintPanel()
     }
 
     fun createGraphTreeRootnode() {
@@ -157,6 +166,15 @@ class BGDataModelController() {
             preferencesManager.setSelected("activeSources", source.toString(), active)
         }
         preferencesManager.prefs.flush()
+    }
+
+    private fun loadDefaultPreferences() {
+        config.defaultFontSize = preferencesManager.getDefaultDouble("fontSize")
+    }
+
+    public fun writeDefaultPreferences() {
+        preferencesManager.setDefaultDouble("fontSize", config.defaultFontSize)
+
     }
 
     fun setActiveNodesForPaths(paths: Array<TreePath>) {
@@ -328,7 +346,7 @@ class BGDataModelController() {
         return data.nodeData
     }
 
-    private fun  getNodeFromServer(uri: String): BGNode? {
+    private fun getNodeFromServer(uri: String): BGNode? {
         if (!uri.startsWith("http://")) {
             return null
         }
@@ -346,7 +364,6 @@ class BGDataModelController() {
         val data = query.futureReturnData.get(10, TimeUnit.SECONDS ) as? BGReturnNodeData
         val node = data?.nodeData?.get(uri)
         return node
-
     }
 
     private fun getNodeFromCyNetwork(uri: String, network: CyNetwork): BGNode? {
@@ -401,6 +418,7 @@ class BGDataModelController() {
             val connection = queryFileUrl.openConnection()
             val inputStream = connection.getInputStream()
             BGConfigParser.parseXMLConfigFile(inputStream, config)
+            loadDefaultPreferences()
         } catch (e: IOException) {
             e.printStackTrace()
         }

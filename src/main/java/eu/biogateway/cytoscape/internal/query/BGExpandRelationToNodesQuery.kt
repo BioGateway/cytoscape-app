@@ -27,14 +27,14 @@ class BGExpandRelationToNodesQuery(val fromNode: String, val toNode: String, val
 
 
     private fun generateUndirectedQueryStringNew(graphUri: String): String {
-        return "BASE <http://www.semantic-systems-biology.org/> \n" +
+        return "BASE <http://rdf.biogateway.eu/graph/> \n" +
                 "PREFIX protein1: <$toNode>\n" +
                 "PREFIX protein2: <$fromNode>\n" +
                 "SELECT distinct ?shownInstance as ?a1 <$graphUri> ?subjectRel protein1: ?shownInstance as ?a2 <$graphUri> ?objectRel protein2:\n" +
                 "WHERE {  \n" +
                 "{ SELECT ?statement \n" +
                 "WHERE {\n" +
-                "GRAPH <http://rdf.biogateway.eu/graph/prot2prot> {\n" +
+                "GRAPH <$graphUri> {\n" +
                 "{  \n" +
                 "?statement rdf:subject protein2: .\n" +
                 "?statement rdf:object protein1: .\n" +
@@ -45,16 +45,15 @@ class BGExpandRelationToNodesQuery(val fromNode: String, val toNode: String, val
                 "}}}\n" +
                 "GRAPH <$graphUri> {  \n" +
                 "?statement rdf:predicate <${relationType.uri}> .\n"+
-                "?instance rdf:type ?statement .\n" +
-                "?instance rdfs:seeAlso? ?shownInstance . \n" +
-                "?instance ?objectRel protein1: .\n" +
-                "?instance ?subjectRel protein2: .\n" +
+                "?statement rdfs:seeAlso? ?shownInstance . \n" +
+                "?statement ?objectRel protein1: .\n" +
+                "?statement ?subjectRel protein2: .\n" +
                 "}}"
 
     }
 
     /*private fun generateUndirectedQueryStringNew(graphUri: String): String {
-        return "BASE <http://www.semantic-systems-biology.org/> \n" +
+        return "BASE <http://rdf.biogateway.eu/graph/> \n" +
                 "PREFIX object: <$toNode>\n" +
                 "PREFIX subject: <$fromNode>\n" +
                 "PREFIX has_agent: <http://semanticscience.org/resource/SIO_000139>\n"+
@@ -69,23 +68,20 @@ class BGExpandRelationToNodesQuery(val fromNode: String, val toNode: String, val
 
 
     private fun generateQueryString(graphName: String): String {
-        return "BASE <http://www.semantic-systems-biology.org/> \n" +
+        return "BASE <http://rdf.biogateway.eu/graph/> \n" +
                 "PREFIX object: <$toNode>\n" +
                 "PREFIX subject: <$fromNode>\n" +
-                "SELECT distinct ?instance as ?i1 <$graphName> ?subjectRel subject: ?instance as ?i2 <$graphName> ?objectRel object:\n" +
+                "SELECT distinct ?statement as ?i1 <$graphName> rdf:subject subject: ?statement as ?i2 <$graphName> rdf:object object:\n" +
                 "WHERE {  \n" +
                 "GRAPH <$graphName> {  \n" +
                 " ?statement rdf:subject subject: .\n" +
                 " ?statement rdf:object object: .\n" +
                 " ?statement rdf:predicate <${relationType.uri}> .\n"+
-                " ?instance rdf:type ?statement . \n" +
-                " ?instance ?subjectRel subject: .\n" +
-                " ?instance ?objectRel object: .\n" +
                 " }}\n"
     }
 
 /*    private fun generateQueryString(graphName: String): String {
-        return "BASE <http://www.semantic-systems-biology.org/> \n" +
+        return "BASE <http://rdf.biogateway.eu/graph/> \n" +
                 "PREFIX has_agent: <http://semanticscience.org/resource/SIO_000139>\n"+
                 "PREFIX has_target: <http://semanticscience.org/resource/SIO_000291> \n"+
                 "PREFIX object: <$toNode>\n" +

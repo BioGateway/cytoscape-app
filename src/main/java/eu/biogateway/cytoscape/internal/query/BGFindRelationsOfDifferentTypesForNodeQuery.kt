@@ -26,7 +26,7 @@ class BGFindRelationsOfDifferentTypesForNodeQuery(val relationTypes: Collection<
     }
 
     private fun generateToQueryString(graph: String, typeFilter: String): String {
-        return "BASE <http://www.semantic-systems-biology.org/> \n" +
+        return "BASE <http://rdf.biogateway.eu/graph/> \n" +
                 "SELECT distinct ?a "+graph+" ?relation <"+nodeUri + ">" +
                 "WHERE {\n" +
                 "FILTER(?relation IN ("+typeFilter+"))\n" +
@@ -35,7 +35,7 @@ class BGFindRelationsOfDifferentTypesForNodeQuery(val relationTypes: Collection<
                 "}}"
     }
     private fun generateFromQueryString(graph: String, typeFilter: String): String {
-        return "BASE <http://www.semantic-systems-biology.org/> \n" +
+        return "BASE <http://rdf.biogateway.eu/graph/> \n" +
                 "SELECT distinct <"+nodeUri+"> "+graph+" ?relation ?b \n" +
                 "WHERE {\n" +
                 "FILTER(?relation IN ("+typeFilter+"))\n" +

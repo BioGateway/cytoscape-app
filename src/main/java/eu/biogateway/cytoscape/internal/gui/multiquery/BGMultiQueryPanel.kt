@@ -7,11 +7,13 @@ import eu.biogateway.cytoscape.internal.model.*
 import eu.biogateway.cytoscape.internal.parser.BGSPARQLParser
 import eu.biogateway.cytoscape.internal.util.Constants
 import eu.biogateway.cytoscape.internal.util.Utility
+import eu.biogateway.cytoscape.internal.util.setChildFontSize
+import eu.biogateway.cytoscape.internal.util.setFontSize
 import java.awt.FlowLayout
 import javax.swing.*
 
 
-class BGMultiQueryPanel(val constraintPanel: BGQueryConstraintPanel): JPanel() {
+class BGMultiQueryPanel(val constraintPanel: BGQueryConstraintPanel, val uniqueSetsCheckBox: JCheckBox): JPanel() {
 
     val deleteButtonTooltipText = "Delete this row."
 
@@ -49,6 +51,11 @@ class BGMultiQueryPanel(val constraintPanel: BGQueryConstraintPanel): JPanel() {
         }
         deleteButton.toolTipText = deleteButtonTooltipText
         queryLine.add(deleteButton)
+
+        val fontSize = BGServiceManager.config.defaultFontSize;
+        relationTypeBox.setFontSize(fontSize)
+        queryLine.setChildFontSize(fontSize)
+
         return queryLine
     }
 
@@ -186,7 +193,7 @@ class BGMultiQueryPanel(val constraintPanel: BGQueryConstraintPanel): JPanel() {
             queryWildcards = "<placeholder>"
         }
         val header = "#QUERY <http://www.semantic-systems-biology.org/biogateway/endpoint>\n"
-        val query = "BASE <http://www.semantic-systems-biology.org/>\n" +
+        val query = "BASE <http://rdf.biogateway.eu/graph/>\n" +
                 "SELECT DISTINCT " + queryComponents.first + "\n" +
                 "WHERE {\n" +
                 "{ SELECT DISTINCT "+queryWildcards+"\n" +
@@ -200,7 +207,7 @@ class BGMultiQueryPanel(val constraintPanel: BGQueryConstraintPanel): JPanel() {
 
     fun generateSPARQLCountQuery(): String {
         val graphQueries = generateReturnValuesAndGraphQueries()
-        val query = "BASE <http://www.semantic-systems-biology.org/>\n" +
+        val query = "BASE <http://rdf.biogateway.eu/graph/>\n" +
                 "SELECT COUNT (*) \n" +
                 "WHERE {\n" +
                 graphQueries.second +
@@ -246,13 +253,35 @@ class BGMultiQueryPanel(val constraintPanel: BGQueryConstraintPanel): JPanel() {
             numberOfGraphQueries += 1
         }
 
-        val constraints = generateConstraintQueries(triples)
+        val uniqueSetsFilter = if (uniqueSetsCheckBox.isSelected) { generateUniqueSetsFilter() } else { "" }
 
-        return Triple(returnValues, graphQueries, constraints)
+        try {
+            val constraintValues = constraintPanel.getConstraintValues()
+           // val constraints = generateConstraintQueries(triples)
+            val constraints = uniqueSetsFilter + BGQueryConstraint.generateConstraintQueries(constraintValues, triples)
+
+            return Triple(returnValues, graphQueries, constraints)
+        } catch (exception: InvalidInputValueException) {
+            JOptionPane.showMessageDialog(this, exception.message, "Invalid query constraints", JOptionPane.ERROR_MESSAGE)
+            return Triple(returnValues, graphQueries, uniqueSetsFilter)
+        }
+    }
+
+    private fun generateUniqueSetsFilter(): String {
+        val usedVariables = variableManager.usedVariables.values.toHashSet().map { "?"+it.value }.toTypedArray()
+        var uniqueVariablesFilter = ""
+
+        for (i in 0..(usedVariables.size-1)) {
+            for (j in i..(usedVariables.size-1)) {
+                if (j == i) continue
+                uniqueVariablesFilter += "\n FILTER("+usedVariables[i]+"!="+usedVariables[j]+")"
+            }
+        }
+        return uniqueVariablesFilter
     }
 
 
-    private fun generateConstraintQueries(triples: Collection<Triple<String, BGRelationType, String>>): String {
+    fun generateConstraintQueries(triples: Collection<Triple<String, BGRelationType, String>>): String {
 
         // Graphs are key, then all the queries on the graphs.
         val constraintQueries = HashMap<String, HashSet<String>>()
@@ -332,7 +361,7 @@ class BGMultiQueryPanel(val constraintPanel: BGQueryConstraintPanel): JPanel() {
         }
 
 
-        if (constraintValues.count() > 0) {
+        if (constraintQueries.count() > 0) {
             val constraintHeader = "\n#QueryConstraints:\n" + constraintValues
                     .filter { it.value.isEnabled }
                     .map { "#Constraint: " + it.key.id + "=" + it.value.stringValue + "\n" }

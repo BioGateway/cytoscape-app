@@ -160,6 +160,7 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
         }
 
         view.setUpMultiQueryPanel()
+
     }
 
     /*
@@ -204,8 +205,8 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
                     } else {
                         // It's just a protein name, try to generate the URI.
                         val baseUri = when (optionalUriField.comboBox.model.selectedItem) {
-                            "Protein" -> "http://identifiers.org/uniprot/"
-                            "Gene" -> "http://identifiers.org/ncbigene/"
+                            "Protein" -> Constants.PROT_PREFIX
+                            "Gene" -> Constants.GENE_PREFIX
                             else -> {
                                 throw Exception("Invalid optionalUriField combobox value! Must be Gene or Protein!")
                             }
@@ -631,7 +632,7 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
         var queryType: QueryType
 
         var nodeList = view.bulkImportTextPane.text.split("\n")
-        nodeList = nodeList.map { Utility.sanitizeParameter(it) }
+        nodeList = nodeList.map { Utility.sanitizeParameter(it) }.filter { it.isNotEmpty() }
 
         if (nodeList.size > Constants.BG_BULK_IMPORT_WARNING_LIMIT) {
             val message = "Bulk importing this many nodes at once might take a long time, or not succeed. \n Consider to import fewer nodes in each step. \n\nAre you sure you want to continue?"
@@ -642,13 +643,6 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
         }
 
         val selectedType = view.bulkImportTypeComboBox.selectedItem as? String
-
-//                Uniprot IDs
-//                Entrez IDs
-//                ENSEMBL IDs
-//                Gene Symbols
-//                GO terms
-//                Protein names
 
         val nodeType: BGNodeTypeNew = when (selectedType) {
             "Gene Symbols" -> {
@@ -663,7 +657,7 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
                 queryType = QueryType.UNIPROT_LOOKUP
                 BGServiceManager.config.nodeTypes.get("protein") ?: throw Exception("Invalid node type!")
             }
-            "Entrez IDs" -> {
+            "Entrez Gene IDs" -> {
                 queryType = QueryType.ENTREZ_LOOKUP
                 BGServiceManager.config.nodeTypes.get("gene") ?: throw Exception("Invalid node type!")
             }
@@ -691,9 +685,14 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
 
         when (queryType) {
             QueryType.GENE_SYMBOL -> {
-                val query = BGMultiNodeFetchMongoQuery(nodeList, "genesForSymbols")
-                query.addCompletion(queryCompletion)
-                BGServiceManager.execute(query)
+//                val query = BGMultiNodeFetchMongoQuery(nodeList, "genesForSymbols", null, null, BGReturnType.NODE_LIST_DESCRIPTION_STATUS)
+//                query.addCompletion(queryCompletion)
+//                BGServiceManager.execute(query)
+                searchForSuggestionsForField(nodeList, nodeType, "prefLabel") {
+                    setBulkImportTableData(it.map { BGNode(it) })
+                    setBulkImportInputPaneColors(it, queryType)
+                    Utility.fightForFocus(view.mainFrame)
+                }
             }
             QueryType.NAME_SEARCH -> {
                 val query = BGBulkImportNodesQuery(nodeList, nodeType)
@@ -713,10 +712,17 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
                 BGServiceManager.taskManager?.execute(TaskIterator(query))
             }
             BGQueryBuilderController.QueryType.ENTREZ_LOOKUP -> {
-                val entrezNodesList = nodeList.map { Utility.generateEntrezURI(it) }
-                val query = BGBulkImportNodesFromURIs(nodeType, entrezNodesList)
-                query.addCompletion(queryCompletion)
-                BGServiceManager.taskManager?.execute(TaskIterator(query))
+//                val entrezNodesList = nodeList.map { Utility.generateEntrezURI(it) }
+//                val query = BGBulkImportNodesFromURIs(nodeType, entrezNodesList)
+//                query.addCompletion(queryCompletion)
+//                BGServiceManager.taskManager?.execute(TaskIterator(query))
+
+                searchForSuggestionsForField(nodeList, nodeType, "ncbi_id") {
+                    setBulkImportTableData(it.map { BGNode(it) })
+                    setBulkImportInputPaneColors(it, queryType)
+                    Utility.fightForFocus(view.mainFrame)
+                }
+
             }
             BGQueryBuilderController.QueryType.ENSEMBL_SEARCH -> {
 //                val query = BGBulkImportENSEMBLNodesQuery(nodeList, nodeType)
@@ -740,6 +746,15 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
         val results = ArrayList<BGSuggestion>()
         for (id in enembleIds) {
             val suggestions = BGServiceManager.endpoint.getSuggestionsForFieldValue("ensembl_id", id, type.id.toLowerCase())
+            results.addAll(suggestions)
+        }
+        completion(results)
+    }
+
+    private fun searchForSuggestionsForField(values: Collection<String>, type: BGNodeTypeNew, field: String, completion: (Collection<BGSuggestion>) -> Unit) {
+        val results = ArrayList<BGSuggestion>()
+        for (id in values) {
+            val suggestions = BGServiceManager.endpoint.getSuggestionsForFieldValue(field, id, type.id.toLowerCase(), 100)
             results.addAll(suggestions)
         }
         completion(results)
@@ -782,7 +797,7 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
 
     private fun setBulkImportTableData(nodes: Collection<BGNode>) {
         val tableModel = view.bulkImportResultTable.model as DefaultTableModel
-        tableModel.setColumnIdentifiers(arrayOf("Node Name", "Description", "Taxon"))
+        tableModel.setColumnIdentifiers(arrayOf("Node Name", "Description", "Reviewed", "Taxon"))
 
         currentBulkImportNodes.clear()
         for (i in tableModel.rowCount -1 downTo 0) {
@@ -791,8 +806,9 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
         for (node in nodes) {
             val nodeName = node.name ?: node.uri
             val description = node.description ?: ""
-            val taxon = node.taxon ?: ""
-            val row = arrayOf(nodeName, description, taxon)
+            val taxon = node.taxon ?: "Unspecified"
+            val reviewed = node.reviewed
+            val row = arrayOf(nodeName, description, reviewed, taxon)
             tableModel.addRow(row)
             currentBulkImportNodes[tableModel.rowCount-1] = node
         }
@@ -806,7 +822,7 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
 
         val nodeNames = suggestions.map { it.prefLabel ?: "" }.filter { !it.isEmpty() }.toHashSet()
         val nodeUris = suggestions.map { it._id }.toHashSet()
-        val searchLines = view.bulkImportTextPane.text.split("\n").map { Utility.sanitizeParameter(it) }
+        val searchLines = view.bulkImportTextPane.text.split("\n").map { Utility.sanitizeParameter(it) }.filter { it.isNotEmpty() }
         view.bulkImportTextPane.text = ""
 
         for (line in searchLines) {
@@ -814,7 +830,7 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
                 BGQueryBuilderController.QueryType.NAME_SEARCH -> nodeNames.contains(line)
                 BGQueryBuilderController.QueryType.UNIPROT_LOOKUP -> nodeUris.contains(Utility.generateUniprotURI(line))
                 BGQueryBuilderController.QueryType.GO_LOOKUP -> nodeUris.contains(Utility.generateGOTermURI(line))
-                BGQueryBuilderController.QueryType.ENTREZ_LOOKUP -> nodeUris.contains(Utility.generateEntrezURI(line))
+                BGQueryBuilderController.QueryType.ENTREZ_LOOKUP -> suggestions.map { it.ncbi_id }.contains(line)
                 BGQueryBuilderController.QueryType.ENSEMBL_SEARCH -> suggestions.map { it.ensembl_id }.contains(line)
                 BGQueryBuilderController.QueryType.NOT_SET -> false
                 BGQueryBuilderController.QueryType.GENE_SYMBOL -> nodeNames.contains(line)
@@ -1033,7 +1049,6 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
         val ACTION_RUN_MULTIQUERY = "runMultiQuery"
         val ACTION_ADD_MULTIQUERY_LINE = "addMultiRelation"
         val ACTION_SELECT_UPSTREAM_RELATIONS = "selectRelationsInPaths"
-        val UNIPROT_PREFIX = "http://identifiers.org/uniprot/"
         val ONTOLOGY_PREFIX = "http://purl.obolibrary.org/obo/"
         val ACTION_FILTER_EDGES_TO_EXISTING = "filter relations to exsisting nodes"
     }

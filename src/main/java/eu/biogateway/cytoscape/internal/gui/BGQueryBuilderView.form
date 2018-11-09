@@ -71,6 +71,14 @@
                       <text value="Save Query"/>
                     </properties>
                   </component>
+                  <component id="73b46" class="javax.swing.JCheckBox" binding="distinctSetsComboBox">
+                    <constraints/>
+                    <properties>
+                      <selected value="true"/>
+                      <text value="Distinct Sets"/>
+                      <toolTipText value="While enabled, nodes cannot be part of multiple sets at once."/>
+                    </properties>
+                  </component>
                 </children>
               </grid>
             </children>
@@ -185,10 +193,10 @@
                         <constraints/>
                         <properties>
                           <model>
-                            <item value="Uniprot IDs"/>
-                            <item value="Entrez IDs"/>
-                            <item value="ENSEMBL IDs"/>
                             <item value="Gene Symbols"/>
+                            <item value="Uniprot IDs"/>
+                            <item value="ENSEMBL IDs"/>
+                            <item value="Entrez Gene IDs"/>
                           </model>
                         </properties>
                       </component>
@@ -297,14 +305,7 @@
                 <constraints border-constraint="South"/>
                 <properties/>
                 <border type="none"/>
-                <children>
-                  <component id="98b50" class="javax.swing.JButton" binding="parseSPARQLButton">
-                    <constraints/>
-                    <properties>
-                      <text value="Parse SPARQL to Biogateway Query"/>
-                    </properties>
-                  </component>
-                </children>
+                <children/>
               </grid>
             </children>
           </grid>

@@ -1,5 +1,6 @@
 package eu.biogateway.cytoscape.internal.model
 
+import eu.biogateway.cytoscape.internal.BGServiceManager
 import eu.biogateway.cytoscape.internal.query.BGQueryTemplate
 import eu.biogateway.cytoscape.internal.util.Utility
 import javax.swing.tree.DefaultMutableTreeNode
@@ -98,4 +99,9 @@ class BGConfig {
         return relationTypeMap.filter { it.value.name == name }.map { it.value }.toList()
     }
 
+    var defaultFontSize = 12.0
+        set(value) {
+            if (value > 0) field = value
+            BGServiceManager.dataModelController?.writeDefaultPreferences()
+        }
 }

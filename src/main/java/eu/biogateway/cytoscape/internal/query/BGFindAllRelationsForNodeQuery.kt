@@ -14,7 +14,7 @@ class BGFindAllRelationsForNodeQuery(val nodeUri: String, val direction: BGRelat
     }
 
     private fun generateFromQueryString(): String {
-        return "BASE <http://www.semantic-systems-biology.org/>\n" +
+        return "BASE <http://rdf.biogateway.eu/graph/>\n" +
                 "PREFIX fromNode: <" + nodeUri + ">\n" +
                 "SELECT DISTINCT fromNode: ?graph ?relation ?toNode\n" +
                 "WHERE {\n" +
@@ -24,7 +24,7 @@ class BGFindAllRelationsForNodeQuery(val nodeUri: String, val direction: BGRelat
     }
 
     private fun generateToQueryString(): String {
-        return "BASE <http://www.semantic-systems-biology.org/>\n" +
+        return "BASE <http://rdf.biogateway.eu/graph/>\n" +
                 "PREFIX toNode: <" + nodeUri + ">\n" +
                 "SELECT DISTINCT ?fromNode ?graph ?relation toNode:\n" +
                 "WHERE {\n" +

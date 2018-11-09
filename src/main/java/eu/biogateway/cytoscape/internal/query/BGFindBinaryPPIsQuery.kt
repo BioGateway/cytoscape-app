@@ -10,7 +10,7 @@ class BGFindBinaryPPIsQuery(val nodeUri: String): BGRelationQuery(BGReturnType.R
     }
 
    override fun generateQueryString(): String {
-        return "BASE <http://www.semantic-systems-biology.org/>\n" +
+        return "BASE <http://rdf.biogateway.eu/graph/>\n" +
                 "PREFIX has_agent: <http://semanticscience.org/resource/SIO_000139>\n" +
                 "PREFIX fromNode: <"+nodeUri+">\n" +
                 "SELECT DISTINCT ?toNode <intact> <http://purl.obolibrary.org/obo/RO_0002436> fromNode: \n" +

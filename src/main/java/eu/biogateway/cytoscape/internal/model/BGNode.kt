@@ -14,11 +14,13 @@ open class BGNode {
     var isLoaded: Boolean = false
     val type: BGNodeTypeNew
     var name: String get() {
-        if (field.isEmpty()) {
+        if (field.isNullOrEmpty()) {
             return this.generateName()
         } else {
             return field
         }}
+
+    var reviewed = false
 
     var description: String? = null
     var taxon: String? = null
@@ -52,6 +54,7 @@ open class BGNode {
         this.name = suggestion.prefLabel
         this.description = suggestion.definition
         this.taxon = suggestion.taxon
+        this.reviewed = suggestion.reviewed
     }
 
     constructor(uri: String, name: String) : this(uri) {
@@ -64,6 +67,10 @@ open class BGNode {
 
     constructor(uri: String, name: String, description: String, taxon: String) : this(uri, name, description) {
         this.taxon = taxon
+    }
+
+    constructor(uri: String, name: String, description: String, reviewed: Boolean) : this(uri, name, description) {
+        this.reviewed = reviewed
     }
 
     // TODO: Check that these values exist! The URI table might not even be present!

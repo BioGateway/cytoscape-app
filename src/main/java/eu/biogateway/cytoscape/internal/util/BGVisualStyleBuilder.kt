@@ -11,6 +11,9 @@ import org.cytoscape.view.vizmap.mappings.PassthroughMapping
 import java.awt.Color
 import java.awt.Font
 import java.awt.Paint
+import org.cytoscape.view.vizmap.VisualPropertyDependency
+
+
 
 class BGVisualStyleBuilder(val serviceManager: BGServiceManager) {
 
@@ -55,6 +58,8 @@ class BGVisualStyleBuilder(val serviceManager: BGServiceManager) {
         val edgeColors = BGServiceManager.config.visualStyleConfig.edgeColors
         val edgeLineTypes = BGServiceManager.config.visualStyleConfig.edgeLineTypes
         val nodeShapes = BGServiceManager.config.visualStyleConfig.nodeShapes
+        val nodeWidths = BGServiceManager.config.visualStyleConfig.nodeWidths
+        val nodeHeights = BGServiceManager.config.visualStyleConfig.nodeHeights
 
 //        val edgeLineTypes = hashMapOf<String, LineType>(
 //                "enables" to LineTypeVisualProperty.EQUAL_DASH,
@@ -78,7 +83,7 @@ class BGVisualStyleBuilder(val serviceManager: BGServiceManager) {
         // Default values
         vs.setDefaultValue(BasicVisualLexicon.NODE_LABEL_COLOR, textBlue)
         vs.setDefaultValue(BasicVisualLexicon.NODE_FILL_COLOR, nodeWhite)
-        vs.setDefaultValue(BasicVisualLexicon.NODE_SIZE, 50.0)
+        //vs.setDefaultValue(BasicVisualLexicon.NODE_SIZE, 50.0)
         vs.setDefaultValue(BasicVisualLexicon.NODE_WIDTH, 50.0)
         vs.setDefaultValue(BasicVisualLexicon.NODE_HEIGHT, 50.0)
         vs.setDefaultValue(BasicVisualLexicon.NODE_LABEL_FONT_FACE, labelFont)
@@ -87,8 +92,17 @@ class BGVisualStyleBuilder(val serviceManager: BGServiceManager) {
         vs.setDefaultValue(BasicVisualLexicon.EDGE_TARGET_ARROW_SHAPE, ArrowShapeVisualProperty.ARROW)
 
 
+        for (visualPropertyDependency in vs.allVisualPropertyDependencies) {
+            if (visualPropertyDependency.idString == "nodeSizeLocked") {
+                visualPropertyDependency.setDependency(false)
+                break
+            }
+        }
+
         // Node styles
         val nodeShapeMapping = discreteMappingFactory.createVisualMappingFunction("type", String::class.java, BasicVisualLexicon.NODE_SHAPE) as DiscreteMapping<String, NodeShape>
+        val nodeWidthMapping = discreteMappingFactory.createVisualMappingFunction("type", String::class.java, BasicVisualLexicon.NODE_WIDTH) as DiscreteMapping<String, Double>
+        val nodeHeightMapping = discreteMappingFactory.createVisualMappingFunction("type", String::class.java, BasicVisualLexicon.NODE_HEIGHT) as DiscreteMapping<String, Double>
         val nodeColorMapping = discreteMappingFactory.createVisualMappingFunction("type", String::class.java, BasicVisualLexicon.NODE_FILL_COLOR) as DiscreteMapping<String, Paint>
         val nodeTooltipMapping = passthroughMappingFactory.createVisualMappingFunction("description", String::class.java, BasicVisualLexicon.NODE_TOOLTIP) as PassthroughMapping<String, String>
         val nodeLabelMapping = passthroughMappingFactory.createVisualMappingFunction("name", String::class.java, BasicVisualLexicon.NODE_LABEL) as PassthroughMapping<String, String>
@@ -100,10 +114,19 @@ class BGVisualStyleBuilder(val serviceManager: BGServiceManager) {
         for ((type, color) in nodeColors) {
             nodeColorMapping.putMapValue(type, color)
         }
+        for ((type, height) in nodeHeights) {
+            nodeHeightMapping.putMapValue(type, height)
+        }
+        for ((type, width) in nodeWidths) {
+            nodeWidthMapping.putMapValue(type, width)
+        }
+
         vs.addVisualMappingFunction(nodeShapeMapping)
         vs.addVisualMappingFunction(nodeColorMapping)
         vs.addVisualMappingFunction(nodeTooltipMapping)
         vs.addVisualMappingFunction(nodeLabelMapping)
+        vs.addVisualMappingFunction(nodeWidthMapping)
+        vs.addVisualMappingFunction(nodeHeightMapping)
 
         // Edge styles
         val edgeColorMapping = discreteMappingFactory?.createVisualMappingFunction("identifier uri", String::class.java, BasicVisualLexicon.EDGE_UNSELECTED_PAINT) as DiscreteMapping<String, Paint>

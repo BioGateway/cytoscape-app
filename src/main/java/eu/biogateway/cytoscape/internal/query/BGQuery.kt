@@ -90,7 +90,7 @@ abstract class BGQuery(var type: BGReturnType, val dictionarySearchMethod: Strin
     var taskMonitorTitle = "Searching..."
     var parsingBlock: ((BufferedReader) -> Unit)? = null
     var parseType = when (type) {
-        BGReturnType.NODE_LIST, BGReturnType.NODE_LIST_DESCRIPTION, BGReturnType.NODE_LIST_DESCRIPTION_TAXON -> BGParsingType.TO_ARRAY
+        BGReturnType.NODE_LIST, BGReturnType.NODE_LIST_DESCRIPTION, BGReturnType.NODE_LIST_DESCRIPTION_STATUS, BGReturnType.NODE_LIST_DESCRIPTION_TAXON -> BGParsingType.TO_ARRAY
         BGReturnType.RELATION_TRIPLE_GRAPHURI -> BGParsingType.RELATIONS
         BGReturnType.RELATION_MULTIPART -> BGParsingType.RELATIONS
         BGReturnType.PUBMED_ID -> BGParsingType.TO_ARRAY

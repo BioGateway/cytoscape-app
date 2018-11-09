@@ -22,15 +22,14 @@ class BGDatasetSource(val uri: String, val name: String, val relationType: BGRel
             val uri = "?sourceConstraint"+number
 
             val filter = "FILTER("+relevantSources.map { uri+"filter = <"+it.uri+">" }.reduce { acc, s -> acc+"||"+s }+")\n"
-            val sparql = fromUri+"  <http://semanticscience.org/resource/SIO_000062> "+uri+" .\n" +
-                    uri+" <http://semanticscience.org/resource/SIO_000291> "+toUri+" .\n" +
-                    uri+"node rdf:type "+uri+" .\n" +
-                    uri+"node <http://semanticscience.org/resource/SIO_000253> "+uri+"filter ."
-
-//            <http://identifiers.org/uniprot/P04637> <http://semanticscience.org/resource/SIO_000062> ?sourceConstraint1 .
-//            ?sourceConstraint1 <http://semanticscience.org/resource/SIO_000291> ?A .
-//            ?source rdf:type ?sourceConstraint1 .
-//            ?source <http://semanticscience.org/resource/SIO_000253> ?sourceConstraint1filter .
+            val sparql = "$uri rdf:subject $fromUri .\n" +
+                    "$uri rdf:object $toUri .\n" +
+                    "?instance"+number+" rdf:type? $uri .\n" +
+                    "?instance"+number+" <http://schema.org/evidenceOrigin> ${uri}filter ."
+//            val sparql1 = fromUri+"  <http://semanticscience.org/resource/SIO_000062> "+uri+" .\n" +
+//                    uri+" <http://semanticscience.org/resource/SIO_000291> "+toUri+" .\n" +
+//                    uri+"node rdf:type "+uri+" .\n" +
+//                    uri+"node <http://semanticscience.org/resource/SIO_000253> "+uri+"filter ."
             return Pair(filter, sparql)
         }
     }

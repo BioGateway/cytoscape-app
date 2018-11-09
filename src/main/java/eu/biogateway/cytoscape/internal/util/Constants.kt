@@ -7,7 +7,7 @@ package eu.biogateway.cytoscape.internal.util
 
 object Constants {
     val PROFILING = false
-    val TEST_SERVER = true
+    val TEST_SERVER = false
 
     val BG_SELECTED_ACTIVE_RELATION_TYPES = "biogatewayPluginActiveRelationTypes"
     val BG_SHOULD_USE_BG_DICT = true
@@ -25,7 +25,7 @@ object Constants {
         return if (TEST_SERVER) {
             "https://www.dropbox.com/s/lrw0ue4ikzy5u61/BiogatewayQueries_Dropbox_Beta.xml?dl=1"
         } else {
-            "https://www.dropbox.com/s/ad4nyuqjtchsjcc/BiogatewayQueries_Dropbox.xml?dl=1"
+            "https://rdf.biogateway.eu/config/BiogatewayConfig.xml"
         }
     }
 
@@ -41,4 +41,6 @@ object Constants {
     val BG_RELATION_COUNT_WARNING_LIMIT = 50000
     val BG_QUERY_BUILDER_URI_FIELD_COLUMNS = 20
     //val BG_QUERYBUILDER_ENTITY_LABEL = "Entity:"
+    val PROT_PREFIX = "http://rdf.biogateway.eu/prot/"
+    val GENE_PREFIX = "http://rdf.biogateway.eu/gene/"
 }

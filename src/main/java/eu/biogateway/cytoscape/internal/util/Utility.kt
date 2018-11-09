@@ -22,13 +22,26 @@ import java.net.URL
 import java.net.URLEncoder
 import javax.swing.JFrame
 import org.cytoscape.model.subnetwork.CyRootNetwork
+import java.awt.Component
 import java.awt.Dimension
 import javax.swing.JComboBox
+import javax.swing.JComponent
 import javax.swing.JOptionPane
 
 
 fun String.sanitizeParameter(): String {
     return this.replace("\"", "").trim()
+}
+
+fun Component.setFontSize(size: Double) {
+    val font = this.font.deriveFont(size.toFloat())
+    this.font = font
+}
+
+fun JComponent.setChildFontSize(size: Double) {
+    for (component in components) {
+        component.setFontSize(size)
+    }
 }
 
 object Utility {
@@ -220,11 +233,12 @@ object Utility {
     }
 
     fun generateUniprotURI(uniprotId: String): String {
-        return "http://identifiers.org/uniprot/"+uniprotId
+        return Constants.PROT_PREFIX+uniprotId
     }
 
+    @Deprecated("Genes are now identified by UniProt accessions.")
     fun generateEntrezURI(entrezId: String): String {
-        return "http://identifiers.org/ncbigene/"+entrezId
+        return Constants.GENE_PREFIX+entrezId
     }
 
     fun generateGOTermURI(goTerm: String): String {

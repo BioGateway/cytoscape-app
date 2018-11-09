@@ -17,6 +17,7 @@ import kotlin.system.measureTimeMillis
 enum class BGReturnType(val paremeterCount: Int) {
     NODE_LIST(2),              // nodeUri, common_name
     NODE_LIST_DESCRIPTION(3),  // nodeUri, common_name, name
+    NODE_LIST_DESCRIPTION_STATUS(4),  // nodeUri, common_name, name
     NODE_LIST_DESCRIPTION_TAXON(4),  // nodeUri, common_name, name, taxon
     RELATION_TRIPLE_GRAPHURI(4),         // nodeUri, graphUri, relationUri, nodeUri
     RELATION_TRIPLE_NAMED(6),    // nodeUri, common_name, relationUri, nodeUri, common_name

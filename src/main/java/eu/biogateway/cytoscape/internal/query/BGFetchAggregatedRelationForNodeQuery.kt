@@ -19,19 +19,22 @@ class BGFetchAggregatedRelationForNodeQuery(val node: BGNode, val relationIdenti
             "<$graphUri>"
         }
 
-        return  "BASE <http://www.semantic-systems-biology.org/> \n" +
+        return  "BASE <http://rdf.biogateway.eu/graph/> \n" +
                 "PREFIX sio: <http://semanticscience.org/resource/>\n" +
                 "SELECT DISTINCT ?subject $graphUri ?predicate ?object \n" +
                 "WHERE {\n" +
                 "GRAPH $graphUri {\n" +
-                "<${node.uri}> rdf:type ?statement .\n" +
-                "?statement rdf:subject ?subject .\n" +
-                "?statement rdf:object ?object .\n" +
-                "?statement rdf:predicate ?predicate .\n" +
+//                "<${node.uri}> rdf:type ?statement .\n" +
+//                "?statement rdf:subject ?subject .\n" +
+//                "?statement rdf:object ?object .\n" +
+//                "?statement rdf:predicate ?predicate .\n" +
+                "<${node.uri}> rdf:subject ?subject .\n" +
+                "<${node.uri}> rdf:object ?object .\n" +
+                "<${node.uri}> rdf:predicate ?predicate .\n" +
                 "}}"
 
 /*
-        return  "BASE <http://www.semantic-systems-biology.org/> \n" +
+        return  "BASE <http://rdf.biogateway.eu/graph/> \n" +
                 "PREFIX sio: <http://semanticscience.org/resource/>\n" +
                 "SELECT DISTINCT ?subject $graphUri ?relation ?object \n" +
                 "WHERE {\n" +
@@ -62,13 +65,12 @@ class BGFetchAggregatedUndirectedRelationForNodeQuery(val node: BGNode, val rela
         }
 
 
-            return "BASE <http://www.semantic-systems-biology.org/> \n" +
+            return "BASE <http://rdf.biogateway.eu/graph/> \n" +
                     "PREFIX sio: <http://semanticscience.org/resource/>\n" +
                     "SELECT DISTINCT ?subject $graphUri ?relationUri ?object \n" +
                     "WHERE {\n" +
                     "GRAPH $graphUri {\n" +
-                    "?instance rdfs:seeAlso? <${node.uri}> .\n" +
-                    "?instance rdf:type ?statement .\n" +
+                    "?statement rdfs:seeAlso? <${node.uri}> .\n" +
                     "?statement rdf:subject ?subject .\n" +
                     "?statement rdf:object ?object .\n" +
                     "?statement rdf:predicate ?relationUri .\n"+
@@ -86,7 +88,7 @@ class BGFetchAggregatedTFTGRelationForNodeQuery(val node: BGNode): BGRelationQue
         val graphName = node.type.metadataGraph ?: throw Exception("Collapsing of this type is not supported!")
 
 
-        return "BASE <http://www.semantic-systems-biology.org/> \n" +
+        return "BASE <http://rdf.biogateway.eu/graph/> \n" +
                 "PREFIX node: <"+node.uri+">\n" +
                 "PREFIX graph: <"+graphName+">  \n" +
                 "SELECT distinct ?tf graph: <http://semanticscience.org/resource/SIO_000001> ?tg \n" +
@@ -111,7 +113,7 @@ class BGFetchAggregatedPPIRelationForNodeQuery(val nodeUri: String, val nodeFilt
             filter += "FILTER(?b IN("+nodelist+"))\n"
         }
 
-        return "BASE <http://www.semantic-systems-biology.org/>\n" +
+        return "BASE <http://rdf.biogateway.eu/graph/>\n" +
                 "PREFIX ppi: <"+nodeUri+">\n" +
                 "PREFIX has_agent: <http://semanticscience.org/resource/SIO_000139>\n" +
                 "PREFIX has_participant: <http://semanticscience.org/resource/SIO_000132>\n" +

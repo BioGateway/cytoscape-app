@@ -59,6 +59,10 @@ class BGNodeMenuActionsCMF(val gravity: Float): CyNodeViewContextMenuFactory {
                     parentMenu.addSeparator()
                     parentMenu.add(it)
                 }
+                createRelatedResourceURIMenuList(network, nodeUri)?.let {
+                    parentMenu.addSeparator()
+                    parentMenu.add(it)
+                }
             }
         }
 
@@ -119,6 +123,44 @@ class BGNodeMenuActionsCMF(val gravity: Float): CyNodeViewContextMenuFactory {
 
         for ((index, uri) in uris.withIndex()) {
             val label = "["+(index+1)+"]: "+uri
+            val item = JMenuItem(label)
+            item.addActionListener {
+                if (Desktop.isDesktopSupported()) {
+                    Desktop.getDesktop().browse(URI(uri))
+                }
+            }
+            menu.add(item)
+        }
+        return menu
+    }
+
+    fun createRelatedResourceURIMenuList(network: CyNetwork, nodeUri: String): JMenuItem? {
+
+        val RELATED_MATCH_URI = "http://www.w3.org/2004/02/skos/core#relatedMatch"
+
+        val query = BGFetchAttributeValuesQuery(nodeUri, RELATED_MATCH_URI, "?graph", BGRelationDirection.FROM)
+        query.run()
+        val data = query.returnData as? BGReturnMetadata ?: return null
+
+        //TODO: This is assuming that PubMed nodes are not using URIs, but just PubMedID's.
+        val validURLs = data.values.filter { it.toLowerCase().contains("http://") }.map {Utility.sanitizeParameter(it)}
+
+        if (validURLs.size == 0) return null
+
+        if (validURLs.size == 1) {
+            val item = JMenuItem("Open Related Resource")
+            item.addActionListener {
+                if ( Desktop.isDesktopSupported() ) {
+                    Desktop.getDesktop().browse(URI(validURLs[0]))
+                }
+            }
+            return item
+        }
+
+        val menu = JMenu("Open Related Resources")
+
+        for ((index, uri) in validURLs.withIndex()) {
+            val label = "["+(index+1)+"]: " + uri
             val item = JMenuItem(label)
             item.addActionListener {
                 if (Desktop.isDesktopSupported()) {

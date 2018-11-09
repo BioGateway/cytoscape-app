@@ -17,7 +17,7 @@ class BGQueryConstraintPanel(val constraints: HashSet<BGQueryConstraint>): JPane
 
 
     init {
-        this.layout = FlowLayout(FlowLayout.LEFT)
+        this.layout = BoxLayout(this, BoxLayout.Y_AXIS)
 
         // For each constraint:
         for (constraint in constraints) {
@@ -26,8 +26,10 @@ class BGQueryConstraintPanel(val constraints: HashSet<BGQueryConstraint>): JPane
             //val label = JLabel(constraint.label)
             //this.add(label)
             // Check the type.
+            val panel = JPanel(FlowLayout(FlowLayout.LEFT))
+
             val checkBox = JCheckBox(constraint.label+":")
-            this.add(checkBox)
+            panel.add(checkBox)
             val columns = constraint.columns ?: 10
 
             val inputComponent: JComponent = when (constraint.inputType) {
@@ -41,7 +43,8 @@ class BGQueryConstraintPanel(val constraints: HashSet<BGQueryConstraint>): JPane
                     JTextField(columns)
                 }
             }
-            this.add(inputComponent)
+            panel.add(inputComponent)
+            this.add(panel)
             this.constraintUIComponents.add(ConstraintUIComponent(constraint, inputComponent, checkBox))
         }
     }
@@ -84,9 +87,9 @@ class BGQueryConstraintPanel(val constraints: HashSet<BGQueryConstraint>): JPane
         return null
     }
 
-    fun getConstraintValues(): HashMap<BGQueryConstraint, ConstraintValue> {
+    fun getConstraintValues(): HashMap<BGQueryConstraint, BGQueryConstraint.ConstraintValue> {
 
-        val values = HashMap<BGQueryConstraint, ConstraintValue>()
+        val values = HashMap<BGQueryConstraint, BGQueryConstraint.ConstraintValue>()
 
         for (constraintComponent in constraintUIComponents) {
             val type = constraintComponent.constraint.inputType
@@ -113,7 +116,7 @@ class BGQueryConstraintPanel(val constraints: HashSet<BGQueryConstraint>): JPane
                 }
             }
 
-            values[constraintComponent.constraint] = ConstraintValue(inputValue, enabled)
+            values[constraintComponent.constraint] = BGQueryConstraint.ConstraintValue(inputValue, enabled)
         }
         return values
     }

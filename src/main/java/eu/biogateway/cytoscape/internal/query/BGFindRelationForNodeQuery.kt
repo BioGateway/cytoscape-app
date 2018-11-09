@@ -43,7 +43,7 @@ class BGFindRelationForNodeQuery(val relationType: BGRelationType, val nodeUri: 
 
     fun generateFromQueryString(): String {
         val sourceFilter = BGDatasetSource.generateSourceConstraint(relationType, "<"+nodeUri+">", "?toNode") ?: Pair("", "")
-        return "BASE <http://www.semantic-systems-biology.org/>\n" +
+        return "BASE <http://rdf.biogateway.eu/graph/>\n" +
                 "PREFIX relation1: <" + relationType.uri + ">\n" +
                 "PREFIX fromNode: <" + nodeUri + ">\n" +
                 "SELECT DISTINCT fromNode: "+graphName+" relation1: ?toNode\n" +
@@ -58,7 +58,7 @@ class BGFindRelationForNodeQuery(val relationType: BGRelationType, val nodeUri: 
 
     fun generateToQueryString(): String {
         val sourceFilter = BGDatasetSource.generateSourceConstraint(relationType, "?fromNode",  "<"+nodeUri+">") ?: Pair("", "")
-        return "BASE <http://www.semantic-systems-biology.org/>\n" +
+        return "BASE <http://rdf.biogateway.eu/graph/>\n" +
                 "PREFIX relation1: <" + relationType.uri + ">\n" +
                 "PREFIX toNode: <" + nodeUri + ">\n" +
                 "SELECT DISTINCT ?fromNode "+graphName+" relation1: toNode:\n" +

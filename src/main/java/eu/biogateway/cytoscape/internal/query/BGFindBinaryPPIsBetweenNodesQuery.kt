@@ -12,7 +12,7 @@ class BGFindBinaryPPIsBetweenNodesQuery(val fromNode: String, val toNode: String
 
     override fun generateQueryString(): String {
 
-        return "BASE <http://www.semantic-systems-biology.org/> \n" +
+        return "BASE <http://rdf.biogateway.eu/graph/> \n" +
                 "PREFIX has_agent: <http://semanticscience.org/resource/SIO_000139>\n"+
                 "SELECT DISTINCT ?ppi <intact> has_agent: ?node \n" +
                 "WHERE {\n" +

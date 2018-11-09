@@ -11,17 +11,19 @@ class BGFetchAttributeValuesQuery(val nodeUri: String, val relationUri: String, 
         if (!graphName.startsWith("?")) graphName = "<"+graphName+">"
 
         return when (direction) {
-            BGRelationDirection.TO -> "BASE <http://www.semantic-systems-biology.org/> \n" +
+            BGRelationDirection.TO -> "BASE <http://rdf.biogateway.eu/graph/> \n" +
                     "SELECT DISTINCT ?value\n" +
                     "WHERE {  \n" +
                     " GRAPH "+graphName+" {\n" +
-                    "\t ?value <"+relationUri+"> <"+nodeUri+">\n" +
+                    "\t ?instance rdf:type <"+nodeUri+"> .\n" +
+                    "\t ?value <"+relationUri+"> ?instance .\n" +
                     "}}"
-            BGRelationDirection.FROM -> "BASE <http://www.semantic-systems-biology.org/> \n" +
+            BGRelationDirection.FROM -> "BASE <http://rdf.biogateway.eu/graph/> \n" +
                     "SELECT DISTINCT ?value\n" +
                     "WHERE {  \n" +
                     " GRAPH "+graphName+" {\n" +
-                    "\t <"+nodeUri+"> <"+relationUri+"> ?value\n" +
+                    "\t ?instance rdf:type <"+nodeUri+"> .\n" +
+                    "\t ?instance <"+relationUri+"> ?value .\n" +
                     "}}"
         }
     }

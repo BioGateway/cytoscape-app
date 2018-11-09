@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit
 
 class BGConversionQuery(val sparqlQuery: String): BGQuery(BGReturnType.METADATA_FIELD) {
     override fun generateQueryString(): String {
-        return "BASE <http://www.semantic-systems-biology.org/>  \n" +
+        return "BASE <http://rdf.biogateway.eu/graph/>  \n" +
                 "SELECT DISTINCT ?queryReturnData\n" +
                 "WHERE {\n" +
                 sparqlQuery +

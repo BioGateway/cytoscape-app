@@ -36,7 +36,7 @@ class BGBulkImportENSEMBLNodesQuery(val ensmblIds: Collection<String>, val nodeT
             }
         }
 
-        val queryString = "BASE <http://www.semantic-systems-biology.org/>\n" +
+        val queryString = "BASE <http://rdf.biogateway.eu/graph/>\n" +
                 "PREFIX sio:  <http://semanticscience.org/resource/>  \n" +
                 "PREFIX taxaGraph: <cco>\n" +
                 "PREFIX inheres_in: <http://purl.obolibrary.org/obo/RO_0000052>\n" +
@@ -86,7 +86,7 @@ class BGBulkImportNodesQuery(val nodeList: Collection<String>, val nodeType: BGN
             }
         }
 
-        val queryString = "BASE <http://www.semantic-systems-biology.org/>\n" +
+        val queryString = "BASE <http://rdf.biogateway.eu/graph/>\n" +
                 "PREFIX sio:  <http://semanticscience.org/resource/>  \n" +
                 "PREFIX taxaGraph: <cco>\n" +
                 "PREFIX inheres_in: <http://purl.obolibrary.org/obo/RO_0000052>\n" +

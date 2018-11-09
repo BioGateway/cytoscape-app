@@ -52,7 +52,7 @@ class BGNodeURILookupQuery(val searchString: String, val useRegex: Boolean, val 
             return queryString
         }
 
-        val queryString = "BASE <http://www.semantic-systems-biology.org/>\n" +
+        val queryString = "BASE <http://rdf.biogateway.eu/graph/>\n" +
                 "PREFIX taxaGraph: <cco>\n" +
                 "PREFIX inheres_in: <http://purl.obolibrary.org/obo/RO_0000052>\n" +
                 "PREFIX sio:  <http://semanticscience.org/resource/>  \n" +

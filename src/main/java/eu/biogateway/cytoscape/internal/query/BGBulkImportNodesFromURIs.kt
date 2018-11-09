@@ -85,7 +85,7 @@ class BGBulkImportNodesFromURIsOld(val nodeType: BGNodeTypeNew, val nodeUris: Co
             }
         }
 
-        val queryString = "BASE <http://www.semantic-systems-biology.org/>\n" +
+        val queryString = "BASE <http://rdf.biogateway.eu/graph/>\n" +
                 "PREFIX sio:  <http://semanticscience.org/resource/>  \n" +
                 "PREFIX taxaGraph: <cco>\n" +
                 "PREFIX inheres_in: <http://purl.obolibrary.org/obo/RO_0000052>\n" +
