@@ -1,5 +1,6 @@
 package eu.biogateway.cytoscape.internal.model
 
+import eu.biogateway.cytoscape.internal.BGServiceManager
 import eu.biogateway.cytoscape.internal.gui.multiquery.BGQueryConstraintPanel
 import eu.biogateway.cytoscape.internal.gui.multiquery.BGQueryVariableManager
 import eu.biogateway.cytoscape.internal.gui.multiquery.InvalidInputValueException
@@ -31,6 +32,13 @@ class BGQueryConstraint(val id: String, val label: String, val inputType: InputT
     }
 
     companion object {
+
+        fun generateConstraintQueries(triples: Collection<Triple<String, BGRelationType, String>>): String {
+            val constraintValues = BGServiceManager.controlPanel?.queryConstraintPanel?.getConstraintValues() ?: return ""
+            return generateConstraintQueries(constraintValues, triples)
+        }
+
+
         fun generateConstraintQueries(constraintValues: HashMap<BGQueryConstraint, ConstraintValue>, triples: Collection<Triple<String, BGRelationType, String>>): String {
 
             // Graphs are key, then all the queries on the graphs.

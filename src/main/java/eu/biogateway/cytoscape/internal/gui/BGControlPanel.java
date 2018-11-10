@@ -41,6 +41,7 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent2 {
     private JFormattedTextField fontSizeField;
     private JPanel constraintsPanel;
     private JCheckBoxTree tree;
+    public BGQueryConstraintPanel queryConstraintPanel;
 
 
     public BGControlPanel() {
@@ -61,6 +62,7 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent2 {
         this.constraintsPanel.removeAll();
         BGQueryConstraintPanel newPanel = new BGQueryConstraintPanel(BGServiceManager.INSTANCE.getConfig().getActiveConstraints());
         this.constraintsPanel.add(newPanel);
+        this.queryConstraintPanel = newPanel;
         this.updateUI();
 
     }
@@ -118,7 +120,14 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent2 {
 
         treePanel.add(tree);
 
-        tree.addCheckChangeEventListener(event -> BGServiceManager.INSTANCE.getDataModelController().setActiveNodesForPaths(tree.getCheckedPaths()));
+        tree.addCheckChangeEventListener(event -> {
+            BGServiceManager.INSTANCE.getDataModelController().setActiveNodesForPaths(tree.getCheckedPaths());
+            TreePath path = (TreePath) event.getSource();
+            if (path.getPathCount() > 1) {
+                if (path.getPathComponent(1).toString() == "Query Constraints") {
+                    BGServiceManager.INSTANCE.getControlPanel().setupConstraintPanel();
+                }}
+        });
 
         BGServiceManager.INSTANCE.getDataModelController().setSelectionFromPreferences(tree);
 
@@ -231,7 +240,7 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent2 {
         treePanel.setLayout(new BorderLayout(0, 0));
         panel1.add(treePanel, BorderLayout.CENTER);
         final JPanel panel2 = new JPanel();
-        panel2.setLayout(new GridLayoutManager(3, 2, new Insets(0, 0, 0, 0), -1, -1));
+        panel2.setLayout(new GridLayoutManager(3, 2, new Insets(0, 0, 20, 0), -1, -1));
         mainPanel.add(panel2, BorderLayout.CENTER);
         resetBioGatewayStyleButton = new JButton();
         resetBioGatewayStyleButton.setText("Reset Layout Style");
@@ -255,7 +264,7 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent2 {
         fontSizeField.setColumns(4);
         panel3.add(fontSizeField, BorderLayout.EAST);
         constraintsPanel = new JPanel();
-        constraintsPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        constraintsPanel.setLayout(new BorderLayout(0, 0));
         mainPanel.add(constraintsPanel, BorderLayout.SOUTH);
         constraintsPanel.setBorder(BorderFactory.createTitledBorder("Query Constraints"));
     }

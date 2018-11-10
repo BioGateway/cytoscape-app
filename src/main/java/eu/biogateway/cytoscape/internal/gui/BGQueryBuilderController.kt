@@ -460,7 +460,7 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
             if (!toUri.startsWith("?") && !toUri.startsWith("http://")) return "The To URI is invalid."
         }
         view.multiQueryPanel.validateNodeTypeConsistency()?.let { return it }
-        view.queryConstraintsPanel.validateConstraints()?.let { return it }
+        BGServiceManager.controlPanel?.queryConstraintPanel?.validateConstraints()?.let { return it }
         return null
     }
 

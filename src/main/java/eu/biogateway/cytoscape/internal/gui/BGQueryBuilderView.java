@@ -1,5 +1,6 @@
 package eu.biogateway.cytoscape.internal.gui;
 
+import eu.biogateway.cytoscape.internal.model.BGQueryConstraint;
 import eu.biogateway.cytoscape.internal.util.Utility;
 import net.miginfocom.swing.MigLayout;
 import eu.biogateway.cytoscape.internal.BGServiceManager;
@@ -78,7 +79,6 @@ public class BGQueryBuilderView implements ChangeListener {
     private JPanel buildQueryPanel;
     private JPanel bulkQueryPanel;
     private JCheckBox distinctSetsComboBox;
-    private BGQueryConstraintPanel queryConstraintsPanel;
     private TableRowSorter<TableModel> sorter;
     private final DocumentListener filterDocumentListener = new DocumentListener() {
         void filter() {
@@ -186,8 +186,6 @@ public class BGQueryBuilderView implements ChangeListener {
         bulkFilterTextField.getDocument().addDocumentListener(bulkFilterDocumentListener);
 
         filterSelectedCheckBox.addActionListener(e -> updateFilterBySelectedRows());
-
-        // queryConstraintsPanel = new BGQueryConstraintPanel(BGServiceManager.INSTANCE.getConfig().getActiveConstraints());
     }
 
     private void setUpActionListeners() {
@@ -385,12 +383,14 @@ public class BGQueryBuilderView implements ChangeListener {
     }
 
     public void setUpMultiQueryPanel() {
-        this.queryConstraintsPanel = new BGQueryConstraintPanel(BGServiceManager.INSTANCE.getConfig().getActiveConstraints());
-        queryConstraintsPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Query Constraints"));
+//        this.queryConstraintsPanel = new BGQueryConstraintPanel(BGServiceManager.INSTANCE.getConfig().getActiveConstraints());
+//        queryConstraintsPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Query Constraints"));
+        BGQueryConstraintPanel queryConstraintsPanel = BGServiceManager.INSTANCE.getControlPanel().queryConstraintPanel;
+
         this.multiQueryPanel = new BGMultiQueryPanel(queryConstraintsPanel, distinctSetsComboBox);
         multiQueryPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Queries"));
         this.multiQueryPanel.addQueryLine();
-        this.multiQueryContainer.add(queryConstraintsPanel, BorderLayout.NORTH);
+        //this.multiQueryContainer.add(queryConstraintsPanel, BorderLayout.NORTH);
         this.multiQueryContainer.add(multiQueryPanel, BorderLayout.CENTER);
         mainFrame.repaint();
         if (BGServiceManager.INSTANCE.getConfig().getActiveRelationTypes().isEmpty()) {
@@ -451,10 +451,6 @@ public class BGQueryBuilderView implements ChangeListener {
 
     public JTable getBulkImportResultTable() {
         return bulkImportResultTable;
-    }
-
-    public BGQueryConstraintPanel getQueryConstraintsPanel() {
-        return queryConstraintsPanel;
     }
 
     public JCheckBox getFilterRelationsToExistingCheckBox() {
