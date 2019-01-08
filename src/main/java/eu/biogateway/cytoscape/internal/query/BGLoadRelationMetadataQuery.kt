@@ -38,6 +38,11 @@ class BGLoadRelationMetadataQuery(val relations: Collection<BGPrimitiveRelation>
         for ((metadataType, toFetchRelations) in metadataRelations.iterator()) {
             for (relation in toFetchRelations) {
 
+                if (cancelled) {
+                    // completion()
+                    return
+                }
+
                 taskMonitor?.setProgress(counter.toDouble()/relationCount.toDouble())
                 taskMonitor?.setStatusMessage("Loading "+counter+" of "+relationCount+" ...")
                 counter++

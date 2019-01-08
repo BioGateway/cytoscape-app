@@ -169,6 +169,10 @@ object BGConfigParser {
 
                 val metadataType = BGRelationMetadataType(id, label, dataType, relationUri, relationTypes, sparql, conversions)
 
+                metadataElement.getAttribute("scalingFactor")?.toDoubleOrNull()?.let {
+                    metadataType.scalingFactor = it
+                }
+
                 config.metadataTypes[metadataType.id] = metadataType
             }
 

@@ -21,8 +21,6 @@ class BGExpandRelationToNodesQuery(val fromNode: String, val toNode: String, val
             true -> generateQueryString(graphUri)
             false -> generateUndirectedQueryStringNew(graphUri)
         }
-
-
     }
 
 
