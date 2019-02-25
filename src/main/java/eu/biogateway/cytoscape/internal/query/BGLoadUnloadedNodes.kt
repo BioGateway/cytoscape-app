@@ -103,9 +103,9 @@ class BGLoadUnloadedNodes(val unloadedNodes: List<BGNode>, private val queryComp
                 EventQueue.invokeLater {
                     val query = BGLoadUnloadedNodes(unloadedNodes, completion)
                     if (unloadedNodes.size > Constants.BG_LOAD_NODE_WARNING_LIMIT) {
-                        val message = unloadedNodes.size.toString() + " nodes needs to be loaded from the dataModelController. Do you want to proceed?"
+                        val message = unloadedNodes.size.toString() + " nodes needs to be loaded from the BioGateway Server. Do you want to proceed?"
                         val optionsText = arrayOf("Ok", "Show unloaded nodes", "Cancel")
-                        val response = JOptionPane.showOptionDialog(null, message, "Load nodes from dataModelController?", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, null, optionsText, null)
+                        val response = JOptionPane.showOptionDialog(null, message, "Load nodes from BioGateway?", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, null, optionsText, null)
                         when (response) {
                             0 -> BGServiceManager.taskManager?.execute(TaskIterator(query))
                             1 -> completion(0)

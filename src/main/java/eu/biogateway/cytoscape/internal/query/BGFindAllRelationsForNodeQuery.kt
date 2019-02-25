@@ -15,21 +15,19 @@ class BGFindAllRelationsForNodeQuery(val nodeUri: String, val direction: BGRelat
 
     private fun generateFromQueryString(): String {
         return "BASE <http://rdf.biogateway.eu/graph/>\n" +
-                "PREFIX fromNode: <" + nodeUri + ">\n" +
-                "SELECT DISTINCT fromNode: ?graph ?relation ?toNode\n" +
+                "SELECT DISTINCT <$nodeUri> ?graph ?relation ?toNode\n" +
                 "WHERE {\n" +
                 "GRAPH ?graph {\n" +
-                "fromNode: ?relation ?toNode .\n" +
+                "<$nodeUri> ?relation ?toNode .\n" +
                 "}}"
     }
 
     private fun generateToQueryString(): String {
         return "BASE <http://rdf.biogateway.eu/graph/>\n" +
-                "PREFIX toNode: <" + nodeUri + ">\n" +
-                "SELECT DISTINCT ?fromNode ?graph ?relation toNode:\n" +
+                "SELECT DISTINCT ?fromNode ?graph ?relation <$nodeUri>\n" +
                 "WHERE {\n" +
                 "GRAPH ?graph {\n" +
-                "?fromNode ?relation toNode: .\n" +
+                "?fromNode ?relation <$nodeUri> .\n" +
                 "}}"
     }
 }

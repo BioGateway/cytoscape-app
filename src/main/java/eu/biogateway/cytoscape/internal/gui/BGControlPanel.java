@@ -126,7 +126,8 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent2 {
             if (path.getPathCount() > 1) {
                 if (path.getPathComponent(1).toString() == "Query Constraints") {
                     BGServiceManager.INSTANCE.getControlPanel().setupConstraintPanel();
-                }}
+                }
+            }
         });
 
         BGServiceManager.INSTANCE.getDataModelController().setSelectionFromPreferences(tree);
@@ -275,4 +276,5 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent2 {
     public JComponent $$$getRootComponent$$$() {
         return rootPanel;
     }
+
 }
