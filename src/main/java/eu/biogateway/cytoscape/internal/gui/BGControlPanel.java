@@ -40,6 +40,7 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent2 {
     private JPanel rootPanel;
     private JFormattedTextField fontSizeField;
     private JPanel constraintsPanel;
+    private JPanel filtersPanel;
     private JCheckBoxTree tree;
     public BGQueryConstraintPanel queryConstraintPanel;
 
@@ -75,7 +76,7 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent2 {
         tree.setRootVisible(false);
         tree.setShowsRootHandles(true);
 
-        tree.rightClickCallback = mouseEvent -> {
+        /*tree.rightClickCallback = mouseEvent -> {
             TreePath tp = tree.getPathForLocation(mouseEvent.getX(), mouseEvent.getY());
             if (tp == null) {
                 return;
@@ -116,7 +117,7 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent2 {
 
             popupMenu.show(mouseEvent.getComponent(), mouseEvent.getX(), mouseEvent.getY());
 
-        };
+        };*/
 
         treePanel.add(tree);
 
@@ -264,9 +265,12 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent2 {
         panel3.add(label1, BorderLayout.WEST);
         fontSizeField.setColumns(4);
         panel3.add(fontSizeField, BorderLayout.EAST);
+        final JPanel panel4 = new JPanel();
+        panel4.setLayout(new BorderLayout(0, 0));
+        mainPanel.add(panel4, BorderLayout.SOUTH);
         constraintsPanel = new JPanel();
         constraintsPanel.setLayout(new BorderLayout(0, 0));
-        mainPanel.add(constraintsPanel, BorderLayout.SOUTH);
+        panel4.add(constraintsPanel, BorderLayout.NORTH);
         constraintsPanel.setBorder(BorderFactory.createTitledBorder("Query Constraints"));
     }
 

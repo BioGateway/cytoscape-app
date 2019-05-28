@@ -134,7 +134,7 @@ public class BGQueryBuilderView implements ChangeListener {
         this.mainFrame = frame;
 
         $$$setupUI$$$();
-        frame.setPreferredSize(new Dimension(1440, 480));
+        frame.setPreferredSize(new Dimension(1550, 480));
         frame.setContentPane(this.mainPanel);
 
         setupUI();
@@ -533,7 +533,7 @@ public class BGQueryBuilderView implements ChangeListener {
         panel2.add(saveQueryButton);
         distinctSetsComboBox = new JCheckBox();
         distinctSetsComboBox.setSelected(true);
-        distinctSetsComboBox.setText("Distinct Sets");
+        distinctSetsComboBox.setText("Exclude self-loops");
         distinctSetsComboBox.setToolTipText("While enabled, nodes cannot be part of multiple sets at once.");
         panel2.add(distinctSetsComboBox);
         bulkQueryPanel = new JPanel();
@@ -698,4 +698,5 @@ public class BGQueryBuilderView implements ChangeListener {
     public JComponent $$$getRootComponent$$$() {
         return mainPanel;
     }
+
 }

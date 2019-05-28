@@ -4,7 +4,6 @@ import eu.biogateway.cytoscape.internal.BGServiceManager
 import eu.biogateway.cytoscape.internal.model.*
 import eu.biogateway.cytoscape.internal.query.BGQueryParameter
 import eu.biogateway.cytoscape.internal.query.BGQueryTemplate
-import jdk.nashorn.internal.runtime.regexp.joni.constants.NodeType
 import org.w3c.dom.Element
 import org.w3c.dom.Node
 import java.awt.Color
@@ -22,6 +21,12 @@ object BGConfigParser {
             val dBuilder = dbFactory.newDocumentBuilder()
             val doc = dBuilder.parse(stream)
             doc.documentElement.normalize()
+
+            val buildNumberNode = doc.getElementsByTagName("buildNumber").item(0) as? Element
+            buildNumberNode?.let {
+                val buildNumber = it.textContent.toInt()
+                config.latestBuildNumber = buildNumber
+            }
 
             val endpointNode = doc.getElementsByTagName("endpoint").item(0) as? Element
             endpointNode?.let {
@@ -87,6 +92,7 @@ object BGConfigParser {
                 val name = element.getAttribute("name")
                 val defaultGraph = element.getAttribute("defaultGraph")
                 val graphLabel = element.getAttribute("graphLabel")
+                val enabledByDefault = element.getAttribute("defaultEnabled").toBoolean()
                 val arbitraryLength = element.getAttribute("arbitraryLength").equals("true")
                 val directed = !element.getAttribute("directed").equals("false")
                 val expandable = element.getAttribute("expandable").equals("true")
@@ -103,6 +109,7 @@ object BGConfigParser {
 
                 if (name != null && uri != null) {
                     val relationType = BGRelationType(uri, name, index, color , graph, arbitraryLength, directed, expandable, fromType, toType)
+                    relationType.enabledByDefault = enabledByDefault
                     config.addRelationType(relationType)
                 }
             }
@@ -271,6 +278,76 @@ object BGConfigParser {
             config.exportEdgeConversionTypes = exportEdgeConversions
             config.exportNodeConversionTypes = exportNodeConversions
 
+
+            // Parse Node Filters. Must be after parsing NodeTypes.
+            (doc.getElementsByTagName("nodeFilters").item(0) as? Element)?.let {
+                val nodeFilterList = it.getElementsByTagName("filter")
+
+                for (index in 0..nodeFilterList.length-1) {
+                    val filterElement = nodeFilterList.item(index) as? Element ?: continue
+                    val id = filterElement.getAttribute("id") ?: continue
+                    val enabledByDefault = filterElement.getAttribute("defaultEnabled").toBoolean()
+                    val label = filterElement.getAttribute("label") ?: continue
+                    val inputTypeString = filterElement.getAttribute("inputType") ?: continue
+                    val inputType = when (inputTypeString) {
+                        "static" -> BGNodeFilter.InputType.STATIC
+                        "combobox" -> BGNodeFilter.InputType.COMBOBOX
+                        "text" -> BGNodeFilter.InputType.TEXT
+                        "number" -> BGNodeFilter.InputType.NUMBER
+                        else -> {
+                            null
+                        }
+                    } ?: continue
+
+                    val ftId = filterElement.getAttribute("filterType") ?: continue
+                    val ftFilterString = filterElement.getAttribute("filterString") ?: continue
+                    val ftPositionString = filterElement.getAttribute("position")
+
+                    val position = when (ftPositionString) {
+                        "prefix" -> BGNodeFilterType.FilterPosition.PREFIX
+                        "suffix" -> BGNodeFilterType.FilterPosition.SUFFIX
+                        else -> {
+                            null
+                        }
+                    }
+
+                    val filterType = when (ftId) {
+                        "uriFilter" -> {
+                            if (position != null) {
+                                BGUriFilter(ftFilterString, position)
+                            } else {
+                                null
+                            }
+                        }
+                        "nameFilter" -> {
+                            if (position != null) {
+                                BGNameFilter(ftFilterString, position)
+                            } else {
+                                null
+                            }
+                        }
+                        else -> {
+                            null
+                        }
+                    } ?: continue
+
+                    val nodeTypes = ArrayList<BGNodeTypeNew>()
+
+                    val nodeTypeList = filterElement.getElementsByTagName("nodeType")
+                    for (j in 0..nodeTypeList.length-1) {
+                        val ntElement = nodeTypeList.item(j) as? Element ?: continue
+                        val ntId = ntElement.getAttribute("id") ?: continue
+                        val nodeType = config.nodeTypes[ntId] ?: continue
+                        nodeTypes.add(nodeType)
+                    }
+                    val nodeFilter = BGNodeFilter(id, label, inputType, filterType, nodeTypes, enabledByDefault)
+                    config.nodeFilters[id] = nodeFilter
+
+                }
+            }
+
+
+
             // Parse QueryConstraints. Must be after parsing RelationTypes, as it relies on finding relation types in config.
 
             val queryConstraintNode = (doc.getElementsByTagName("queryConstraints").item(0) as? Element) ?: throw Exception("queryConstraints element not found in XML file!")
@@ -349,7 +426,33 @@ object BGConfigParser {
                 config.exampleQueries.add(exampleQuery)
             }
 
+            // Parse Search Types
 
+            val searchTypesNode = (doc.getElementsByTagName("searchTypes").item(0) as? Element) ?: throw Exception("searchTypes element not found in XML file!")
+            val searchTypesElements = searchTypesNode.getElementsByTagName("searchType")
+
+            for (index in 0..searchTypesElements.length-1) {
+                val searchTypeElement = searchTypesElements.item(index) as? Element ?: continue
+                val id = searchTypeElement.getAttribute("id")
+                val title = searchTypeElement.getAttribute("title")
+                val returnType = searchTypeElement.getAttribute("returnType")
+                val nodeTypeString = searchTypeElement.getAttribute("nodeType")
+                val arraySearch = searchTypeElement.getAttribute("arraySearch") == "true"
+                val restPath = searchTypeElement.getAttribute("restPath")
+                val httpMethodString = searchTypeElement.getAttribute("httpMethod")
+                val parameters = searchTypeElement.getAttribute("parameters")
+
+                val httpMethod = when (httpMethodString) {
+                    "GET" -> BGSearchType.HTTPOperation.GET
+                    "POST" -> BGSearchType.HTTPOperation.POST
+                    else -> null
+                } ?: continue
+                val nodeType = config.nodeTypes[nodeTypeString] ?: continue
+
+                val searchType = BGSearchType(id, title, nodeType, returnType, restPath, arraySearch, httpMethod, parameters)
+
+                config.searchTypes.add(searchType)
+            }
 
             // Parse the visual style config:
             val visualStyleNode = (doc.getElementsByTagName("visualStyle").item(0) as? Element) ?: throw Exception("visualStyle element not found in XML file!")

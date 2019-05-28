@@ -3,6 +3,7 @@ package eu.biogateway.cytoscape.internal.query
 import eu.biogateway.cytoscape.internal.model.BGNode
 import eu.biogateway.cytoscape.internal.model.BGNodeTypeNew
 import eu.biogateway.cytoscape.internal.parser.BGReturnType
+import java.lang.Exception
 import java.util.concurrent.TimeUnit
 
 class BGBulkImportNodesFromURIs(val nodeType: BGNodeTypeNew, val nodeUris: Collection<String>): BGQuery(BGReturnType.NODE_LIST_DESCRIPTION_TAXON) {
@@ -24,6 +25,7 @@ class BGBulkImportNodesFromURIs(val nodeType: BGNodeTypeNew, val nodeUris: Colle
         val query = BGMultiNodeFetchMongoQuery(nodeUris, "fetch", nodeType.id, arrayListOf("taxon"), BGReturnType.NODE_LIST_DESCRIPTION_TAXON)
         query.run()
         val nodeResults = query.futureReturnData.get(10, TimeUnit.SECONDS) as BGReturnNodeData
+        if (nodeResults.nodeData.size == 0) throw Exception("No results found.")
         val taxonUris = nodeResults.nodeData.map { it.value.taxon }.filterNotNull().toHashSet()
         val taxaMap = searchDictionaryForTaxa(taxonUris)
 

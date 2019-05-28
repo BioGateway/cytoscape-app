@@ -110,8 +110,6 @@ object BGSPARQLParser {
                     .filter { it.size == 2 }
                     .map { BGGraphConstraint(it[0].trim(), it[1].trim()) }
         }
-        println("Parsed Constraints:")
-        println(constraints)
         return Pair(queryGraphs, constraints)
     }
 }

@@ -31,7 +31,7 @@ class BGRelationSearchResultsController(private val returnData: BGReturnRelation
     private val view = BGRelationSearchResultsView(this, this)
 
     init {
-
+        returnData.filterWith(BGServiceManager.config.activeNodeFilters)
         returnData.resultTitle?.let {
             view.mainFrame.title = it
         }

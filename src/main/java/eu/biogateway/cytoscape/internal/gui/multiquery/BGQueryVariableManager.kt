@@ -47,6 +47,19 @@ class BGQueryVariableManager {
         return possibleVariables[value]
     }
 
+    fun setVariableToComboBox(value: String, comboBox: JComboBox<BGQueryVariable>) {
+        val model = comboBox.model as DefaultComboBoxModel<BGQueryVariable>
+        possibleVariables[value]?.let {
+            if (model.getIndexOf(it) > -1) {
+                model.selectedItem = it
+            } else {
+                model.addElement(it)
+                model.selectedItem = it
+                //registerUseOfVariableForComponent(it, comboBox)
+            }
+        }
+    }
+
     private fun getUsedVariables(): Array<BGQueryVariable> {
         return usedVariables.values.toHashSet().sortedBy{ it.name }.toTypedArray()
     }
@@ -74,9 +87,11 @@ class BGQueryVariableManager {
                 return
             }
 
+            var variablesInModel = mutableListOf<BGQueryVariable>()
             for (i in lastIndex.downTo(1)) {
                 // Iterating backwards because we are deleting elements.
                 val element = model.getElementAt(i)
+                variablesInModel.add(element)
                 if (element != selected && !usedVariables.values.contains(element) && element != getNextFreeVariable()) {
                     model.removeElementAt(i)
                 }
@@ -84,9 +99,14 @@ class BGQueryVariableManager {
                     containsNextVariable = true
                 }
             }
+            usedVariables.values.subtract(variablesInModel).forEach {
+                model.addElement(it)
+            }
             if (!containsNextVariable) {
                 model.addElement(getNextFreeVariable())
             }
+
+
         }
     }
 

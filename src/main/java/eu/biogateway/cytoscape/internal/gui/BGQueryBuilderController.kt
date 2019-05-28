@@ -2,10 +2,7 @@ package eu.biogateway.cytoscape.internal.gui
 
 import eu.biogateway.cytoscape.internal.BGServiceManager
 import eu.biogateway.cytoscape.internal.gui.multiquery.BGAutocompleteComboBox
-import eu.biogateway.cytoscape.internal.model.BGExampleQuery
-import eu.biogateway.cytoscape.internal.model.BGNode
-import eu.biogateway.cytoscape.internal.model.BGNodeTypeNew
-import eu.biogateway.cytoscape.internal.model.BGRelation
+import eu.biogateway.cytoscape.internal.model.*
 import eu.biogateway.cytoscape.internal.parser.BGReturnType
 import eu.biogateway.cytoscape.internal.parser.BGSPARQLParser
 import eu.biogateway.cytoscape.internal.query.*
@@ -267,8 +264,8 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
                         throw Exception("Unexpected query type: " + queryType.toString())
                     }
                 }
+                data.filterWith(BGServiceManager.config.activeNodeFilters)
                 currentReturnData = data
-
                 val tableModel = view.resultTable.model as DefaultTableModel
                 tableModel.setColumnIdentifiers(data.columnNames)
 

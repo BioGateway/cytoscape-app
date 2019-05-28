@@ -136,7 +136,7 @@ class BGNodeMenuActionsCMF(val gravity: Float): CyNodeViewContextMenuFactory {
 
     fun createRelatedResourceURIMenuList(network: CyNetwork, nodeUri: String): JMenuItem? {
 
-        val RELATED_MATCH_URI = "http://www.w3.org/2004/02/skos/core#relatedMatch"
+        val RELATED_MATCH_URI = "http://schema.org/evidenceOrigin"
 
         val query = BGFetchAttributeValuesQuery(nodeUri, RELATED_MATCH_URI, "?graph", BGRelationDirection.FROM)
         query.run()
@@ -148,7 +148,7 @@ class BGNodeMenuActionsCMF(val gravity: Float): CyNodeViewContextMenuFactory {
         if (validURLs.size == 0) return null
 
         if (validURLs.size == 1) {
-            val item = JMenuItem("Open Related Resource")
+            val item = JMenuItem("Open Evidence URL")
             item.addActionListener {
                 if ( Desktop.isDesktopSupported() ) {
                     Desktop.getDesktop().browse(URI(validURLs[0]))
@@ -157,8 +157,7 @@ class BGNodeMenuActionsCMF(val gravity: Float): CyNodeViewContextMenuFactory {
             return item
         }
 
-        val menu = JMenu("Open Related Resources")
-
+        val menu = JMenu("Open Evidence URLs")
         for ((index, uri) in validURLs.withIndex()) {
             val label = "["+(index+1)+"]: " + uri
             val item = JMenuItem(label)

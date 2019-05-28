@@ -6,18 +6,22 @@ import eu.biogateway.cytoscape.internal.parser.*
 import eu.biogateway.cytoscape.internal.query.*
 import eu.biogateway.cytoscape.internal.server.BGSettings
 import eu.biogateway.cytoscape.internal.util.Constants
+import eu.biogateway.cytoscape.internal.util.Constants.BG_BUILD_NUMBER
 import eu.biogateway.cytoscape.internal.util.Constants.BG_SHOULD_USE_BG_DICT
+import eu.biogateway.cytoscape.internal.util.Utility
 import org.cytoscape.model.CyNetwork
 import java.io.IOException
 import java.net.URL
 import java.util.concurrent.TimeUnit
 import java.util.prefs.Preferences
+import javax.swing.JOptionPane
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.TreePath
 
 class BGRelationTypeTreeNode(val relationType: BGRelationType): DefaultMutableTreeNode(relationType.name)
 class BGMetadataTypeTreeNode(val metadataType: BGRelationMetadataType): DefaultMutableTreeNode(metadataType.name)
 class BGQueryConstraintTreeNode(val constraint: BGQueryConstraint): DefaultMutableTreeNode(constraint.label)
+class BGNodeFilterTreeNode(val filter: BGNodeFilter): DefaultMutableTreeNode(filter.label)
 class BGSourceTreeNode(val source: BGDatasetSource): DefaultMutableTreeNode(source.name)
 
 class BGDataModelController() {
@@ -27,11 +31,18 @@ class BGDataModelController() {
         var prefs = Preferences.userRoot().node("eu.biogateway.cytoscape.PreferencesManager")
 
         fun setSelected(path: String, identifier: String, selected: Boolean) {
-            prefs.putBoolean((path+identifier).hashCode().toString(), selected)
+            val value = if (selected) 1 else 0
+            prefs.putInt((path+identifier).hashCode().toString(), value)
         }
 
-        fun getSelected(path: String, identifier: String): Boolean {
-            return prefs.getBoolean((path+identifier).hashCode().toString(), false)
+        fun getSelected(path: String, identifier: String): Boolean? {
+            //return prefs.getBoolean((path+identifier).hashCode().toString(), false)
+            val value = prefs.getInt((path+identifier).hashCode().toString(), -1)
+            return when (value) {
+                0 -> false
+                1 -> true
+                else -> null
+            }
         }
 
         fun setDefaultDouble(identifier: String, value: Double) {
@@ -96,6 +107,14 @@ class BGDataModelController() {
             }
         }
 
+        if (config.nodeFilters.size > 0) {
+            config.configPanelRootNode.add(config.nodeFiltersRootNode)
+            for (filter in config.nodeFilters.values) {
+                val node = BGNodeFilterTreeNode(filter)
+                config.nodeFiltersRootNode.add(node)
+            }
+        }
+
         if (config.datasetSources.size > 0) {
             config.configPanelRootNode.add(config.sourcesRootNode)
             for (relationType in config.datasetSources.keys) {
@@ -133,16 +152,19 @@ class BGDataModelController() {
 
     fun setSelectionFromPreferences(tree: JCheckBoxTree) {
         setSelectionFromPreferencesForType<BGRelationTypeTreeNode>(tree, config.relationTypesRootNode) {
-            preferencesManager.getSelected("activeRelationTypes", it.relationType.identifier)
+            preferencesManager.getSelected("activeRelationTypes", it.relationType.identifier) ?: it.relationType.enabledByDefault
         }
         setSelectionFromPreferencesForType<BGMetadataTypeTreeNode>(tree, config.relationMetadataTypesNode) {
-            preferencesManager.getSelected("activeMetadataTypes", it.metadataType.id)
+            preferencesManager.getSelected("activeMetadataTypes", it.metadataType.id) ?: it.metadataType.enabledByDefault
         }
         setSelectionFromPreferencesForType<BGQueryConstraintTreeNode>(tree, config.queryConstraintsRootNode) {
-            preferencesManager.getSelected("activeConstraints", it.constraint.id)
+            preferencesManager.getSelected("activeConstraints", it.constraint.id) ?: it.constraint.enabledByDefault
+        }
+        setSelectionFromPreferencesForType<BGNodeFilterTreeNode>(tree, config.nodeFiltersRootNode) {
+            preferencesManager.getSelected("nodeFilters", it.filter.id) ?: it.filter.enabledByDefault
         }
         setSelectionFromPreferencesForType<BGSourceTreeNode>(tree, config.sourcesRootNode) {
-            preferencesManager.getSelected("activeSources", it.source.toString())
+            preferencesManager.getSelected("activeSources", it.source.toString()) ?: it.source.enabledByDefault
         }
         tree.repaint()
     }
@@ -159,6 +181,10 @@ class BGDataModelController() {
         for (constraint in config.queryConstraints.values) {
             val active = config.activeConstraints.contains(constraint)
             preferencesManager.setSelected("activeConstraints", constraint.id, active)
+        }
+        for (filter in config.nodeFilters.values) {
+            val active = config.activeNodeFilters.contains(filter)
+            preferencesManager.setSelected("nodeFilters", filter.id, active)
         }
         val sources = config.datasetSources.values.fold(HashSet<BGDatasetSource>()) { acc, hashSet -> acc.union(hashSet).toHashSet() }
         for (source in sources) {
@@ -181,6 +207,7 @@ class BGDataModelController() {
         val relationSet = HashSet<BGRelationType>()
         val metadataSet = HashSet<BGRelationMetadataType>()
         val constraintSet = HashSet<BGQueryConstraint>()
+        val nodeFilterSet = HashSet<BGNodeFilter>()
         val sourceSet = HashSet<BGDatasetSource>()
 
         for (path in paths) {
@@ -196,11 +223,15 @@ class BGDataModelController() {
             (path.lastPathComponent as? BGSourceTreeNode)?.let {
                 sourceSet.add(it.source)
             }
+            (path.lastPathComponent as? BGNodeFilterTreeNode)?.let {
+                nodeFilterSet.add(it.filter)
+            }
         }
         config.activeRelationTypes = relationSet
         config.activeMetadataTypes = metadataSet
         config.activeConstraints = constraintSet
         config.activeSources = sourceSet
+        config.activeNodeFilters = nodeFilterSet
 
         updateSelectedConfigTreePreferences()
         //return set
@@ -419,8 +450,21 @@ class BGDataModelController() {
             val inputStream = connection.getInputStream()
             BGConfigParser.parseXMLConfigFile(inputStream, config)
             loadDefaultPreferences()
+            inputStream.close()
         } catch (e: IOException) {
             e.printStackTrace()
+            JOptionPane.showMessageDialog(null, "Unable to load BioGateway configuration from server. Make sure that you are connected to the internet.", "BioGateway Loading Error", JOptionPane.ERROR_MESSAGE)
         }
+        // Check if the build number is outdated.
+        config.latestBuildNumber?.let {
+            if (it > BG_BUILD_NUMBER) {
+                val message = "A more recent version of BioGateway is available. Some features might not work correctly. \nPress OK to download the latest version from www.biogateway.eu."
+                val response = JOptionPane.showOptionDialog(null, message, "BioGateway App Outdated", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, null, null, null)
+                if (response == JOptionPane.OK_OPTION) {
+                    Utility.openBrowser("https://www.biogateway.eu/app")
+                }
+            }
+        }
+
     }
 }

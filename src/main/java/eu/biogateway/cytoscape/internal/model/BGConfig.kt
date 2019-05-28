@@ -7,7 +7,12 @@ import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel
 
 class BGConfig {
+
+    var latestBuildNumber: Int? = null
+
     var nodeTypes = HashMap<String, BGNodeTypeNew>()
+
+    var nodeFilters = HashMap<String, BGNodeFilter>()
 
     var importNodeConversionTypes: Collection<BGNodeConversionType>? = null
     var importEdgeConversionTypes: Collection<BGConversionType>? = null
@@ -16,6 +21,8 @@ class BGConfig {
 
     val exampleQueries = ArrayList<BGExampleQuery>()
 
+    val searchTypes = ArrayList<BGSearchType>()
+
     var queryConstraints = HashMap<String, BGQueryConstraint>()
     var metadataTypes = HashMap<String, BGRelationMetadataType>()
     var datasetSources = HashMap<BGRelationType, HashSet<BGDatasetSource>>()
@@ -23,6 +30,7 @@ class BGConfig {
     var relationMetadataTypesNode = DefaultMutableTreeNode("Metadata Types")
     var queryConstraintsRootNode = DefaultMutableTreeNode("Query Constraints")
     var sourcesRootNode = DefaultMutableTreeNode("Sources")
+    var nodeFiltersRootNode = DefaultMutableTreeNode("Node Filters")
     var relationTypesRootNode = DefaultMutableTreeNode("Datasets")
     var configPanelRootNode = DefaultMutableTreeNode("Root")
     var configPanelTreeModel: DefaultTreeModel = DefaultTreeModel(configPanelRootNode)
@@ -37,6 +45,7 @@ class BGConfig {
     var activeMetadataTypes = HashSet<BGRelationMetadataType>()
     var activeConstraints = HashSet<BGQueryConstraint>()
     var activeSources = HashSet<BGDatasetSource>()
+    var activeNodeFilters = HashSet<BGNodeFilter>()
 
     val filteredRelationTypeMap: Map<String, BGRelationType> get() {
         return relationTypeMap.filter { activeRelationTypes.contains(it.value) }

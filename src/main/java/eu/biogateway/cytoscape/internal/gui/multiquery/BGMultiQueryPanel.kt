@@ -85,7 +85,7 @@ class BGMultiQueryPanel(val constraintPanel: BGQueryConstraintPanel, val uniqueS
                 queryLine.fromTypeComboBox.selectedItem = BGNode(graph.from.value).type
             }
             BGSPARQLParser.BGVariableType.Variable -> {
-                queryLine.fromComboBox.selectedItem = variableManager.getVariable(graph.from.value)
+               variableManager.setVariableToComboBox(graph.from.value, queryLine.fromComboBox)
             }
             BGSPARQLParser.BGVariableType.INVALID -> throw Exception("Unable to parse invalid values!")
         }
@@ -98,7 +98,7 @@ class BGMultiQueryPanel(val constraintPanel: BGQueryConstraintPanel, val uniqueS
 
             }
             BGSPARQLParser.BGVariableType.Variable -> {
-                queryLine.toComboBox.selectedItem = variableManager.getVariable(graph.to.value)
+                variableManager.setVariableToComboBox(graph.to.value, queryLine.toComboBox)
             }
             BGSPARQLParser.BGVariableType.INVALID -> throw Exception("Unable to parse invalid values!")
         }

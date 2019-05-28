@@ -5,6 +5,7 @@ import eu.biogateway.cytoscape.internal.BGServiceManager
 class BGDatasetSource(val uri: String, val name: String, val relationType: BGRelationType) {
 
     val identifier: String get() {return relationType.identifier+":"+uri}
+    var enabledByDefault = false
 
     override fun hashCode(): Int {
         return identifier.hashCode()

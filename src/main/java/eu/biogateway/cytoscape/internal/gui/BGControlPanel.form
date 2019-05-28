@@ -98,11 +98,18 @@
                   </grid>
                 </children>
               </grid>
-              <grid id="2d9e" binding="constraintsPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
+              <grid id="c0a1f" layout-manager="BorderLayout" hgap="0" vgap="0">
                 <constraints border-constraint="South"/>
                 <properties/>
-                <border type="none" title="Query Constraints"/>
-                <children/>
+                <border type="none"/>
+                <children>
+                  <grid id="2d9e" binding="constraintsPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
+                    <constraints border-constraint="North"/>
+                    <properties/>
+                    <border type="none" title="Query Constraints"/>
+                    <children/>
+                  </grid>
+                </children>
               </grid>
             </children>
           </grid>

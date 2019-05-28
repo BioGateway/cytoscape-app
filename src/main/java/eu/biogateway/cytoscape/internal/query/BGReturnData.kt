@@ -1,6 +1,7 @@
 package eu.biogateway.cytoscape.internal.query
 
 import eu.biogateway.cytoscape.internal.model.BGNode
+import eu.biogateway.cytoscape.internal.model.BGNodeFilter
 import eu.biogateway.cytoscape.internal.model.BGRelation
 import eu.biogateway.cytoscape.internal.parser.BGReturnType
 import java.util.concurrent.Future
@@ -21,15 +22,25 @@ abstract class BGReturnData {
         this.columnNames = columnNames
     }
 
+    abstract fun filterWith(filters: Collection<BGNodeFilter>)
+
     fun removeIllegalCharacters(input: String): String {
         return input.replace("\"", "")
     }
 }
 
-class BGReturnMetadata(columnName: String, val values: ArrayList<String>): BGReturnData(BGReturnType.METADATA_FIELD, arrayOf(columnName))
+class BGReturnMetadata(columnName: String, val values: ArrayList<String>): BGReturnData(BGReturnType.METADATA_FIELD, arrayOf(columnName)) {
+    override fun filterWith(filters: Collection<BGNodeFilter>) {
+
+    }
+}
 
 
 class BGReturnPubmedIds(columnNames: Array<String>): BGReturnData(BGReturnType.PUBMED_ID, columnNames) {
+    override fun filterWith(filters: Collection<BGNodeFilter>) {
+
+    }
+
     var pubmedIDlist = ArrayList<String>()
 }
 
@@ -37,6 +48,12 @@ class BGReturnNodeData(val returnType: BGReturnType, columnNames: Array<String>)
 
     val nodeData = HashMap<String, BGNode>()
 
+    override fun filterWith(filters: Collection<BGNodeFilter>) {
+        val removedNodes = nodeData.values.toSet().subtract(BGNodeFilter.filterNodes(nodeData.values, filters))
+        removedNodes.forEach {
+            nodeData.remove(it.uri)
+        }
+    }
 
     fun addEntry(line: Array<String>) {
 
@@ -78,9 +95,22 @@ class BGReturnNodeData(val returnType: BGReturnType, columnNames: Array<String>)
 class BGReturnRelationsData(type: BGReturnType, columnNames: Array<String>) : BGReturnData(type, columnNames) {
     var relationsData = ArrayList<BGRelation>()
     var unloadedNodes: List<BGNode>? = null
+
+    override fun filterWith(filters: Collection<BGNodeFilter>) {
+        val allNodes = relationsData.map { it.fromNode }.toSet().union(relationsData.map { it.toNode })
+        val filteredNodes = BGNodeFilter.filterNodes(allNodes, filters)
+
+        val filteredRelations = relationsData.filter { filteredNodes.contains(it.toNode) && filteredNodes.contains(it.fromNode) }
+        relationsData = ArrayList(filteredRelations)
+    }
 }
 
 class BGReturnCompoundData(type: BGReturnType, columnNames: Array<String>) : BGReturnData(type, columnNames) {
+    override fun filterWith(filters: Collection<BGNodeFilter>) {
+
+    }
+
+
     var relationsData = HashSet<BGRelation>()
     var unloadedNodes = HashSet<BGNode>()
     var nodes = HashMap<String, BGNode>()

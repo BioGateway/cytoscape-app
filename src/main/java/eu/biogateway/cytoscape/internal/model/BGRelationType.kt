@@ -8,6 +8,8 @@ class BGExternalRelationType(name: String): BGRelationType("External", name, 0)
 
 open class BGRelationType(val uri: String, val name: String, val number: Int, override val textColor: Color = Color.BLACK, val defaultGraph: BGGraph? = null, val arbitraryLength: Boolean = false, val directed: Boolean = true, val expandable: Boolean = false, val fromType: BGNodeTypeNew? = null, val toType: BGNodeTypeNew? = null, val symmetrical: Boolean = false): BGColorableText {
 
+    var enabledByDefault = false
+
     val description: String get() {
         if (defaultGraph != null) {
             return "${defaultGraph.name}: $name"

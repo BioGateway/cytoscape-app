@@ -75,7 +75,7 @@
                     <constraints/>
                     <properties>
                       <selected value="true"/>
-                      <text value="Distinct Sets"/>
+                      <text value="Exclude self-loops"/>
                       <toolTipText value="While enabled, nodes cannot be part of multiple sets at once."/>
                     </properties>
                   </component>

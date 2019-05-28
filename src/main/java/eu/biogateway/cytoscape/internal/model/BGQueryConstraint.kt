@@ -10,6 +10,7 @@ class BGQueryConstraint(val id: String, val label: String, val inputType: InputT
 
     class ConstraintValue(val stringValue: String, val isEnabled: Boolean)
 
+    var enabledByDefault = false
 
     enum class InputType {
         COMBOBOX, TEXT, NUMBER
