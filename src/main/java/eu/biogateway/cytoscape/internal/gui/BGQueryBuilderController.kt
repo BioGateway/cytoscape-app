@@ -6,6 +6,7 @@ import eu.biogateway.cytoscape.internal.model.*
 import eu.biogateway.cytoscape.internal.parser.BGReturnType
 import eu.biogateway.cytoscape.internal.parser.BGSPARQLParser
 import eu.biogateway.cytoscape.internal.query.*
+import eu.biogateway.cytoscape.internal.server.BGDictEndpoint
 import eu.biogateway.cytoscape.internal.server.BGSuggestion
 import eu.biogateway.cytoscape.internal.util.Constants
 import eu.biogateway.cytoscape.internal.util.Utility
@@ -154,6 +155,10 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
         view.exampleQueryBox.addItem(BGExampleQuery("Load example query...", "", true))
         for (example in BGServiceManager.config.exampleQueries) {
             view.exampleQueryBox.addItem(example)
+        }
+        view.bulkImportTypeComboBox.removeAllItems()
+        for (searchType in BGServiceManager.config.searchTypes) {
+            view.bulkImportTypeComboBox.addItem(searchType)
         }
 
         view.setUpMultiQueryPanel()
@@ -615,6 +620,7 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
         return null
     }
 
+    /*
     private enum class QueryType {
         GENE_SYMBOL,
         NAME_SEARCH,
@@ -624,9 +630,10 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
         ENTREZ_LOOKUP,
         ENSEMBL_SEARCH
     }
+     */
 
     private fun runBulkImport() {
-        var queryType: QueryType
+        var queryType: BGSearchType
 
         var nodeList = view.bulkImportTextPane.text.split("\n")
         nodeList = nodeList.map { Utility.sanitizeParameter(it) }.filter { it.isNotEmpty() }
@@ -639,8 +646,16 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
             }
         }
 
-        val selectedType = view.bulkImportTypeComboBox.selectedItem as? String
+        val selectedType = view.bulkImportTypeComboBox.selectedItem as? BGSearchType
 
+        selectedType?.let {
+            val suggestions = BGServiceManager.endpoint.findNodesForSearchType(nodeList, it)
+            val nodes = suggestions.map { BGNode(it) }
+            setBulkImportTableData(nodes)
+            Utility.fightForFocus(view.mainFrame)
+        }
+
+        /*
         val nodeType: BGNodeTypeNew = when (selectedType) {
             "Gene Symbols" -> {
                 queryType = QueryType.GENE_SYMBOL
@@ -735,8 +750,9 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
             BGQueryBuilderController.QueryType.NOT_SET -> {
                 throw Exception("Invalid query type!")
             }
-
         }
+
+         */
     }
 
     private fun searchForEnsembleIDs(enembleIds: Collection<String>, type: BGNodeTypeNew, completion: (Collection<BGSuggestion>) -> Unit) {
@@ -811,7 +827,7 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
         }
     }
 
-    private fun setBulkImportInputPaneColors(suggestions: Collection<BGSuggestion>, queryType: QueryType) {
+    private fun setBulkImportInputPaneColors(suggestions: Collection<BGSuggestion>, queryType: BGSearchType) {
 
         var numberOfMatches = 0
         val darkGreen = Color(34,139,34)
@@ -822,6 +838,8 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
         val searchLines = view.bulkImportTextPane.text.split("\n").map { Utility.sanitizeParameter(it) }.filter { it.isNotEmpty() }
         view.bulkImportTextPane.text = ""
 
+        // TODO: This must be Refactored as the QueryType enum is deprecated.
+        /*
         for (line in searchLines) {
             val match = when (queryType) {
                 BGQueryBuilderController.QueryType.NAME_SEARCH -> nodeNames.contains(line)
@@ -839,7 +857,7 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
             } else {
                 view.appendToPane(view.bulkImportTextPane, line+"\n", darkRed)
             }
-        }
+        } */
         view.bulkSearchResultLabel.text = "$numberOfMatches / ${searchLines.size} nodes found."
     }
 

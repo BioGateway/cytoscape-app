@@ -7,7 +7,10 @@ import org.apache.http.impl.client.HttpClients
 import org.apache.http.util.EntityUtils
 import com.google.gson.*
 import com.google.gson.reflect.TypeToken
+import eu.biogateway.cytoscape.internal.model.BGSearchType
 import eu.biogateway.cytoscape.internal.util.Constants
+import org.apache.http.client.methods.HttpPost
+import org.apache.http.entity.StringEntity
 import java.net.URL
 import java.net.URLEncoder
 
@@ -94,6 +97,32 @@ class BGDictEndpoint(internal var endpointUrl: String) {
         } catch (e: JsonSyntaxException) {
             null
         }
+    }
+
+    fun findNodesForSearchType(nodeList: Collection<String>, searchType: BGSearchType): ArrayList<BGSuggestion> {
+        // TODO: Finish this for Bulk Import!
+        val url = endpointUrl + searchType.restPath
+
+        val prefix = searchType.prefix ?: ""
+
+
+        val terms = nodeList.map { "\"$prefix$it\"" }.reduce { list, node -> "$list, $node" }
+        val parameterString = ""
+        val json = "{ \"returnType\": \"${searchType.returnType}\", \"nodeType\": \"${searchType.nodeType.id}\", \"values\": [$terms]$parameterString}"
+        val httpPost = HttpPost(url)
+        httpPost.entity = StringEntity(json)
+        httpPost.addHeader("Content-Type", "application/json");
+        val response = client.execute(httpPost)
+        val data = EntityUtils.toString(response.entity)
+        val statusCode = response.statusLine.statusCode
+
+        if (statusCode in 200..399) {
+            val suggestions = ArrayList(gson.fromJson<List<BGSuggestion>>(data))
+
+            return ArrayList(suggestions)
+        }
+
+        return ArrayList()
     }
 
     fun getGenesWithSymbols(symbols: Collection<String>): ArrayList<BGSuggestion> {

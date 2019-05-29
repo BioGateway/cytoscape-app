@@ -192,12 +192,7 @@
                       <component id="64d82" class="javax.swing.JComboBox" binding="bulkImportTypeComboBox">
                         <constraints/>
                         <properties>
-                          <model>
-                            <item value="Gene Symbols"/>
-                            <item value="Uniprot IDs"/>
-                            <item value="ENSEMBL IDs"/>
-                            <item value="Entrez Gene IDs"/>
-                          </model>
+                          <model/>
                         </properties>
                       </component>
                       <component id="f8085" class="javax.swing.JLabel">

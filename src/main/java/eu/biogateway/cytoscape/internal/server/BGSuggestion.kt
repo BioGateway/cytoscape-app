@@ -19,5 +19,4 @@ open class BGSuggestion(val _id: String, val prefLabel: String, val altLabels: A
     }
 
     constructor(node: BGNode): this(node.uri, node.name, null, node.description, node.taxon)
-
 }

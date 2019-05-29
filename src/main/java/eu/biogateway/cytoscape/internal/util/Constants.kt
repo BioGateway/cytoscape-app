@@ -9,9 +9,8 @@ object Constants {
     val PROFILING = false
     val TEST_SERVER = false
 
-    val BG_BUILD_NUMBER = 100
+    val BG_BUILD_NUMBER = 102
 
-    val BG_SELECTED_ACTIVE_RELATION_TYPES = "biogatewayPluginActiveRelationTypes"
     val BG_SHOULD_USE_BG_DICT = true
     val BG_FIELD_IDENTIFIER_URI = "identifier uri"
     val BG_FIELD_NAME = "name"

@@ -441,6 +441,8 @@ object BGConfigParser {
                 val restPath = searchTypeElement.getAttribute("restPath")
                 val httpMethodString = searchTypeElement.getAttribute("httpMethod")
                 val parameters = searchTypeElement.getAttribute("parameters")
+                val searchPrefix = searchTypeElement.getAttribute("searchPrefix")
+
 
                 val httpMethod = when (httpMethodString) {
                     "GET" -> BGSearchType.HTTPOperation.GET
@@ -449,7 +451,7 @@ object BGConfigParser {
                 } ?: continue
                 val nodeType = config.nodeTypes[nodeTypeString] ?: continue
 
-                val searchType = BGSearchType(id, title, nodeType, returnType, restPath, arraySearch, httpMethod, parameters)
+                val searchType = BGSearchType(id, title, nodeType, returnType, restPath, arraySearch, httpMethod, searchPrefix, parameters)
 
                 config.searchTypes.add(searchType)
             }
