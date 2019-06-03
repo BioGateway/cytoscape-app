@@ -1,10 +1,10 @@
 package eu.biogateway.cytoscape.internal.query
 
-import eu.biogateway.cytoscape.internal.model.BGNodeTypeNew
+import eu.biogateway.cytoscape.internal.model.BGNodeType
 import eu.biogateway.cytoscape.internal.parser.BGReturnType
 
 @Deprecated("Query the BGMetaDatabase instead.")
-class BGNodeURILookupQuery(val searchString: String, val useRegex: Boolean, val nodeType: BGNodeTypeNew): BGQuery(BGReturnType.NODE_LIST_DESCRIPTION_TAXON) {
+class BGNodeURILookupQuery(val searchString: String, val useRegex: Boolean, val nodeType: BGNodeType): BGQuery(BGReturnType.NODE_LIST_DESCRIPTION_TAXON) {
 
     init {
         taskMonitorTitle = "Searching for nodes..."

@@ -1,12 +1,11 @@
 package eu.biogateway.cytoscape.internal.query
 
-import eu.biogateway.cytoscape.internal.model.BGNode
-import eu.biogateway.cytoscape.internal.model.BGNodeTypeNew
+import eu.biogateway.cytoscape.internal.model.BGNodeType
 import eu.biogateway.cytoscape.internal.parser.BGReturnType
 import java.lang.Exception
 import java.util.concurrent.TimeUnit
 
-class BGBulkImportNodesFromURIs(val nodeType: BGNodeTypeNew, val nodeUris: Collection<String>): BGQuery(BGReturnType.NODE_LIST_DESCRIPTION_TAXON) {
+class BGBulkImportNodesFromURIs(val nodeType: BGNodeType, val nodeUris: Collection<String>): BGQuery(BGReturnType.NODE_LIST_DESCRIPTION_TAXON) {
 
 
     override fun run() {
@@ -54,7 +53,7 @@ class BGBulkImportNodesFromURIs(val nodeType: BGNodeTypeNew, val nodeUris: Colle
 }
 
 
-class BGBulkImportNodesFromURIsOld(val nodeType: BGNodeTypeNew, val nodeUris: Collection<String>): BGQuery(BGReturnType.NODE_LIST_DESCRIPTION_TAXON) {
+class BGBulkImportNodesFromURIsOld(val nodeType: BGNodeType, val nodeUris: Collection<String>): BGQuery(BGReturnType.NODE_LIST_DESCRIPTION_TAXON) {
 
     init {
         taskMonitorTitle = "Searching for nodes..."

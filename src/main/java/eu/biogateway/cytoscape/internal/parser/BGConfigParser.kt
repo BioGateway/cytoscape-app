@@ -73,12 +73,12 @@ object BGConfigParser {
                 val name = nodeTypeElement.getAttribute("name")
                 val uriPattern = nodeTypeElement.getAttribute("uriPattern")
                 val nodeTypeClassId = nodeTypeElement.getAttribute("class")
-                val nodeTypeClass = BGNodeTypeNew.BGNodeTypeClass.forId(nodeTypeClassId) ?: continue
+                val nodeTypeClass = BGNodeType.BGNodeTypeClass.forId(nodeTypeClassId) ?: continue
                 val metadataGraph = if (nodeTypeElement.getAttribute("metadatagraph").isNotEmpty()) nodeTypeElement.getAttribute("metadatagraph") else null
                 val autocompleteTypeId = nodeTypeElement.getAttribute("autocompleteType")
-                val autocompleteType = BGNodeTypeNew.BGAutoCompleteType.forId(autocompleteTypeId)
+                val autocompleteType = BGNodeType.BGAutoCompleteType.forId(autocompleteTypeId)
 
-                val nodeType = BGNodeTypeNew(id, name, uriPattern, nodeTypeClass, metadataGraph, autocompleteType)
+                val nodeType = BGNodeType(id, name, uriPattern, nodeTypeClass, metadataGraph, autocompleteType)
                 config.nodeTypes[id] = nodeType
             }
 
@@ -262,7 +262,7 @@ object BGConfigParser {
                     val typeString = node.getAttribute("type") ?: continue
 
                     val nodeType = when (typeString == "undefined") {
-                        true -> BGNodeTypeNew.UNDEFINED
+                        true -> BGNodeType.UNDEFINED
                         false -> {
                             config.nodeTypes.get(typeString) ?: continue@loop
                         }
@@ -358,7 +358,7 @@ object BGConfigParser {
                         }
                     } ?: continue
 
-                    val nodeTypes = ArrayList<BGNodeTypeNew>()
+                    val nodeTypes = ArrayList<BGNodeType>()
 
                     val nodeTypeList = filterElement.getElementsByTagName("nodeType")
                     for (j in 0..nodeTypeList.length-1) {

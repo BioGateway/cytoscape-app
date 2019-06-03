@@ -3,7 +3,6 @@ package eu.biogateway.cytoscape.internal.query
 import eu.biogateway.cytoscape.internal.model.*
 import org.cytoscape.work.AbstractTask
 import org.cytoscape.work.TaskMonitor
-import java.util.concurrent.TimeUnit
 
 class BGLoadNodeMetadataQuery(val uris: Collection<String>, val activeMetadataTypes: Collection<BGNodeMetadataType>, val completion: (Map<String, Set<BGNodeMetadata>>) -> Unit): AbstractTask(), Runnable {
 
@@ -24,7 +23,7 @@ class BGLoadNodeMetadataQuery(val uris: Collection<String>, val activeMetadataTy
         for (metadataType in activeMetadataTypes) {
             if (!metadataNodes.containsKey(metadataType)) metadataNodes[metadataType] = HashSet()
             for (uri in uris) {
-                val nodeType = BGNodeTypeNew.getNodeTypeForUri(uri) ?: continue
+                val nodeType = BGNodeType.getNodeTypeForUri(uri) ?: continue
                 if (nodeType == metadataType.nodeType) {
                     metadataNodes[metadataType]!!.add(uri)
                 }

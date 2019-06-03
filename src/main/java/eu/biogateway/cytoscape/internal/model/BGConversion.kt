@@ -17,7 +17,7 @@ class BGConversionQuery(val sparqlQuery: String): BGQuery(BGReturnType.METADATA_
     }
 }
 
-class BGIdentifierConversion(val nodeType: BGNodeTypeNew, type: BGConversionType, sourceNetwork: CyNetwork, sourceColumn: CyColumn, destinationFieldName: String): BGConversion(type, sourceNetwork, sourceColumn, destinationFieldName) {
+class BGIdentifierConversion(val nodeType: BGNodeType, type: BGConversionType, sourceNetwork: CyNetwork, sourceColumn: CyColumn, destinationFieldName: String): BGConversion(type, sourceNetwork, sourceColumn, destinationFieldName) {
 
 }
 open class BGConversion(val type: BGConversionType, val sourceNetwork: CyNetwork, val sourceColumn: CyColumn, val destinationFieldName: String) {

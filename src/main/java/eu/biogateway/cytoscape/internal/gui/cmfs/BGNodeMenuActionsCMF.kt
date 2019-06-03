@@ -6,7 +6,7 @@ import eu.biogateway.cytoscape.internal.BGServiceManager
 import eu.biogateway.cytoscape.internal.gui.BGQueryBuilderController
 import eu.biogateway.cytoscape.internal.gui.BGRelationSearchResultsController
 import eu.biogateway.cytoscape.internal.model.BGNode
-import eu.biogateway.cytoscape.internal.model.BGNodeTypeNew
+import eu.biogateway.cytoscape.internal.model.BGNodeType
 import eu.biogateway.cytoscape.internal.query.*
 import eu.biogateway.cytoscape.internal.util.Constants
 import eu.biogateway.cytoscape.internal.util.Utility
@@ -47,14 +47,14 @@ class BGNodeMenuActionsCMF(val gravity: Float): CyNodeViewContextMenuFactory {
         parentMenu.add(createRelationSearchMenu("Fetch relations TO node", network, nodeUri, BGRelationDirection.TO))
 
         when (node.type.typeClass) {
-            BGNodeTypeNew.BGNodeTypeClass.ENTITY -> {
+            BGNodeType.BGNodeTypeClass.ENTITY -> {
                 createFetchAssociatedGeneOrProteinMenuItem(network, node.type, nodeUri)?.let {
                     parentMenu.addSeparator()
                     parentMenu.add(it)
                 }
             }
-            BGNodeTypeNew.BGNodeTypeClass.STATEMENT,
-            BGNodeTypeNew.BGNodeTypeClass.UNDIRECTED_STATEMENT-> {
+            BGNodeType.BGNodeTypeClass.STATEMENT,
+            BGNodeType.BGNodeTypeClass.UNDIRECTED_STATEMENT-> {
                 createPubmedURIMenuList(network, nodeUri)?.let {
                     parentMenu.addSeparator()
                     parentMenu.add(it)
@@ -197,7 +197,7 @@ class BGNodeMenuActionsCMF(val gravity: Float): CyNodeViewContextMenuFactory {
     }
 
     // Experimental functionality allowing users to search for relations to or from a CyGroup:
-    /*fun createSearchGroupMenu(description: String, network: CyNetwork, nodeType: BGNodeTypeNew, nodeUri: String): JMenu {
+    /*fun createSearchGroupMenu(description: String, network: CyNetwork, nodeType: BGNodeType, nodeUri: String): JMenu {
         val parentMenu = JMenu(description)
         parentMenu.add(createRelationSearchMenu("Fetch relations FROM node", network, nodeUri, BGRelationDirection.FROM, true))
         parentMenu.add(createRelationSearchMenu("Fetch relations TO node", network, nodeUri, BGRelationDirection.TO, true))
@@ -221,7 +221,7 @@ class BGNodeMenuActionsCMF(val gravity: Float): CyNodeViewContextMenuFactory {
         return item
     }
 
-    protected fun createFetchAssociatedGeneOrProteinMenuItem(network: CyNetwork, nodeType: BGNodeTypeNew, nodeUri: String): JMenuItem? {
+    protected fun createFetchAssociatedGeneOrProteinMenuItem(network: CyNetwork, nodeType: BGNodeType, nodeUri: String): JMenuItem? {
         var menuItemText = when (nodeType.id) {
             "gene" -> "Get associated proteins"
             "protein" -> "Get associated genes"
@@ -311,7 +311,7 @@ class BGNodeMenuActionsCMF(val gravity: Float): CyNodeViewContextMenuFactory {
 
             // Skip the relations that cannot return data:
             val nodeType = BGNode(nodeUri, "").type
-            if (nodeType != BGNodeTypeNew.UNDEFINED) {
+            if (nodeType != BGNodeType.UNDEFINED) {
                 if (direction == BGRelationDirection.FROM && relationType.fromType != null && nodeType != relationType.fromType) continue
                 if (direction == BGRelationDirection.TO && relationType.toType != null && nodeType != relationType.toType) continue
             }

@@ -7,7 +7,7 @@ import eu.biogateway.cytoscape.internal.BGServiceManager
  */
 
 
-class BGNodeTypeNew(val id: String, val name: String, val uriPattern: String?, val typeClass: BGNodeTypeClass, val metadataGraph: String? = null, val autocompleteType: BGAutoCompleteType? = null) {
+class BGNodeType(val id: String, val name: String, val uriPattern: String?, val typeClass: BGNodeTypeClass, val metadataGraph: String? = null, val autocompleteType: BGAutoCompleteType? = null) {
 
     enum class BGAutoCompleteType {
         PREFIX,
@@ -52,9 +52,9 @@ class BGNodeTypeNew(val id: String, val name: String, val uriPattern: String?, v
     }
 
     companion object {
-        val UNDEFINED = BGNodeTypeNew("undefined", "Undefined", null, BGNodeTypeClass.ENTITY)
+        val UNDEFINED = BGNodeType("undefined", "Undefined", null, BGNodeTypeClass.ENTITY)
 
-        fun getNodeTypeForUri(uri: String): BGNodeTypeNew? {
+        fun getNodeTypeForUri(uri: String): BGNodeType? {
             val matchingTypes = BGServiceManager.config.nodeTypes.values.filter { it.uriPattern != null}.filter {
                 uri.contains(it.uriPattern!!)
             }

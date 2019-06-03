@@ -1,6 +1,6 @@
 package eu.biogateway.cytoscape.internal.gui.multiquery
 
-import eu.biogateway.cytoscape.internal.model.BGNodeTypeNew
+import eu.biogateway.cytoscape.internal.model.BGNodeType
 import eu.biogateway.cytoscape.internal.server.BGDictEndpoint
 import eu.biogateway.cytoscape.internal.server.SearchSuggestion
 import eu.biogateway.cytoscape.internal.server.BGSuggestion
@@ -10,11 +10,9 @@ import javax.swing.*
 import javax.swing.text.JTextComponent
 import java.awt.event.*
 import java.util.ArrayList
-import sun.swing.SwingUtilities2.stringWidth
 
 
-
-class BGAutocompleteComboBox(private val endpoint: BGDictEndpoint, private val typeSource: () -> BGNodeTypeNew?) : JComboBox<BGSuggestion>(DefaultComboBoxModel<BGSuggestion>()) {
+class BGAutocompleteComboBox(private val endpoint: BGDictEndpoint, private val typeSource: () -> BGNodeType?) : JComboBox<BGSuggestion>(DefaultComboBoxModel<BGSuggestion>()) {
 
     private val comboBoxModel: DefaultComboBoxModel<BGSuggestion>
 
@@ -115,8 +113,8 @@ class BGAutocompleteComboBox(private val endpoint: BGDictEndpoint, private val t
         val type = typeSource() ?: return ArrayList()
 
         return when (type.autocompleteType) {
-            BGNodeTypeNew.BGAutoCompleteType.INFIX -> endpoint.searchForLabel(term, type.id.toLowerCase(), 20)
-            BGNodeTypeNew.BGAutoCompleteType.PREFIX -> endpoint.searchForPrefix(term, type.id.toLowerCase(), 20)
+            BGNodeType.BGAutoCompleteType.INFIX -> endpoint.searchForLabel(term, type.id.toLowerCase(), 20)
+            BGNodeType.BGAutoCompleteType.PREFIX -> endpoint.searchForPrefix(term, type.id.toLowerCase(), 20)
             null -> throw Exception("Autocomplete is not supported for this type!")
         }
     }

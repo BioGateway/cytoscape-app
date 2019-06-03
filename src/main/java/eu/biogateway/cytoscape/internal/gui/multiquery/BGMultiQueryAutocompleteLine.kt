@@ -4,12 +4,9 @@ import eu.biogateway.cytoscape.internal.BGServiceManager
 import eu.biogateway.cytoscape.internal.gui.BGColorableText
 import eu.biogateway.cytoscape.internal.gui.BGNodeLookupController
 import eu.biogateway.cytoscape.internal.gui.BGNodeTypeComboBoxRenderer
-import eu.biogateway.cytoscape.internal.model.BGNodeTypeNew
+import eu.biogateway.cytoscape.internal.model.BGNodeType
 import eu.biogateway.cytoscape.internal.model.BGRelationType
-import eu.biogateway.cytoscape.internal.util.Constants
-import eu.biogateway.cytoscape.internal.util.Utility
 import java.awt.Color
-import java.awt.Dimension
 import java.awt.FlowLayout
 import javax.swing.*
 
@@ -21,8 +18,8 @@ class BGMultiQueryAutocompleteLine(val relationTypeComboBox: JComboBox<BGRelatio
     val fromComboBox: JComboBox<BGQueryVariable>
     val toComboBox: JComboBox<BGQueryVariable>
 
-    val fromTypeComboBox: JComboBox<BGNodeTypeNew>
-    val toTypeComboBox: JComboBox<BGNodeTypeNew>
+    val fromTypeComboBox: JComboBox<BGNodeType>
+    val toTypeComboBox: JComboBox<BGNodeType>
     val fromTypeBoxRenderer: BGNodeTypeComboBoxRenderer
     val toTypeBoxRenderer: BGNodeTypeComboBoxRenderer
 
@@ -51,7 +48,7 @@ class BGMultiQueryAutocompleteLine(val relationTypeComboBox: JComboBox<BGRelatio
         }
     }
 
-    fun updateColorForIncorrectNodeTypes(fromType: BGNodeTypeNew?, toType: BGNodeTypeNew?) {
+    fun updateColorForIncorrectNodeTypes(fromType: BGNodeType?, toType: BGNodeType?) {
 
         fromType?.let {
             fromTypeBoxRenderer.acceptedNodeTypes = arrayListOf(it)
@@ -131,12 +128,12 @@ class BGMultiQueryAutocompleteLine(val relationTypeComboBox: JComboBox<BGRelatio
         toTypeComboBox.renderer = toTypeBoxRenderer
 
         fromSearchBox = BGAutocompleteComboBox(BGServiceManager.endpoint) {
-            (fromTypeComboBox.selectedItem as? BGNodeTypeNew)?.let {
+            (fromTypeComboBox.selectedItem as? BGNodeType)?.let {
                 it
             }
         }
         toSearchBox = BGAutocompleteComboBox(BGServiceManager.endpoint) {
-            (toTypeComboBox.selectedItem as? BGNodeTypeNew)?.let {
+            (toTypeComboBox.selectedItem as? BGNodeType)?.let {
                 it
             }
         }

@@ -12,7 +12,7 @@ open class BGNode {
 
     val uri: String
     var isLoaded: Boolean = false
-    val type: BGNodeTypeNew
+    val type: BGNodeType
     var name: String get() {
         if (field.isNullOrEmpty()) {
             return this.generateName()
@@ -127,12 +127,12 @@ open class BGNode {
     }
 
     object static {
-        fun nodeTypeForUri(uri: String): BGNodeTypeNew {
+        fun nodeTypeForUri(uri: String): BGNodeType {
 
             val matchingTypes = BGServiceManager.config.nodeTypes.values.filter { it.uriPattern != null && uri.contains(it.uriPattern) }
 
             if (matchingTypes.size == 1) return matchingTypes.first()
-            return BGNodeTypeNew.UNDEFINED
+            return BGNodeType.UNDEFINED
         }
     }
 }

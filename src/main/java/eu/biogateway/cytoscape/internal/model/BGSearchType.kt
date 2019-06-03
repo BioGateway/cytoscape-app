@@ -1,6 +1,6 @@
 package eu.biogateway.cytoscape.internal.model
 
-class BGSearchType(val id: String, val title: String, val nodeType: BGNodeTypeNew, val returnType: String = "json", val restPath: String, val arraySearch: Boolean = false, val httpMethod: HTTPOperation, var prefix: String? = null, var parameters: String? = null) {
+class BGSearchType(val id: String, val title: String, val nodeType: BGNodeType, val returnType: String = "json", val restPath: String, val arraySearch: Boolean = false, val httpMethod: HTTPOperation, var prefix: String? = null, var parameters: String? = null) {
     enum class HTTPOperation {
         GET,
         POST

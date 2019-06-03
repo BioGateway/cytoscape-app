@@ -5,7 +5,7 @@ import eu.biogateway.cytoscape.internal.query.BGReturnMetadata
 import java.net.URLEncoder
 import java.util.concurrent.TimeUnit
 
-class BGNodeMetadataType(val id: String, val label: String, val dataType: BGTableDataType, val nodeType: BGNodeTypeNew, val template: String? = null, val sparql: String? = null, val restGet: String? = null, val jsonField: String? = null) {
+class BGNodeMetadataType(val id: String, val label: String, val dataType: BGTableDataType, val nodeType: BGNodeType, val template: String? = null, val sparql: String? = null, val restGet: String? = null, val jsonField: String? = null) {
 
     // First, the SPARQL query is being run, if present.
 

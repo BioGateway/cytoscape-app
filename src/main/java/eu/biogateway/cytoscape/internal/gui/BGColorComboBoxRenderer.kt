@@ -1,6 +1,6 @@
 package eu.biogateway.cytoscape.internal.gui
 
-import eu.biogateway.cytoscape.internal.model.BGNodeTypeNew
+import eu.biogateway.cytoscape.internal.model.BGNodeType
 import java.awt.Color
 import java.awt.Component
 import javax.swing.*
@@ -9,12 +9,12 @@ interface BGColorableText {
     val textColor: Color
 }
 
-class BGNodeTypeComboBoxRenderer(val comboBox: JComboBox<BGNodeTypeNew>): JPanel(), ListCellRenderer<BGNodeTypeNew> {
+class BGNodeTypeComboBoxRenderer(val comboBox: JComboBox<BGNodeType>): JPanel(), ListCellRenderer<BGNodeType> {
 
     private val textPanel = JPanel()
     private val textLabel = JLabel()
 
-    var acceptedNodeTypes: Collection<BGNodeTypeNew>? = null
+    var acceptedNodeTypes: Collection<BGNodeType>? = null
 
     init {
         textPanel.add(this)
@@ -23,7 +23,7 @@ class BGNodeTypeComboBoxRenderer(val comboBox: JComboBox<BGNodeTypeNew>): JPanel
         textPanel.add(textLabel)
     }
 
-    override fun getListCellRendererComponent(list: JList<out BGNodeTypeNew>?, value: BGNodeTypeNew?, index: Int, isSelected: Boolean, cellHasFocus: Boolean): Component {
+    override fun getListCellRendererComponent(list: JList<out BGNodeType>?, value: BGNodeType?, index: Int, isSelected: Boolean, cellHasFocus: Boolean): Component {
         if (isSelected) {
             background = list!!.selectionBackground
         } else {

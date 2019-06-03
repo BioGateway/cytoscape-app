@@ -657,7 +657,7 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
         }
 
         /*
-        val nodeType: BGNodeTypeNew = when (selectedType) {
+        val nodeType: BGNodeType = when (selectedType) {
             "Gene Symbols" -> {
                 queryType = QueryType.GENE_SYMBOL
                 BGServiceManager.config.nodeTypes.get("gene") ?: throw Exception("Invalid node type!")
@@ -756,7 +756,7 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
          */
     }
 
-    private fun searchForEnsembleIDs(enembleIds: Collection<String>, type: BGNodeTypeNew, completion: (Collection<BGSuggestion>) -> Unit) {
+    private fun searchForEnsembleIDs(enembleIds: Collection<String>, type: BGNodeType, completion: (Collection<BGSuggestion>) -> Unit) {
         val results = ArrayList<BGSuggestion>()
         for (id in enembleIds) {
             val suggestions = BGServiceManager.endpoint.getSuggestionsForFieldValue("ensembl_id", id, type.id.toLowerCase())
@@ -765,7 +765,7 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
         completion(results)
     }
 
-    private fun searchForSuggestionsForField(values: Collection<String>, type: BGNodeTypeNew, field: String, completion: (Collection<BGSuggestion>) -> Unit) {
+    private fun searchForSuggestionsForField(values: Collection<String>, type: BGNodeType, field: String, completion: (Collection<BGSuggestion>) -> Unit) {
         val results = ArrayList<BGSuggestion>()
         for (id in values) {
             val suggestions = BGServiceManager.endpoint.getSuggestionsForFieldValue(field, id, type.id.toLowerCase(), 100)

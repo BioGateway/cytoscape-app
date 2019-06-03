@@ -1,9 +1,9 @@
 package eu.biogateway.cytoscape.internal.query
 
-import eu.biogateway.cytoscape.internal.model.BGNodeTypeNew
+import eu.biogateway.cytoscape.internal.model.BGNodeType
 import eu.biogateway.cytoscape.internal.parser.BGReturnType
 
-class BGBulkImportENSEMBLNodesQuery(val ensmblIds: Collection<String>, val nodeType: BGNodeTypeNew): BGQuery(BGReturnType.NODE_LIST_DESCRIPTION_TAXON) {
+class BGBulkImportENSEMBLNodesQuery(val ensmblIds: Collection<String>, val nodeType: BGNodeType): BGQuery(BGReturnType.NODE_LIST_DESCRIPTION_TAXON) {
 
     init {
         parseType = BGParsingType.TO_ARRAY
@@ -53,7 +53,7 @@ class BGBulkImportENSEMBLNodesQuery(val ensmblIds: Collection<String>, val nodeT
     }
 }
 
-class BGBulkImportNodesQuery(val nodeList: Collection<String>, val nodeType: BGNodeTypeNew): BGQuery(BGReturnType.NODE_LIST_DESCRIPTION_TAXON) {
+class BGBulkImportNodesQuery(val nodeList: Collection<String>, val nodeType: BGNodeType): BGQuery(BGReturnType.NODE_LIST_DESCRIPTION_TAXON) {
 
     init {
         parseType = BGParsingType.TO_ARRAY

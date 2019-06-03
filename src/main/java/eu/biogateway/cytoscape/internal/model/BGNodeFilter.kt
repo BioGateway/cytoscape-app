@@ -1,7 +1,7 @@
 package eu.biogateway.cytoscape.internal.model
 
 abstract class BGNodeFilterType {
-    abstract fun filter(node: BGNode, nodeTypes: Collection<BGNodeTypeNew>): Boolean
+    abstract fun filter(node: BGNode, nodeTypes: Collection<BGNodeType>): Boolean
 
 
     enum class FilterPosition {
@@ -11,7 +11,7 @@ abstract class BGNodeFilterType {
 }
 
 class BGUriFilter(val filterString: String, val position: FilterPosition): BGNodeFilterType() {
-    override fun filter(node: BGNode, nodeTypes: Collection<BGNodeTypeNew>): Boolean {
+    override fun filter(node: BGNode, nodeTypes: Collection<BGNodeType>): Boolean {
         if (!nodeTypes.contains(node.type)) {
             return true
         }
@@ -27,7 +27,7 @@ class BGUriFilter(val filterString: String, val position: FilterPosition): BGNod
 }
 
 class BGNameFilter(val filterString: String, val position: FilterPosition): BGNodeFilterType() {
-    override fun filter(node: BGNode, nodeTypes: Collection<BGNodeTypeNew>): Boolean {
+    override fun filter(node: BGNode, nodeTypes: Collection<BGNodeType>): Boolean {
         if (!nodeTypes.contains(node.type)) {
             return true
         }
@@ -45,7 +45,7 @@ class BGNameFilter(val filterString: String, val position: FilterPosition): BGNo
 
 class BGTaxonFilter(val taxon: String): BGNodeFilterType() {
 
-    override fun filter(node: BGNode, nodeTypes: Collection<BGNodeTypeNew>): Boolean {
+    override fun filter(node: BGNode, nodeTypes: Collection<BGNodeType>): Boolean {
         if (!nodeTypes.contains(node.type)) {
             return true
         }
@@ -53,7 +53,7 @@ class BGTaxonFilter(val taxon: String): BGNodeFilterType() {
     }
 }
 
-class BGNodeFilter(val id: String, val label: String, val inputType: InputType, val filterType: BGNodeFilterType, val nodeTypes: Collection<BGNodeTypeNew>, val enabledByDefault: Boolean) {
+class BGNodeFilter(val id: String, val label: String, val inputType: InputType, val filterType: BGNodeFilterType, val nodeTypes: Collection<BGNodeType>, val enabledByDefault: Boolean) {
 
     enum class InputType {
         COMBOBOX, TEXT, NUMBER, STATIC

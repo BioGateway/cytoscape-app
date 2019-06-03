@@ -10,7 +10,7 @@ class BGConfig {
 
     var latestBuildNumber: Int? = null
 
-    var nodeTypes = HashMap<String, BGNodeTypeNew>()
+    var nodeTypes = HashMap<String, BGNodeType>()
 
     var nodeFilters = HashMap<String, BGNodeFilter>()
 

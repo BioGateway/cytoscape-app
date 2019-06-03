@@ -273,7 +273,7 @@ class BGNetworkBuilder() {
                 ?: throw Exception("Node not found!")
 
         val query: BGRelationQuery = when (node.type.typeClass) {
-            BGNodeTypeNew.BGNodeTypeClass.UNDIRECTED_STATEMENT -> BGFetchAggregatedUndirectedRelationForNodeQuery(node, relationIdentifier, fromUri, toUri)
+            BGNodeType.BGNodeTypeClass.UNDIRECTED_STATEMENT -> BGFetchAggregatedUndirectedRelationForNodeQuery(node, relationIdentifier, fromUri, toUri)
             else -> {
                 BGFetchAggregatedRelationForNodeQuery(node, relationIdentifier)
             }
