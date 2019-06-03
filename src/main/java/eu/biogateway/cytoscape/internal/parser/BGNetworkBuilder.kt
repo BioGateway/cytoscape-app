@@ -657,7 +657,7 @@ class BGNetworkBuilder() {
 
     fun reloadMetadataForEdges(relationEdges: Map<BGPrimitiveRelation, CyEdge>, network: CyNetwork) {
         // Get the active metadata types.
-        val activeMetadataTypes = BGServiceManager.config.activeMetadataTypes
+        val activeMetadataTypes = BGServiceManager.config.activeEdgeMetadataTypes
 
         val query = BGLoadRelationMetadataQuery(relationEdges.keys, activeMetadataTypes) {
             BGServiceManager.dataModelController.networkBuilder.updateEdgeTableMetadataForCyEdges(network, relationEdges)
@@ -667,7 +667,7 @@ class BGNetworkBuilder() {
 
     fun reloadMetadataForRelationsInCurrentNetwork() {
         // Get the active metadata types.
-        val activeMetadataTypes = BGServiceManager.config.activeMetadataTypes
+        val activeMetadataTypes = BGServiceManager.config.activeEdgeMetadataTypes
         // Get a list of column names for the active metadata types.
         val activeColumnNames = activeMetadataTypes.map { it.name }
 
@@ -708,6 +708,49 @@ class BGNetworkBuilder() {
         if (unloadedRelations.size == 0) return
         val query = BGLoadRelationMetadataQuery(unloadedRelations.keys, activeMetadataTypes) {
             BGServiceManager.dataModelController.networkBuilder.updateEdgeTableMetadataForCyEdges(network, unloadedRelations)
+        }
+        BGServiceManager.execute(query)
+    }
+
+    fun reloadMetadataForNodesInCurrentNetwork() {
+        val network = BGServiceManager.applicationManager?.currentNetwork ?: return
+        reloadMetadataForNodesInNetwork(network)
+    }
+
+
+    fun reloadMetadataForNodesInNetwork(network: CyNetwork) {
+        // Get the active metadata types.
+        val activeMetadataTypes = BGServiceManager.config.activeNodeMetadataTypes
+        //val activeMetadataTypes = BGServiceManager.config.nodeMetadataTypes.values.toHashSet()
+        // Get a list of column names for the active metadata types.
+
+        // Get the CyEdges of the current network.
+        val nodeTable = network.defaultNodeTable
+
+        val nodeUrisToCyNodes = network.nodeList.associateBy( { it.getUri(network) }, {it})
+
+        val unloadedNodes = HashMap<String, CyNode>()
+
+
+
+        // Iterate through each metadata dataType.
+        for (metadataType in activeMetadataTypes) {
+            // Filter out the relations of the wrong relation dataType.
+            val relevantNodes = nodeUrisToCyNodes.filter { BGNetworkTableHelper.getValueForNodeColumnName(it.value, metadataType.id, network, Any::class.java) == null }
+            unloadedNodes.putAll(relevantNodes)
+        }
+
+        if (unloadedNodes.size == 0) return
+
+        val query = BGLoadNodeMetadataQuery(unloadedNodes.keys, activeMetadataTypes) {
+            // TODO: Load Data to network.
+            val result = it
+            print(result)
+            for ((uri, metadataSet) in it) {
+                val cyNode = nodeUrisToCyNodes[uri] ?: continue
+                updateMetadataForNode(metadataSet, cyNode, nodeTable)
+            }
+
         }
         BGServiceManager.execute(query)
     }

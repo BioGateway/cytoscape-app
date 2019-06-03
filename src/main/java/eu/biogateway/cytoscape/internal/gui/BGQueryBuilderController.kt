@@ -6,7 +6,6 @@ import eu.biogateway.cytoscape.internal.model.*
 import eu.biogateway.cytoscape.internal.parser.BGReturnType
 import eu.biogateway.cytoscape.internal.parser.BGSPARQLParser
 import eu.biogateway.cytoscape.internal.query.*
-import eu.biogateway.cytoscape.internal.server.BGDictEndpoint
 import eu.biogateway.cytoscape.internal.server.BGSuggestion
 import eu.biogateway.cytoscape.internal.util.Constants
 import eu.biogateway.cytoscape.internal.util.Utility
@@ -402,8 +401,9 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
         }
         */
 
-        val query = BGLoadRelationMetadataQuery(relations, BGServiceManager.config.activeMetadataTypes) {
+        val query = BGLoadRelationMetadataQuery(relations, BGServiceManager.config.activeEdgeMetadataTypes) {
             buildNetwork()
+            BGServiceManager.dataModelController.networkBuilder.reloadMetadataForNodesInNetwork(network)
         }
         BGServiceManager.execute(query)
     }
@@ -536,6 +536,7 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
         }
         view.multiQueryPanel.loadQueryGraphs(queryGraphs)
         view.tabPanel.selectedComponent = view.buildQueryPanel
+
     }
 
     override fun stateChanged(e: ChangeEvent?) {

@@ -9,7 +9,7 @@ object Constants {
     val PROFILING = false
     val TEST_SERVER = false
 
-    val BG_BUILD_NUMBER = 102
+    val BG_BUILD_NUMBER = 103
 
     val BG_SHOULD_USE_BG_DICT = true
     val BG_FIELD_IDENTIFIER_URI = "identifier uri"

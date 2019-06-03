@@ -58,9 +58,11 @@ class BGRelationSearchResultsController(private val returnData: BGReturnRelation
         }
 
 
-        val query = BGLoadRelationMetadataQuery(relations, BGServiceManager.config.activeMetadataTypes) {
+        val query = BGLoadRelationMetadataQuery(relations, BGServiceManager.config.activeEdgeMetadataTypes) {
             BGServiceManager.dataModelController.networkBuilder.addRelationsToNetwork(network, relations)
             Utility.reloadCurrentVisualStyleCurrentNetworkView()
+
+            BGServiceManager.dataModelController.networkBuilder.reloadMetadataForNodesInNetwork(network)
         }
         BGServiceManager.execute(query)
     }
@@ -79,7 +81,7 @@ class BGRelationSearchResultsController(private val returnData: BGReturnRelation
 //            }
 ////            serviceManager.taskManager?.execute(TaskIterator(query))
 //        } else {
-            val query = BGLoadRelationMetadataQuery(relations, BGServiceManager.config.activeMetadataTypes) {
+            val query = BGLoadRelationMetadataQuery(relations, BGServiceManager.config.activeEdgeMetadataTypes) {
                 BGServiceManager.dataModelController.networkBuilder.addRelationsToNetwork(network, relations)
                 Utility.reloadCurrentVisualStyleCurrentNetworkView()
             }

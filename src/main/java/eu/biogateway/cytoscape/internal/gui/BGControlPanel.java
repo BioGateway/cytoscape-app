@@ -35,7 +35,6 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent2 {
     private JButton resetBioGatewayStyleButton;
     private JButton reloadMetadataButton;
     private JButton queryBuilderButton;
-    private JButton convertNetworkButton;
     private JScrollPane scrollPane;
     private JPanel rootPanel;
     private JFormattedTextField fontSizeField;
@@ -76,49 +75,6 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent2 {
         tree.setRootVisible(false);
         tree.setShowsRootHandles(true);
 
-        /*tree.rightClickCallback = mouseEvent -> {
-            TreePath tp = tree.getPathForLocation(mouseEvent.getX(), mouseEvent.getY());
-            if (tp == null) {
-                return;
-            }
-            int row = tree.getRowForPath(tp);
-            String nodeName = tp.getLastPathComponent().toString();
-            URI uri;
-            try {
-                uri = new URI(BGServiceManager.INSTANCE.getConfig().getDatasetGraphs().get(nodeName));
-            } catch (URISyntaxException e) {
-                e.printStackTrace();
-                return;
-            }
-
-            JPopupMenu popupMenu = new JPopupMenu();
-            JMenuItem menuItem = new JMenuItem("Open " + nodeName + " graph description in browser.");
-
-            menuItem.addActionListener(actionEvent -> {
-                System.out.println("Right-clicked node with path: " + tp.toString());
-                try {
-                    if (Desktop.isDesktopSupported()) {
-
-                        Desktop.getDesktop().browse(uri);
-
-                    } else {
-                        // Ubuntu
-                        Runtime runtime = Runtime.getRuntime();
-                        runtime.exec("/usr/bin/firefox -new-window " + uri);
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
-
-            popupMenu.add(menuItem);
-
-            tree.setSelectionRow(row);
-
-            popupMenu.show(mouseEvent.getComponent(), mouseEvent.getX(), mouseEvent.getY());
-
-        };*/
-
         treePanel.add(tree);
 
         tree.addCheckChangeEventListener(event -> {
@@ -144,12 +100,11 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent2 {
         });
         reloadMetadataButton.addActionListener(e -> {
             BGServiceManager.INSTANCE.getDataModelController().getNetworkBuilder().reloadMetadataForRelationsInCurrentNetwork();
+            BGServiceManager.INSTANCE.getDataModelController().getNetworkBuilder().reloadMetadataForNodesInCurrentNetwork();
+
         });
         queryBuilderButton.addActionListener(e -> {
             new BGQueryBuilderController();
-        });
-        convertNetworkButton.addActionListener(e -> {
-            new BGImportExportController();
         });
     }
 
@@ -242,7 +197,7 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent2 {
         treePanel.setLayout(new BorderLayout(0, 0));
         panel1.add(treePanel, BorderLayout.CENTER);
         final JPanel panel2 = new JPanel();
-        panel2.setLayout(new GridLayoutManager(3, 2, new Insets(0, 0, 20, 0), -1, -1));
+        panel2.setLayout(new GridLayoutManager(2, 2, new Insets(0, 0, 20, 0), -1, -1));
         mainPanel.add(panel2, BorderLayout.CENTER);
         resetBioGatewayStyleButton = new JButton();
         resetBioGatewayStyleButton.setText("Reset Layout Style");
@@ -251,20 +206,17 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent2 {
         reloadMetadataButton = new JButton();
         reloadMetadataButton.setText("Reload Metadata");
         panel2.add(reloadMetadataButton, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        queryBuilderButton = new JButton();
-        queryBuilderButton.setText("Query Builder");
-        panel2.add(queryBuilderButton, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        convertNetworkButton = new JButton();
-        convertNetworkButton.setText("Convert Network");
-        panel2.add(convertNetworkButton, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JPanel panel3 = new JPanel();
         panel3.setLayout(new BorderLayout(0, 0));
-        panel2.add(panel3, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        panel2.add(panel3, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 1, false));
         final JLabel label1 = new JLabel();
         label1.setText("Font Size: ");
         panel3.add(label1, BorderLayout.WEST);
         fontSizeField.setColumns(4);
         panel3.add(fontSizeField, BorderLayout.EAST);
+        queryBuilderButton = new JButton();
+        queryBuilderButton.setText("Query Builder");
+        panel2.add(queryBuilderButton, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JPanel panel4 = new JPanel();
         panel4.setLayout(new BorderLayout(0, 0));
         mainPanel.add(panel4, BorderLayout.SOUTH);

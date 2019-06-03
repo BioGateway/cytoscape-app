@@ -10,6 +10,10 @@ import java.util.ArrayList
  */
 
 
+class BGQueryOptions() {
+    var selfLoopsEnabled = false
+}
+
 object BGSPARQLParser {
 
     enum class BGVariableType {URI, Variable, INVALID}
@@ -59,7 +63,11 @@ object BGSPARQLParser {
     }
 
 
-    fun parseSPARQLCode(sparqlcode: String, validRelationTypeMap: Map<String, BGRelationType>): Pair<ArrayList<BGQueryGraph>, List<BGGraphConstraint>?> {
+    fun parseSPARQLCode(sparqlcode: String, validRelationTypeMap: Map<String, BGRelationType>): Triple<ArrayList<BGQueryGraph>, List<BGGraphConstraint>?, BGQueryOptions> {
+
+        var options = BGQueryOptions()
+
+        options.selfLoopsEnabled = sparqlcode.contains("#enableSelfLoops")
 
         val query = sparqlcode.split("#QueryConstraints:")
 
@@ -110,6 +118,6 @@ object BGSPARQLParser {
                     .filter { it.size == 2 }
                     .map { BGGraphConstraint(it[0].trim(), it[1].trim()) }
         }
-        return Pair(queryGraphs, constraints)
+        return Triple(queryGraphs, constraints, options)
     }
 }

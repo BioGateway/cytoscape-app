@@ -20,6 +20,7 @@ import javax.swing.tree.TreePath
 
 class BGRelationTypeTreeNode(val relationType: BGRelationType): DefaultMutableTreeNode(relationType.name)
 class BGMetadataTypeTreeNode(val metadataType: BGRelationMetadataType): DefaultMutableTreeNode(metadataType.name)
+class BGNodeMetadataTypeTreeNode(val metadataType: BGNodeMetadataType): DefaultMutableTreeNode(metadataType.label)
 class BGQueryConstraintTreeNode(val constraint: BGQueryConstraint): DefaultMutableTreeNode(constraint.label)
 class BGNodeFilterTreeNode(val filter: BGNodeFilter): DefaultMutableTreeNode(filter.label)
 class BGSourceTreeNode(val source: BGDatasetSource): DefaultMutableTreeNode(source.name)
@@ -90,12 +91,20 @@ class BGDataModelController() {
             config.relationTypesRootNode.add(graphNode)
         }
 
-        if (config.metadataTypes.size > 0) {
+        if (config.edgeMetadataTypes.size > 0) {
             config.configPanelRootNode.add(config.relationMetadataTypesNode)
 
-            for (metadata in config.metadataTypes.values) {
+            for (metadata in config.edgeMetadataTypes.values) {
                 val node = BGMetadataTypeTreeNode(metadata)
                 config.relationMetadataTypesNode.add(node)
+            }
+        }
+        if (config.nodeMetadataTypes.size > 0) {
+            config.configPanelRootNode.add(config.nodeMetadataTypesNode)
+
+            for (metadata in config.nodeMetadataTypes.values) {
+                val node = BGNodeMetadataTypeTreeNode(metadata)
+                config.nodeMetadataTypesNode.add(node)
             }
         }
 
@@ -155,7 +164,10 @@ class BGDataModelController() {
             preferencesManager.getSelected("activeRelationTypes", it.relationType.identifier) ?: it.relationType.enabledByDefault
         }
         setSelectionFromPreferencesForType<BGMetadataTypeTreeNode>(tree, config.relationMetadataTypesNode) {
-            preferencesManager.getSelected("activeMetadataTypes", it.metadataType.id) ?: it.metadataType.enabledByDefault
+            preferencesManager.getSelected("activeEdgeMetadataTypes", it.metadataType.id) ?: it.metadataType.enabledByDefault
+        }
+        setSelectionFromPreferencesForType<BGNodeMetadataTypeTreeNode>(tree, config.nodeMetadataTypesNode) {
+            preferencesManager.getSelected("activeNodeMetadataTypes", it.metadataType.id) ?: false
         }
         setSelectionFromPreferencesForType<BGQueryConstraintTreeNode>(tree, config.queryConstraintsRootNode) {
             preferencesManager.getSelected("activeConstraints", it.constraint.id) ?: it.constraint.enabledByDefault
@@ -174,9 +186,13 @@ class BGDataModelController() {
             val active = config.activeRelationTypes.contains(relationType)
             preferencesManager.setSelected("activeRelationTypes", relationType.identifier, active)
         }
-        for (metadataType in config.metadataTypes.values) {
-            val active = config.activeMetadataTypes.contains(metadataType)
-            preferencesManager.setSelected("activeMetadataTypes", metadataType.id, active)
+        for (metadataType in config.edgeMetadataTypes.values) {
+            val active = config.activeEdgeMetadataTypes.contains(metadataType)
+            preferencesManager.setSelected("activeEdgeMetadataTypes", metadataType.id, active)
+        }
+        for (metadataType in config.nodeMetadataTypes.values) {
+            val active = config.activeNodeMetadataTypes.contains(metadataType)
+            preferencesManager.setSelected("activeNodeMetadataTypes", metadataType.id, active)
         }
         for (constraint in config.queryConstraints.values) {
             val active = config.activeConstraints.contains(constraint)
@@ -205,7 +221,8 @@ class BGDataModelController() {
 
     fun setActiveNodesForPaths(paths: Array<TreePath>) {
         val relationSet = HashSet<BGRelationType>()
-        val metadataSet = HashSet<BGRelationMetadataType>()
+        val edgeMetadataSet = HashSet<BGRelationMetadataType>()
+        val nodeMetadataSet = HashSet<BGNodeMetadataType>()
         val constraintSet = HashSet<BGQueryConstraint>()
         val nodeFilterSet = HashSet<BGNodeFilter>()
         val sourceSet = HashSet<BGDatasetSource>()
@@ -215,7 +232,10 @@ class BGDataModelController() {
                 relationSet.add(it.relationType)
             }
             (path.lastPathComponent as? BGMetadataTypeTreeNode)?.let {
-                metadataSet.add(it.metadataType)
+                edgeMetadataSet.add(it.metadataType)
+            }
+            (path.lastPathComponent as? BGNodeMetadataTypeTreeNode)?.let {
+                nodeMetadataSet.add(it.metadataType)
             }
             (path.lastPathComponent as? BGQueryConstraintTreeNode)?.let {
                 constraintSet.add(it.constraint)
@@ -228,7 +248,8 @@ class BGDataModelController() {
             }
         }
         config.activeRelationTypes = relationSet
-        config.activeMetadataTypes = metadataSet
+        config.activeEdgeMetadataTypes = edgeMetadataSet
+        config.activeNodeMetadataTypes = nodeMetadataSet
         config.activeConstraints = constraintSet
         config.activeSources = sourceSet
         config.activeNodeFilters = nodeFilterSet

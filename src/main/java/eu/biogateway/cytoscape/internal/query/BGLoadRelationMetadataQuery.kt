@@ -17,7 +17,7 @@ class BGLoadRelationMetadataQuery(val relations: Collection<BGPrimitiveRelation>
     }
 
     override fun run() {
-        taskMonitor?.setTitle("Loading metadata...")
+        taskMonitor?.setTitle("Loading edge metadata...")
         val metadataRelations = HashMap<BGRelationMetadataType, HashSet<BGPrimitiveRelation>>()
         // Create a map between metadata types and the relations they support.
 

@@ -180,7 +180,34 @@ object BGConfigParser {
                     metadataType.scalingFactor = it
                 }
 
-                config.metadataTypes[metadataType.id] = metadataType
+                config.edgeMetadataTypes[metadataType.id] = metadataType
+            }
+
+            // Parsing NodeMetadataTypes
+
+            val nodeMetadataNode = (doc.getElementsByTagName("nodeMetadata").item(0) as? Element) ?: throw Exception("nodeMetadata element not found in XML file!")
+            val nodeMetadataList = nodeMetadataNode.getElementsByTagName("metadataType")
+
+            for (index in 0..nodeMetadataList.length-1) {
+                val metadataElement = nodeMetadataList.item(index) as? Element ?: continue
+                val id = metadataElement.getAttribute("id") ?: continue
+                val label = metadataElement.getAttribute("label") ?: continue
+                val nodeTypeString = metadataElement.getAttribute("nodeType") ?: continue
+                val typeName = metadataElement.getAttribute("dataType") ?: continue
+                val sparql = metadataElement.getAttribute("sparql")
+                val template = metadataElement.getAttribute("template")
+                val restGet = metadataElement.getAttribute("restGet")
+                val jsonField = metadataElement.getAttribute("jsonField")
+
+
+                val dataType = BGTableDataType.getTypeFromString(typeName) ?: continue
+                val nodeType = config.nodeTypes.get(nodeTypeString) ?: continue
+
+
+                val metadataType = BGNodeMetadataType(id, label, dataType, nodeType, template, sparql, restGet, jsonField)
+
+
+                config.nodeMetadataTypes[metadataType.id] = metadataType
             }
 
 

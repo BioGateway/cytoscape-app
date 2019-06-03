@@ -11,10 +11,11 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>no.ntnu</groupId>
 	<artifactId>biogwplugin</artifactId>
-	<version>9.0.6-SNAPSHOT</version>
+	<version>9.8.0</version>
+	<description>The BioGateway App enables querying the BioGateway triple store from within Cytoscape. Read more at www.biogateway.eu.</description>
 
 	<name>BioGateway Cytoscape Plugin</name>
-	<url>http://www.semantic-systems-biology.org</url>
+	<url>http://www.biogateway.eu</url>
 	<packaging>bundle</packaging>
 
 	<scm>

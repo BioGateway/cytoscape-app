@@ -39,6 +39,21 @@ class BGDictEndpoint(internal var endpointUrl: String) {
 
     inline fun <reified T> Gson.fromJson(json: String) = this.fromJson<T>(json, object: TypeToken<T>() {}.type)
 
+
+    fun getSuggestionsForQueryPath(path: String): JsonObject? {
+
+        val url = URL(endpointUrl + path).toURI()
+        val httpGet = HttpGet(url)
+        val response = client.execute(httpGet)
+        val statusCode = response.statusLine.statusCode
+        val data = EntityUtils.toString(response.entity)
+        if (statusCode in 200..399) {
+            val element = JsonParser().parse(data)
+            val json = element.asJsonObject
+            return json
+        } else return null
+    }
+
     fun searchForPrefix(prefix: String, type: String, limit: Int): ArrayList<BGSuggestion> {
 
         if (prefix.length == 0) {

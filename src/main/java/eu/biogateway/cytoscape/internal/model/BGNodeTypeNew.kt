@@ -1,5 +1,7 @@
 package eu.biogateway.cytoscape.internal.model
 
+import eu.biogateway.cytoscape.internal.BGServiceManager
+
 /**
  * Created by sholmas on 26/05/2017.
  */
@@ -51,6 +53,13 @@ class BGNodeTypeNew(val id: String, val name: String, val uriPattern: String?, v
 
     companion object {
         val UNDEFINED = BGNodeTypeNew("undefined", "Undefined", null, BGNodeTypeClass.ENTITY)
+
+        fun getNodeTypeForUri(uri: String): BGNodeTypeNew? {
+            val matchingTypes = BGServiceManager.config.nodeTypes.values.filter { it.uriPattern != null}.filter {
+                uri.contains(it.uriPattern!!)
+            }
+            return matchingTypes.firstOrNull()
+        }
     }
 }
 

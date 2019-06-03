@@ -4,6 +4,7 @@ import eu.biogateway.cytoscape.internal.BGServiceManager
 import eu.biogateway.cytoscape.internal.gui.BGColorComboBoxRenderer
 import eu.biogateway.cytoscape.internal.gui.BGColorableText
 import eu.biogateway.cytoscape.internal.model.*
+import eu.biogateway.cytoscape.internal.parser.BGQueryOptions
 import eu.biogateway.cytoscape.internal.parser.BGSPARQLParser
 import eu.biogateway.cytoscape.internal.util.Constants
 import eu.biogateway.cytoscape.internal.util.Utility
@@ -120,7 +121,7 @@ class BGMultiQueryPanel(val constraintPanel: BGQueryConstraintPanel, val uniqueS
         this.topLevelAncestor.repaint()
     }
 
-    fun loadQueryGraphs(queryGraphs: Pair<Collection<BGSPARQLParser.BGQueryGraph>, List<BGSPARQLParser.BGGraphConstraint>?>) {
+    fun loadQueryGraphs(queryGraphs: Triple<Collection<BGSPARQLParser.BGQueryGraph>, List<BGSPARQLParser.BGGraphConstraint>?, BGQueryOptions>) {
         removeAllQueryLines()
         for (graph in queryGraphs.first) {
             addQueryLine(graph)
@@ -131,6 +132,7 @@ class BGMultiQueryPanel(val constraintPanel: BGQueryConstraintPanel, val uniqueS
                 constraintPanel.setConstraintValue(constraint.id, true, constraint.value)
             }
         }
+        uniqueSetsCheckBox.isSelected = !queryGraphs.third.selfLoopsEnabled
     }
 
     fun addMultiQueryWithURIs(uris: Collection<String>) {
@@ -253,7 +255,7 @@ class BGMultiQueryPanel(val constraintPanel: BGQueryConstraintPanel, val uniqueS
             numberOfGraphQueries += 1
         }
 
-        val uniqueSetsFilter = if (uniqueSetsCheckBox.isSelected) { generateUniqueSetsFilter() } else { "" }
+        val uniqueSetsFilter = if (uniqueSetsCheckBox.isSelected) { generateUniqueSetsFilter() } else { "\n #enableSelfLoops \n" }
 
         try {
             val constraintValues = constraintPanel.getConstraintValues()

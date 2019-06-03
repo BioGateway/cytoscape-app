@@ -24,10 +24,12 @@ class BGConfig {
     val searchTypes = ArrayList<BGSearchType>()
 
     var queryConstraints = HashMap<String, BGQueryConstraint>()
-    var metadataTypes = HashMap<String, BGRelationMetadataType>()
+    var edgeMetadataTypes = HashMap<String, BGRelationMetadataType>()
+    var nodeMetadataTypes = HashMap<String, BGNodeMetadataType>()
     var datasetSources = HashMap<BGRelationType, HashSet<BGDatasetSource>>()
 
-    var relationMetadataTypesNode = DefaultMutableTreeNode("Metadata Types")
+    var relationMetadataTypesNode = DefaultMutableTreeNode("Edge Metadata Types")
+    var nodeMetadataTypesNode = DefaultMutableTreeNode("Node Metadata Types")
     var queryConstraintsRootNode = DefaultMutableTreeNode("Query Constraints")
     var sourcesRootNode = DefaultMutableTreeNode("Sources")
     var nodeFiltersRootNode = DefaultMutableTreeNode("Node Filters")
@@ -42,7 +44,8 @@ class BGConfig {
     //var relationTypesRootNode = arrayOf("intact", "tf-tg", "goa", "refprot").toHashSet()
 
     var activeRelationTypes = HashSet<BGRelationType>()
-    var activeMetadataTypes = HashSet<BGRelationMetadataType>()
+    var activeEdgeMetadataTypes = HashSet<BGRelationMetadataType>()
+    var activeNodeMetadataTypes = HashSet<BGNodeMetadataType>()
     var activeConstraints = HashSet<BGQueryConstraint>()
     var activeSources = HashSet<BGDatasetSource>()
     var activeNodeFilters = HashSet<BGNodeFilter>()
