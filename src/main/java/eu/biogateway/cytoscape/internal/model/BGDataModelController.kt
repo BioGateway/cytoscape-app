@@ -1,12 +1,12 @@
 package eu.biogateway.cytoscape.internal.model
 
+import eu.biogateway.cytoscape.internal.BGBundleContext
 import eu.biogateway.cytoscape.internal.BGServiceManager
 import eu.biogateway.cytoscape.internal.libs.JCheckBoxTree
 import eu.biogateway.cytoscape.internal.parser.*
 import eu.biogateway.cytoscape.internal.query.*
 import eu.biogateway.cytoscape.internal.server.BGSettings
 import eu.biogateway.cytoscape.internal.util.Constants
-import eu.biogateway.cytoscape.internal.util.Constants.BG_BUILD_NUMBER
 import eu.biogateway.cytoscape.internal.util.Constants.BG_SHOULD_USE_BG_DICT
 import eu.biogateway.cytoscape.internal.util.Utility
 import org.cytoscape.model.CyNetwork
@@ -127,7 +127,7 @@ class BGDataModelController() {
         if (config.datasetSources.size > 0) {
             config.configPanelRootNode.add(config.sourcesRootNode)
             for (relationType in config.datasetSources.keys) {
-                val graph = relationType.defaultGraphURI ?: "Unspecified"
+                val graph = relationType.defaultGraph?.label ?: "Unspecified"
                 val graphNode = getChildNode(graph, config.sourcesRootNode)
                 val relationTypeNode = getChildNode(relationType.name, graphNode)
                 config.datasetSources[relationType]?.let {
@@ -477,8 +477,10 @@ class BGDataModelController() {
             JOptionPane.showMessageDialog(null, "Unable to load BioGateway configuration from server. Make sure that you are connected to the internet.", "BioGateway Loading Error", JOptionPane.ERROR_MESSAGE)
         }
         // Check if the build number is outdated.
-        config.latestBuildNumber?.let {
-            if (it > BG_BUILD_NUMBER) {
+        val currentVersion = BGBundleContext.version ?: throw Exception("OSGi Bundle Version unavailable!")
+
+        config.latestVersion?.let {
+            if (it.minor > currentVersion.minor) {
                 val message = "A more recent version of BioGateway is available. Some features might not work correctly. \nPress OK to download the latest version from www.biogateway.eu."
                 val response = JOptionPane.showOptionDialog(null, message, "BioGateway App Outdated", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, null, null, null)
                 if (response == JOptionPane.OK_OPTION) {

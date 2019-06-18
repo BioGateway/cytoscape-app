@@ -566,7 +566,7 @@ public class BGQueryBuilderView implements ChangeListener {
         panel5.add(label1, BorderLayout.NORTH);
         bulkSearchResultLabel = new JLabel();
         bulkSearchResultLabel.setHorizontalAlignment(0);
-        bulkSearchResultLabel.setText("0 / 0 nodes found.");
+        bulkSearchResultLabel.setText("0 nodes found.");
         panel5.add(bulkSearchResultLabel, BorderLayout.SOUTH);
         final JPanel panel6 = new JPanel();
         panel6.setLayout(new BorderLayout(0, 0));

@@ -7,9 +7,8 @@ package eu.biogateway.cytoscape.internal.util
 
 object Constants {
     val PROFILING = false
-    val TEST_SERVER = false
 
-    val BG_BUILD_NUMBER = 103
+    // val BG_VERSION = BGVersion("3.0.0")
 
     val BG_SHOULD_USE_BG_DICT = true
     val BG_FIELD_IDENTIFIER_URI = "identifier uri"
@@ -22,26 +21,16 @@ object Constants {
     val BG_FIELD_EDGE_EXPANDABLE = "Expandable"
     val BG_FIELD_PUBMED_URI = "Pubmed uri"
     val BG_TABLE_NODE_METADATA = "Biogateway Node Metadata Table"
-    val BG_CONFIG_FILE_URL: String get() {
-        return if (TEST_SERVER) {
-            "https://www.dropbox.com/s/lrw0ue4ikzy5u61/BiogatewayQueries_Dropbox_Beta.xml?dl=1"
-        } else {
-            "https://rdf.biogateway.eu/config/BiogatewayConfig.xml"
-        }
-    }
-
-    //  val BG_CONFIG_FILE_URL = "https://bitbucket.org/druglogics/biogw_cytoscape/raw/b429639d3440fde532d2b8c8f43cf54888560950/BiogatewayQueries.xml?at=master"
+    val BG_CONFIG_FILE_URL = "https://rdf.biogateway.eu/config/BiogatewayConfig.xml"
     val SERVER_PATH = "http://www.semantic-systems-biology.org/biogateway/endpoint"
     val DICTIONARY_SERVER_PATH = "http://localhost:3002/"
     val BG_FIELD_SOURCE_GRAPH = "Source Graph"
-    val BG_FIELD_CONFIDENCE = "Confidence Value"
     val BG_LOAD_NODE_WARNING_LIMIT = 1000
     val BG_BULK_IMPORT_WARNING_LIMIT = 10000
     val BG_FILE_EXTENSION = "bgwsparql"
     val BG_PREFERENCES_LAST_FOLDER = "biogatewayPluginLastOpenedFolder"
     val BG_RELATION_COUNT_WARNING_LIMIT = 50000
     val BG_QUERY_BUILDER_URI_FIELD_COLUMNS = 20
-    //val BG_QUERYBUILDER_ENTITY_LABEL = "Entity:"
     val PROT_PREFIX = "http://rdf.biogateway.eu/prot/"
     val GENE_PREFIX = "http://rdf.biogateway.eu/gene/"
 }

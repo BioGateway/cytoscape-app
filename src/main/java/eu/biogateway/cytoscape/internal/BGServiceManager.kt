@@ -25,15 +25,24 @@ import org.cytoscape.work.AbstractTask
 import org.cytoscape.work.TaskIterator
 import org.cytoscape.work.swing.DialogTaskManager
 import org.osgi.framework.BundleContext
+import org.osgi.framework.Version
 
 
 /**
  * Created by sholmas on 23/03/2017.
  */
+
+object BGBundleContext {
+    var bundleContext: BundleContext? = null
+    val version: Version? get() {
+        return bundleContext?.bundle?.version
+    }
+}
+
+
 object BGServiceManager {
 
     // This seems like a good place to store static properties.
-    var bundleContext: BundleContext? = null
     var activator: CyActivator? = null
     var adapter: CySwingAppAdapter? = null
 
@@ -67,7 +76,7 @@ object BGServiceManager {
     val visualStyleBuilder = BGVisualStyleBuilder(this)
 
     // These values will be updated by the settings in the config XML.
-    var serverPath: String = Constants.SERVER_PATH
+    var serverPath: String = ""
     var dictionaryServerPath: String = ""
         set(value) {
         field = value

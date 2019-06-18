@@ -35,6 +35,8 @@ public class CyActivator extends AbstractCyActivator {
 	@Override
 	public void start(BundleContext context) {
 
+	    BGBundleContext.INSTANCE.setBundleContext(context);
+
 	    setupServiceManager(context);
         // After this point, we should be assured that the XML config file is loaded. Otherwise, there is a network problem.
 
@@ -66,7 +68,7 @@ public class CyActivator extends AbstractCyActivator {
                 new BGImportExportController();
             }
         });
-        registerService(context, openImportExport, CyAction.class, new Properties());
+        // registerService(context, openImportExport, CyAction.class, new Properties());
 
         BGCreateAction reloadDataModelAction = new BGCreateAction("DEBUG: Reload Config", "always", new BGAction() {
             @Override
@@ -75,7 +77,7 @@ public class CyActivator extends AbstractCyActivator {
                 BGServiceManager.INSTANCE.getControlPanel().setupTreePanel();
             }
         });
-        registerService(context, reloadDataModelAction, CyAction.class, new Properties());
+        // registerService(context, reloadDataModelAction, CyAction.class, new Properties());
 
         BGControlPanel controlPanel = new BGControlPanel();
         BGServiceManager.INSTANCE.setControlPanel(controlPanel);
@@ -120,14 +122,10 @@ public class CyActivator extends AbstractCyActivator {
 
 	private void setupServiceManager(BundleContext bundleContext) {
         CyNetworkManager networkManager = getService(bundleContext, CyNetworkManager.class);
-
         // This will also create a BGDataModelController object, which creates a BGConfig object and loads the XML file from the dataModelController.
         // The XML file is loaded SYNCHRONOUSLY, because we actually want to wait for it to load before loading the plugin.
 
         CySwingAppAdapter adapter = getService(bundleContext, CySwingAppAdapter.class);
-
-
-        BGServiceManager.INSTANCE.setBundleContext(bundleContext);
         BGServiceManager.INSTANCE.setActivator(this);
         BGServiceManager.INSTANCE.setAdapter(adapter);
         BGServiceManager.INSTANCE.setApplicationManager(getService(bundleContext, CyApplicationManager.class));

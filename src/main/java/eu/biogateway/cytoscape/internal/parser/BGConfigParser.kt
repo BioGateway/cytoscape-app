@@ -1,13 +1,18 @@
 package eu.biogateway.cytoscape.internal.parser
 
+import eu.biogateway.cytoscape.internal.BGBundleContext
 import eu.biogateway.cytoscape.internal.BGServiceManager
 import eu.biogateway.cytoscape.internal.model.*
 import eu.biogateway.cytoscape.internal.query.BGQueryParameter
 import eu.biogateway.cytoscape.internal.query.BGQueryTemplate
+import eu.biogateway.cytoscape.internal.util.Utility
+import org.osgi.framework.Version
+import org.w3c.dom.Document
 import org.w3c.dom.Element
 import org.w3c.dom.Node
 import java.awt.Color
 import java.io.InputStream
+import javax.swing.JOptionPane
 import javax.xml.parsers.DocumentBuilderFactory
 
 object BGConfigParser {
@@ -19,16 +24,38 @@ object BGConfigParser {
         val dbFactory = DocumentBuilderFactory.newInstance()
         try {
             val dBuilder = dbFactory.newDocumentBuilder()
-            val doc = dBuilder.parse(stream)
-            doc.documentElement.normalize()
+            val rootDoc = dBuilder.parse(stream)
+            rootDoc.documentElement.normalize()
 
-            val buildNumberNode = doc.getElementsByTagName("buildNumber").item(0) as? Element
+            val currentVersion = BGBundleContext.version ?: throw Exception("OSGi Bundle Version unavailable!")
+            val minorVersion = "${currentVersion.major}.${currentVersion.minor}${currentVersion.qualifier}"
+
+            val buildNumberNode = rootDoc.getElementsByTagName("latestVersion").item(0) as? Element
             buildNumberNode?.let {
-                val buildNumber = it.textContent.toInt()
-                config.latestBuildNumber = buildNumber
+                val version = Version(it.textContent)
+                config.latestVersion = version
+            }
+            var configDoc: Element? = null
+            val configElementList = rootDoc.getElementsByTagName("config")
+            for (index in 0..configElementList.length-1) {
+                val element = configElementList.item(index) as? Element ?: continue
+                val configVersion = element.getAttribute("version")
+                if (configVersion == minorVersion) {
+                    configDoc = element
+                }
             }
 
-            val endpointNode = doc.getElementsByTagName("endpoint").item(0) as? Element
+            if (configDoc == null) {
+                val message = "Your current app version ($minorVersion) is not recognized by the server as a supported version of BioGateway. \nPress OK to download the latest version from www.biogateway.eu."
+                val response = JOptionPane.showOptionDialog(null, message, "Unsupported app version", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, null, null, null)
+                if (response == JOptionPane.OK_OPTION) {
+                    Utility.openBrowser("https://www.biogateway.eu/app")
+                }
+
+                return
+            }
+
+            val endpointNode = configDoc.getElementsByTagName("endpoint").item(0) as? Element
             endpointNode?.let {
                 val sparqlEndpoint =  it.getAttribute("sparql")
                 val dictEndpoint = it.getAttribute("dictionary")
@@ -43,7 +70,7 @@ object BGConfigParser {
             }
 
             // Parse the dataset graphs:
-            val graphsNode = (doc.getElementsByTagName("graphs").item(0) as? Element) ?: throw Exception("graphs element not found in XML file!")
+            val graphsNode = (configDoc.getElementsByTagName("graphs").item(0) as? Element) ?: throw Exception("graphs element not found in XML file!")
 
             val graphMap = HashMap<String, String>()
 
@@ -60,7 +87,7 @@ object BGConfigParser {
 
             // Parse the nodetypes:
 
-            val nodeTypeNode = (doc.getElementsByTagName("nodetypes").item(0) as? Element) ?: throw Exception("nodetypes element not found in XML file!")
+            val nodeTypeNode = (configDoc.getElementsByTagName("nodetypes").item(0) as? Element) ?: throw Exception("nodetypes element not found in XML file!")
 
 
             val nodeTypes = nodeTypeNode.getElementsByTagName("type")
@@ -84,7 +111,7 @@ object BGConfigParser {
 
 
             // Parse RelationTypes
-            val relationTypesNode = (doc.getElementsByTagName("relationTypes").item(0) as? Element) ?: throw Exception("relationTypes element not found in XML file!")
+            val relationTypesNode = (configDoc.getElementsByTagName("relationTypes").item(0) as? Element) ?: throw Exception("relationTypes element not found in XML file!")
             val rList = relationTypesNode.getElementsByTagName("relationType") ?: throw Exception()
 
             for (index in 0..rList.length -1) {
@@ -115,12 +142,13 @@ object BGConfigParser {
             }
 
             // Parsing datasetsources
-            val sourcesTypeNode = (doc.getElementsByTagName("sources").item(0) as? Element) ?: throw Exception("sources element not found in XML file!")
+            val sourcesTypeNode = (configDoc.getElementsByTagName("sources").item(0) as? Element) ?: throw Exception("sources element not found in XML file!")
 
             val relationTypeList = sourcesTypeNode.getElementsByTagName("relationType")
             for (j in 0..relationTypeList.length-1) {
                 val rtElement = relationTypeList.item(j) as? Element ?: continue
                 val rtGraph = rtElement.getAttribute("graph") ?: continue
+                val rtGraphLabel = rtElement.getAttribute("graphLabel")
                 val rtUri = rtElement.getAttribute("uri") ?: continue
                 val relationType = config.getRelationTypeForURIandGraph(rtUri, rtGraph) ?: continue
 
@@ -141,7 +169,7 @@ object BGConfigParser {
 
             // Parsing RelationMetadataTypes
 
-            val relationMetadataNode = (doc.getElementsByTagName("relationMetadata").item(0) as? Element) ?: throw Exception("relationMetadata element not found in XML file!")
+            val relationMetadataNode = (configDoc.getElementsByTagName("relationMetadata").item(0) as? Element) ?: throw Exception("relationMetadata element not found in XML file!")
             val relationMetadataList = relationMetadataNode.getElementsByTagName("metadataType")
 
             for (index in 0..relationMetadataList.length-1) {
@@ -185,7 +213,7 @@ object BGConfigParser {
 
             // Parsing NodeMetadataTypes
 
-            val nodeMetadataNode = (doc.getElementsByTagName("nodeMetadata").item(0) as? Element) ?: throw Exception("nodeMetadata element not found in XML file!")
+            val nodeMetadataNode = (configDoc.getElementsByTagName("nodeMetadata").item(0) as? Element) ?: throw Exception("nodeMetadata element not found in XML file!")
             val nodeMetadataList = nodeMetadataNode.getElementsByTagName("metadataType")
 
             for (index in 0..nodeMetadataList.length-1) {
@@ -241,7 +269,7 @@ object BGConfigParser {
             val exportEdgeConversions = HashSet<BGConversionType>()
             val exportNodeConversions = HashSet<BGConversionType>()
 
-            val conversionsNode = doc.getElementsByTagName("conversionTypes").item(0) as? Element
+            val conversionsNode = configDoc.getElementsByTagName("conversionTypes").item(0) as? Element
             val importNode = conversionsNode?.getElementsByTagName("import")?.item(0) as? Element
             if (importNode != null) {
                 val edges = importNode.getElementsByTagName("edge")
@@ -307,7 +335,7 @@ object BGConfigParser {
 
 
             // Parse Node Filters. Must be after parsing NodeTypes.
-            (doc.getElementsByTagName("nodeFilters").item(0) as? Element)?.let {
+            (configDoc.getElementsByTagName("nodeFilters").item(0) as? Element)?.let {
                 val nodeFilterList = it.getElementsByTagName("filter")
 
                 for (index in 0..nodeFilterList.length-1) {
@@ -377,7 +405,7 @@ object BGConfigParser {
 
             // Parse QueryConstraints. Must be after parsing RelationTypes, as it relies on finding relation types in config.
 
-            val queryConstraintNode = (doc.getElementsByTagName("queryConstraints").item(0) as? Element) ?: throw Exception("queryConstraints element not found in XML file!")
+            val queryConstraintNode = (configDoc.getElementsByTagName("queryConstraints").item(0) as? Element) ?: throw Exception("queryConstraints element not found in XML file!")
             val constraintList = queryConstraintNode.getElementsByTagName("constraint")
 
             for (index in 0..constraintList.length-1) {
@@ -438,7 +466,7 @@ object BGConfigParser {
 
             // Parse example queries
 
-            val exampleQueryNode = (doc.getElementsByTagName("exampleQueries").item(0) as? Element) ?: throw Exception("exampleQueries element not found in XML file!")
+            val exampleQueryNode = (configDoc.getElementsByTagName("exampleQueries").item(0) as? Element) ?: throw Exception("exampleQueries element not found in XML file!")
             val exampleQueryElements = exampleQueryNode.getElementsByTagName("query")
 
             for (index in 0..exampleQueryElements.length-1) {
@@ -455,7 +483,7 @@ object BGConfigParser {
 
             // Parse Search Types
 
-            val searchTypesNode = (doc.getElementsByTagName("searchTypes").item(0) as? Element) ?: throw Exception("searchTypes element not found in XML file!")
+            val searchTypesNode = (configDoc.getElementsByTagName("searchTypes").item(0) as? Element) ?: throw Exception("searchTypes element not found in XML file!")
             val searchTypesElements = searchTypesNode.getElementsByTagName("searchType")
 
             for (index in 0..searchTypesElements.length-1) {
@@ -484,7 +512,7 @@ object BGConfigParser {
             }
 
             // Parse the visual style config:
-            val visualStyleNode = (doc.getElementsByTagName("visualStyle").item(0) as? Element) ?: throw Exception("visualStyle element not found in XML file!")
+            val visualStyleNode = (configDoc.getElementsByTagName("visualStyle").item(0) as? Element) ?: throw Exception("visualStyle element not found in XML file!")
 
             val visualStyleConfig = BGVisualStyleConfig()
 
@@ -542,7 +570,7 @@ object BGConfigParser {
             //config.relationTypeMap = relationTypes
 
             // Will crash if the queryList tag isn't present.
-            val queryList = (doc.getElementsByTagName("queryList").item(0) as? Element) ?: throw Exception("queryList element not found in XML file!")
+            val queryList = (configDoc.getElementsByTagName("queryList").item(0) as? Element) ?: throw Exception("queryList element not found in XML file!")
             val nList = queryList.getElementsByTagName("query")
 
             for (temp in 0..nList.length - 1) {

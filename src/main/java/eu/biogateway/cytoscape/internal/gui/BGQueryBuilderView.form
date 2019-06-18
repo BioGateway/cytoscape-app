@@ -146,7 +146,7 @@
                         <constraints border-constraint="South"/>
                         <properties>
                           <horizontalAlignment value="0"/>
-                          <text value="0 / 0 nodes found."/>
+                          <text value="0 nodes found."/>
                         </properties>
                       </component>
                     </children>

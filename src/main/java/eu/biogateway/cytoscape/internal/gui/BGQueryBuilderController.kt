@@ -653,6 +653,7 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
             val suggestions = BGServiceManager.endpoint.findNodesForSearchType(nodeList, it)
             val nodes = suggestions.map { BGNode(it) }
             setBulkImportTableData(nodes)
+            setBulkImportInputPaneColors(suggestions, selectedType)
             Utility.fightForFocus(view.mainFrame)
         }
 
@@ -837,7 +838,9 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
         val nodeNames = suggestions.map { it.prefLabel ?: "" }.filter { !it.isEmpty() }.toHashSet()
         val nodeUris = suggestions.map { it._id }.toHashSet()
         val searchLines = view.bulkImportTextPane.text.split("\n").map { Utility.sanitizeParameter(it) }.filter { it.isNotEmpty() }
-        view.bulkImportTextPane.text = ""
+        // view.bulkImportTextPane.text = ""
+
+        numberOfMatches = suggestions.size
 
         // TODO: This must be Refactored as the QueryType enum is deprecated.
         /*
@@ -859,7 +862,7 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
                 view.appendToPane(view.bulkImportTextPane, line+"\n", darkRed)
             }
         } */
-        view.bulkSearchResultLabel.text = "$numberOfMatches / ${searchLines.size} nodes found."
+        view.bulkSearchResultLabel.text = "$numberOfMatches nodes found."
     }
 
     fun addMultiQueryLinesForURIs(uris: Collection<String>) {

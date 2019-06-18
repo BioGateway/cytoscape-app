@@ -3,12 +3,13 @@ package eu.biogateway.cytoscape.internal.model
 import eu.biogateway.cytoscape.internal.BGServiceManager
 import eu.biogateway.cytoscape.internal.query.BGQueryTemplate
 import eu.biogateway.cytoscape.internal.util.Utility
+import org.osgi.framework.Version
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel
 
 class BGConfig {
 
-    var latestBuildNumber: Int? = null
+    var latestVersion: Version? = null
 
     var nodeTypes = HashMap<String, BGNodeType>()
 

@@ -33,6 +33,8 @@ fun String.sanitizeParameter(): String {
     return this.replace("\"", "").trim()
 }
 
+
+
 fun Component.setFontSize(size: Double) {
     val font = this.font.deriveFont(size.toFloat())
     this.font = font
@@ -45,6 +47,7 @@ fun JComponent.setChildFontSize(size: Double) {
 }
 
 object Utility {
+
 
     fun scaleDimensionHeight(dimension: Dimension, height: Int): Dimension {
         if (height == 0) return dimension
