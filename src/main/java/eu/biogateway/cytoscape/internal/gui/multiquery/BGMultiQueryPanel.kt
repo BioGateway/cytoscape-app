@@ -194,7 +194,7 @@ class BGMultiQueryPanel(val constraintPanel: BGQueryConstraintPanel, val uniqueS
         if (queryWildcards.isEmpty()) {
             queryWildcards = "<placeholder>"
         }
-        val header = "#QUERY <http://www.semantic-systems-biology.org/biogateway/endpoint>\n"
+        val header = ""
         val query = "BASE <http://rdf.biogateway.eu/graph/>\n" +
                 "SELECT DISTINCT " + queryComponents.first + "\n" +
                 "WHERE {\n" +
