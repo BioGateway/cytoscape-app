@@ -621,18 +621,6 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
         return null
     }
 
-    /*
-    private enum class QueryType {
-        GENE_SYMBOL,
-        NAME_SEARCH,
-        UNIPROT_LOOKUP,
-        GO_LOOKUP,
-        NOT_SET,
-        ENTREZ_LOOKUP,
-        ENSEMBL_SEARCH
-    }
-     */
-
     private fun runBulkImport() {
         var queryType: BGSearchType
 

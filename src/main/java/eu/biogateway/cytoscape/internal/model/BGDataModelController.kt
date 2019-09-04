@@ -10,6 +10,7 @@ import eu.biogateway.cytoscape.internal.util.Constants
 import eu.biogateway.cytoscape.internal.util.Constants.BG_SHOULD_USE_BG_DICT
 import eu.biogateway.cytoscape.internal.util.Utility
 import org.cytoscape.model.CyNetwork
+import java.io.File
 import java.io.IOException
 import java.net.URL
 import java.util.concurrent.TimeUnit
@@ -74,7 +75,7 @@ class BGDataModelController() {
 
     init {
         config = BGConfig()
-        loadXMLFileFromServer()
+        loadConfigFile()
         createGraphTreeRootnode()
         BGServiceManager.controlPanel?.setupConstraintPanel()
     }
@@ -464,9 +465,37 @@ class BGDataModelController() {
         return null
     }
 
-    fun loadXMLFileFromServer() {
+    fun loadConfigFile() {
+        if (settings.configXMLFilePath.isNotEmpty()) {
+            val path = settings.configXMLFilePath
+            // Load the custom XML File
+            println("Loading custom config file: " + path)
+            // TODO: Determine if the config is a local file or remote, and load it.
+
+            if (path.startsWith("http")) {
+                loadXMLFileFromServer(path)
+            } else {
+                try {
+                val file = File(path)
+                val inputStream = file.inputStream()
+                BGConfigParser.parseXMLConfigFile(inputStream, config)
+                loadDefaultPreferences()
+                inputStream.close()
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                    JOptionPane.showMessageDialog(null, "Unable to load custom BioGateway configuration: \n" + e.localizedMessage, "BioGateway Custom Config Loading Error", JOptionPane.ERROR_MESSAGE)
+                }
+            }
+
+
+        } else {
+            loadXMLFileFromServer(Constants.BG_CONFIG_FILE_URL)
+        }
+    }
+
+    fun loadXMLFileFromServer(path: String) {
         try {
-            val queryFileUrl = URL(Constants.BG_CONFIG_FILE_URL)
+            val queryFileUrl = URL(path)
             val connection = queryFileUrl.openConnection()
             val inputStream = connection.getInputStream()
             BGConfigParser.parseXMLConfigFile(inputStream, config)
@@ -474,7 +503,7 @@ class BGDataModelController() {
             inputStream.close()
         } catch (e: IOException) {
             e.printStackTrace()
-            JOptionPane.showMessageDialog(null, "Unable to load BioGateway configuration from server. Make sure that you are connected to the internet.", "BioGateway Loading Error", JOptionPane.ERROR_MESSAGE)
+            JOptionPane.showMessageDialog(null, "Unable to load BioGateway configuration from server. Make sure that you are connected to the internet. \n\n" + e.localizedMessage, "BioGateway Loading Error", JOptionPane.ERROR_MESSAGE)
         }
         // Check if the build number is outdated.
         val currentVersion = BGBundleContext.version ?: throw Exception("OSGi Bundle Version unavailable!")

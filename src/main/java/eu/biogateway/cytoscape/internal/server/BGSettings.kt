@@ -5,15 +5,15 @@ import java.util.prefs.Preferences
 
 class BGSettings {
     private val PREFID_BIOGWSTYLEDEFAULT = "useBioGatewayLayoutStyleAsDefault"
-    private val PREFID_CONFIGURL = "configXMLFileURL"
+    private val PREFID_CONFIGURL = "configXMLFilePath"
 
     var useBioGatewayLayoutStyleAsDefault: Boolean
-    var configXMLFileURL: String
+    var configXMLFilePath: String
 
     private val preferences = Preferences.userRoot().node(javaClass.name)
 
     init {
-        configXMLFileURL = preferences.get(PREFID_CONFIGURL, Constants.BG_CONFIG_FILE_URL)
+        configXMLFilePath = preferences.get(PREFID_CONFIGURL, Constants.BG_CONFIG_FILE_URL)
         useBioGatewayLayoutStyleAsDefault = !preferences.get(PREFID_BIOGWSTYLEDEFAULT, "true").equals("false")
     }
 
@@ -23,6 +23,6 @@ class BGSettings {
             false -> "false"
         }
         preferences.put(PREFID_BIOGWSTYLEDEFAULT, styleDefaultString)
-        preferences.put(PREFID_CONFIGURL, configXMLFileURL)
+        preferences.put(PREFID_CONFIGURL, configXMLFilePath)
     }
 }

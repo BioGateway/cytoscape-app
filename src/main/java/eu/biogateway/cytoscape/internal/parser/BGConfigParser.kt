@@ -15,6 +15,19 @@ import java.io.InputStream
 import javax.swing.JOptionPane
 import javax.xml.parsers.DocumentBuilderFactory
 
+
+// Extension to get the direct child with name, instead of searching the whole DOM.
+fun Element.getChildWithName(name: String): Element? {
+    var child: Node? = this.firstChild
+    while (child != null) {
+        if (child is Element && name == child.nodeName) {
+            return child
+        }
+        child = child.nextSibling
+    }
+    return null
+}
+
 object BGConfigParser {
 
     /// Parses the config file from the input stream. Returns an error message if something went wrong, returns null if everything went well.
@@ -55,6 +68,8 @@ object BGConfigParser {
                 return
             }
 
+
+
             val endpointNode = configDoc.getElementsByTagName("endpoint").item(0) as? Element
             endpointNode?.let {
                 val sparqlEndpoint =  it.getAttribute("sparql")
@@ -70,48 +85,50 @@ object BGConfigParser {
             }
 
             // Parse the dataset graphs:
-            val graphsNode = (configDoc.getElementsByTagName("graphs").item(0) as? Element) ?: throw Exception("graphs element not found in XML file!")
+            configDoc.getChildWithName("graphs")?.let { graphsNode ->
+                // ?: throw Exception("graphs element not found in XML file!")
 
-            val graphMap = HashMap<String, String>()
+                val graphMap = HashMap<String, String>()
 
-            val graphs = graphsNode.getElementsByTagName("graph")
-            for (index in 0..graphs.length-1) {
-                val graphElement = graphs.item(index) as? Element ?: continue
-                val uri = graphElement.getAttribute("uri") ?: continue
-                if (uri.isEmpty()) continue
-                val name = graphElement.getAttribute("name") ?: continue
-                graphMap[name] = uri
+                val graphs = graphsNode.getElementsByTagName("graph")
+                for (index in 0..graphs.length - 1) {
+                    val graphElement = graphs.item(index) as? Element ?: continue
+                    val uri = graphElement.getAttribute("uri") ?: continue
+                    if (uri.isEmpty()) continue
+                    val name = graphElement.getAttribute("name") ?: continue
+                    graphMap[name] = uri
+                }
+                config.datasetGraphs = graphMap
             }
-            config.datasetGraphs = graphMap
+
+                // Parse the nodetypes:
+
+                val nodeTypeNode = configDoc.getChildWithName("nodetypes") ?: throw Exception("nodetypes element not found in XML file!")
 
 
-            // Parse the nodetypes:
+                val nodeTypes = nodeTypeNode.getElementsByTagName("type")
+                for (index in 0..nodeTypes.length - 1) {
+                    val nodeTypeElement = nodeTypes.item(index) as? Element ?: continue
+                    val id = nodeTypeElement.getAttribute("id") ?: continue
+                    if (id.isEmpty()) continue
 
-            val nodeTypeNode = (configDoc.getElementsByTagName("nodetypes").item(0) as? Element) ?: throw Exception("nodetypes element not found in XML file!")
+                    // TODO: The null-checks are useless, as non-existing attributes will be returned as empty strings.
+                    val name = nodeTypeElement.getAttribute("name")
+                    val uriPattern = nodeTypeElement.getAttribute("uriPattern")
+                    val nodeTypeClassId = nodeTypeElement.getAttribute("class")
+                    val nodeTypeClass = BGNodeType.BGNodeTypeClass.forId(nodeTypeClassId) ?: continue
+                    val metadataGraph = if (nodeTypeElement.getAttribute("metadatagraph").isNotEmpty()) nodeTypeElement.getAttribute("metadatagraph") else null
+                    val autocompleteTypeId = nodeTypeElement.getAttribute("autocompleteType")
+                    val autocompleteType = BGNodeType.BGAutoCompleteType.forId(autocompleteTypeId)
 
-
-            val nodeTypes = nodeTypeNode.getElementsByTagName("type")
-            for (index in 0..nodeTypes.length-1) {
-                val nodeTypeElement = nodeTypes.item(index) as? Element ?: continue
-                val id = nodeTypeElement.getAttribute("id") ?: continue
-                if (id.isEmpty()) continue
-
-                // TODO: The null-checks are useless, as non-existing attributes will be returned as empty strings.
-                val name = nodeTypeElement.getAttribute("name")
-                val uriPattern = nodeTypeElement.getAttribute("uriPattern")
-                val nodeTypeClassId = nodeTypeElement.getAttribute("class")
-                val nodeTypeClass = BGNodeType.BGNodeTypeClass.forId(nodeTypeClassId) ?: continue
-                val metadataGraph = if (nodeTypeElement.getAttribute("metadatagraph").isNotEmpty()) nodeTypeElement.getAttribute("metadatagraph") else null
-                val autocompleteTypeId = nodeTypeElement.getAttribute("autocompleteType")
-                val autocompleteType = BGNodeType.BGAutoCompleteType.forId(autocompleteTypeId)
-
-                val nodeType = BGNodeType(id, name, uriPattern, nodeTypeClass, metadataGraph, autocompleteType)
-                config.nodeTypes[id] = nodeType
-            }
+                    val nodeType = BGNodeType(id, name, uriPattern, nodeTypeClass, metadataGraph, autocompleteType)
+                    config.nodeTypes[id] = nodeType
+                }
 
 
             // Parse RelationTypes
-            val relationTypesNode = (configDoc.getElementsByTagName("relationTypes").item(0) as? Element) ?: throw Exception("relationTypes element not found in XML file!")
+            //val relationTypesNode = (configDoc.getElementsByTagName("relationTypes").item(0) as? Element) ?: throw Exception("relationTypes element not found in XML file!")
+            val relationTypesNode = configDoc.getChildWithName("relationTypes") ?: throw Exception("relationTypes element not found in XML file!")
             val rList = relationTypesNode.getElementsByTagName("relationType") ?: throw Exception()
 
             for (index in 0..rList.length -1) {
@@ -142,34 +159,36 @@ object BGConfigParser {
             }
 
             // Parsing datasetsources
-            val sourcesTypeNode = (configDoc.getElementsByTagName("sources").item(0) as? Element) ?: throw Exception("sources element not found in XML file!")
+            (configDoc.getChildWithName("sources"))?.let { sourcesTypeNode ->
+                // ?: throw Exception("sources element not found in XML file!")
 
-            val relationTypeList = sourcesTypeNode.getElementsByTagName("relationType")
-            for (j in 0..relationTypeList.length-1) {
-                val rtElement = relationTypeList.item(j) as? Element ?: continue
-                val rtGraph = rtElement.getAttribute("graph") ?: continue
-                val rtGraphLabel = rtElement.getAttribute("graphLabel")
-                val rtUri = rtElement.getAttribute("uri") ?: continue
-                val relationType = config.getRelationTypeForURIandGraph(rtUri, rtGraph) ?: continue
+                val relationTypeList = sourcesTypeNode.getElementsByTagName("relationType")
+                for (j in 0..relationTypeList.length - 1) {
+                    val rtElement = relationTypeList.item(j) as? Element ?: continue
+                    val rtGraph = rtElement.getAttribute("graph") ?: continue
+                    val rtGraphLabel = rtElement.getAttribute("graphLabel")
+                    val rtUri = rtElement.getAttribute("uri") ?: continue
+                    val relationType = config.getRelationTypeForURIandGraph(rtUri, rtGraph) ?: continue
 
-                val sourcesList = rtElement.getElementsByTagName("source") ?: throw Exception()
+                    val sourcesList = rtElement.getElementsByTagName("source") ?: throw Exception()
 
-                for (index in 0..sourcesList.length - 1) {
-                    val element = sourcesList.item(index) as? Element ?: continue
-                    val name = element.getAttribute("name") ?: continue
-                    val uri = element.getAttribute("uri") ?: continue
-                    val source = BGDatasetSource(uri, name, relationType)
-                    if (!config.datasetSources.containsKey(relationType)) {
-                        config.datasetSources[relationType] = HashSet()
+                    for (index in 0..sourcesList.length - 1) {
+                        val element = sourcesList.item(index) as? Element ?: continue
+                        val name = element.getAttribute("name") ?: continue
+                        val uri = element.getAttribute("uri") ?: continue
+                        val source = BGDatasetSource(uri, name, relationType)
+                        if (!config.datasetSources.containsKey(relationType)) {
+                            config.datasetSources[relationType] = HashSet()
+                        }
+                        config.datasetSources[relationType]?.add(source)
                     }
-                    config.datasetSources[relationType]?.add(source)
                 }
             }
 
 
             // Parsing RelationMetadataTypes
 
-            val relationMetadataNode = (configDoc.getElementsByTagName("relationMetadata").item(0) as? Element) ?: throw Exception("relationMetadata element not found in XML file!")
+            (configDoc.getChildWithName("relationMetadata"))?.let { relationMetadataNode -> // ?: throw Exception("relationMetadata element not found in XML file!")
             val relationMetadataList = relationMetadataNode.getElementsByTagName("metadataType")
 
             for (index in 0..relationMetadataList.length-1) {
@@ -210,10 +229,11 @@ object BGConfigParser {
 
                 config.edgeMetadataTypes[metadataType.id] = metadataType
             }
+            }
 
             // Parsing NodeMetadataTypes
 
-            val nodeMetadataNode = (configDoc.getElementsByTagName("nodeMetadata").item(0) as? Element) ?: throw Exception("nodeMetadata element not found in XML file!")
+            (configDoc.getChildWithName("nodeMetadata"))?.let { nodeMetadataNode -> // ?: throw Exception("nodeMetadata element not found in XML file!")
             val nodeMetadataList = nodeMetadataNode.getElementsByTagName("metadataType")
 
             for (index in 0..nodeMetadataList.length-1) {
@@ -236,6 +256,7 @@ object BGConfigParser {
 
 
                 config.nodeMetadataTypes[metadataType.id] = metadataType
+            }
             }
 
 
@@ -269,7 +290,7 @@ object BGConfigParser {
             val exportEdgeConversions = HashSet<BGConversionType>()
             val exportNodeConversions = HashSet<BGConversionType>()
 
-            val conversionsNode = configDoc.getElementsByTagName("conversionTypes").item(0) as? Element
+            val conversionsNode = configDoc.getChildWithName("conversionTypes")
             val importNode = conversionsNode?.getElementsByTagName("import")?.item(0) as? Element
             if (importNode != null) {
                 val edges = importNode.getElementsByTagName("edge")
@@ -335,7 +356,7 @@ object BGConfigParser {
 
 
             // Parse Node Filters. Must be after parsing NodeTypes.
-            (configDoc.getElementsByTagName("nodeFilters").item(0) as? Element)?.let {
+            (configDoc.getChildWithName("nodeFilters"))?.let {
                 val nodeFilterList = it.getElementsByTagName("filter")
 
                 for (index in 0..nodeFilterList.length-1) {
@@ -405,7 +426,7 @@ object BGConfigParser {
 
             // Parse QueryConstraints. Must be after parsing RelationTypes, as it relies on finding relation types in config.
 
-            val queryConstraintNode = (configDoc.getElementsByTagName("queryConstraints").item(0) as? Element) ?: throw Exception("queryConstraints element not found in XML file!")
+            (configDoc.getChildWithName("queryConstraints"))?.let { queryConstraintNode -> // ?: throw Exception("queryConstraints element not found in XML file!")
             val constraintList = queryConstraintNode.getElementsByTagName("constraint")
 
             for (index in 0..constraintList.length-1) {
@@ -463,27 +484,28 @@ object BGConfigParser {
                 }
                 config.queryConstraints[queryConstraint.id] = queryConstraint
             }
+            }
 
             // Parse example queries
 
-            val exampleQueryNode = (configDoc.getElementsByTagName("exampleQueries").item(0) as? Element) ?: throw Exception("exampleQueries element not found in XML file!")
-            val exampleQueryElements = exampleQueryNode.getElementsByTagName("query")
+            configDoc.getChildWithName("exampleQueries")?.let { exampleQueryNode ->
+                val exampleQueryElements = exampleQueryNode.getElementsByTagName("query")
 
-            for (index in 0..exampleQueryElements.length-1) {
-                val queryElement = exampleQueryElements.item(index) as? Element ?: continue
-                val name = queryElement.getAttribute("name")
-                val sparql = queryElement.textContent.replace("\t", "")
+                for (index in 0..exampleQueryElements.length - 1) {
+                    val queryElement = exampleQueryElements.item(index) as? Element ?: continue
+                    val name = queryElement.getAttribute("name")
+                    val sparql = queryElement.textContent.replace("\t", "")
 
-                if (name.isNullOrEmpty()) continue
-                if (sparql.isNullOrEmpty()) continue
+                    if (name.isNullOrEmpty()) continue
+                    if (sparql.isNullOrEmpty()) continue
 
-                val exampleQuery = BGExampleQuery(name, sparql)
-                config.exampleQueries.add(exampleQuery)
+                    val exampleQuery = BGExampleQuery(name, sparql)
+                    config.exampleQueries.add(exampleQuery)
+                }
             }
-
             // Parse Search Types
 
-            val searchTypesNode = (configDoc.getElementsByTagName("searchTypes").item(0) as? Element) ?: throw Exception("searchTypes element not found in XML file!")
+            configDoc.getChildWithName("searchTypes")?.let { searchTypesNode ->  //?: throw Exception("searchTypes element not found in XML file!")
             val searchTypesElements = searchTypesNode.getElementsByTagName("searchType")
 
             for (index in 0..searchTypesElements.length-1) {
@@ -510,152 +532,71 @@ object BGConfigParser {
 
                 config.searchTypes.add(searchType)
             }
+            }
 
             // Parse the visual style config:
-            val visualStyleNode = (configDoc.getElementsByTagName("visualStyle").item(0) as? Element) ?: throw Exception("visualStyle element not found in XML file!")
+            (configDoc.getChildWithName("visualStyle"))?.let { visualStyleNode ->
+                //?: throw Exception("visualStyle element not found in XML file!")
 
-            val visualStyleConfig = BGVisualStyleConfig()
+                val visualStyleConfig = BGVisualStyleConfig()
 
-            val edgeColors = visualStyleNode.getElementsByTagName("edgeColor")
-            for (index in 0..edgeColors.length-1) {
-                val styleElement = edgeColors.item(index) as? Element ?: continue
-                val uri = styleElement.getAttribute("uri") ?: continue
-                if (uri.isEmpty()) continue
-                val colorString = styleElement.getAttribute("color") ?: continue
-                val color = if (!colorString.isEmpty()) Color.decode(colorString) else continue
-                visualStyleConfig.edgeColors[uri] = color
-            }
-            val nodeColors = visualStyleNode.getElementsByTagName("nodeColor")
-            for (index in 0..nodeColors.length-1) {
-                val styleElement = nodeColors.item(index) as? Element ?: continue
-                val type = styleElement.getAttribute("type") ?: continue
-                if (type.isEmpty()) continue
-                val colorString = styleElement.getAttribute("color") ?: continue
-                val color = if (!colorString.isEmpty()) Color.decode(colorString) else continue
-                visualStyleConfig.nodeColors[type] = color
-            }
-
-            val edgeLines = visualStyleNode.getElementsByTagName("edgeLine")
-            for (index in 0..edgeLines.length-1) {
-                val styleElement = edgeLines.item(index) as? Element ?: continue
-                val uri = styleElement.getAttribute("uri") ?: continue
-                if (uri.isEmpty()) continue
-                val lineTypeName = styleElement.getAttribute("lineType") ?: continue
-                val lineType = visualStyleConfig.lineTypeMapping.get(lineTypeName) ?: continue
-                visualStyleConfig.edgeLineTypes[uri] = lineType
-            }
-
-            val nodeShapes = visualStyleNode.getElementsByTagName("nodeShape")
-            for (index in 0..nodeShapes.length-1) {
-                val styleElement = nodeShapes.item(index) as? Element ?: continue
-                val type = styleElement.getAttribute("type") ?: continue
-                if (type.isEmpty()) continue
-                val nodeShapeName = styleElement.getAttribute("shape") ?: continue
-                val nodeShape = visualStyleConfig.nodeShapeMapping.get(nodeShapeName) ?: continue
-                visualStyleConfig.nodeShapes[type] = nodeShape
-
-                val nodeWidth = styleElement.getAttribute("width").toDoubleOrNull()
-                if (nodeWidth != null) {
-                    visualStyleConfig.nodeWidths[type] = nodeWidth
+                val edgeColors = visualStyleNode.getElementsByTagName("edgeColor")
+                for (index in 0..edgeColors.length - 1) {
+                    val styleElement = edgeColors.item(index) as? Element ?: continue
+                    val uri = styleElement.getAttribute("uri") ?: continue
+                    if (uri.isEmpty()) continue
+                    val colorString = styleElement.getAttribute("color") ?: continue
+                    val color = if (!colorString.isEmpty()) Color.decode(colorString) else continue
+                    visualStyleConfig.edgeColors[uri] = color
                 }
-                val nodeHeight = styleElement.getAttribute("height").toDoubleOrNull()
-                if (nodeHeight != null) {
-                    visualStyleConfig.nodeHeights[type] = nodeHeight
+                val nodeColors = visualStyleNode.getElementsByTagName("nodeColor")
+                for (index in 0..nodeColors.length - 1) {
+                    val styleElement = nodeColors.item(index) as? Element ?: continue
+                    val type = styleElement.getAttribute("type") ?: continue
+                    if (type.isEmpty()) continue
+                    val colorString = styleElement.getAttribute("color") ?: continue
+                    val color = if (!colorString.isEmpty()) Color.decode(colorString) else continue
+                    visualStyleConfig.nodeColors[type] = color
                 }
-            }
 
+                val edgeLines = visualStyleNode.getElementsByTagName("edgeLine")
+                for (index in 0..edgeLines.length - 1) {
+                    val styleElement = edgeLines.item(index) as? Element ?: continue
+                    val uri = styleElement.getAttribute("uri") ?: continue
+                    if (uri.isEmpty()) continue
+                    val lineTypeName = styleElement.getAttribute("lineType") ?: continue
+                    val lineType = visualStyleConfig.lineTypeMapping.get(lineTypeName) ?: continue
+                    visualStyleConfig.edgeLineTypes[uri] = lineType
+                }
 
-            config.visualStyleConfig = visualStyleConfig
+                val nodeShapes = visualStyleNode.getElementsByTagName("nodeShape")
+                for (index in 0..nodeShapes.length - 1) {
+                    val styleElement = nodeShapes.item(index) as? Element ?: continue
+                    val type = styleElement.getAttribute("type") ?: continue
+                    if (type.isEmpty()) continue
+                    val nodeShapeName = styleElement.getAttribute("shape") ?: continue
+                    val nodeShape = visualStyleConfig.nodeShapeMapping.get(nodeShapeName) ?: continue
+                    visualStyleConfig.nodeShapes[type] = nodeShape
 
-            //config.relationTypeMap = relationTypes
-
-            // Will crash if the queryList tag isn't present.
-            val queryList = (configDoc.getElementsByTagName("queryList").item(0) as? Element) ?: throw Exception("queryList element not found in XML file!")
-            val nList = queryList.getElementsByTagName("query")
-
-            for (temp in 0..nList.length - 1) {
-                val nNode = nList.item(temp)
-
-                if (nNode.nodeType == Node.ELEMENT_NODE) {
-                    val qElement = nNode as Element
-                    val queryName = qElement.getAttribute("name")
-                    val returnTypeString = qElement.getAttribute("returnType")
-                    val queryDescription = qElement.getElementsByTagName("description").item(0).textContent
-                    val sparqlString = qElement.getElementsByTagName("sparql").item(0).textContent.replace("\t", "") // Remove tabs from the XML file. (They might be added "for show").
-
-                    val returnType = when (returnTypeString) {
-                        "nodeList" -> BGReturnType.NODE_LIST
-                        "nodeListDescription" -> BGReturnType.NODE_LIST_DESCRIPTION
-                        "relationTriple" -> BGReturnType.RELATION_TRIPLE_GRAPHURI
-                        "relationTripleNamed" -> BGReturnType.RELATION_TRIPLE_NAMED
-                        else -> {
-                            throw Exception("Unknown return type!")
-                        }
+                    val nodeWidth = styleElement.getAttribute("width").toDoubleOrNull()
+                    if (nodeWidth != null) {
+                        visualStyleConfig.nodeWidths[type] = nodeWidth
                     }
-
-                    val query = BGQueryTemplate(queryName, queryDescription, sparqlString, returnType)
-                    val parameterList = qElement.getElementsByTagName("parameter")
-
-                    for (pIndex in 0..parameterList.length - 1) {
-
-                        if (parameterList.item(pIndex).nodeType == Node.ELEMENT_NODE) {
-                            val parameter = parameterList.item(pIndex) as Element
-                            val pId = parameter.getAttribute("id")
-                            val pTypeString = parameter.getAttribute("type")
-                            val pName = parameter.getElementsByTagName("name").item(0).textContent
-
-                            val pEnabledDependency = parameter.getElementsByTagName("enabled-dependency")
-
-                            val enabledDependency = pEnabledDependency.item(0) as? Element
+                    val nodeHeight = styleElement.getAttribute("height").toDoubleOrNull()
+                    if (nodeHeight != null) {
+                        visualStyleConfig.nodeHeights[type] = nodeHeight
+                    }
+                }
 
 
-
-                            val pType = when (pTypeString) {
-                                "text" -> BGQueryParameter.ParameterType.TEXT
-                                "checkbox" -> BGQueryParameter.ParameterType.CHECKBOX
-                                "combobox" -> BGQueryParameter.ParameterType.COMBOBOX
-                                "uniprot_id" -> BGQueryParameter.ParameterType.PROTEIN
-                                "ontology" -> BGQueryParameter.ParameterType.GO_TERM
-                                "gene_id" -> BGQueryParameter.ParameterType.GENE
-                                "optionalUri" -> BGQueryParameter.ParameterType.OPTIONAL_URI
-                                else -> BGQueryParameter.ParameterType.TEXT
-                            }
-                            val qParameter = BGQueryParameter(pId, pName, pType)
-                            val optionsList = parameter.getElementsByTagName("option")
-
-                            for (oIndex in 0..optionsList.length - 1) {
-                                if (optionsList.item(oIndex).nodeType == Node.ELEMENT_NODE) {
-                                    val oElement = optionsList.item(oIndex) as Element
-                                    val oName = oElement.getAttribute("name")
-                                    val oValue = oElement.textContent
-                                    qParameter.addOption(oName, oValue)
-                                } }
-
-                            if (enabledDependency != null) {
-                                val dependingId = enabledDependency.getAttribute("parameterId")
-                                val isEnabled = when (enabledDependency.getAttribute("isEnabled")) {
-                                    "true" -> true
-                                    "false" -> false
-                                    else -> {
-                                        println("XML Config parse error: enabled-dependency's isEnabled attribute can only be true or false!")
-                                        null
-                                    }
-                                }
-                                val parameterValue = enabledDependency.getAttribute("forParameterValue")
-                                if (dependingId != null && parameterValue != null && isEnabled != null) {
-                                    qParameter.dependency = BGQueryParameter.EnabledDependency(dependingId, isEnabled, parameterValue)
-
-                                }
-                            }
-
-                            query.addParameter(qParameter)
-                        } }
-                    queryTemplateHashMap[queryName] = query
-                } }
+                config.visualStyleConfig = visualStyleConfig
+            }
         } catch (e: Exception) {
-            // TODO Auto-generated catch block
             e.printStackTrace()
+            JOptionPane.showMessageDialog(null, "Unable to load BioGateway Config File. \nIf you are using a custom configuration XML file, make sure it is BioGateway compliant. \n\nError: \n" + e.localizedMessage, "Unable to load BioGateway Config File", JOptionPane.ERROR_MESSAGE)
+
         }
         config.queryTemplates = queryTemplateHashMap
     }
 }
+

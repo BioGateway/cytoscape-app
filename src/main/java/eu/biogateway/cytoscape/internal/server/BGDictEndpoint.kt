@@ -25,13 +25,6 @@ class SearchSuggestion(): BGSuggestion("search", "") {
     }
 }
 
-enum class EntityType(val typeName: String) {
-    PROTEIN("protein"),
-    GENE("gene"),
-    GO_TERM("go-term"),
-    ANY("any")
-}
-
 class BGDictEndpoint(internal var endpointUrl: String) {
 
     internal val client: HttpClient = HttpClients.createDefault()

@@ -3,6 +3,7 @@ package eu.biogateway.cytoscape.internal;
 import java.util.Properties;
 
 import eu.biogateway.cytoscape.internal.gui.conversion.BGImportExportController;
+import eu.biogateway.cytoscape.internal.server.BGSettings;
 import org.cytoscape.app.swing.CySwingAppAdapter;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import eu.biogateway.cytoscape.BiogwPlugin;
@@ -78,6 +79,14 @@ public class CyActivator extends AbstractCyActivator {
             }
         });
         // registerService(context, reloadDataModelAction, CyAction.class, new Properties());
+
+        BGCreateAction openSettings = new BGCreateAction("Settings", "always", new BGAction() {
+            @Override
+            public void action() {
+                new BGSettingsController();
+            }
+        });
+        registerService(context, openSettings, CyAction.class, new Properties());
 
         BGControlPanel controlPanel = new BGControlPanel();
         BGServiceManager.INSTANCE.setControlPanel(controlPanel);

@@ -11,7 +11,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>no.ntnu</groupId>
 	<artifactId>biogatewayapp</artifactId>
-	<version>3.0.0</version>
+	<version>3.0.2</version>
 	<description>The BioGateway App enables querying the BioGateway triple store from within Cytoscape. Read more at www.biogateway.eu.</description>
 
 	<name>BioGateway Cytoscape Plugin</name>
@@ -21,7 +21,7 @@
 	<scm>
 		<developerConnection>scm:git:https://bitbucket.org/druglogics/biogw_cytoscape.git</developerConnection>
   	  <tag>HEAD</tag>
-  </scm>
+  	</scm>
 
 	<build>
 		<resources>

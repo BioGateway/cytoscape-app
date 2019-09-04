@@ -28,6 +28,7 @@ object Constants {
     val BG_LOAD_NODE_WARNING_LIMIT = 1000
     val BG_BULK_IMPORT_WARNING_LIMIT = 10000
     val BG_FILE_EXTENSION = "bgwsparql"
+    val BG_CONFIG_FILE_EXTENSION = "xml"
     val BG_PREFERENCES_LAST_FOLDER = "biogatewayPluginLastOpenedFolder"
     val BG_RELATION_COUNT_WARNING_LIMIT = 50000
     val BG_QUERY_BUILDER_URI_FIELD_COLUMNS = 20
