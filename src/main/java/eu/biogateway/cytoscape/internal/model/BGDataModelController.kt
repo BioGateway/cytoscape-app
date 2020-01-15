@@ -507,7 +507,7 @@ class BGDataModelController() {
         }
         // Check if the build number is outdated.
         val currentVersion = BGBundleContext.version ?: throw Exception("OSGi Bundle Version unavailable!")
-
+        config.currentVersion = currentVersion
         config.latestVersion?.let {
             if (it.minor > currentVersion.minor) {
                 val message = "A more recent version of BioGateway is available. Some features might not work correctly. \nPress OK to download the latest version from www.biogateway.eu."

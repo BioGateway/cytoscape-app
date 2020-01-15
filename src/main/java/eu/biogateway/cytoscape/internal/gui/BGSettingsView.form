@@ -40,7 +40,7 @@
           <component id="d87d1" class="javax.swing.JTextField" binding="configFileURlField">
             <constraints border-constraint="Center"/>
             <properties>
-              <columns value="60"/>
+              <columns value="40"/>
               <editable value="true"/>
               <text value=""/>
             </properties>
@@ -56,6 +56,12 @@
             <constraints border-constraint="East"/>
             <properties>
               <text value="Save changes"/>
+            </properties>
+          </component>
+          <component id="8edf3" class="javax.swing.JLabel" binding="versionLabel">
+            <constraints border-constraint="West"/>
+            <properties>
+              <text value="Version 0.0.0"/>
             </properties>
           </component>
         </children>

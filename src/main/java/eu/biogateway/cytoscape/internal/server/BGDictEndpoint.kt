@@ -7,14 +7,22 @@ import org.apache.http.impl.client.HttpClients
 import org.apache.http.util.EntityUtils
 import com.google.gson.*
 import com.google.gson.reflect.TypeToken
+import eu.biogateway.cytoscape.internal.BGServiceManager
+import eu.biogateway.cytoscape.internal.model.BGConfig
 import eu.biogateway.cytoscape.internal.model.BGSearchType
 import eu.biogateway.cytoscape.internal.util.Constants
+import eu.biogateway.cytoscape.internal.util.Utility
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.entity.StringEntity
 import java.net.URL
 import java.net.URLEncoder
 
 import java.util.ArrayList
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
+import javax.swing.JOptionPane
 
 
 class SearchSuggestion(): BGSuggestion("search", "") {
@@ -49,88 +57,178 @@ class BGDictEndpoint(internal var endpointUrl: String) {
 
     fun searchForPrefix(prefix: String, type: String, limit: Int): ArrayList<BGSuggestion> {
 
-        if (prefix.length == 0) {
+//        if (prefix.length == 0) {
+//            return ArrayList()
+//        }
+//
+//        val url = URL(endpointUrl + "prefixLabelSearch/?term=" + URLEncoder.encode(prefix, "UTF-8")+"&type="+type+"&limit="+limit).toURI()
+//
+//        val httpGet = HttpGet(url)
+//        val response = client.execute(httpGet)
+//        val statusCode = response.statusLine.statusCode
+//        val data = EntityUtils.toString(response.entity)
+//        //val typeToken = object : TypeToken<List<BGSuggestion>>() {}.dataType
+//        //val otherList: List<BGSuggestion> = gson.fromJson(data, typeToken)
+//
+//        if (statusCode in 200..399) {
+//            val suggestions = ArrayList(gson.fromJson<List<BGSuggestion>>(data))
+//
+////            for (suggestion in suggestions) {
+////                println(suggestion.prefLabel)
+////            }
+//
+//            return ArrayList(suggestions)
+//        } else return ArrayList()
+
+        val future = searchForPrefixAsync(prefix, type, limit)
+
+        try {
+            return future.get(2000, TimeUnit.MILLISECONDS)
+        } catch (timeout: TimeoutException) {
+            showConnectionErrorDialog()
             return ArrayList()
         }
 
-        val url = URL(endpointUrl + "prefixLabelSearch/?term=" + URLEncoder.encode(prefix, "UTF-8")+"&type="+type+"&limit="+limit).toURI()
+    }
 
-        val httpGet = HttpGet(url)
-        val response = client.execute(httpGet)
-        val statusCode = response.statusLine.statusCode
-        val data = EntityUtils.toString(response.entity)
-        //val typeToken = object : TypeToken<List<BGSuggestion>>() {}.dataType
-        //val otherList: List<BGSuggestion> = gson.fromJson(data, typeToken)
+    fun searchForPrefixAsync(prefix: String, type: String, limit: Int): CompletableFuture<ArrayList<BGSuggestion>> {
+        val future = CompletableFuture<ArrayList<BGSuggestion>>()
+        if (prefix.length == 0) {
+            future.complete(ArrayList())
+        }
 
-        if (statusCode in 200..399) {
-            val suggestions = ArrayList(gson.fromJson<List<BGSuggestion>>(data))
+        Executors.newCachedThreadPool().submit {
+            val url = URL(endpointUrl + "prefixLabelSearch/?term=" + URLEncoder.encode(prefix, "UTF-8")+"&type="+type+"&limit="+limit).toURI()
 
-//            for (suggestion in suggestions) {
-//                println(suggestion.prefLabel)
-//            }
+            val httpGet = HttpGet(url)
+            val response = client.execute(httpGet)
+            val statusCode = response.statusLine.statusCode
+            val data = EntityUtils.toString(response.entity)
 
-            return ArrayList(suggestions)
-        } else return ArrayList()
+            if (statusCode in 200..399) {
+                val suggestions = ArrayList(gson.fromJson<List<BGSuggestion>>(data))
+
+                future.complete(ArrayList(suggestions))
+            } else {
+                future.complete(ArrayList())
+            }
+        }
+        return future
     }
 
     fun getSuggestionsForFieldValue(field: String, value: String, nodeType: String, limit: Int = 10): ArrayList<BGSuggestion> {
-        val url = URL(endpointUrl + "findNodesWithFieldValue/"
-                +"?field="+URLEncoder.encode(field, "UTF-8")
-                +"&value="+URLEncoder.encode(value, "UTF-8")
-                +"&type="+URLEncoder.encode(nodeType, "UTF-8")
-                +"&limit="+limit).toURI()
+        val future = CompletableFuture<ArrayList<BGSuggestion>>()
 
-        val httpGet = HttpGet(url)
-        val response = client.execute(httpGet)
-        val statusCode = response.statusLine.statusCode
-        val data = EntityUtils.toString(response.entity)
+        Executors.newCachedThreadPool().submit {
+            val url = URL(endpointUrl + "findNodesWithFieldValue/"
+                    + "?field=" + URLEncoder.encode(field, "UTF-8")
+                    + "&value=" + URLEncoder.encode(value, "UTF-8")
+                    + "&type=" + URLEncoder.encode(nodeType, "UTF-8")
+                    + "&limit=" + limit).toURI()
 
-        if (statusCode in 200..399) {
-            val suggestions = ArrayList(gson.fromJson<List<BGSuggestion>>(data))
+            val httpGet = HttpGet(url)
+            val response = client.execute(httpGet)
+            val statusCode = response.statusLine.statusCode
+            val data = EntityUtils.toString(response.entity)
 
-            return ArrayList(suggestions)
-        } else return ArrayList()
+            if (statusCode in 200..399) {
+                val suggestions = ArrayList(gson.fromJson<List<BGSuggestion>>(data))
+
+                future.complete(ArrayList(suggestions))
+            } else {
+                future.complete(ArrayList())
+            }
+        }
+
+
+        try {
+            return future.get(2000, TimeUnit.MILLISECONDS)
+        } catch (timeout: TimeoutException) {
+            showConnectionErrorDialog()
+            return ArrayList()
+        }
     }
 
     fun getSuggestionForURI(uri: String): BGSuggestion? {
-        val url = URL(endpointUrl + "fetch/?uri=" +URLEncoder.encode(uri, "UTF-8")).toURI()
+//        val url = URL(endpointUrl + "fetch/?uri=" +URLEncoder.encode(uri, "UTF-8")).toURI()
+//
+//        val httpGet = HttpGet(url)
+//        val response = client.execute(httpGet)
+//        val statusCode = response.statusLine.statusCode
+//        val data = EntityUtils.toString(response.entity)
+//
+//        return try {
+//            gson.fromJson<BGSuggestion>(data)
+//        } catch (e: JsonSyntaxException) {
+//            null
+//        }
 
-        val httpGet = HttpGet(url)
-        val response = client.execute(httpGet)
-        val statusCode = response.statusLine.statusCode
-        val data = EntityUtils.toString(response.entity)
+        val future = getSuggestionForURIAsync(uri)
 
-        return try {
-            gson.fromJson<BGSuggestion>(data)
-        } catch (e: JsonSyntaxException) {
-            null
+        try {
+            return future.get(2000, TimeUnit.MILLISECONDS)
+        } catch (timeout: TimeoutException) {
+            showConnectionErrorDialog()
+            return null
         }
+    }
+
+    fun getSuggestionForURIAsync(uri: String): CompletableFuture<BGSuggestion?> {
+        val future = CompletableFuture<BGSuggestion?>()
+
+        Executors.newCachedThreadPool().submit {
+            val url = URL(endpointUrl + "fetch/?uri=" + URLEncoder.encode(uri, "UTF-8")).toURI()
+
+            val httpGet = HttpGet(url)
+            val response = client.execute(httpGet)
+            val statusCode = response.statusLine.statusCode
+            val data = EntityUtils.toString(response.entity)
+
+            try {
+                future.complete(gson.fromJson<BGSuggestion>(data))
+            } catch (e: JsonSyntaxException) {
+                future.complete(null)
+            }
+        }
+        return future
     }
 
     fun findNodesForSearchType(nodeList: Collection<String>, searchType: BGSearchType): ArrayList<BGSuggestion> {
         // TODO: Finish this for Bulk Import!
-        val url = endpointUrl + searchType.restPath
 
-        val prefix = searchType.prefix ?: ""
+        val future = CompletableFuture<ArrayList<BGSuggestion>>()
+
+        Executors.newCachedThreadPool().submit {
+            val url = endpointUrl + searchType.restPath
+
+            val prefix = searchType.prefix ?: ""
 
 
-        val terms = nodeList.map { "\"$prefix$it\"" }.reduce { list, node -> "$list, $node" }
-        val parameterString = ""
-        val json = "{ \"returnType\": \"${searchType.returnType}\", \"nodeType\": \"${searchType.nodeType.id}\", \"values\": [$terms]$parameterString}"
-        val httpPost = HttpPost(url)
-        httpPost.entity = StringEntity(json)
-        httpPost.addHeader("Content-Type", "application/json");
-        val response = client.execute(httpPost)
-        val data = EntityUtils.toString(response.entity)
-        val statusCode = response.statusLine.statusCode
+            val terms = nodeList.map { "\"$prefix$it\"" }.reduce { list, node -> "$list, $node" }
+            val parameterString = ""
+            val json = "{ \"returnType\": \"${searchType.returnType}\", \"nodeType\": \"${searchType.nodeType.id}\", \"values\": [$terms]$parameterString}"
+            val httpPost = HttpPost(url)
+            httpPost.entity = StringEntity(json)
+            httpPost.addHeader("Content-Type", "application/json");
+            val response = client.execute(httpPost)
+            val data = EntityUtils.toString(response.entity)
+            val statusCode = response.statusLine.statusCode
 
-        if (statusCode in 200..399) {
-            val suggestions = ArrayList(gson.fromJson<List<BGSuggestion>>(data))
+            if (statusCode in 200..399) {
+                val suggestions = ArrayList(gson.fromJson<List<BGSuggestion>>(data))
 
-            return ArrayList(suggestions)
+                future.complete(ArrayList(suggestions))
+            }
+
+            future.complete(ArrayList())
         }
 
-        return ArrayList()
+        try {
+            return future.get(2000, TimeUnit.MILLISECONDS)
+        } catch (timeout: TimeoutException) {
+            showConnectionErrorDialog()
+            return ArrayList()
+        }
     }
 
     fun getGenesWithSymbols(symbols: Collection<String>): ArrayList<BGSuggestion> {
@@ -138,32 +236,49 @@ class BGDictEndpoint(internal var endpointUrl: String) {
     }
 
     fun searchForLabel(term: String, type: String, limit: Int): ArrayList<BGSuggestion> {
-
+        val future = CompletableFuture<ArrayList<BGSuggestion>>()
         if (term.length == 0) {
+            future.complete(ArrayList())
+        }
+
+        Executors.newCachedThreadPool().submit {
+            val url = URL(endpointUrl + "labelSearch/?term=" + URLEncoder.encode(term, "UTF-8") + "&type=" + type + "&limit=" + limit).toURI()
+
+            val httpGet = HttpGet(url)
+
+            val queryStart = System.currentTimeMillis()
+            val response = client.execute(httpGet)
+            val statusCode = response.statusLine.statusCode
+
+            if (Constants.PROFILING) {
+                println("Label search time: " + (System.currentTimeMillis() - queryStart) + " ms. Status: " + statusCode + ". Label: " + term)
+            }
+            val data = EntityUtils.toString(response.entity)
+            //val typeToken = object : TypeToken<List<BGSuggestion>>() {}.dataType
+            //val otherList: List<BGSuggestion> = gson.fromJson(data, typeToken)
+
+            val suggestions = ArrayList(gson.fromJson<List<BGSuggestion>>(data))
+
+            for (suggestion in suggestions) {
+                //println(suggestion.prefLabel)
+            }
+
+            future.complete(ArrayList(suggestions))
+        }
+
+        try {
+            return future.get(2000, TimeUnit.MILLISECONDS)
+        } catch (timeout: TimeoutException) {
+            showConnectionErrorDialog()
             return ArrayList()
         }
+    }
 
-        val url = URL(endpointUrl + "labelSearch/?term=" +URLEncoder.encode(term, "UTF-8")+"&type="+type+"&limit="+limit).toURI()
+    private fun showConnectionErrorDialog() {
+        val port = endpointUrl.split(":").last().replace("/", "")
+        val message = "Unable to connect to BioGateway server hosting entity metadata. Ensure that you are connected to the internet, \nand that your network allows outgoing connections on port 80." +
+                "\n\nSee www.biogateway.eu/troubleshooting for more information."
+        JOptionPane.showMessageDialog(null, message, "Unable to connect to BioGateway server", JOptionPane.WARNING_MESSAGE)
 
-        val httpGet = HttpGet(url)
-
-        val queryStart = System.currentTimeMillis()
-        val response = client.execute(httpGet)
-        val statusCode = response.statusLine.statusCode
-
-        if (Constants.PROFILING) {
-            println("Label search time: "+(System.currentTimeMillis()-queryStart)+" ms. Status: "+statusCode+". Label: "+term)
-        }
-        val data = EntityUtils.toString(response.entity)
-        //val typeToken = object : TypeToken<List<BGSuggestion>>() {}.dataType
-        //val otherList: List<BGSuggestion> = gson.fromJson(data, typeToken)
-
-        val suggestions = ArrayList(gson.fromJson<List<BGSuggestion>>(data))
-
-        for (suggestion in suggestions) {
-            //println(suggestion.prefLabel)
-        }
-
-        return ArrayList(suggestions)
     }
 }

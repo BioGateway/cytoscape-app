@@ -1,5 +1,9 @@
 package eu.biogateway.cytoscape.internal.gui;
 
+import eu.biogateway.cytoscape.internal.BGBundleContext;
+import eu.biogateway.cytoscape.internal.BGServiceManager;
+import org.osgi.framework.Version;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -14,6 +18,7 @@ public class BGSettingsView {
     private JButton browseButton;
     private JButton reloadConfigButton;
     private JPanel mainPanel;
+    private JLabel versionLabel;
     private BGSettingsController controller;
 
 
@@ -24,6 +29,13 @@ public class BGSettingsView {
         mainFrame.setContentPane(this.mainPanel);
 
         setupButtons();
+
+        Version version = BGServiceManager.INSTANCE.getConfig().getCurrentVersion();
+
+        if (version != null) {
+            versionLabel.setText(version.toString());
+        }
+
 
         mainFrame.pack();
         mainFrame.setVisible(true);
@@ -77,7 +89,7 @@ public class BGSettingsView {
         browseButton.setText("Browse");
         panel2.add(browseButton);
         configFileURlField = new JTextField();
-        configFileURlField.setColumns(60);
+        configFileURlField.setColumns(40);
         configFileURlField.setEditable(true);
         configFileURlField.setText("");
         panel1.add(configFileURlField, BorderLayout.CENTER);
@@ -87,6 +99,9 @@ public class BGSettingsView {
         saveChangesButton = new JButton();
         saveChangesButton.setText("Save changes");
         panel3.add(saveChangesButton, BorderLayout.EAST);
+        versionLabel = new JLabel();
+        versionLabel.setText("Version 0.0.0");
+        panel3.add(versionLabel, BorderLayout.WEST);
     }
 
     /**

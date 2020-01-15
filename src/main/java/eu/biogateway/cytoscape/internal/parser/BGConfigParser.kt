@@ -50,6 +50,8 @@ object BGConfigParser {
             }
             var configDoc: Element? = null
             val configElementList = rootDoc.getElementsByTagName("config")
+
+            // Attempt to fetch the config for the current version.
             for (index in 0..configElementList.length-1) {
                 val element = configElementList.item(index) as? Element ?: continue
                 val configVersion = element.getAttribute("version")
@@ -57,7 +59,24 @@ object BGConfigParser {
                     configDoc = element
                 }
             }
+            // Attempt to use the most recent minor version of the same major version
+            if (configDoc == null) {
+                var matchingConfigs = mutableMapOf<String, Element>()
+                for (index in 0..configElementList.length-1) {
+                    val element = configElementList.item(index) as? Element ?: continue
+                    val configVersionString = element.getAttribute("version")
+                    val configVersion = Version(configVersionString)
+                    if (configVersion.major == currentVersion.major && configVersion.minor < currentVersion.minor) {
+                        matchingConfigs[configVersion.qualifier] = element
+                    }
+                }
+                val latestMatching = matchingConfigs.keys.sortedDescending().firstOrNull()
+                if (latestMatching != null) {
+                    configDoc = matchingConfigs[latestMatching]
+                }
+            }
 
+            // Didn't find a matching config, give up.
             if (configDoc == null) {
                 val message = "Your current app version ($minorVersion) is not recognized by the server as a supported version of BioGateway. \nPress OK to download the latest version from www.biogateway.eu."
                 val response = JOptionPane.showOptionDialog(null, message, "Unsupported app version", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, null, null, null)

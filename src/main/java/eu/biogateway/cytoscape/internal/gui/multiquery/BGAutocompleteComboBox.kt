@@ -49,6 +49,10 @@ class BGAutocompleteComboBox(private val endpoint: BGDictEndpoint, private val t
 
             if (selectedSuggestion != searchSuggestion && selectedSuggestion != null) {
                 selectSuggestion(selectedSuggestion)
+            } else if (selectedSuggestion != null && this.comboBoxModel.size > 1 && selectedSuggestion.prefLabel.isBlank()){
+                this.selectedIndex = 1
+                val topSuggestion = this.comboBoxModel.getElementAt(1)
+                selectSuggestion(topSuggestion)
             }
         }
 

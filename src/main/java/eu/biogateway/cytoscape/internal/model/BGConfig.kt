@@ -10,6 +10,7 @@ import javax.swing.tree.DefaultTreeModel
 class BGConfig {
 
     var latestVersion: Version? = null
+    var currentVersion: Version? = null
 
     var nodeTypes = HashMap<String, BGNodeType>()
 
