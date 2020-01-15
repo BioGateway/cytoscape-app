@@ -252,7 +252,7 @@ public class JCheckBoxTree extends JTree {
 
     public MutableTreeNode find(DefaultMutableTreeNode root, String s) {
         @SuppressWarnings("unchecked")
-        Enumeration<DefaultMutableTreeNode> e = root.depthFirstEnumeration();
+        Enumeration<DefaultMutableTreeNode> e = (Enumeration<DefaultMutableTreeNode>)(Object)root.depthFirstEnumeration();
         while (e.hasMoreElements()) {
             DefaultMutableTreeNode node = e.nextElement();
             if (node.toString().equalsIgnoreCase(s)) {
