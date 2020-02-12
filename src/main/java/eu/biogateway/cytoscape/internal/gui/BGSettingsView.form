@@ -2,7 +2,7 @@
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="eu.biogateway.cytoscape.internal.gui.BGSettingsView">
   <grid id="27dc6" binding="mainPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
     <constraints>
-      <xy x="20" y="20" width="680" height="115"/>
+      <xy x="20" y="20" width="680" height="134"/>
     </constraints>
     <properties/>
     <border type="none"/>
@@ -17,12 +17,6 @@
             <properties/>
             <border type="none"/>
             <children>
-              <component id="fdb8c" class="javax.swing.JButton" binding="reloadConfigButton" default-binding="true">
-                <constraints/>
-                <properties>
-                  <text value="Reload Config"/>
-                </properties>
-              </component>
               <component id="ced5" class="javax.swing.JButton" binding="useDefaultButton">
                 <constraints/>
                 <properties>
@@ -52,18 +46,31 @@
         <properties/>
         <border type="none"/>
         <children>
-          <component id="2f12c" class="javax.swing.JButton" binding="saveChangesButton" default-binding="true">
-            <constraints border-constraint="East"/>
-            <properties>
-              <text value="Save changes"/>
-            </properties>
-          </component>
           <component id="8edf3" class="javax.swing.JLabel" binding="versionLabel">
             <constraints border-constraint="West"/>
             <properties>
               <text value="Version 0.0.0"/>
             </properties>
           </component>
+          <grid id="9daae" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+            <constraints border-constraint="East"/>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <component id="2f12c" class="javax.swing.JButton" binding="saveChangesButton" default-binding="true">
+                <constraints/>
+                <properties>
+                  <text value="Save changes"/>
+                </properties>
+              </component>
+              <component id="fdb8c" class="javax.swing.JButton" binding="reloadConfigButton" default-binding="true">
+                <constraints/>
+                <properties>
+                  <text value="Reload Config"/>
+                </properties>
+              </component>
+            </children>
+          </grid>
         </children>
       </grid>
     </children>

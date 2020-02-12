@@ -455,11 +455,11 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
     private fun validateMultiQuery(): String? {
 
         for (line in view.multiQueryPanel.queryLines) {
-            val fromUri = line.fromUri ?: return "The URI can not be left blank when not using variables."
-            val toUri = line.toUri ?: return "The URI can not be left blank when not using variables."
+            val fromUri = line.fromUri ?: return "The from field can not be left blank when not using variables."
+            val toUri = line.toUri ?: return "The to field can not be left blank when not using variables."
 
-            if (!fromUri.startsWith("?") && !fromUri.startsWith("http://")) return "The From URI is invalid."
-            if (!toUri.startsWith("?") && !toUri.startsWith("http://")) return "The To URI is invalid."
+            if (!fromUri.startsWith("?") && !fromUri.startsWith("http://")) return "The From entity is invalid."
+            if (!toUri.startsWith("?") && !toUri.startsWith("http://")) return "The To entity is invalid."
         }
         view.multiQueryPanel.validateNodeTypeConsistency()?.let { return it }
         BGServiceManager.controlPanel?.queryConstraintPanel?.validateConstraints()?.let { return it }

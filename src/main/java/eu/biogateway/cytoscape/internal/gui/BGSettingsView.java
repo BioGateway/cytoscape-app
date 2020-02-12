@@ -79,9 +79,6 @@ public class BGSettingsView {
         final JPanel panel2 = new JPanel();
         panel2.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
         panel1.add(panel2, BorderLayout.SOUTH);
-        reloadConfigButton = new JButton();
-        reloadConfigButton.setText("Reload Config");
-        panel2.add(reloadConfigButton);
         useDefaultButton = new JButton();
         useDefaultButton.setText("Use Default");
         panel2.add(useDefaultButton);
@@ -96,12 +93,18 @@ public class BGSettingsView {
         final JPanel panel3 = new JPanel();
         panel3.setLayout(new BorderLayout(0, 0));
         mainPanel.add(panel3, BorderLayout.SOUTH);
-        saveChangesButton = new JButton();
-        saveChangesButton.setText("Save changes");
-        panel3.add(saveChangesButton, BorderLayout.EAST);
         versionLabel = new JLabel();
         versionLabel.setText("Version 0.0.0");
         panel3.add(versionLabel, BorderLayout.WEST);
+        final JPanel panel4 = new JPanel();
+        panel4.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        panel3.add(panel4, BorderLayout.EAST);
+        saveChangesButton = new JButton();
+        saveChangesButton.setText("Save changes");
+        panel4.add(saveChangesButton);
+        reloadConfigButton = new JButton();
+        reloadConfigButton.setText("Reload Config");
+        panel4.add(reloadConfigButton);
     }
 
     /**
