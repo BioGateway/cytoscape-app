@@ -134,13 +134,14 @@ object BGConfigParser {
                     // TODO: The null-checks are useless, as non-existing attributes will be returned as empty strings.
                     val name = nodeTypeElement.getAttribute("name")
                     val uriPattern = nodeTypeElement.getAttribute("uriPattern")
+                    val default = nodeTypeElement.getAttribute("default").equals("true")
                     val nodeTypeClassId = nodeTypeElement.getAttribute("class")
                     val nodeTypeClass = BGNodeType.BGNodeTypeClass.forId(nodeTypeClassId) ?: continue
                     val metadataGraph = if (nodeTypeElement.getAttribute("metadatagraph").isNotEmpty()) nodeTypeElement.getAttribute("metadatagraph") else null
                     val autocompleteTypeId = nodeTypeElement.getAttribute("autocompleteType")
                     val autocompleteType = BGNodeType.BGAutoCompleteType.forId(autocompleteTypeId)
 
-                    val nodeType = BGNodeType(id, name, uriPattern, nodeTypeClass, metadataGraph, autocompleteType)
+                    val nodeType = BGNodeType(id, name, uriPattern, nodeTypeClass, metadataGraph, autocompleteType, default)
                     config.nodeTypes[id] = nodeType
                 }
 

@@ -7,7 +7,7 @@ import eu.biogateway.cytoscape.internal.BGServiceManager
  */
 
 
-class BGNodeType(val id: String, val name: String, val uriPattern: String?, val typeClass: BGNodeTypeClass, val metadataGraph: String? = null, val autocompleteType: BGAutoCompleteType? = null) {
+class BGNodeType(val id: String, val name: String, val uriPattern: String?, val typeClass: BGNodeTypeClass, val metadataGraph: String? = null, val autocompleteType: BGAutoCompleteType? = null, val default: Boolean = false) {
 
     enum class BGAutoCompleteType {
         PREFIX,

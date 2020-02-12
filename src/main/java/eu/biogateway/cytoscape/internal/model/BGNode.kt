@@ -128,10 +128,10 @@ open class BGNode {
 
     object static {
         fun nodeTypeForUri(uri: String): BGNodeType {
-
             val matchingTypes = BGServiceManager.config.nodeTypes.values.filter { it.uriPattern != null && uri.contains(it.uriPattern) }
-
             if (matchingTypes.size == 1) return matchingTypes.first()
+            val defaultTypes = matchingTypes.filter { it.default }
+            if (defaultTypes.size == 1) return defaultTypes.first()
             return BGNodeType.UNDEFINED
         }
     }
