@@ -187,7 +187,7 @@ object BGConfigParser {
                     val id = element.getAttribute("id") ?: continue
                     val uri = element.textContent
                     val taxon = BGTaxon(id, name, uri)
-                    config.availableTaxa[id] = taxon
+                    config.availableTaxa[uri] = taxon
                 }
             }
 
