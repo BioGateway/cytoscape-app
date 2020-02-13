@@ -187,7 +187,7 @@ class BGDataModelController() {
             preferencesManager.getSelected("activeSources", it.source.toString()) ?: it.source.enabledByDefault
         }
         setSelectionFromPreferencesForType<BGTaxonTreeNode>(tree, config.taxaRootNode) {
-            preferencesManager.getSelected("activeTaxa", it.taxon.id) ?: it.taxon.enabledByDefault
+            preferencesManager.getSelected("activeTaxa", it.taxon.uri) ?: it.taxon.enabledByDefault
         }
         tree.repaint()
     }
@@ -220,7 +220,7 @@ class BGDataModelController() {
         }
         for (taxon in config.availableTaxa.values) {
             val active = config.activeTaxa.contains(taxon)
-            preferencesManager.setSelected("activeTaxa", taxon.id, active)
+            preferencesManager.setSelected("activeTaxa", taxon.uri, active)
         }
         preferencesManager.prefs.flush()
     }

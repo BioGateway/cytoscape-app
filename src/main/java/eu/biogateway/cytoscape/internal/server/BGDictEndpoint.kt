@@ -10,6 +10,7 @@ import com.google.gson.reflect.TypeToken
 import eu.biogateway.cytoscape.internal.BGServiceManager
 import eu.biogateway.cytoscape.internal.model.BGConfig
 import eu.biogateway.cytoscape.internal.model.BGSearchType
+import eu.biogateway.cytoscape.internal.model.BGTaxon
 import eu.biogateway.cytoscape.internal.util.Constants
 import eu.biogateway.cytoscape.internal.util.Utility
 import org.apache.http.client.methods.HttpPost
@@ -56,31 +57,8 @@ class BGDictEndpoint(internal var endpointUrl: String) {
     }
 
     fun searchForPrefix(prefix: String, type: String, limit: Int): ArrayList<BGSuggestion> {
-
-//        if (prefix.length == 0) {
-//            return ArrayList()
-//        }
-//
-//        val url = URL(endpointUrl + "prefixLabelSearch/?term=" + URLEncoder.encode(prefix, "UTF-8")+"&type="+type+"&limit="+limit).toURI()
-//
-//        val httpGet = HttpGet(url)
-//        val response = client.execute(httpGet)
-//        val statusCode = response.statusLine.statusCode
-//        val data = EntityUtils.toString(response.entity)
-//        //val typeToken = object : TypeToken<List<BGSuggestion>>() {}.dataType
-//        //val otherList: List<BGSuggestion> = gson.fromJson(data, typeToken)
-//
-//        if (statusCode in 200..399) {
-//            val suggestions = ArrayList(gson.fromJson<List<BGSuggestion>>(data))
-//
-////            for (suggestion in suggestions) {
-////                println(suggestion.prefLabel)
-////            }
-//
-//            return ArrayList(suggestions)
-//        } else return ArrayList()
-
-        val future = searchForPrefixAsync(prefix, type, limit)
+        val taxa = if (BGServiceManager.config.activeTaxa.size != BGServiceManager.config.availableTaxa.size) BGServiceManager.config.activeTaxa else null
+        val future = searchForPrefixAsync(prefix, type, limit, taxa = taxa)
 
         try {
             return future.get(2000, TimeUnit.MILLISECONDS)
@@ -91,17 +69,26 @@ class BGDictEndpoint(internal var endpointUrl: String) {
 
     }
 
-    fun searchForPrefixAsync(prefix: String, type: String, limit: Int): CompletableFuture<ArrayList<BGSuggestion>> {
+    fun searchForPrefixAsync(prefix: String, type: String, limit: Int, taxa: Collection<BGTaxon>? = null): CompletableFuture<ArrayList<BGSuggestion>> {
         val future = CompletableFuture<ArrayList<BGSuggestion>>()
         if (prefix.length == 0) {
             future.complete(ArrayList())
         }
 
         Executors.newCachedThreadPool().submit {
-            val url = URL(endpointUrl + "prefixLabelSearch/?term=" + URLEncoder.encode(prefix, "UTF-8")+"&type="+type+"&limit="+limit).toURI()
-
-            val httpGet = HttpGet(url)
-            val response = client.execute(httpGet)
+            val url = URL(endpointUrl + "prefixLabelSearch").toURI()
+            var taxaJson = ""
+            taxa?.let {
+                if (it.size > 0) {
+                    val terms = it.joinToString { bgTaxon -> "\"${bgTaxon.uri}\"" }
+                    taxaJson = ", \"taxa\": [$terms]"
+                }
+            }
+            val json = "{ \"term\": \"${prefix}\", \"type\": \"${type}\", \"limit\": \"${limit}\"$taxaJson}"
+            val httpPost = HttpPost(url)
+            httpPost.entity = StringEntity(json)
+            httpPost.addHeader("Content-Type", "application/json");
+            val response = client.execute(httpPost)
             val statusCode = response.statusLine.statusCode
             val data = EntityUtils.toString(response.entity)
 
