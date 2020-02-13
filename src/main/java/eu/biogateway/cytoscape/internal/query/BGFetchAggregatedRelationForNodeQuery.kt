@@ -7,11 +7,8 @@ import eu.biogateway.cytoscape.internal.parser.BGReturnType
 class BGFetchAggregatedRelationForNodeQuery(val node: BGNode, val relationIdentifier: String): BGRelationQuery(BGReturnType.RELATION_TRIPLE_GRAPHURI) {
 
     override fun generateQueryString(): String {
-        val graphName = node.type.metadataGraph ?: throw Exception("Collapsing of this type is not supported!")
-
-        var relationIdentifierParts = relationIdentifier.split("::")
+        val relationIdentifierParts = relationIdentifier.split("::")
         var graphUri: String = relationIdentifierParts.getOrElse(0) { "" }
-        val relationUri = relationIdentifierParts.getOrElse(1) {"http://ssb.biogateway.eu/unknown"}
 
         graphUri = if (graphUri.isEmpty()) {
             "?graph"
@@ -24,39 +21,17 @@ class BGFetchAggregatedRelationForNodeQuery(val node: BGNode, val relationIdenti
                 "SELECT DISTINCT ?subject $graphUri ?predicate ?object \n" +
                 "WHERE {\n" +
                 "GRAPH $graphUri {\n" +
-//                "<${node.uri}> rdf:type ?statement .\n" +
-//                "?statement rdf:subject ?subject .\n" +
-//                "?statement rdf:object ?object .\n" +
-//                "?statement rdf:predicate ?predicate .\n" +
                 "<${node.uri}> rdf:subject ?subject .\n" +
                 "<${node.uri}> rdf:object ?object .\n" +
                 "<${node.uri}> rdf:predicate ?predicate .\n" +
                 "}}"
-
-/*
-        return  "BASE <http://rdf.biogateway.eu/graph/> \n" +
-                "PREFIX sio: <http://semanticscience.org/resource/>\n" +
-                "SELECT DISTINCT ?subject $graphUri ?relation ?object \n" +
-                "WHERE {\n" +
-                "GRAPH $graphUri {\n" +
-                "<${node.uri}> sio:SIO_000139 ?subject .\n" +
-                "<${node.uri}> sio:SIO_000291 ?object .\n" +
-                "?subject ?relation ?object .\n" +
-                "}}"
-*/
     }}
 
 class BGFetchAggregatedUndirectedRelationForNodeQuery(val node: BGNode, val relationIdentifier: String, val fromUri: String, val toUri: String): BGRelationQuery(BGReturnType.RELATION_TRIPLE_GRAPHURI) {
 
     override fun generateQueryString(): String {
-        val graphName = node.type.metadataGraph ?: throw Exception("Collapsing of this type is not supported!")
-
-        var relationIdentifierParts = relationIdentifier.split("::")
+        val relationIdentifierParts = relationIdentifier.split("::")
         var graphUri: String = relationIdentifierParts.getOrElse(0) { "" }
-        val relationUri = relationIdentifierParts.getOrNull(1)
-
-
-
 
         graphUri = if (graphUri.isEmpty()) {
             "?graph"
@@ -64,20 +39,19 @@ class BGFetchAggregatedUndirectedRelationForNodeQuery(val node: BGNode, val rela
             "<$graphUri>"
         }
 
-
-            return "BASE <http://rdf.biogateway.eu/graph/> \n" +
-                    "PREFIX sio: <http://semanticscience.org/resource/>\n" +
-                    "SELECT DISTINCT ?subject $graphUri ?relationUri ?object \n" +
-                    "WHERE {\n" +
-                    "GRAPH $graphUri {\n" +
-                    "?statement rdfs:seeAlso? <${node.uri}> .\n" +
-                    "?statement rdf:subject ?subject .\n" +
-                    "?statement rdf:object ?object .\n" +
-                    "?statement rdf:predicate ?relationUri .\n"+
-                    "}\n" +
-                    "FILTER (?subject IN (<$fromUri>, <$toUri>)) \n" +
-                    "FILTER (?object IN (<$fromUri>, <$toUri>)) \n" +
-                    "FILTER (?subject != ?object) }\n"
+        return "BASE <http://rdf.biogateway.eu/graph/> \n" +
+                "PREFIX sio: <http://semanticscience.org/resource/>\n" +
+                "SELECT DISTINCT ?subject $graphUri ?relationUri ?object \n" +
+                "WHERE {\n" +
+                "GRAPH $graphUri {\n" +
+                "?statement rdfs:seeAlso? <${node.uri}> .\n" +
+                "?statement rdf:subject ?subject .\n" +
+                "?statement rdf:object ?object .\n" +
+                "?statement rdf:predicate ?relationUri .\n"+
+                "}\n" +
+                "FILTER (?subject IN (<$fromUri>, <$toUri>)) \n" +
+                "FILTER (?object IN (<$fromUri>, <$toUri>)) \n" +
+                "FILTER (?subject != ?object) }\n"
     }
 }
 
