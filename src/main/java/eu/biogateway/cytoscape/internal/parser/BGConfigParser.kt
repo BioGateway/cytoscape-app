@@ -3,11 +3,9 @@ package eu.biogateway.cytoscape.internal.parser
 import eu.biogateway.cytoscape.internal.BGBundleContext
 import eu.biogateway.cytoscape.internal.BGServiceManager
 import eu.biogateway.cytoscape.internal.model.*
-import eu.biogateway.cytoscape.internal.query.BGQueryParameter
 import eu.biogateway.cytoscape.internal.query.BGQueryTemplate
 import eu.biogateway.cytoscape.internal.util.Utility
 import org.osgi.framework.Version
-import org.w3c.dom.Document
 import org.w3c.dom.Element
 import org.w3c.dom.Node
 import java.awt.Color
@@ -120,30 +118,30 @@ object BGConfigParser {
                 config.datasetGraphs = graphMap
             }
 
-                // Parse the nodetypes:
+            // Parse the nodetypes:
 
-                val nodeTypeNode = configDoc.getChildWithName("nodetypes") ?: throw Exception("nodetypes element not found in XML file!")
+            val nodeTypeNode = configDoc.getChildWithName("nodetypes") ?: throw Exception("nodetypes element not found in XML file!")
 
 
-                val nodeTypes = nodeTypeNode.getElementsByTagName("type")
-                for (index in 0..nodeTypes.length - 1) {
-                    val nodeTypeElement = nodeTypes.item(index) as? Element ?: continue
-                    val id = nodeTypeElement.getAttribute("id") ?: continue
-                    if (id.isEmpty()) continue
+            val nodeTypes = nodeTypeNode.getElementsByTagName("type")
+            for (index in 0..nodeTypes.length - 1) {
+                val nodeTypeElement = nodeTypes.item(index) as? Element ?: continue
+                val id = nodeTypeElement.getAttribute("id") ?: continue
+                if (id.isEmpty()) continue
 
-                    // TODO: The null-checks are useless, as non-existing attributes will be returned as empty strings.
-                    val name = nodeTypeElement.getAttribute("name")
-                    val uriPattern = nodeTypeElement.getAttribute("uriPattern")
-                    val default = nodeTypeElement.getAttribute("default").equals("true")
-                    val nodeTypeClassId = nodeTypeElement.getAttribute("class")
-                    val nodeTypeClass = BGNodeType.BGNodeTypeClass.forId(nodeTypeClassId) ?: continue
-                    val metadataGraph = if (nodeTypeElement.getAttribute("metadatagraph").isNotEmpty()) nodeTypeElement.getAttribute("metadatagraph") else null
-                    val autocompleteTypeId = nodeTypeElement.getAttribute("autocompleteType")
-                    val autocompleteType = BGNodeType.BGAutoCompleteType.forId(autocompleteTypeId)
+                // TODO: The null-checks are useless, as non-existing attributes will be returned as empty strings.
+                val name = nodeTypeElement.getAttribute("name")
+                val uriPattern = nodeTypeElement.getAttribute("uriPattern")
+                val default = nodeTypeElement.getAttribute("default").equals("true")
+                val nodeTypeClassId = nodeTypeElement.getAttribute("class")
+                val nodeTypeClass = BGNodeType.BGNodeTypeClass.forId(nodeTypeClassId) ?: continue
+                val metadataGraph = if (nodeTypeElement.getAttribute("metadatagraph").isNotEmpty()) nodeTypeElement.getAttribute("metadatagraph") else null
+                val autocompleteTypeId = nodeTypeElement.getAttribute("autocompleteType")
+                val autocompleteType = BGNodeType.BGAutoCompleteType.forId(autocompleteTypeId)
 
-                    val nodeType = BGNodeType(id, name, uriPattern, nodeTypeClass, metadataGraph, autocompleteType, default)
-                    config.nodeTypes[id] = nodeType
-                }
+                val nodeType = BGNodeType(id, name, uriPattern, nodeTypeClass, metadataGraph, autocompleteType, default)
+                config.nodeTypes[id] = nodeType
+            }
 
 
             // Parse RelationTypes
@@ -178,6 +176,21 @@ object BGConfigParser {
                 }
             }
 
+            // Parsing taxa
+            (configDoc.getChildWithName("taxa"))?.let { taxaNode ->
+                // ?: throw Exception("sources element not found in XML file!")
+
+                val taxaList = taxaNode.getElementsByTagName("taxon")
+                for (j in 0..taxaList.length - 1) {
+                    val element = taxaList.item(j) as? Element ?: continue
+                    val name = element.getAttribute("name") ?: continue
+                    val id = element.getAttribute("id") ?: continue
+                    val uri = element.textContent
+                    val taxon = BGTaxon(id, name, uri)
+                    config.availableTaxa[id] = taxon
+                }
+            }
+
             // Parsing datasetsources
             (configDoc.getChildWithName("sources"))?.let { sourcesTypeNode ->
                 // ?: throw Exception("sources element not found in XML file!")
@@ -209,74 +222,74 @@ object BGConfigParser {
             // Parsing RelationMetadataTypes
 
             (configDoc.getChildWithName("relationMetadata"))?.let { relationMetadataNode -> // ?: throw Exception("relationMetadata element not found in XML file!")
-            val relationMetadataList = relationMetadataNode.getElementsByTagName("metadataType")
+                val relationMetadataList = relationMetadataNode.getElementsByTagName("metadataType")
 
-            for (index in 0..relationMetadataList.length-1) {
-                val metadataElement = relationMetadataList.item(index) as? Element ?: continue
-                val id = metadataElement.getAttribute("id") ?: continue
-                val label = metadataElement.getAttribute("label") ?: continue
-                val relationUri = metadataElement.getAttribute("relationUri") ?: continue
-                val typeName = metadataElement.getAttribute("dataType") ?: continue
-                val sparql = metadataElement.getAttribute("sparql")
+                for (index in 0..relationMetadataList.length-1) {
+                    val metadataElement = relationMetadataList.item(index) as? Element ?: continue
+                    val id = metadataElement.getAttribute("id") ?: continue
+                    val label = metadataElement.getAttribute("label") ?: continue
+                    val relationUri = metadataElement.getAttribute("relationUri") ?: continue
+                    val typeName = metadataElement.getAttribute("dataType") ?: continue
+                    val sparql = metadataElement.getAttribute("sparql")
 
-                val dataType = BGTableDataType.getTypeFromString(typeName) ?: continue
+                    val dataType = BGTableDataType.getTypeFromString(typeName) ?: continue
 
-                val relationTypes = ArrayList<BGRelationType>()
+                    val relationTypes = ArrayList<BGRelationType>()
 
-                val relationTypeList = metadataElement.getElementsByTagName("relationType")
-                for (j in 0..relationTypeList.length-1) {
-                    val rtElement = relationTypeList.item(j) as? Element ?: continue
-                    val rtGraph = rtElement.getAttribute("graph") ?: continue
-                    val rtUri = rtElement.textContent
-                    val relationType = config.getRelationTypeForURIandGraph(rtUri, rtGraph) ?: continue
-                    relationTypes.add(relationType)
+                    val relationTypeList = metadataElement.getElementsByTagName("relationType")
+                    for (j in 0..relationTypeList.length-1) {
+                        val rtElement = relationTypeList.item(j) as? Element ?: continue
+                        val rtGraph = rtElement.getAttribute("graph") ?: continue
+                        val rtUri = rtElement.textContent
+                        val relationType = config.getRelationTypeForURIandGraph(rtUri, rtGraph) ?: continue
+                        relationTypes.add(relationType)
+                    }
+                    val conversions = HashMap<String, String>()
+
+                    val conversionList = metadataElement.getElementsByTagName("conversion")
+                    for (j in 0..conversionList.length-1) {
+                        val cvrtElement = conversionList.item(j) as? Element ?: continue
+                        val fromValue = cvrtElement.getAttribute("fromValue") ?: continue
+                        val toValue = cvrtElement.getAttribute("toValue") ?: continue
+                        conversions[fromValue] = toValue
+                    }
+
+                    val metadataType = BGRelationMetadataType(id, label, dataType, relationUri, relationTypes, sparql, conversions)
+
+                    metadataElement.getAttribute("scalingFactor")?.toDoubleOrNull()?.let {
+                        metadataType.scalingFactor = it
+                    }
+
+                    config.edgeMetadataTypes[metadataType.id] = metadataType
                 }
-                val conversions = HashMap<String, String>()
-
-                val conversionList = metadataElement.getElementsByTagName("conversion")
-                for (j in 0..conversionList.length-1) {
-                    val cvrtElement = conversionList.item(j) as? Element ?: continue
-                    val fromValue = cvrtElement.getAttribute("fromValue") ?: continue
-                    val toValue = cvrtElement.getAttribute("toValue") ?: continue
-                    conversions[fromValue] = toValue
-                }
-
-                val metadataType = BGRelationMetadataType(id, label, dataType, relationUri, relationTypes, sparql, conversions)
-
-                metadataElement.getAttribute("scalingFactor")?.toDoubleOrNull()?.let {
-                    metadataType.scalingFactor = it
-                }
-
-                config.edgeMetadataTypes[metadataType.id] = metadataType
-            }
             }
 
             // Parsing NodeMetadataTypes
 
             (configDoc.getChildWithName("nodeMetadata"))?.let { nodeMetadataNode -> // ?: throw Exception("nodeMetadata element not found in XML file!")
-            val nodeMetadataList = nodeMetadataNode.getElementsByTagName("metadataType")
+                val nodeMetadataList = nodeMetadataNode.getElementsByTagName("metadataType")
 
-            for (index in 0..nodeMetadataList.length-1) {
-                val metadataElement = nodeMetadataList.item(index) as? Element ?: continue
-                val id = metadataElement.getAttribute("id") ?: continue
-                val label = metadataElement.getAttribute("label") ?: continue
-                val nodeTypeString = metadataElement.getAttribute("nodeType") ?: continue
-                val typeName = metadataElement.getAttribute("dataType") ?: continue
-                val sparql = metadataElement.getAttribute("sparql")
-                val template = metadataElement.getAttribute("template")
-                val restGet = metadataElement.getAttribute("restGet")
-                val jsonField = metadataElement.getAttribute("jsonField")
-
-
-                val dataType = BGTableDataType.getTypeFromString(typeName) ?: continue
-                val nodeType = config.nodeTypes.get(nodeTypeString) ?: continue
+                for (index in 0..nodeMetadataList.length-1) {
+                    val metadataElement = nodeMetadataList.item(index) as? Element ?: continue
+                    val id = metadataElement.getAttribute("id") ?: continue
+                    val label = metadataElement.getAttribute("label") ?: continue
+                    val nodeTypeString = metadataElement.getAttribute("nodeType") ?: continue
+                    val typeName = metadataElement.getAttribute("dataType") ?: continue
+                    val sparql = metadataElement.getAttribute("sparql")
+                    val template = metadataElement.getAttribute("template")
+                    val restGet = metadataElement.getAttribute("restGet")
+                    val jsonField = metadataElement.getAttribute("jsonField")
 
 
-                val metadataType = BGNodeMetadataType(id, label, dataType, nodeType, template, sparql, restGet, jsonField)
+                    val dataType = BGTableDataType.getTypeFromString(typeName) ?: continue
+                    val nodeType = config.nodeTypes.get(nodeTypeString) ?: continue
 
 
-                config.nodeMetadataTypes[metadataType.id] = metadataType
-            }
+                    val metadataType = BGNodeMetadataType(id, label, dataType, nodeType, template, sparql, restGet, jsonField)
+
+
+                    config.nodeMetadataTypes[metadataType.id] = metadataType
+                }
             }
 
 
@@ -447,63 +460,63 @@ object BGConfigParser {
             // Parse QueryConstraints. Must be after parsing RelationTypes, as it relies on finding relation types in config.
 
             (configDoc.getChildWithName("queryConstraints"))?.let { queryConstraintNode -> // ?: throw Exception("queryConstraints element not found in XML file!")
-            val constraintList = queryConstraintNode.getElementsByTagName("constraint")
+                val constraintList = queryConstraintNode.getElementsByTagName("constraint")
 
-            for (index in 0..constraintList.length-1) {
-                val constraint = constraintList.item(index) as? Element ?: continue
-                val id = constraint.getAttribute("id") ?: continue
-                val label = constraint.getAttribute("label") ?: continue
-                val columns = constraint.getAttribute("columns").toIntOrNull()
-                val typeName = constraint.getAttribute("type") ?: continue
+                for (index in 0..constraintList.length-1) {
+                    val constraint = constraintList.item(index) as? Element ?: continue
+                    val id = constraint.getAttribute("id") ?: continue
+                    val label = constraint.getAttribute("label") ?: continue
+                    val columns = constraint.getAttribute("columns").toIntOrNull()
+                    val typeName = constraint.getAttribute("type") ?: continue
 
-                val type = when (typeName) {
-                    "combobox" -> BGQueryConstraint.InputType.COMBOBOX
-                    "text" -> BGQueryConstraint.InputType.TEXT
-                    "number" -> BGQueryConstraint.InputType.NUMBER
-                    else -> null } ?: continue
-
-                val queryConstraint = BGQueryConstraint(id, label, type, columns)
-
-                val actionsList = constraint.getElementsByTagName("action")
-
-                for (i in 0..actionsList.length-1) {
-                    val actionElement = actionsList.item(i) as? Element ?: continue
-                    val parameterString = actionElement.getAttribute("parameter") ?: continue
-                    val actionParameter = when (parameterString) {
-                        "first" -> BGQueryConstraint.ActionParameter.FIRST
-                        "last" -> BGQueryConstraint.ActionParameter.LAST
-                        "both" -> BGQueryConstraint.ActionParameter.BOTH
+                    val type = when (typeName) {
+                        "combobox" -> BGQueryConstraint.InputType.COMBOBOX
+                        "text" -> BGQueryConstraint.InputType.TEXT
+                        "number" -> BGQueryConstraint.InputType.NUMBER
                         else -> null } ?: continue
-                    val actionGraph = actionElement.getAttribute("graph") ?: continue
-                    val sparqlElement = actionElement.getElementsByTagName("sparql").item(0) as?  Element ?: continue
-                    val sparqlString = sparqlElement.textContent
 
-                    val relationTypes = ArrayList<BGRelationType>()
+                    val queryConstraint = BGQueryConstraint(id, label, type, columns)
 
-                    val relationTypeList = actionElement.getElementsByTagName("relationType")
-                    for (j in 0..relationTypeList.length-1) {
-                        val rtElement = relationTypeList.item(j) as? Element ?: continue
-                        val rtGraph = rtElement.getAttribute("graph") ?: continue
-                        val rtUri = rtElement.textContent
-                        val relationType = config.getRelationTypeForURIandGraph(rtUri, rtGraph) ?: continue
-                        relationTypes.add(relationType)
+                    val actionsList = constraint.getElementsByTagName("action")
+
+                    for (i in 0..actionsList.length-1) {
+                        val actionElement = actionsList.item(i) as? Element ?: continue
+                        val parameterString = actionElement.getAttribute("parameter") ?: continue
+                        val actionParameter = when (parameterString) {
+                            "first" -> BGQueryConstraint.ActionParameter.FIRST
+                            "last" -> BGQueryConstraint.ActionParameter.LAST
+                            "both" -> BGQueryConstraint.ActionParameter.BOTH
+                            else -> null } ?: continue
+                        val actionGraph = actionElement.getAttribute("graph") ?: continue
+                        val sparqlElement = actionElement.getElementsByTagName("sparql").item(0) as?  Element ?: continue
+                        val sparqlString = sparqlElement.textContent
+
+                        val relationTypes = ArrayList<BGRelationType>()
+
+                        val relationTypeList = actionElement.getElementsByTagName("relationType")
+                        for (j in 0..relationTypeList.length-1) {
+                            val rtElement = relationTypeList.item(j) as? Element ?: continue
+                            val rtGraph = rtElement.getAttribute("graph") ?: continue
+                            val rtUri = rtElement.textContent
+                            val relationType = config.getRelationTypeForURIandGraph(rtUri, rtGraph) ?: continue
+                            relationTypes.add(relationType)
+                        }
+                        val action = BGQueryConstraint.ConstraintAction(actionParameter, actionGraph, relationTypes, sparqlString)
+                        queryConstraint.actions.add(action)
                     }
-                    val action = BGQueryConstraint.ConstraintAction(actionParameter, actionGraph, relationTypes, sparqlString)
-                    queryConstraint.actions.add(action)
-                }
 
-                val optionsList = constraint.getElementsByTagName("option")
-                for (oIndex in 0..optionsList.length - 1) {
-                    if (optionsList.item(oIndex).nodeType == Node.ELEMENT_NODE) {
-                        val oElement = optionsList.item(oIndex) as Element
-                        val optionLabel = oElement.getAttribute("name")
-                        val optionValue = oElement.textContent
-                        val option = BGQueryConstraint.ComboBoxOption(optionLabel, optionValue)
-                        queryConstraint.options.add(option)
+                    val optionsList = constraint.getElementsByTagName("option")
+                    for (oIndex in 0..optionsList.length - 1) {
+                        if (optionsList.item(oIndex).nodeType == Node.ELEMENT_NODE) {
+                            val oElement = optionsList.item(oIndex) as Element
+                            val optionLabel = oElement.getAttribute("name")
+                            val optionValue = oElement.textContent
+                            val option = BGQueryConstraint.ComboBoxOption(optionLabel, optionValue)
+                            queryConstraint.options.add(option)
+                        }
                     }
+                    config.queryConstraints[queryConstraint.id] = queryConstraint
                 }
-                config.queryConstraints[queryConstraint.id] = queryConstraint
-            }
             }
 
             // Parse example queries
@@ -526,32 +539,32 @@ object BGConfigParser {
             // Parse Search Types
 
             configDoc.getChildWithName("searchTypes")?.let { searchTypesNode ->  //?: throw Exception("searchTypes element not found in XML file!")
-            val searchTypesElements = searchTypesNode.getElementsByTagName("searchType")
+                val searchTypesElements = searchTypesNode.getElementsByTagName("searchType")
 
-            for (index in 0..searchTypesElements.length-1) {
-                val searchTypeElement = searchTypesElements.item(index) as? Element ?: continue
-                val id = searchTypeElement.getAttribute("id")
-                val title = searchTypeElement.getAttribute("title")
-                val returnType = searchTypeElement.getAttribute("returnType")
-                val nodeTypeString = searchTypeElement.getAttribute("nodeType")
-                val arraySearch = searchTypeElement.getAttribute("arraySearch") == "true"
-                val restPath = searchTypeElement.getAttribute("restPath")
-                val httpMethodString = searchTypeElement.getAttribute("httpMethod")
-                val parameters = searchTypeElement.getAttribute("parameters")
-                val searchPrefix = searchTypeElement.getAttribute("searchPrefix")
+                for (index in 0..searchTypesElements.length-1) {
+                    val searchTypeElement = searchTypesElements.item(index) as? Element ?: continue
+                    val id = searchTypeElement.getAttribute("id")
+                    val title = searchTypeElement.getAttribute("title")
+                    val returnType = searchTypeElement.getAttribute("returnType")
+                    val nodeTypeString = searchTypeElement.getAttribute("nodeType")
+                    val arraySearch = searchTypeElement.getAttribute("arraySearch") == "true"
+                    val restPath = searchTypeElement.getAttribute("restPath")
+                    val httpMethodString = searchTypeElement.getAttribute("httpMethod")
+                    val parameters = searchTypeElement.getAttribute("parameters")
+                    val searchPrefix = searchTypeElement.getAttribute("searchPrefix")
 
 
-                val httpMethod = when (httpMethodString) {
-                    "GET" -> BGSearchType.HTTPOperation.GET
-                    "POST" -> BGSearchType.HTTPOperation.POST
-                    else -> null
-                } ?: continue
-                val nodeType = config.nodeTypes[nodeTypeString] ?: continue
+                    val httpMethod = when (httpMethodString) {
+                        "GET" -> BGSearchType.HTTPOperation.GET
+                        "POST" -> BGSearchType.HTTPOperation.POST
+                        else -> null
+                    } ?: continue
+                    val nodeType = config.nodeTypes[nodeTypeString] ?: continue
 
-                val searchType = BGSearchType(id, title, nodeType, returnType, restPath, arraySearch, httpMethod, searchPrefix, parameters)
+                    val searchType = BGSearchType(id, title, nodeType, returnType, restPath, arraySearch, httpMethod, searchPrefix, parameters)
 
-                config.searchTypes.add(searchType)
-            }
+                    config.searchTypes.add(searchType)
+                }
             }
 
             // Parse the visual style config:

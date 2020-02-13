@@ -20,6 +20,7 @@ import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.TreePath
 
 class BGRelationTypeTreeNode(val relationType: BGRelationType): DefaultMutableTreeNode(relationType.name)
+class BGTaxonTreeNode(val taxon: BGTaxon): DefaultMutableTreeNode(taxon.name)
 class BGMetadataTypeTreeNode(val metadataType: BGRelationMetadataType): DefaultMutableTreeNode(metadataType.name)
 class BGNodeMetadataTypeTreeNode(val metadataType: BGNodeMetadataType): DefaultMutableTreeNode(metadataType.label)
 class BGQueryConstraintTreeNode(val constraint: BGQueryConstraint): DefaultMutableTreeNode(constraint.label)
@@ -57,7 +58,6 @@ class BGDataModelController() {
     }
 
 
-
     val config: BGConfig
     private val preferencesManager = PreferencesManager()
     val settings = BGSettings()
@@ -91,7 +91,14 @@ class BGDataModelController() {
             }
             config.relationTypesRootNode.add(graphNode)
         }
+        if (config.availableTaxa.size > 0) {
+            config.configPanelRootNode.add(config.taxaRootNode)
 
+            for (taxon in config.availableTaxa.values.sortedBy { it.name }) {
+                val node = BGTaxonTreeNode(taxon)
+                config.taxaRootNode.add(node)
+            }
+        }
         if (config.edgeMetadataTypes.size > 0) {
             config.configPanelRootNode.add(config.relationMetadataTypesNode)
 
@@ -179,6 +186,9 @@ class BGDataModelController() {
         setSelectionFromPreferencesForType<BGSourceTreeNode>(tree, config.sourcesRootNode) {
             preferencesManager.getSelected("activeSources", it.source.toString()) ?: it.source.enabledByDefault
         }
+        setSelectionFromPreferencesForType<BGTaxonTreeNode>(tree, config.taxaRootNode) {
+            preferencesManager.getSelected("activeTaxa", it.taxon.id) ?: it.taxon.enabledByDefault
+        }
         tree.repaint()
     }
 
@@ -208,6 +218,10 @@ class BGDataModelController() {
             val active = config.activeSources.contains(source)
             preferencesManager.setSelected("activeSources", source.toString(), active)
         }
+        for (taxon in config.availableTaxa.values) {
+            val active = config.activeTaxa.contains(taxon)
+            preferencesManager.setSelected("activeTaxa", taxon.id, active)
+        }
         preferencesManager.prefs.flush()
     }
 
@@ -227,6 +241,7 @@ class BGDataModelController() {
         val constraintSet = HashSet<BGQueryConstraint>()
         val nodeFilterSet = HashSet<BGNodeFilter>()
         val sourceSet = HashSet<BGDatasetSource>()
+        val taxaSet = HashSet<BGTaxon>()
 
         for (path in paths) {
             (path.lastPathComponent as? BGRelationTypeTreeNode)?.let {
@@ -247,6 +262,9 @@ class BGDataModelController() {
             (path.lastPathComponent as? BGNodeFilterTreeNode)?.let {
                 nodeFilterSet.add(it.filter)
             }
+            (path.lastPathComponent as? BGTaxonTreeNode)?.let {
+                taxaSet.add(it.taxon)
+            }
         }
         config.activeRelationTypes = relationSet
         config.activeEdgeMetadataTypes = edgeMetadataSet
@@ -254,9 +272,9 @@ class BGDataModelController() {
         config.activeConstraints = constraintSet
         config.activeSources = sourceSet
         config.activeNodeFilters = nodeFilterSet
+        config.activeTaxa = taxaSet
 
         updateSelectedConfigTreePreferences()
-        //return set
     }
 
     fun setActivationForRelationType(graph: BGGraph, relationTypeName: String, isActive: Boolean) {
