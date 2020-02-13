@@ -25,6 +25,7 @@ class BGConfig {
 
     val searchTypes = ArrayList<BGSearchType>()
 
+    var availableTaxa = HashMap<String, BGTaxon>()
     var queryConstraints = HashMap<String, BGQueryConstraint>()
     var edgeMetadataTypes = HashMap<String, BGRelationMetadataType>()
     var nodeMetadataTypes = HashMap<String, BGNodeMetadataType>()
@@ -36,6 +37,7 @@ class BGConfig {
     var sourcesRootNode = DefaultMutableTreeNode("Sources")
     var nodeFiltersRootNode = DefaultMutableTreeNode("Node Filters")
     var relationTypesRootNode = DefaultMutableTreeNode("Datasets")
+    var taxaRootNode = DefaultMutableTreeNode("Active Taxa")
     var configPanelRootNode = DefaultMutableTreeNode("Root")
     var configPanelTreeModel: DefaultTreeModel = DefaultTreeModel(configPanelRootNode)
 
@@ -51,6 +53,7 @@ class BGConfig {
     var activeConstraints = HashSet<BGQueryConstraint>()
     var activeSources = HashSet<BGDatasetSource>()
     var activeNodeFilters = HashSet<BGNodeFilter>()
+    var activeTaxa = HashSet<BGTaxon>()
 
     val filteredRelationTypeMap: Map<String, BGRelationType> get() {
         return relationTypeMap.filter { activeRelationTypes.contains(it.value) }
