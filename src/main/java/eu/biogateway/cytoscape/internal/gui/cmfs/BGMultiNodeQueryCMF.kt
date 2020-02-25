@@ -1,6 +1,5 @@
 package eu.biogateway.cytoscape.internal.gui.cmfs
 
-import kotlinx.coroutines.experimental.async
 import org.cytoscape.application.swing.CyMenuItem
 import org.cytoscape.application.swing.CyNetworkViewContextMenuFactory
 import eu.biogateway.cytoscape.internal.BGServiceManager
@@ -16,6 +15,7 @@ import org.cytoscape.model.CyTableUtil
 import org.cytoscape.view.model.CyNetworkView
 import org.cytoscape.work.TaskIterator
 import javax.swing.*
+import kotlin.concurrent.thread
 
 class BGMultiNodeQueryCMF(val gravity: Float): CyNetworkViewContextMenuFactory {
     override fun createMenuItem(netView: CyNetworkView?): CyMenuItem {
@@ -42,14 +42,14 @@ class BGMultiNodeQueryCMF(val gravity: Float): CyNetworkViewContextMenuFactory {
             parentMenu.addSeparator()
             parentMenu.add(createRelationSearchMenu("Find common relations TO selected", netView, selectedUris, BGRelationDirection.TO, true))
 
-            createPPISearchMenu("Look for binary PPIs", network, selectedUris, false)?.let {
+            /*createPPISearchMenu("Look for binary PPIs", network, selectedUris, false)?.let {
                 parentMenu.addSeparator()
                 parentMenu.add(it)
             }
             createPPISearchMenu("Look for common binary PPIs", network, selectedUris, true)?.let {
                 parentMenu.addSeparator()
                 parentMenu.add(it)
-            }
+            }*/
 
             // Exmerimental functionality allowing users to search for relations to or from a CyGroup:
 //            createSearchToGroupMenu("Search to group", netView, network, selectedUris)?.let {
@@ -150,11 +150,12 @@ class BGMultiNodeQueryCMF(val gravity: Float): CyNetworkViewContextMenuFactory {
                 val query = createPPISearchQuery(nodeUris, network, onlyCommonRelations, group)
                 if (query != null) {
                     BGServiceManager.taskManager?.execute(TaskIterator(query))
-                    async {
+
+                    thread {
                         val returnData = query.returnFuture.get()
                         if (returnData.relationsData.size == 0) {
                             JOptionPane.showMessageDialog(null, "No results found", "No relations found.", JOptionPane.INFORMATION_MESSAGE)
-                            return@async
+                            return@thread
                             //throw Exception("No relations found.")
                         }
                         BGLoadNodeDataFromBiogwDict.createAndRun(returnData.unloadedNodes, 300) {
