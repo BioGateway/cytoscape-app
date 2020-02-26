@@ -25,15 +25,15 @@ class BGBulkImportNodesFromURIs(val nodeType: BGNodeType, val nodeUris: Collecti
         query.run()
         val nodeResults = query.futureReturnData.get(10, TimeUnit.SECONDS) as BGReturnNodeData
         if (nodeResults.nodeData.size == 0) throw Exception("No results found.")
-        val taxonUris = nodeResults.nodeData.map { it.value.taxon }.filterNotNull().toHashSet()
-        val taxaMap = searchDictionaryForTaxa(taxonUris)
 
-        // For the results, we want to use the taxa names instead of URIs where possible.
+        /*// For the results, we want to use the taxa names instead of URIs where possible.
+        val taxonUris = nodeResults.nodeData.map { it.value.taxon?.uri }.filterNotNull().toHashSet()
+        val taxaMap = searchDictionaryForTaxa(taxonUris)
         for (node in nodeResults.nodeData.values) {
-            node.taxon?.let {
+            node.taxon?.uri.let {
                 node.taxon = taxaMap[it] ?: node.taxon
             }
-        }
+        }*/
 
         // We return the nodes that we got from the node fetch query above.
         returnData = nodeResults

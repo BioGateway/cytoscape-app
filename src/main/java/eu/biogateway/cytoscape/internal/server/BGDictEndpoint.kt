@@ -61,7 +61,7 @@ class BGDictEndpoint(internal var endpointUrl: String) {
         val future = searchForPrefixAsync(prefix, type, limit, taxa = taxa)
 
         try {
-            return future.get(2000, TimeUnit.MILLISECONDS)
+            return future.get(5000, TimeUnit.MILLISECONDS)
         } catch (timeout: TimeoutException) {
             showConnectionErrorDialog()
             return ArrayList()
@@ -129,7 +129,7 @@ class BGDictEndpoint(internal var endpointUrl: String) {
 
 
         try {
-            return future.get(2000, TimeUnit.MILLISECONDS)
+            return future.get(5000, TimeUnit.MILLISECONDS)
         } catch (timeout: TimeoutException) {
             showConnectionErrorDialog()
             return ArrayList()
@@ -153,7 +153,7 @@ class BGDictEndpoint(internal var endpointUrl: String) {
         val future = getSuggestionForURIAsync(uri)
 
         try {
-            return future.get(2000, TimeUnit.MILLISECONDS)
+            return future.get(5000, TimeUnit.MILLISECONDS)
         } catch (timeout: TimeoutException) {
             showConnectionErrorDialog()
             return null
@@ -211,7 +211,7 @@ class BGDictEndpoint(internal var endpointUrl: String) {
         }
 
         try {
-            return future.get(2000, TimeUnit.MILLISECONDS)
+            return future.get(5000, TimeUnit.MILLISECONDS)
         } catch (timeout: TimeoutException) {
             showConnectionErrorDialog()
             return ArrayList()
@@ -254,7 +254,7 @@ class BGDictEndpoint(internal var endpointUrl: String) {
         }
 
         try {
-            return future.get(2000, TimeUnit.MILLISECONDS)
+            return future.get(5000, TimeUnit.MILLISECONDS)
         } catch (timeout: TimeoutException) {
             showConnectionErrorDialog()
             return ArrayList()

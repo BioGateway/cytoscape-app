@@ -23,7 +23,7 @@ open class BGNode {
     var reviewed = false
 
     var description: String? = null
-    var taxon: String? = null
+    var taxon: BGTaxon? = null
 
     var metadata = HashMap<String, BGNodeMetadata>()
 
@@ -47,13 +47,16 @@ open class BGNode {
         } else {
             this.name = ""
         }
-        type = BGNode.static.nodeTypeForUri(uri)
+        type = static.nodeTypeForUri(uri)
+        static.taxonForUri(uri)?.let { taxon ->
+            this.taxon = taxon
+        }
     }
 
     constructor(suggestion: BGSuggestion) : this(suggestion._id) {
         this.name = suggestion.prefLabel
         this.description = suggestion.definition
-        this.taxon = suggestion.taxon
+        this.taxon = BGServiceManager.config.availableTaxa[suggestion.taxon]
         this.reviewed = suggestion.reviewed
     }
 
@@ -66,7 +69,7 @@ open class BGNode {
     }
 
     constructor(uri: String, name: String, description: String, taxon: String) : this(uri, name, description) {
-        this.taxon = taxon
+        this.taxon = BGServiceManager.config.availableTaxa[taxon]
     }
 
     constructor(uri: String, name: String, description: String, reviewed: Boolean) : this(uri, name, description) {
@@ -108,7 +111,7 @@ open class BGNode {
     }
 
     fun nameStringArray(): Array<String> {
-        return arrayOf(this.uri, this.name ?: "", this.description ?: "", this.taxon ?: "")
+        return arrayOf(this.uri, this.name ?: "", this.description ?: "", this.taxon?.name ?: "")
     }
 
     override fun hashCode(): Int {
@@ -133,6 +136,11 @@ open class BGNode {
             val defaultTypes = matchingTypes.filter { it.default }
             if (defaultTypes.size == 1) return defaultTypes.first()
             return BGNodeType.UNDEFINED
+        }
+
+        fun taxonForUri(uri: String): BGTaxon? {
+            val taxonId = uri.replace("http://rdf.biogateway.eu/", "").split("/").getOrNull(1) ?: ""
+            return BGServiceManager.config.availableTaxa["http://purl.bioontology.org/ontology/NCBITAXON/$taxonId"]
         }
     }
 }

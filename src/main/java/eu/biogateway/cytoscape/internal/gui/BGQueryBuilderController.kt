@@ -515,9 +515,15 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
             tableModel.removeRow(i)
         }
         for (relation in relations) {
-            val fromNodeName = relation.fromNode.name ?: relation.fromNode.uri
+            var fromNodeName = relation.fromNode.name ?: relation.fromNode.uri
+            relation.fromNode.taxon?.name?.let { taxon ->
+                fromNodeName += " - $taxon"
+            }
             val relationName = relation.relationType.name
-            val toNodeName = relation.toNode.name ?: relation.toNode.uri
+            var toNodeName = relation.toNode.name ?: relation.toNode.uri
+            relation.toNode.taxon?.name?.let { taxon ->
+                toNodeName += " - $taxon"
+            }
             val row = arrayOf(fromNodeName, relationName, toNodeName)
             tableModel.addRow(row)
             currentResultsInTable[tableModel.rowCount-1] = BGRelationResultRow(relation)

@@ -30,6 +30,7 @@ class BGConfig {
     var edgeMetadataTypes = HashMap<String, BGRelationMetadataType>()
     var nodeMetadataTypes = HashMap<String, BGNodeMetadataType>()
     var datasetSources = HashMap<BGRelationType, HashSet<BGDatasetSource>>()
+    var taxonConstraint: BGQueryConstraint? = null
 
     var relationMetadataTypesNode = DefaultMutableTreeNode("Edge Metadata Types")
     var nodeMetadataTypesNode = DefaultMutableTreeNode("Node Metadata Types")

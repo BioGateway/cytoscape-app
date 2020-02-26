@@ -49,7 +49,7 @@ class BGTaxonFilter(val taxon: String): BGNodeFilterType() {
         if (!nodeTypes.contains(node.type)) {
             return true
         }
-        return (taxon == node.taxon)
+        return (taxon == node.taxon?.uri)
     }
 }
 
