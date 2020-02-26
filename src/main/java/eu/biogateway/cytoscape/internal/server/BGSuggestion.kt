@@ -24,5 +24,5 @@ open class BGSuggestion(val _id: String, val prefLabel: String, val synonyms: Ar
        return  string
     }
 
-    constructor(node: BGNode): this(node.uri, node.name, null, node.description, node.taxon)
+    constructor(node: BGNode): this(node.uri, node.name, null, node.description, node.taxon?.uri)
 }

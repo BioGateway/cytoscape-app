@@ -57,6 +57,11 @@ fun CyNode.setType(type: String, network: CyNetwork) {
     table.getRow(this.suid).set(Constants.BG_FIELD_NODE_TYPE, type)
 }
 
+fun CyNode.setTaxon(taxon: String, network: CyNetwork) {
+    val table = network.defaultNodeTable
+    table.getRow(this.suid).set(Constants.BG_FIELD_NODE_TAXON, taxon)
+}
+
 fun CyNode.getType(network: CyNetwork): String {
     return network.defaultNodeTable.getRow(this.suid).get(Constants.BG_FIELD_NODE_TYPE, String::class.java)
 }
@@ -762,6 +767,9 @@ class BGNetworkBuilder() {
         cyNode.setName(name, network)
 
         cyNode.setType(node.type.name, network)
+        node.taxon?.name?.let { taxon ->
+            cyNode.setTaxon(taxon, network)
+        }
 
         node.description?.let { cyNode.setDescription(it, network)}
         // TODO: WARNING: Unknown behaviour if the CyNodes CyNetwork is deleted!

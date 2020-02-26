@@ -2,7 +2,6 @@ package eu.biogateway.cytoscape.internal.gui.multiquery
 
 import eu.biogateway.cytoscape.internal.model.BGQueryConstraint
 import java.awt.FlowLayout
-import java.awt.TextField
 import java.util.ArrayList
 import javax.swing.*
 
@@ -41,6 +40,9 @@ class BGQueryConstraintPanel(val constraints: HashSet<BGQueryConstraint>): JPane
                 }
                 BGQueryConstraint.InputType.NUMBER -> {
                     JTextField(columns)
+                }
+                BGQueryConstraint.InputType.BOOLEAN -> {
+                    JLabel(constraint.label)
                 }
             }
             panel.add(inputComponent)
@@ -113,6 +115,9 @@ class BGQueryConstraintPanel(val constraints: HashSet<BGQueryConstraint>): JPane
                         throw InvalidInputValueException("The "+constraintComponent.constraint.label+" constraint is enabled, but no value is set!")
                     }
                     "\""+text+"\""
+                }
+                BGQueryConstraint.InputType.BOOLEAN -> {
+                    ""
                 }
             }
 

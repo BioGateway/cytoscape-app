@@ -13,7 +13,7 @@ class BGQueryConstraint(val id: String, val label: String, val inputType: InputT
     var enabledByDefault = false
 
     enum class InputType {
-        COMBOBOX, TEXT, NUMBER
+        COMBOBOX, TEXT, NUMBER, BOOLEAN
     }
     enum class ActionParameter {
         FIRST, LAST, BOTH
@@ -34,8 +34,20 @@ class BGQueryConstraint(val id: String, val label: String, val inputType: InputT
 
     companion object {
 
+        fun generateTaxonConstraintValue(): ConstraintValue? {
+            BGTaxon.generateTaxonConstraint()?.let {
+                return ConstraintValue(stringValue = it, isEnabled = true)
+            }
+            return null
+        }
+
         fun generateConstraintQueries(triples: Collection<Triple<String, BGRelationType, String>>): String {
             val constraintValues = BGServiceManager.controlPanel?.queryConstraintPanel?.getConstraintValues() ?: return ""
+            BGServiceManager.config.taxonConstraint?.let { constraint ->
+                generateTaxonConstraintValue()?.let { value ->
+                    constraintValues[constraint] = value
+                }
+            }
             return generateConstraintQueries(constraintValues, triples)
         }
 

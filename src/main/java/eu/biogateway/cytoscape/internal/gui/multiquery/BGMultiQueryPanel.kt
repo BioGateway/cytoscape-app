@@ -259,7 +259,11 @@ class BGMultiQueryPanel(val constraintPanel: BGQueryConstraintPanel, val uniqueS
 
         try {
             val constraintValues = constraintPanel.getConstraintValues()
-           // val constraints = generateConstraintQueries(triples)
+            BGServiceManager.config.taxonConstraint?.let { constraint ->
+                BGQueryConstraint.generateTaxonConstraintValue()?.let { value ->
+                    constraintValues[constraint] = value
+                }
+            }
             val constraints = uniqueSetsFilter + BGQueryConstraint.generateConstraintQueries(constraintValues, triples)
 
             return Triple(returnValues, graphQueries, constraints)

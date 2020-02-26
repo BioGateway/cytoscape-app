@@ -455,7 +455,61 @@ object BGConfigParser {
                 }
             }
 
+            fun parseQueryConstraint(constraint: Element): BGQueryConstraint? {
+                val id = constraint.getAttribute("id") ?: return null
+                val label = constraint.getAttribute("label") ?: return null
+                val columns = constraint.getAttribute("columns").toIntOrNull()
+                val typeName = constraint.getAttribute("type") ?: return null
 
+                val type = when (typeName) {
+                    "combobox" -> BGQueryConstraint.InputType.COMBOBOX
+                    "text" -> BGQueryConstraint.InputType.TEXT
+                    "number" -> BGQueryConstraint.InputType.NUMBER
+                    "boolean" -> BGQueryConstraint.InputType.BOOLEAN
+                    else -> null } ?: return null
+
+                val queryConstraint = BGQueryConstraint(id, label, type, columns)
+
+                val actionsList = constraint.getElementsByTagName("action")
+
+                for (i in 0..actionsList.length-1) {
+                    val actionElement = actionsList.item(i) as? Element ?: continue
+                    val parameterString = actionElement.getAttribute("parameter") ?: continue
+                    val actionParameter = when (parameterString) {
+                        "first" -> BGQueryConstraint.ActionParameter.FIRST
+                        "last" -> BGQueryConstraint.ActionParameter.LAST
+                        "both" -> BGQueryConstraint.ActionParameter.BOTH
+                        else -> null } ?: continue
+                    val actionGraph = actionElement.getAttribute("graph") ?: continue
+                    val sparqlElement = actionElement.getElementsByTagName("sparql").item(0) as?  Element ?: continue
+                    val sparqlString = sparqlElement.textContent
+
+                    val relationTypes = ArrayList<BGRelationType>()
+
+                    val relationTypeList = actionElement.getElementsByTagName("relationType")
+                    for (j in 0..relationTypeList.length-1) {
+                        val rtElement = relationTypeList.item(j) as? Element ?: continue
+                        val rtGraph = rtElement.getAttribute("graph") ?: continue
+                        val rtUri = rtElement.textContent
+                        val relationType = config.getRelationTypeForURIandGraph(rtUri, rtGraph) ?: continue
+                        relationTypes.add(relationType)
+                    }
+                    val action = BGQueryConstraint.ConstraintAction(actionParameter, actionGraph, relationTypes, sparqlString)
+                    queryConstraint.actions.add(action)
+                }
+
+                val optionsList = constraint.getElementsByTagName("option")
+                for (oIndex in 0..optionsList.length - 1) {
+                    if (optionsList.item(oIndex).nodeType == Node.ELEMENT_NODE) {
+                        val oElement = optionsList.item(oIndex) as Element
+                        val optionLabel = oElement.getAttribute("name")
+                        val optionValue = oElement.textContent
+                        val option = BGQueryConstraint.ComboBoxOption(optionLabel, optionValue)
+                        queryConstraint.options.add(option)
+                    }
+                }
+                return queryConstraint
+            }
 
             // Parse QueryConstraints. Must be after parsing RelationTypes, as it relies on finding relation types in config.
 
@@ -463,60 +517,14 @@ object BGConfigParser {
                 val constraintList = queryConstraintNode.getElementsByTagName("constraint")
 
                 for (index in 0..constraintList.length-1) {
-                    val constraint = constraintList.item(index) as? Element ?: continue
-                    val id = constraint.getAttribute("id") ?: continue
-                    val label = constraint.getAttribute("label") ?: continue
-                    val columns = constraint.getAttribute("columns").toIntOrNull()
-                    val typeName = constraint.getAttribute("type") ?: continue
-
-                    val type = when (typeName) {
-                        "combobox" -> BGQueryConstraint.InputType.COMBOBOX
-                        "text" -> BGQueryConstraint.InputType.TEXT
-                        "number" -> BGQueryConstraint.InputType.NUMBER
-                        else -> null } ?: continue
-
-                    val queryConstraint = BGQueryConstraint(id, label, type, columns)
-
-                    val actionsList = constraint.getElementsByTagName("action")
-
-                    for (i in 0..actionsList.length-1) {
-                        val actionElement = actionsList.item(i) as? Element ?: continue
-                        val parameterString = actionElement.getAttribute("parameter") ?: continue
-                        val actionParameter = when (parameterString) {
-                            "first" -> BGQueryConstraint.ActionParameter.FIRST
-                            "last" -> BGQueryConstraint.ActionParameter.LAST
-                            "both" -> BGQueryConstraint.ActionParameter.BOTH
-                            else -> null } ?: continue
-                        val actionGraph = actionElement.getAttribute("graph") ?: continue
-                        val sparqlElement = actionElement.getElementsByTagName("sparql").item(0) as?  Element ?: continue
-                        val sparqlString = sparqlElement.textContent
-
-                        val relationTypes = ArrayList<BGRelationType>()
-
-                        val relationTypeList = actionElement.getElementsByTagName("relationType")
-                        for (j in 0..relationTypeList.length-1) {
-                            val rtElement = relationTypeList.item(j) as? Element ?: continue
-                            val rtGraph = rtElement.getAttribute("graph") ?: continue
-                            val rtUri = rtElement.textContent
-                            val relationType = config.getRelationTypeForURIandGraph(rtUri, rtGraph) ?: continue
-                            relationTypes.add(relationType)
-                        }
-                        val action = BGQueryConstraint.ConstraintAction(actionParameter, actionGraph, relationTypes, sparqlString)
-                        queryConstraint.actions.add(action)
-                    }
-
-                    val optionsList = constraint.getElementsByTagName("option")
-                    for (oIndex in 0..optionsList.length - 1) {
-                        if (optionsList.item(oIndex).nodeType == Node.ELEMENT_NODE) {
-                            val oElement = optionsList.item(oIndex) as Element
-                            val optionLabel = oElement.getAttribute("name")
-                            val optionValue = oElement.textContent
-                            val option = BGQueryConstraint.ComboBoxOption(optionLabel, optionValue)
-                            queryConstraint.options.add(option)
-                        }
-                    }
+                    val element = constraintList.item(index) as? Element ?: continue
+                    val queryConstraint = parseQueryConstraint(element) ?: continue
                     config.queryConstraints[queryConstraint.id] = queryConstraint
                 }
+            }
+
+            (configDoc.getChildWithName("taxonConstraint"))?.let { taxonConstraintNode -> // ?: throw Exception("queryConstraints element not found in XML file!")
+                config.taxonConstraint =  parseQueryConstraint(taxonConstraintNode) ?: return
             }
 
             // Parse example queries
