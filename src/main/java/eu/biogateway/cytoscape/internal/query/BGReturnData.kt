@@ -57,13 +57,15 @@ class BGReturnNodeData(val returnType: BGReturnType, columnNames: Array<String>)
 
     fun addEntry(line: Array<String>) {
 
-        if (line.size != returnType.paremeterCount) throw Exception("Invalid parameter count!")
+        if (line.size != returnType.paremeterCount && line.size != returnType.optionalParameterCount) {
+            throw Exception("Invalid parameter count!")
+        }
 
         val node =  when (returnType) {
             BGReturnType.NODE_LIST_DESCRIPTION -> {
                 val nodeUri = removeIllegalCharacters(line.get(0))
                 val nodeName = removeIllegalCharacters(line.get(1))
-                val description = removeIllegalCharacters(line.get(2))
+                val description = if (line.size > 2) removeIllegalCharacters(line.get(2)) else ""
                 BGNode(nodeUri, nodeName, description)
             }
             BGReturnType.NODE_LIST -> {

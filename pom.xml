@@ -34,7 +34,7 @@
 			<plugin>
 				<groupId>org.jetbrains.dokka</groupId>
 				<artifactId>dokka-maven-plugin</artifactId>
-
+				<version>0.9.18</version>
 				<executions>
 					<execution>
 						<phase>pre-site</phase>
