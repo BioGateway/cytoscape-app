@@ -93,6 +93,10 @@ public class CyActivator extends AbstractCyActivator {
         registerService(context, controlPanel, CytoPanelComponent.class, new Properties());
 
         registerContextMenuItems(context);
+
+        // Add Icon
+        AddIconAction addIconAction = new AddIconAction();
+        registerService(context, addIconAction, CyAction.class, new Properties());
     }
 
 

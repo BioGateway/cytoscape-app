@@ -39,6 +39,7 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent2 {
     private JPanel rootPanel;
     private JFormattedTextField fontSizeField;
     private JPanel constraintsPanel;
+    private JScrollPane treeScrollPane;
     private JPanel filtersPanel;
     private JCheckBoxTree tree;
     public BGQueryConstraintPanel queryConstraintPanel;
@@ -51,6 +52,7 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent2 {
         setupTreePanel();
         setUpActions();
         setupConstraintPanel();
+        treeScrollPane.setPreferredSize(new Dimension(200, 400));
     }
 
     private void setSelectionForNode(DefaultMutableTreeNode node) {
@@ -181,11 +183,11 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent2 {
     private void $$$setupUI$$$() {
         createUIComponents();
         rootPanel = new JPanel();
-        rootPanel.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
+        rootPanel.setLayout(new BorderLayout(0, 0));
         scrollPane = new JScrollPane();
         scrollPane.setHorizontalScrollBarPolicy(31);
         scrollPane.setVerticalScrollBarPolicy(20);
-        rootPanel.add(scrollPane, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        rootPanel.add(scrollPane, BorderLayout.CENTER);
         mainPanel = new JPanel();
         mainPanel.setLayout(new BorderLayout(0, 0));
         scrollPane.setViewportView(mainPanel);
@@ -193,9 +195,11 @@ public class BGControlPanel extends JPanel implements CytoPanelComponent2 {
         panel1.setLayout(new BorderLayout(0, 0));
         mainPanel.add(panel1, BorderLayout.NORTH);
         panel1.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Active Properties"));
+        treeScrollPane = new JScrollPane();
+        panel1.add(treeScrollPane, BorderLayout.CENTER);
         treePanel = new JPanel();
         treePanel.setLayout(new BorderLayout(0, 0));
-        panel1.add(treePanel, BorderLayout.CENTER);
+        treeScrollPane.setViewportView(treePanel);
         final JPanel panel2 = new JPanel();
         panel2.setLayout(new GridLayoutManager(2, 2, new Insets(0, 0, 20, 0), -1, -1));
         mainPanel.add(panel2, BorderLayout.CENTER);
