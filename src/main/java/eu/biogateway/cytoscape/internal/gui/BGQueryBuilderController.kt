@@ -806,7 +806,7 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
 
     private fun setBulkImportTableData(nodes: Collection<BGNode>) {
         val tableModel = view.bulkImportResultTable.model as DefaultTableModel
-        tableModel.setColumnIdentifiers(arrayOf("Node Name", "Description", "Reviewed", "Taxon"))
+        tableModel.setColumnIdentifiers(arrayOf("Node Name", "Description", "Taxon", "URI"))
 
         currentBulkImportNodes.clear()
         for (i in tableModel.rowCount -1 downTo 0) {
@@ -815,9 +815,8 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
         for (node in nodes) {
             val nodeName = node.name ?: node.uri
             val description = node.description ?: ""
-            val taxon = node.taxon ?: "Unspecified"
-            val reviewed = node.reviewed
-            val row = arrayOf(nodeName, description, reviewed, taxon)
+            val taxon = node.taxon?.name ?: "Unspecified"
+            val row = arrayOf(nodeName, description, taxon, node.uri)
             tableModel.addRow(row)
             currentBulkImportNodes[tableModel.rowCount-1] = node
         }

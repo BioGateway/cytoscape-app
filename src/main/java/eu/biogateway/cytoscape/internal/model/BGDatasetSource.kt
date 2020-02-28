@@ -15,10 +15,25 @@ class BGDatasetSource(val uri: String, val name: String, val relationType: BGRel
         return relationType.toString()+": "+name
     }
 
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as BGDatasetSource
+
+        if (uri != other.uri) return false
+        if (name != other.name) return false
+        if (relationType != other.relationType) return false
+        if (enabledByDefault != other.enabledByDefault) return false
+
+        return true
+    }
+
     companion object {
         fun generateSourceConstraint(relationType: BGRelationType, fromUri: String, toUri: String, number: Int = 0): Pair<String, String>? {
             val relevantSources = BGServiceManager.config.activeSources.filter { it.relationType.equals(relationType) }
             if (relevantSources.size == BGServiceManager.config.datasetSources.get(relationType)?.size) return null // Don't filter if all sources are selected.
+            val sourceRelationUri = BGServiceManager.config.datasetSourceRelationTypeUri ?: return null
             if (relevantSources.count() == 0) return null
             val uri = "?sourceConstraint"+number
 
@@ -26,11 +41,7 @@ class BGDatasetSource(val uri: String, val name: String, val relationType: BGRel
             val sparql = "$uri rdf:subject $fromUri .\n" +
                     "$uri rdf:object $toUri .\n" +
                     "?instance"+number+" rdf:type? $uri .\n" +
-                    "?instance"+number+" <http://schema.org/evidenceOrigin> ${uri}filter ."
-//            val sparql1 = fromUri+"  <http://semanticscience.org/resource/SIO_000062> "+uri+" .\n" +
-//                    uri+" <http://semanticscience.org/resource/SIO_000291> "+toUri+" .\n" +
-//                    uri+"node rdf:type "+uri+" .\n" +
-//                    uri+"node <http://semanticscience.org/resource/SIO_000253> "+uri+"filter ."
+                    "?instance"+number+" <$sourceRelationUri> ${uri}filter ."
             return Pair(filter, sparql)
         }
     }
