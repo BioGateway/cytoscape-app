@@ -194,6 +194,8 @@ object BGConfigParser {
             // Parsing datasetsources
             (configDoc.getChildWithName("sources"))?.let { sourcesTypeNode ->
                 // ?: throw Exception("sources element not found in XML file!")
+                val sourceRelationUri = sourcesTypeNode.getAttribute("sourceRelation")
+                config.datasetSourceRelationTypeUri = sourceRelationUri
 
                 val relationTypeList = sourcesTypeNode.getElementsByTagName("relationType")
                 for (j in 0..relationTypeList.length - 1) {

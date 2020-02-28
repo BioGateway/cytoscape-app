@@ -187,13 +187,15 @@ class BGDictEndpoint(internal var endpointUrl: String) {
 
         Executors.newCachedThreadPool().submit {
             val url = endpointUrl + searchType.restPath
-
             val prefix = searchType.prefix ?: ""
 
-
+            var taxaString = ""
+            if (BGServiceManager.config.activeTaxaNotNullOrAll) {
+                taxaString = "\"taxa\": [" + BGServiceManager.config.activeTaxa.map { "\"${it.uri}\"" }.reduce { list, taxon -> "$list, $taxon" } + "], "
+            }
             val terms = nodeList.map { "\"$prefix$it\"" }.reduce { list, node -> "$list, $node" }
             val parameterString = ""
-            val json = "{ \"returnType\": \"${searchType.returnType}\", \"nodeType\": \"${searchType.nodeType.id}\", \"values\": [$terms]$parameterString}"
+            val json = "{ \"returnType\": \"${searchType.returnType}\", \"nodeType\": \"${searchType.nodeType.id}\",$taxaString \"values\": [$terms]$parameterString}"
             val httpPost = HttpPost(url)
             httpPost.entity = StringEntity(json)
             httpPost.addHeader("Content-Type", "application/json");
