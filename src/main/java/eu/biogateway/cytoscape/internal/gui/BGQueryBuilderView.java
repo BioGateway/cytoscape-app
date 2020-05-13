@@ -29,6 +29,7 @@ import java.awt.event.WindowEvent;
 import java.util.HashMap;
 
 import static eu.biogateway.cytoscape.internal.gui.BGQueryBuilderController.*;
+import static eu.biogateway.cytoscape.internal.gui.BGQueryBuilderController.Companion;
 
 /**
  * Created by sholmas on 14/03/2017.
@@ -79,6 +80,8 @@ public class BGQueryBuilderView implements ChangeListener {
     private JPanel buildQueryPanel;
     private JPanel bulkQueryPanel;
     private JCheckBox distinctSetsComboBox;
+    private JButton cleanUpSPARQLButton;
+    private JButton parseSPARQLButton;
     private TableRowSorter<TableModel> sorter;
     private final DocumentListener filterDocumentListener = new DocumentListener() {
         void filter() {
@@ -201,7 +204,10 @@ public class BGQueryBuilderView implements ChangeListener {
         filterRelationsToExistingCheckBox.setActionCommand(Companion.getACTION_FILTER_EDGES_TO_EXISTING());
         filterRelationsFROMExistingCheckBox.addActionListener(listener);
         filterRelationsFROMExistingCheckBox.setActionCommand(Companion.getACTION_FILTER_EDGES_TO_EXISTING());
-
+        parseSPARQLButton.addActionListener(listener);
+        parseSPARQLButton.setActionCommand(Companion.getACTION_PARSE_SPARQL());
+        cleanUpSPARQLButton.addActionListener(listener);
+        cleanUpSPARQLButton.setActionCommand(Companion.getACTION_CLEAN_UP_SPARQL());
         runChainQueryButton.addActionListener(listener);
         runChainQueryButton.setActionCommand(Companion.getACTION_RUN_MULTIQUERY());
         addLineButton.addActionListener(listener);
@@ -634,6 +640,12 @@ public class BGQueryBuilderView implements ChangeListener {
         final JPanel panel13 = new JPanel();
         panel13.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
         sparqlPanel.add(panel13, BorderLayout.SOUTH);
+        cleanUpSPARQLButton = new JButton();
+        cleanUpSPARQLButton.setText("Simplify query for sharing");
+        panel13.add(cleanUpSPARQLButton);
+        parseSPARQLButton = new JButton();
+        parseSPARQLButton.setText("Parse SPARQL to Query Builder");
+        panel13.add(parseSPARQLButton);
         resultPanel = new JPanel();
         resultPanel.setLayout(new BorderLayout(0, 0));
         tabPanel.addTab("Query Result", resultPanel);
