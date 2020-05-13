@@ -545,6 +545,16 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
 
     }
 
+    private fun convertToSharingSPARQLSnippet() {
+        val errorText = validateMultiQuery()
+        if (errorText != null) {
+            JOptionPane.showMessageDialog(view.mainFrame, errorText)
+        } else {
+            val queryString = view.multiQueryPanel.generateSimplifiedSPARQL()
+            view.sparqlTextArea.text = queryString
+        }
+    }
+
     override fun stateChanged(e: ChangeEvent?) {
         //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
@@ -1030,6 +1040,7 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
                 if (generateSPARQLCode() != null) view.tabPanel.selectedComponent = view.sparqlPanel
             }
             ACTION_PARSE_SPARQL -> parseSPARQLCode()
+            ACTION_CLEAN_UP_SPARQL -> convertToSharingSPARQLSnippet()
             ACTION_WRITE_SPARQL -> saveSPARQLToFile()
             ACTION_LOAD_SPARQL -> loadSPARQLFromFile()
             ACTION_FILTER_EDGES_TO_EXISTING -> {
@@ -1056,6 +1067,7 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
         val ACTION_BULK_IMPORT_TO_NEW_NETWORK = "importSelectedFromBulkImportToNewNetwork"
         val ACTION_BULK_IMPORT_TO_CURRENT_NETWORK = "importSelectedFromBulkImportToCurrentNetwork"
         val ACTION_PARSE_SPARQL = "parseSPARQL"
+        val ACTION_CLEAN_UP_SPARQL = "cleanUpSPARQL"
         val ACTION_LOAD_SPARQL = "loadSPARQLFromFile"
         val ACTION_WRITE_SPARQL = "writeSPARQLToFile"
         val ACTION_RUN_MULTIQUERY = "runMultiQuery"

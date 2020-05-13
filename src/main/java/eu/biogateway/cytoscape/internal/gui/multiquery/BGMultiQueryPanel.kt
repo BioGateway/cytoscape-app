@@ -207,6 +207,23 @@ class BGMultiQueryPanel(val constraintPanel: BGQueryConstraintPanel, val uniqueS
         return header+query
     }
 
+    fun generateSimplifiedSPARQL(): String {
+        val queryComponents = generateReturnValuesAndGraphQueries()
+        var queryWildcards = variableManager.usedVariables.values.toHashSet()
+                .sortedBy { it.name }
+                .map { "?"+it.value }
+                .fold("") { acc, s -> acc+" "+s }
+        if (queryWildcards.isEmpty()) {
+            queryWildcards = "<placeholder>"
+        }
+        val query = "BASE <http://rdf.biogateway.eu/graph/>\n" +
+                "SELECT DISTINCT "+queryWildcards+"\n" +
+                "WHERE {\n" +
+                queryComponents.second +
+                "}"
+        return query
+    }
+
     fun generateSPARQLCountQuery(): String {
         val graphQueries = generateReturnValuesAndGraphQueries()
         val query = "BASE <http://rdf.biogateway.eu/graph/>\n" +

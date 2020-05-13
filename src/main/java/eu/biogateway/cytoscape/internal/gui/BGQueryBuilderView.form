@@ -300,7 +300,20 @@
                 <constraints border-constraint="South"/>
                 <properties/>
                 <border type="none"/>
-                <children/>
+                <children>
+                  <component id="97af3" class="javax.swing.JButton" binding="cleanUpSPARQLButton">
+                    <constraints/>
+                    <properties>
+                      <text value="Simplify query for sharing"/>
+                    </properties>
+                  </component>
+                  <component id="e6a7e" class="javax.swing.JButton" binding="parseSPARQLButton">
+                    <constraints/>
+                    <properties>
+                      <text value="Parse SPARQL to Query Builder"/>
+                    </properties>
+                  </component>
+                </children>
               </grid>
             </children>
           </grid>
