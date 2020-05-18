@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="eu.biogateway.app.internal.gui.BGImportExportView">
+  <grid id="27dc6" binding="panel1" default-binding="true" layout-manager="BorderLayout" hgap="0" vgap="0">
+    <constraints>
+      <xy x="20" y="20" width="500" height="400"/>
+    </constraints>
+    <properties/>
+    <border type="none"/>
+    <children>
+      <tabbedpane id="ac573">
+        <constraints border-constraint="Center"/>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <grid id="184af" layout-manager="BorderLayout" hgap="0" vgap="0">
+            <constraints>
+              <tabbedpane title="Convert to BioGateway"/>
+            </constraints>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <grid id="1dafe" layout-manager="BorderLayout" hgap="0" vgap="0">
+                <constraints border-constraint="South"/>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="a5db4" class="javax.swing.JButton" binding="nextButton" default-binding="true">
+                    <constraints border-constraint="East"/>
+                    <properties>
+                      <text value="Convert"/>
+                    </properties>
+                  </component>
+                  <grid id="6e4bd" layout-manager="FlowLayout" hgap="0" vgap="0" flow-align="1">
+                    <constraints border-constraint="West"/>
+                    <properties/>
+                    <border type="none"/>
+                    <children>
+                      <component id="419d4" class="javax.swing.JButton" binding="addIdentifierColumnButton" default-binding="true">
+                        <constraints/>
+                        <properties>
+                          <text value="Add identifier column"/>
+                        </properties>
+                      </component>
+                    </children>
+                  </grid>
+                </children>
+              </grid>
+              <scrollpane id="8c8b5">
+                <constraints border-constraint="Center"/>
+                <properties>
+                  <horizontalScrollBarPolicy value="31"/>
+                </properties>
+                <border type="none" title="Additional columns"/>
+                <children>
+                  <grid id="43b00" binding="nodeImportsPanel" custom-create="true" layout-manager="GridBagLayout">
+                    <constraints/>
+                    <properties/>
+                    <border type="none"/>
+                    <children/>
+                  </grid>
+                </children>
+              </scrollpane>
+              <grid id="30bfd" binding="nodeImportIdentifiersPanel" custom-create="true" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="0">
+                <constraints border-constraint="North"/>
+                <properties/>
+                <border type="none" title="Node Identifier columns"/>
+                <children/>
+              </grid>
+            </children>
+          </grid>
+          <grid id="b6fe9" layout-manager="BorderLayout" hgap="0" vgap="0">
+            <constraints>
+              <tabbedpane title="Convert Columns"/>
+            </constraints>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <grid id="9c0af" layout-manager="BorderLayout" hgap="0" vgap="0">
+                <constraints border-constraint="South"/>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="8927" class="javax.swing.JButton" binding="addConvertedColumnsButton" default-binding="true">
+                    <constraints border-constraint="East"/>
+                    <properties>
+                      <text value="Add Converted Columns"/>
+                    </properties>
+                  </component>
+                  <component id="e7d9e" class="javax.swing.JButton" binding="addLineButton" default-binding="true">
+                    <constraints border-constraint="West"/>
+                    <properties>
+                      <text value="Add Line"/>
+                    </properties>
+                  </component>
+                </children>
+              </grid>
+              <scrollpane id="9e92c">
+                <constraints border-constraint="Center"/>
+                <properties>
+                  <horizontalScrollBarPolicy value="31"/>
+                </properties>
+                <border type="none" title="Column Conversions"/>
+                <children>
+                  <grid id="7046e" binding="convertColumnsPanel" custom-create="true" layout-manager="GridBagLayout">
+                    <constraints/>
+                    <properties/>
+                    <border type="none" title=""/>
+                    <children/>
+                  </grid>
+                </children>
+              </scrollpane>
+            </children>
+          </grid>
+        </children>
+      </tabbedpane>
+      <grid id="ba898" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="0">
+        <constraints border-constraint="North"/>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <component id="7744d" class="javax.swing.JLabel">
+            <constraints/>
+            <properties>
+              <text value="Source Network:"/>
+            </properties>
+          </component>
+          <component id="877cf" class="javax.swing.JComboBox" binding="sourceNetworkComboBox">
+            <constraints/>
+            <properties/>
+          </component>
+        </children>
+      </grid>
+    </children>
+  </grid>
+</form>
