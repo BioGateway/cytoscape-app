@@ -4,7 +4,7 @@
 	<properties>
 		<bundle.symbolicName>eu.biogateway.app</bundle.symbolicName>
 		<bundle.namespace>eu.biogateway.app</bundle.namespace>
-        <kotlin.version>1.3.61</kotlin.version>
+		<kotlin.version>1.3.71</kotlin.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -316,7 +316,7 @@
 		<dependency>
 			<groupId>org.jetbrains.kotlinx</groupId>
 			<artifactId>kotlinx-coroutines-core</artifactId>
-			<version>1.3.3</version>
+			<version>1.3.6</version>
 		</dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>

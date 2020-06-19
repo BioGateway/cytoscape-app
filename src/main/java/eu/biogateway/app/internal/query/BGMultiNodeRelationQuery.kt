@@ -5,6 +5,11 @@ import eu.biogateway.app.internal.model.BGRelation
 import eu.biogateway.app.internal.model.BGRelationType
 import eu.biogateway.app.internal.parser.BGReturnType
 import eu.biogateway.app.internal.util.Utility
+import kotlinx.coroutines.InternalCoroutinesApi
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.runBlocking
 import org.cytoscape.work.AbstractTask
 import org.cytoscape.work.TaskMonitor
 
@@ -77,12 +82,18 @@ class BGMultiNodeRelationQuery(val nodeUris: Collection<String>, val relationTyp
         return filteredRelations
     }
 
-
     override fun run() {
 
-        var relations = HashSet<BGRelation>()
-        var unloadedNodes = HashSet<BGNode>()
-
+        val relations = HashSet<BGRelation>()
+        val unloadedNodes = HashSet<BGNode>()
+        // TODO: Refactor to Kotlin Flow:
+        val queries = nodeUris.asFlow()
+                .map { uri ->
+                    BGFindRelationForNodeQuery(relationType, uri, direction).runQuery()
+                }
+        runBlocking {
+            val stuff = (1..3).asFlow().collect()
+        }
         for (nodeUri in nodeUris) {
             val query = BGFindRelationForNodeQuery(relationType, nodeUri, direction)
             query.returnDataFilter = returnDataFilter
@@ -96,7 +107,7 @@ class BGMultiNodeRelationQuery(val nodeUris: Collection<String>, val relationTyp
             }
             query.run()
         }
-        var columnNames = arrayOf("From Node", "Relation Type", "To Node")
+        val columnNames = arrayOf("From Node", "Relation Type", "To Node")
         returnData = BGReturnRelationsData(BGReturnType.RELATION_TRIPLE_GRAPHURI, columnNames)
 
         if (minCommonRelations != 0) {
