@@ -630,6 +630,15 @@ object BGConfigParser {
                         visualStyleConfig.nodeHeights[type] = nodeHeight
                     }
                 }
+                val nodeBorderColors = visualStyleNode.getElementsByTagName("nodeBorderColor")
+                for (index in 0..nodeBorderColors.length - 1) {
+                    val styleElement = nodeBorderColors.item(index) as? Element ?: continue
+                    val score = styleElement.getAttribute("annotationScore") ?: continue
+                    if (score.isEmpty()) continue
+                    val colorString = styleElement.getAttribute("color") ?: continue
+                    val color = if (!colorString.isEmpty()) Color.decode(colorString) else continue
+                    visualStyleConfig.nodeBorderColors[score] = color
+                }
 
 
                 config.visualStyleConfig = visualStyleConfig

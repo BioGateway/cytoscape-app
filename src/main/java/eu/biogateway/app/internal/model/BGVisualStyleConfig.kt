@@ -12,6 +12,7 @@ class BGVisualStyleConfig() {
     val nodeShapes = HashMap<String, NodeShape>()
     val nodeWidths = HashMap<String, Double>()
     val nodeHeights = HashMap<String, Double>()
+    val nodeBorderColors = HashMap<String, Color>()
     val edgeLineTypes = HashMap<String, LineType>()
     val edgeLineWidths = HashMap<String, Double>()
 

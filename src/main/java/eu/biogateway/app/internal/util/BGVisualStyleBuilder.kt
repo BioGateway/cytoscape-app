@@ -28,7 +28,6 @@ class BGVisualStyleBuilder(val serviceManager: BGServiceManager) {
         val edgeGreen = Color(51, 204, 0)
         val edgeDarkBlue = Color(0, 51, 204)
         val edgeTurquoise = Color(0, 153, 153)
-
         // Fonts
         val labelFont = Font("SansSerif", Font.PLAIN, 12)
 
@@ -58,6 +57,7 @@ class BGVisualStyleBuilder(val serviceManager: BGServiceManager) {
         val nodeShapes = BGServiceManager.config.visualStyleConfig.nodeShapes
         val nodeWidths = BGServiceManager.config.visualStyleConfig.nodeWidths
         val nodeHeights = BGServiceManager.config.visualStyleConfig.nodeHeights
+        val nodeBorderColors = BGServiceManager.config.visualStyleConfig.nodeBorderColors
 
 //        val edgeLineTypes = hashMapOf<String, LineType>(
 //                "enables" to LineTypeVisualProperty.EQUAL_DASH,
@@ -102,6 +102,7 @@ class BGVisualStyleBuilder(val serviceManager: BGServiceManager) {
         val nodeWidthMapping = discreteMappingFactory.createVisualMappingFunction("type", String::class.java, BasicVisualLexicon.NODE_WIDTH) as DiscreteMapping<String, Double>
         val nodeHeightMapping = discreteMappingFactory.createVisualMappingFunction("type", String::class.java, BasicVisualLexicon.NODE_HEIGHT) as DiscreteMapping<String, Double>
         val nodeColorMapping = discreteMappingFactory.createVisualMappingFunction("type", String::class.java, BasicVisualLexicon.NODE_FILL_COLOR) as DiscreteMapping<String, Paint>
+        val nodeBorderColorMapping = discreteMappingFactory.createVisualMappingFunction("annotationScore", Integer::class.java, BasicVisualLexicon.NODE_BORDER_PAINT) as DiscreteMapping<Int, Paint>
         val nodeTooltipMapping = passthroughMappingFactory.createVisualMappingFunction("description", String::class.java, BasicVisualLexicon.NODE_TOOLTIP) as PassthroughMapping<String, String>
         val nodeLabelMapping = passthroughMappingFactory.createVisualMappingFunction("name", String::class.java, BasicVisualLexicon.NODE_LABEL) as PassthroughMapping<String, String>
 
@@ -112,6 +113,11 @@ class BGVisualStyleBuilder(val serviceManager: BGServiceManager) {
         for ((type, color) in nodeColors) {
             nodeColorMapping.putMapValue(type, color)
         }
+        for ((scoreString, color) in nodeBorderColors) {
+            scoreString.toIntOrNull()?.let { score ->
+                nodeBorderColorMapping.putMapValue(score, color)
+            }
+        }
         for ((type, height) in nodeHeights) {
             nodeHeightMapping.putMapValue(type, height)
         }
@@ -121,6 +127,7 @@ class BGVisualStyleBuilder(val serviceManager: BGServiceManager) {
 
         vs.addVisualMappingFunction(nodeShapeMapping)
         vs.addVisualMappingFunction(nodeColorMapping)
+        vs.addVisualMappingFunction(nodeBorderColorMapping)
         vs.addVisualMappingFunction(nodeTooltipMapping)
         vs.addVisualMappingFunction(nodeLabelMapping)
         vs.addVisualMappingFunction(nodeWidthMapping)
