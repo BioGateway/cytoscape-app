@@ -7,6 +7,7 @@ import org.apache.http.util.EntityUtils
 import eu.biogateway.app.internal.BGServiceManager
 import eu.biogateway.app.internal.parser.BGReturnType
 import eu.biogateway.app.internal.util.Constants
+import kotlinx.coroutines.runBlocking
 import org.cytoscape.work.AbstractTask
 import org.cytoscape.work.TaskMonitor
 import java.io.BufferedReader
@@ -110,55 +111,59 @@ abstract class BGQuery(var type: BGReturnType, val dictionarySearchMethod: Strin
     }
 
     override fun run() {
+        // This is the "old java" way of running concurrently.
         taskMonitor?.setTitle(taskMonitorTitle)
+        val returnData = runBlocking { runQuery() }
+        futureReturnData.complete(returnData)
+    }
 
+    public suspend fun runQuery(): BGReturnData? {
         val uri = encodeUrl()?.toURI()
-        if (uri != null) {
-
-            val httpRequest = when (!dictionarySearchMethod.isNullOrEmpty()) {
-                true -> {
-                    val post = HttpPost(uri)
-                    val json = generateQueryString()
-                    post.entity = StringEntity(json)
-                    post.addHeader("Content-Type", "application/json");
-                    post
-                }
-                false -> HttpGet(uri)
+        if (uri == null) return null
+        val httpRequest = when (!dictionarySearchMethod.isNullOrEmpty()) {
+            true -> {
+                val post = HttpPost(uri)
+                val json = generateQueryString()
+                post.entity = StringEntity(json)
+                post.addHeader("Content-Type", "application/json");
+                post
             }
+            false -> HttpGet(uri)
+        }
 
-            val startTime = System.currentTimeMillis()
-            val response = client.execute(httpRequest)
-            val queryTime = System.currentTimeMillis() - startTime
-            val statusCode = response.statusLine.statusCode
+        val startTime = System.currentTimeMillis()
+        // TODO: Run the response as a cancellable async function
+        val response = client.execute(httpRequest)
+        val queryTime = System.currentTimeMillis() - startTime
+        val statusCode = response.statusLine.statusCode
 
-            if (Constants.PROFILING) println("Query time: $queryTime ms.")
+        if (Constants.PROFILING) println("Query time: $queryTime ms.")
 
-            val data = EntityUtils.toString(response.entity)
-            if (statusCode > 204) {
-                throw Exception("Server connection failed with code "+statusCode+": \n\n"+data)
+        val data = EntityUtils.toString(response.entity)
+        if (statusCode > 204) {
+            throw Exception("Server connection failed with code "+statusCode+": \n\n"+data)
+        }
+        val reader = BufferedReader(StringReader(data))
+        client.close()
+        taskMonitor?.setTitle("Loading results...")
+        when (parseType) {
+            BGParsingType.TO_ARRAY -> parseToTextArray(reader)
+            BGParsingType.RELATIONS -> {
+                returnData = parser.parseRelations(reader, type, taskMonitor)
+                taskMonitor?.setTitle("Loading results...")
+                runCompletions()
             }
-            val reader = BufferedReader(StringReader(data))
-            client.close()
-            taskMonitor?.setTitle("Loading results...")
-            when (parseType) {
-                BGParsingType.TO_ARRAY -> parseToTextArray(reader)
-                BGParsingType.RELATIONS -> {
-                    returnData = parser.parseRelations(reader, type, taskMonitor)
-                    taskMonitor?.setTitle("Loading results...")
-                    runCompletions()
-                }
-                BGParsingType.PARSE_FUNCTION -> {
-                    var function = parsingBlock ?: throw Exception("Parse function not provided!")
-                    function.invoke(reader)
-                }
-                BGParsingType.METADATA -> {
-                    returnData = parser.parseMetadata(reader, type)
-                }
-                else -> {
-                }
+            BGParsingType.PARSE_FUNCTION -> {
+                var function = parsingBlock ?: throw Exception("Parse function not provided!")
+                function.invoke(reader)
+            }
+            BGParsingType.METADATA -> {
+                returnData = parser.parseMetadata(reader, type)
+            }
+            else -> {
             }
         }
-        futureReturnData.complete(returnData)
+        return returnData
     }
 
     fun parseToTextArray(bufferedReader: BufferedReader) {
