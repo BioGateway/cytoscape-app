@@ -178,6 +178,26 @@ class BGDictEndpoint(internal var endpointUrl: String) {
         return future
     }
 
+    // TODO: Make suspending
+    fun getSuggestionsForURIs(uris: Collection<String>): Collection<BGSuggestion>? {
+        if (uris.size == 0) return null
+        var requestUrl = endpointUrl + "fetch"
+        val uriString = gson.toJson(uris) ?: "[]"
+        val json = "{ \"uris\": ${uriString}}"
+        val httpPost = HttpPost(requestUrl)
+        httpPost.entity = StringEntity(json)
+        httpPost.addHeader("Content-Type", "application/json");
+        val response = client.execute(httpPost)
+        val statusCode = response.statusLine.statusCode
+        val data = EntityUtils.toString(response.entity)
+        if (statusCode in 200..399) {
+            val suggestions = ArrayList(gson.fromJson<List<BGSuggestion>>(data))
+            return suggestions
+        } else {
+            return null
+        }
+    }
+
     fun findNodesForSearchType(nodeList: Collection<String>, searchType: BGSearchType): ArrayList<BGSuggestion> {
         // TODO: Finish this for Bulk Import!
 

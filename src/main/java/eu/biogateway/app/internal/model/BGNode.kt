@@ -20,10 +20,9 @@ open class BGNode {
             return field
         }}
 
-    var reviewed = false
-
     var description: String? = null
     var taxon: BGTaxon? = null
+    var annotationScore: Int? = null
 
     var metadata = HashMap<String, BGNodeMetadata>()
 
@@ -57,7 +56,7 @@ open class BGNode {
         this.name = suggestion.prefLabel
         this.description = suggestion.definition
         this.taxon = BGServiceManager.config.availableTaxa[suggestion.taxon]
-        this.reviewed = suggestion.reviewed
+        this.annotationScore = suggestion.annotationScore
     }
 
     constructor(uri: String, name: String) : this(uri) {
@@ -72,8 +71,8 @@ open class BGNode {
         this.taxon = BGServiceManager.config.availableTaxa[taxon]
     }
 
-    constructor(uri: String, name: String, description: String, reviewed: Boolean) : this(uri, name, description) {
-        this.reviewed = reviewed
+    constructor(uri: String, name: String, description: String, annotationScore: Int) : this(uri, name, description) {
+        this.annotationScore = annotationScore
     }
 
     // TODO: Check that these values exist! The URI table might not even be present!

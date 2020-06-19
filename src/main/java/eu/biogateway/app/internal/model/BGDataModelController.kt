@@ -5,6 +5,7 @@ import eu.biogateway.app.internal.BGServiceManager
 import eu.biogateway.app.internal.libs.JCheckBoxTree
 import eu.biogateway.app.internal.parser.*
 import eu.biogateway.app.internal.query.*
+import eu.biogateway.app.internal.server.BGDictEndpoint
 import eu.biogateway.app.internal.server.BGSettings
 import eu.biogateway.app.internal.util.Constants
 import eu.biogateway.app.internal.util.Constants.BG_SHOULD_USE_BG_DICT
@@ -376,7 +377,6 @@ class BGDataModelController() {
 
     
     fun loadNodesFromServerSynchronously(nodes: Collection<BGNode>) {
-
         val unloadedNodes = nodes.filter { (it.description == null) or (it.name == null) }
         nodes.toHashSet().subtract(unloadedNodes).forEach {
             addNode(it)
@@ -396,6 +396,7 @@ class BGDataModelController() {
     private fun updateNodeData(node: BGNode, fetchedNode: BGNode) {
         node.name = fetchedNode.name
         node.description = fetchedNode.description
+        node.annotationScore = fetchedNode.annotationScore
         node.isLoaded = true
         addNode(node)
         for (cyNode in node.cyNodes) {
@@ -408,13 +409,16 @@ class BGDataModelController() {
         }
     }
 
-    private fun getNodesFromDictionaryServer(nodeUris: Collection<String>): HashMap<String, BGNode> {
+    private fun getNodesFromDictionaryServer(nodeUris: Collection<String>): Map<String, BGNode> {
         if (nodeUris.isEmpty()) return HashMap()
-        val query = BGMultiNodeFetchMongoQuery(nodeUris, "fetch")
-        query.run()
-        val data = query.futureReturnData.get() as BGReturnNodeData
-
-        return data.nodeData
+        val suggestions = BGServiceManager.endpoint.getSuggestionsForURIs(nodeUris)
+        val nodeMap = suggestions?.map { it._id to BGNode(it) }?.toMap() ?: HashMap<String, BGNode>()
+        return nodeMap
+//        val query = BGMultiNodeFetchMongoQuery(nodeUris, "fetch")
+//        query.run()
+//        val data = query.futureReturnData.get() as BGReturnNodeData
+//
+//        return data.nodeData
     }
 
     private fun getNodeFromServer(uri: String): BGNode? {
@@ -424,13 +428,13 @@ class BGDataModelController() {
 
         val nodeType = BGNode.static.nodeTypeForUri(uri)
 
-
-        val query = if (BG_SHOULD_USE_BG_DICT && (nodeType.autocompleteType != null)) {
-            BGNodeFetchMongoQuery(uri)
-        } else {
-            BGNodeFetchQuery(uri)
+        if (BG_SHOULD_USE_BG_DICT && (nodeType.autocompleteType != null)) {
+            val suggestion = BGServiceManager.endpoint.getSuggestionForURI(uri)
+            if (suggestion != null) {
+                return BGNode(suggestion)
+            }
         }
-
+        val query = BGNodeFetchQuery(uri)
         query.run()
         val data = query.futureReturnData.get(10, TimeUnit.SECONDS ) as? BGReturnNodeData
         val node = data?.nodeData?.get(uri)
@@ -444,10 +448,14 @@ class BGDataModelController() {
         for (cyNode in nodes) {
             val nodeName = nodeTable.getRow(cyNode.suid).get(Constants.BG_FIELD_NAME, String::class.java)
             val description = nodeTable.getRow(cyNode.suid).get(Constants.BG_FIELD_DESCRIPTION, String::class.java)
+            val annotationScore = nodeTable.getRow(cyNode.suid).get(Constants.BG_FIELD_NODE_ANNOTATION_SCORE, Integer::class.java) ?: null
 
             val node = BGNode(uri)
             node.name = nodeName
             node.description = description
+            annotationScore?.let { score ->
+                node.annotationScore = score.toInt()
+            }
             return node
             // This old code did not work with imported networks which didn't have the "description" field.
 //            if (nodeName != null && description != null) {

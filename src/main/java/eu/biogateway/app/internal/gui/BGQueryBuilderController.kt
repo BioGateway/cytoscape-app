@@ -342,7 +342,7 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
             val resultRow = currentResultsInTable[view.resultTable.convertRowIndexToModel(rowNumber)]
 
             when(returnType) {
-                BGReturnType.NODE_LIST, BGReturnType.NODE_LIST_DESCRIPTION, BGReturnType.NODE_LIST_DESCRIPTION_TAXON -> {
+                BGReturnType.NODE_LIST, BGReturnType.NODE_LIST_DESCRIPTION -> {
                     val node = (resultRow as? BGNodeResultRow)?.node ?: throw Exception("Result must be a node!")
                     nodes.put(node.uri, node)
                 }
@@ -368,7 +368,7 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
 
         fun buildNetwork() {
             when (returnType) {
-                BGReturnType.NODE_LIST, BGReturnType.NODE_LIST_DESCRIPTION, BGReturnType.NODE_LIST_DESCRIPTION_TAXON -> {
+                BGReturnType.NODE_LIST, BGReturnType.NODE_LIST_DESCRIPTION -> {
                     server.networkBuilder.addBGNodesToNetwork(nodes.values, network)
                 }
                 BGReturnType.RELATION_TRIPLE_GRAPHURI, BGReturnType.RELATION_TRIPLE_NAMED, BGReturnType.RELATION_MULTIPART -> {
