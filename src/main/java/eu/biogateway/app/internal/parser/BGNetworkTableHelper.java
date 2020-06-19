@@ -22,6 +22,8 @@ public class BGNetworkTableHelper {
                 nodeTable.createColumn(Constants.INSTANCE.getBG_FIELD_NODE_TYPE(), String.class, false);
             if (nodeTable.getColumn(Constants.INSTANCE.getBG_FIELD_NODE_TAXON()) == null)
                 nodeTable.createColumn(Constants.INSTANCE.getBG_FIELD_NODE_TAXON(), String.class, false);
+            if (nodeTable.getColumn(Constants.INSTANCE.getBG_FIELD_NODE_ANNOTATION_SCORE()) == null)
+                nodeTable.createColumn(Constants.INSTANCE.getBG_FIELD_NODE_ANNOTATION_SCORE(), Integer.class, false);
             if (nodeTable.getColumn(Constants.INSTANCE.getBG_FIELD_NODE_PARENT_EDGE_ID()) == null)
                 nodeTable.createColumn(Constants.INSTANCE.getBG_FIELD_NODE_PARENT_EDGE_ID(), String.class, false);
         }

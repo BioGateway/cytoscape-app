@@ -71,20 +71,6 @@ class BGReturnNodeData(val returnType: BGReturnType, columnNames: Array<String>)
                 val nodeName = removeIllegalCharacters(line.get(1))
                 BGNode(nodeUri, nodeName)
             }
-            BGReturnType.NODE_LIST_DESCRIPTION_TAXON -> {
-                val nodeUri = removeIllegalCharacters(line.get(0))
-                val nodeName = removeIllegalCharacters(line.get(1))
-                val description = removeIllegalCharacters(line.get(2))
-                val taxon = removeIllegalCharacters(line.get(3))
-                BGNode(nodeUri, nodeName, description, taxon)
-            }
-            BGReturnType.NODE_LIST_DESCRIPTION_STATUS -> {
-                val nodeUri = removeIllegalCharacters(line.get(0))
-                val nodeName = removeIllegalCharacters(line.get(1))
-                val description = removeIllegalCharacters(line.get(2))
-                val reviewed = removeIllegalCharacters(line.get(3)).toBoolean()
-                BGNode(nodeUri, nodeName, description, reviewed)
-            }
             else -> {
                 throw Exception("Invalid returnType!")
             }

@@ -4,14 +4,6 @@ import eu.biogateway.app.internal.parser.BGReturnType
 import java.io.BufferedReader
 import java.io.InputStreamReader
 
-class BGNodeFetchMongoQuery(val nodeUri: String): BGQuery(BGReturnType.NODE_LIST_DESCRIPTION, "fetch") {
-
-    override fun generateQueryString(): String {
-
-        return "{ \"returnType\": \"tsv\", \"terms\": [\"" + nodeUri + "\"] }"
-    }
-}
-
 class BGNodeFetchQuery(val nodeUri: String): BGQuery(BGReturnType.NODE_LIST_DESCRIPTION) {
 
     /// This is running synchronously and without the main HTTPClient.

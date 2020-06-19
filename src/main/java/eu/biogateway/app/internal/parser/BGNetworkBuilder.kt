@@ -62,6 +62,11 @@ fun CyNode.setTaxon(taxon: String, network: CyNetwork) {
     table.getRow(this.suid).set(Constants.BG_FIELD_NODE_TAXON, taxon)
 }
 
+fun CyNode.setAnnotationScore(annotationScore: Int, network: CyNetwork) {
+    val table = network.defaultNodeTable
+    table.getRow(this.suid).set(Constants.BG_FIELD_NODE_ANNOTATION_SCORE, annotationScore)
+}
+
 fun CyNode.getType(network: CyNetwork): String {
     return network.defaultNodeTable.getRow(this.suid).get(Constants.BG_FIELD_NODE_TYPE, String::class.java)
 }
@@ -769,6 +774,10 @@ class BGNetworkBuilder() {
         cyNode.setType(node.type.name, network)
         node.taxon?.name?.let { taxon ->
             cyNode.setTaxon(taxon, network)
+        }
+
+        node.annotationScore?.let { score ->
+            cyNode.setAnnotationScore(score, network)
         }
 
         node.description?.let { cyNode.setDescription(it, network)}

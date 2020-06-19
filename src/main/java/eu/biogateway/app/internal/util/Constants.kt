@@ -16,6 +16,7 @@ object Constants {
     val BG_FIELD_INTERACTION = "interaction"
     val BG_FIELD_NODE_TYPE: String = "type"
     val BG_FIELD_NODE_TAXON: String = "taxon"
+    val BG_FIELD_NODE_ANNOTATION_SCORE: String = "annotationScore"
     val BG_FIELD_DESCRIPTION = "Description"
     val BG_FIELD_NODE_PARENT_EDGE_ID: String = "Parent Edge ID"
     val BG_FIELD_EDGE_ID = "Edge Id"
