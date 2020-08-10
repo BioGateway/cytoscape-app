@@ -55,7 +55,7 @@ public class BGQueryBuilderView implements ChangeListener {
     private JButton importToNewButton;
     private JButton importToSelectedNetworkButton;
     private JPanel descriptionPanel;
-    private JButton runChainQueryButton;
+    private JButton runMultiQuery;
     private JPanel multiQueryContainer;
     private BGMultiQueryPanel multiQueryPanel;
     private JButton generateSPARQLButton;
@@ -81,6 +81,7 @@ public class BGQueryBuilderView implements ChangeListener {
     private JCheckBox distinctSetsComboBox;
     private JButton cleanUpSPARQLButton;
     private JButton parseSPARQLButton;
+    private JButton runQueryOldButton;
     private TableRowSorter<TableModel> sorter;
     private final DocumentListener filterDocumentListener = new DocumentListener() {
         void filter() {
@@ -191,8 +192,8 @@ public class BGQueryBuilderView implements ChangeListener {
     }
 
     private void setUpActionListeners() {
-        runQueryButton.addActionListener(listener);
-        runQueryButton.setActionCommand(Companion.getACTION_RUN_QUERY());
+        runQueryOldButton.addActionListener(listener);
+        runQueryOldButton.setActionCommand(Companion.getACTION_RUN_MULTIQUERY_OLD());
         querySelectionBox.addActionListener(listener);
         querySelectionBox.setActionCommand(Companion.getACTION_CHANGED_QUERY());
         importToNewButton.addActionListener(listener);
@@ -207,8 +208,8 @@ public class BGQueryBuilderView implements ChangeListener {
         parseSPARQLButton.setActionCommand(Companion.getACTION_PARSE_SPARQL());
         cleanUpSPARQLButton.addActionListener(listener);
         cleanUpSPARQLButton.setActionCommand(Companion.getACTION_CLEAN_UP_SPARQL());
-        runChainQueryButton.addActionListener(listener);
-        runChainQueryButton.setActionCommand(Companion.getACTION_RUN_MULTIQUERY());
+        runMultiQuery.addActionListener(listener);
+        runMultiQuery.setActionCommand(Companion.getACTION_RUN_MULTIQUERY());
         addLineButton.addActionListener(listener);
         addLineButton.setActionCommand(Companion.getACTION_ADD_MULTIQUERY_LINE());
         generateSPARQLButton.addActionListener(listener);
@@ -276,10 +277,6 @@ public class BGQueryBuilderView implements ChangeListener {
 
         parameterComponents = new HashMap<>();
 
-        //JLabel description = new JLabel(query.getDescription());
-        // description.setFont(description.getFont().deriveFont(Font.ITALIC));
-        //descriptionPanel.add(description);
-
         parameterPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), query.getDescription()));
 
 
@@ -287,80 +284,6 @@ public class BGQueryBuilderView implements ChangeListener {
 
             JLabel label = new JLabel(parameter.getName() + ": ");
             JComponent component;
-
-
-            // TODO: FIX THIS CODE SO IT WORKS WITH DYNAMIC NODE TYPES.
-            /*
-            switch (parameter.getType()) {
-                case GENE:
-                    component = new BGAutocompleteComboBox(BGServiceManager.INSTANCE.getEndpoint(), () -> BGServiceManager.INSTANCE.getConfig().getNodeTypes().get());
-                    break;
-                case TAXON:
-                    component = new BGAutocompleteComboBox(BGServiceManager.INSTANCE.getEndpoint(), () -> BGNodeType.Taxon);
-                    break;
-                case GO_TERM:
-                    component = new BGAutocompleteComboBox(BGServiceManager.INSTANCE.getEndpoint(), () -> BGNodeType.GOTerm);
-                    break;
-                case PROTEIN:
-                    component = new BGAutocompleteComboBox(BGServiceManager.INSTANCE.getEndpoint(), () -> BGNodeType.Protein);
-                    break;
-                case OPTIONAL_URI:
-                    JTextField optionalField = new JTextField();
-                    //optionalField.setPreferredSize(new Dimension(280, Utility.INSTANCE.getJTextFieldHeight()));
-                    optionalField.setColumns(Constants.INSTANCE.getBG_QUERY_BUILDER_URI_FIELD_COLUMNS());
-                    //component = optionalField;
-                    component = new BGOptionalURIField(optionalField);
-                    break;
-                case TEXT:
-                    JTextField field = new JTextField();
-                    field.setColumns(Constants.INSTANCE.getBG_QUERY_BUILDER_URI_FIELD_COLUMNS());
-                    //field.setPreferredSize(new Dimension(280, Utility.INSTANCE.getJTextFieldHeight()));
-                    component = field;
-                    break;
-                case CHECKBOX:
-                    component = new JCheckBox();
-                    break;
-                case COMBOBOX:
-                    component = new JComboBox<>(parameter.getOptions().keySet().toArray());
-                    break;
-                case RELATION_COMBOBOX:
-                    JComboBox<String> comboBox = new JComboBox<>((String[]) parameter.getOptions().keySet().toArray());
-                    component = new BGRelationTypeField(comboBox);
-                    break;
-                case RELATION_QUERY_ROW:
-                    component = new BGRelationQueryRow((String[]) parameter.getOptions().keySet().toArray());
-                    break;
-                default:
-                    // Crash..!
-                    component = null;
-                    break;
-            }
-
-            BGQueryParameter.EnabledDependency dependency = parameter.getDependency();
-
-            if (dependency != null) {
-                JComponent dependingComponent = parameterComponents.get(dependency.getDependingParameter());
-                if (dependingComponent != null && dependingComponent instanceof JCheckBox) {
-                    JCheckBox checkBox = (JCheckBox) dependingComponent;
-                    checkBox.addActionListener(e -> {
-                        if (checkBox.isSelected()) {
-                            component.setEnabled(dependency.isEnabled());
-                        } else {
-                            component.setEnabled(!dependency.isEnabled());
-                        }
-                    });
-                    if (checkBox.isSelected()) {
-                        component.setEnabled(dependency.isEnabled());
-                    } else {
-                        component.setEnabled(!dependency.isEnabled());
-                    }
-                }
-            }
-
-            parameterComponents.put(parameter.getId(), component);
-            parameterPanel.add(label);
-            parameterPanel.add(component);
-            */
         }
         mainFrame.repaint();
     }
@@ -518,9 +441,12 @@ public class BGQueryBuilderView implements ChangeListener {
         generateSPARQLButton = new JButton();
         generateSPARQLButton.setText("Generate SPARQL");
         panel1.add(generateSPARQLButton);
-        runChainQueryButton = new JButton();
-        runChainQueryButton.setText("Run Query");
-        panel1.add(runChainQueryButton);
+        runMultiQuery = new JButton();
+        runMultiQuery.setText("Run Query");
+        panel1.add(runMultiQuery);
+        runQueryOldButton = new JButton();
+        runQueryOldButton.setText("Run Query (Old)");
+        panel1.add(runQueryOldButton);
         multiQueryContainer = new JPanel();
         multiQueryContainer.setLayout(new BorderLayout(0, 0));
         buildQueryPanel.add(multiQueryContainer, BorderLayout.CENTER);

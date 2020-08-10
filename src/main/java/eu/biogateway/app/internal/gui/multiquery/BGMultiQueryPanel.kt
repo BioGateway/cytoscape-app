@@ -6,6 +6,8 @@ import eu.biogateway.app.internal.gui.BGColorableText
 import eu.biogateway.app.internal.model.*
 import eu.biogateway.app.internal.parser.BGQueryOptions
 import eu.biogateway.app.internal.parser.BGSPARQLParser
+import eu.biogateway.app.internal.query.BGQueryNode
+import eu.biogateway.app.internal.query.QueryTriple
 import eu.biogateway.app.internal.util.Constants
 import eu.biogateway.app.internal.util.Utility
 import eu.biogateway.app.internal.util.setChildFontSize
@@ -220,7 +222,8 @@ class BGMultiQueryPanel(val constraintPanel: BGQueryConstraintPanel, val uniqueS
                 "SELECT DISTINCT "+queryWildcards+"\n" +
                 "WHERE {\n" +
                 queryComponents.second +
-                "}"
+                queryComponents.third +
+                "}\n"
         return query
     }
 
@@ -236,9 +239,20 @@ class BGMultiQueryPanel(val constraintPanel: BGQueryConstraintPanel, val uniqueS
         return query
     }
 
-
-
-
+    /// Format and fetch the state of the query builder
+    fun getQueryComponents(): ArrayList<QueryTriple> {
+        var query = arrayListOf<QueryTriple>()
+        for (line in queryLines) {
+            val fromUri = line.fromUri ?: throw Exception("Invalid From URI!")
+            val relationType = line.relationType ?: throw Exception("Invalid Relation Type!")
+            val toUri = line.toUri ?: throw Exception("Invalid To URI!")
+            val fromNode = BGQueryNode(fromUri)
+            val toNode = BGQueryNode(toUri)
+            val row = QueryTriple(fromNode, relationType, toNode)
+            query.add(row)
+        }
+        return query
+    }
 
 
     private fun generateReturnValuesAndGraphQueries(): Triple<String, String, String> {

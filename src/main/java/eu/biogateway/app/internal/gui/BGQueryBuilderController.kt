@@ -10,6 +10,8 @@ import eu.biogateway.app.internal.server.BGSuggestion
 import eu.biogateway.app.internal.util.Constants
 import eu.biogateway.app.internal.util.Utility
 import eu.biogateway.app.internal.util.sanitizeParameter
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 import org.cytoscape.model.CyNetwork
 import org.cytoscape.work.TaskIterator
 import java.awt.Color
@@ -229,75 +231,6 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
         }
     }
 
-    private fun runQuery() {
-        val errorText = validatePropertyFields(currentQuery!!.parameters, view.parameterComponents)
-        if (errorText != null) {
-            JOptionPane.showMessageDialog(view.mainFrame, errorText)
-        } else {
-            readParameterComponents(currentQuery!!.parameters, view.parameterComponents)
-            val queryString = createQueryString(currentQuery!!)
-            view.sparqlTextArea.text = queryString ?: throw Exception("Query String cannot be empty!")
-
-            //TODO: Make this independent from node search!
-            val query: BGQuery?
-            val queryType = currentQuery!!.returnType
-
-
-            query = when(queryType){
-                BGReturnType.NODE_LIST, BGReturnType.NODE_LIST_DESCRIPTION -> {
-                    BGNodeSearchQuery(queryString, queryType)
-                }
-                BGReturnType.RELATION_TRIPLE_GRAPHURI, BGReturnType.RELATION_TRIPLE_NAMED -> {
-                    BGRelationQueryImplementation(queryString, queryType)
-                }
-                else -> {
-                    throw Exception("Unexpected query type: "+queryType.toString())
-                }
-            }
-
-            query.addCompletion {
-
-                val data = when (queryType) {
-                    BGReturnType.NODE_LIST, BGReturnType.NODE_LIST_DESCRIPTION -> {
-                        it as? BGReturnNodeData ?: throw Exception("Expected Node Data in return!")
-                    }
-                    BGReturnType.RELATION_TRIPLE_GRAPHURI, BGReturnType.RELATION_TRIPLE_NAMED -> {
-                        it as? BGReturnRelationsData ?: throw Exception("Expected Relation Data in return!")
-                    }
-                    else -> {
-                        throw Exception("Unexpected query type: " + queryType.toString())
-                    }
-                }
-                data.filterWith(BGServiceManager.config.activeNodeFilters)
-                currentReturnData = data
-                val tableModel = view.resultTable.model as DefaultTableModel
-                tableModel.setColumnIdentifiers(data.columnNames)
-
-                for (i in tableModel.rowCount - 1 downTo 0) {
-                    tableModel.removeRow(i)
-                }
-
-                if (data is BGReturnNodeData) {
-                    setNodeTableData(data.nodeData.values)
-                }
-                if (data is BGReturnRelationsData) {
-                    BGLoadUnloadedNodes.createAndRun(data.unloadedNodes) {
-                        setRelationTableData(data.relationsData)
-                        view.tabPanel.selectedComponent = view.resultPanel// Open the result tab.
-                        Utility.fightForFocus(view.mainFrame)
-                    }
-                    return@addCompletion
-                } else {
-                    view.tabPanel.selectedComponent = view.resultPanel// Open the result tab.
-                    Utility.fightForFocus(view.mainFrame)
-                }
-            }
-            val iterator = TaskIterator(query)
-            BGServiceManager.taskManager?.execute(iterator)
-
-        }
-    }
-
     private fun createQueryString(currentQuery: BGQueryTemplate): String? {
         var queryString = currentQuery.sparqlString
 
@@ -445,7 +378,7 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
         if (errorText != null) {
             JOptionPane.showMessageDialog(view.mainFrame, errorText)
         } else {
-            val queryString = view.multiQueryPanel.generateSPARQLQuery()
+            val queryString = view.multiQueryPanel.generateSimplifiedSPARQL()
             view.sparqlTextArea.text = queryString
             return queryString
         }
@@ -872,13 +805,38 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
         view.multiQueryPanel.addMultiQueryWithURIs(uris)
     }
 
+    private fun runNewMultiQuery() {
+        val errorText = validateMultiQuery()
+        if (errorText != null) {
+            JOptionPane.showMessageDialog(view.mainFrame, errorText)
+            return
+        }
+        GlobalScope.async {
+            val sparqlQuery = view.multiQueryPanel.generateSimplifiedSPARQL()
+            val components = view.multiQueryPanel.getQueryComponents()
+            view.sparqlTextArea.text = sparqlQuery
+            val data = BGQueryEngine().runMultiQuery(sparqlQuery, components) ?: throw Exception("Expected Relation Data in return!")
+            currentReturnData = data
+            currentQueryType = BGReturnType.RELATION_MULTIPART
+            val tableModel = view.resultTable.model as DefaultTableModel
+            tableModel.setColumnIdentifiers(data.columnNames)
+
+            BGLoadNodeDataFromBiogwDict.createAndRun(data.unloadedNodes, 500) {
+                setRelationTableData(data.relationsData)
+                view.mainFrame.title = "BioGateway Query Builder - "+data.relationsData.size+" relations found."
+                view.tabPanel.selectedComponent = view.resultPanel // Open the result tab.
+                // Try the darnest to make the window appear on top!
+                Utility.fightForFocus(view.mainFrame)
+            }
+        }
+    }
+
     private fun runMultiQuery() {
 
         val errorText = validateMultiQuery()
         if (errorText != null) {
             JOptionPane.showMessageDialog(view.mainFrame, errorText)
         } else {
-
             val relationCount = Utility.countMatchingRowsQuery(view.multiQueryPanel.generateSPARQLCountQuery()) ?: throw Exception("Unable to get relation count.")
 
             if (relationCount > Constants.BG_RELATION_COUNT_WARNING_LIMIT) {
@@ -1027,7 +985,6 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
 
     override fun actionPerformed(e: ActionEvent) {
         when (e.actionCommand) {
-            ACTION_RUN_QUERY -> runQuery()
             ACTION_CHANGED_QUERY -> updateSelectedQuery()
             ACTION_IMPORT_TO_SELECTED -> {
                 val network = BGServiceManager.applicationManager?.currentNetwork
@@ -1035,7 +992,8 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
             }
             ACTION_IMPORT_TO_NEW -> importSelectedResults(null)
             ACTION_ADD_MULTIQUERY_LINE -> addMultiQueryLine()
-            ACTION_RUN_MULTIQUERY -> runMultiQuery()
+            ACTION_RUN_MULTIQUERY ->  runNewMultiQuery()
+            ACTION_RUN_MULTIQUERY_OLD -> runMultiQuery()
             ACTION_GENERATE_SPARQL -> {
                 if (generateSPARQLCode() != null) view.tabPanel.selectedComponent = view.sparqlPanel
             }
@@ -1059,7 +1017,6 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
 
     companion object {
         val ACTION_CHANGED_QUERY = "changedQueryComboBox"
-        val ACTION_RUN_QUERY = "runBiogwQuery"
         val ACTION_IMPORT_TO_SELECTED = "importToSelectedNetwork"
         val ACTION_IMPORT_TO_NEW = "importToNewNetwork"
         val ACTION_GENERATE_SPARQL = "generateSPARQL"
@@ -1071,6 +1028,7 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
         val ACTION_LOAD_SPARQL = "loadSPARQLFromFile"
         val ACTION_WRITE_SPARQL = "writeSPARQLToFile"
         val ACTION_RUN_MULTIQUERY = "runMultiQuery"
+        val ACTION_RUN_MULTIQUERY_OLD = "runMultiQueryOld"
         val ACTION_ADD_MULTIQUERY_LINE = "addMultiRelation"
         val ACTION_SELECT_UPSTREAM_RELATIONS = "selectRelationsInPaths"
         val ONTOLOGY_PREFIX = "http://purl.obolibrary.org/obo/"
