@@ -191,8 +191,8 @@ class BGDictEndpoint(internal var endpointUrl: String) {
         val statusCode = response.statusLine.statusCode
         val data = EntityUtils.toString(response.entity)
         if (statusCode in 200..399) {
-            val suggestions = ArrayList(gson.fromJson<List<BGSuggestion>>(data))
-            return suggestions.toHashSet()
+            val suggestions = ArrayList(gson.fromJson<List<BGSuggestion>>(data)).filterNotNull()
+            return suggestions
         } else {
             return null
         }

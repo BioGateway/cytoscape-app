@@ -453,13 +453,13 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
     }
 
     private fun validateMultiQuery(): String? {
+        val hint = "\n\nStart typing in the text box to get suggestions for specific entities to define in the query."
+        for ((index, line) in view.multiQueryPanel.queryLines.withIndex()) {
+            val fromUri = line.fromUri ?: return "The subject on row ${index+1} is of type “Entity”, but the value is not specified.\nDid you intend to use a Set (wildcard) instead?" + hint
+            val toUri = line.toUri ?: return "The object on row ${index+1} is of type “Entity”, but the value is not specified.\nDid you intend to use a Set (wildcard) instead?" + hint
 
-        for (line in view.multiQueryPanel.queryLines) {
-            val fromUri = line.fromUri ?: return "The from field can not be left blank when not using variables."
-            val toUri = line.toUri ?: return "The to field can not be left blank when not using variables."
-
-            if (!fromUri.startsWith("?") && !fromUri.startsWith("http://")) return "The From entity is invalid."
-            if (!toUri.startsWith("?") && !toUri.startsWith("http://")) return "The To entity is invalid."
+            if (!fromUri.startsWith("?") && !fromUri.startsWith("http://")) return "The subject entity on row ${index+1} is invalid." + hint
+            if (!toUri.startsWith("?") && !toUri.startsWith("http://")) return "The object entity on row ${index+1} is invalid." + hint
         }
         view.multiQueryPanel.validateNodeTypeConsistency()?.let { return it }
         BGServiceManager.controlPanel?.queryConstraintPanel?.validateConstraints()?.let { return it }
