@@ -11,6 +11,8 @@ import eu.biogateway.app.internal.util.Utility
 import eu.biogateway.app.internal.util.setChildFontSize
 import eu.biogateway.app.internal.util.setFontSize
 import java.awt.FlowLayout
+import java.awt.GridBagConstraints
+import java.awt.GridBagLayout
 import javax.swing.*
 
 
@@ -21,9 +23,9 @@ class BGMultiQueryPanel(val constraintPanel: BGQueryConstraintPanel, val uniqueS
     val variableManager = BGQueryVariableManager()
     val relationTypes = BGServiceManager.config.relationTypeDescriptions
 
-
     init {
-        layout = FlowLayout()
+        // layout = BoxLayout(this, BoxLayout.Y_AXIS)
+        layout = GridBagLayout()
     }
 
     var queryLines = ArrayList<BGMultiQueryAutocompleteLine>()
@@ -60,10 +62,18 @@ class BGMultiQueryPanel(val constraintPanel: BGQueryConstraintPanel, val uniqueS
         return queryLine
     }
 
+    private fun addPanel(panel: JPanel) {
+        val gbc = GridBagConstraints()
+        gbc.gridwidth = GridBagConstraints.REMAINDER
+        gbc.anchor = GridBagConstraints.FIRST_LINE_START
+        gbc.fill = GridBagConstraints.HORIZONTAL
+        this.add(panel, gbc)
+    }
+
     fun addQueryLine(): BGMultiQueryAutocompleteLine {
         val queryLine = createQueryLine()
         queryLines.add(queryLine)
-        this.add(queryLine)
+        addPanel(queryLine)
         return queryLine
     }
 
@@ -106,7 +116,7 @@ class BGMultiQueryPanel(val constraintPanel: BGQueryConstraintPanel, val uniqueS
 
 
         queryLines.add(queryLine)
-        this.add(queryLine)
+        addPanel(queryLine)
         return queryLine
     }
 
