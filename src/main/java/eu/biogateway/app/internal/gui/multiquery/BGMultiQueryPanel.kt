@@ -260,6 +260,7 @@ class BGMultiQueryPanel(val constraintPanel: BGQueryConstraintPanel, val uniqueS
         var nodeNames = HashSet<String>()
 
         var numberOfGraphQueries = 0
+        var numberOfCurrentNetworkSetUses = 0
 
         for (line in queryLines) {
             val fromUri = line.fromUri ?: throw Exception("Invalid From URI!")
@@ -268,6 +269,8 @@ class BGMultiQueryPanel(val constraintPanel: BGQueryConstraintPanel, val uniqueS
             val toUri = line.toUri ?: throw Exception("Invalid To URI!")
             val fromRDFUri = getRDFURI(fromUri)
             val toRDFUri = getRDFURI(toUri)
+            if (fromUri == "?current_network") numberOfCurrentNetworkSetUses += 1
+            if (toUri == "?current_network") numberOfCurrentNetworkSetUses += 1
 
             val fromName = "?name_"+getSafeString(fromUri)
             val toName = "?name_"+getSafeString(toUri)
@@ -282,6 +285,17 @@ class BGMultiQueryPanel(val constraintPanel: BGQueryConstraintPanel, val uniqueS
             numberOfGraphQueries += 1
         }
 
+        var currentNetworkSetFilter = ""
+        if (numberOfCurrentNetworkSetUses > 0) {
+            // 1. Fetch all URIs of the current network.
+            val network = BGServiceManager.applicationManager?.currentNetwork
+            val allNodeUris = network?.defaultNodeTable?.getColumn(Constants.BG_FIELD_IDENTIFIER_URI)?.getValues(String::class.java)?.map { "<${it}>" }?.reduce { acc, s -> acc + "," +s} ?: ""
+            if (allNodeUris.isNotEmpty()) {
+                // 2. Append them to a FILTER.
+                currentNetworkSetFilter = "FILTER(?current_network IN(" + allNodeUris + "))\n"
+            }
+        }
+
         val uniqueSetsFilter = if (uniqueSetsCheckBox.isSelected) { generateUniqueSetsFilter() } else { "\n #enableSelfLoops \n" }
 
         try {
@@ -291,7 +305,7 @@ class BGMultiQueryPanel(val constraintPanel: BGQueryConstraintPanel, val uniqueS
                     constraintValues[constraint] = value
                 }
             }
-            val constraints = uniqueSetsFilter + BGQueryConstraint.generateConstraintQueries(constraintValues, triples)
+            val constraints = currentNetworkSetFilter + uniqueSetsFilter + BGQueryConstraint.generateConstraintQueries(constraintValues, triples)
 
             return Triple(returnValues, graphQueries, constraints)
         } catch (exception: InvalidInputValueException) {

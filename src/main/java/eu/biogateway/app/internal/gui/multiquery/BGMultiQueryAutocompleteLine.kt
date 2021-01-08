@@ -77,7 +77,7 @@ class BGMultiQueryAutocompleteLine(val relationTypeComboBox: JComboBox<BGRelatio
 
     fun updateComboBox(comboBox: JComboBox<BGQueryVariable>, typeComboBox: JComponent, searchComboBox: JComponent) {
         val selectedVariable = comboBox.model.selectedItem as BGQueryVariable
-        if (selectedVariable == BGQueryVariable.Entity) {
+        if (selectedVariable == BGQueryVariable.Entity || selectedVariable == BGQueryVariable.CurrentNetwork) {
             // Make sure that the old variable is freed up.
             variableManager.unRegisterUseOfVariableForComponent(comboBox)
             variableManager.URIcomboBoxes.add(comboBox)
@@ -250,14 +250,10 @@ class BGMultiQueryAutocompleteLine(val relationTypeComboBox: JComboBox<BGRelatio
         get() = {
             val selectedItem = fromComboBox.selectedItem as BGQueryVariable
             if (selectedItem == BGQueryVariable.Entity) {
-                /*
-                if (this.fromSearchBox.text.length == 0) {
-                    null
-                } else {
-                    "<" + this.fromSearchBox.text + ">"
-                }*/
                 this.currentFromUri
-            } else {
+            } else if (selectedItem == BGQueryVariable.CurrentNetwork) {
+                "?current_network"
+            }  else {
                 "?"+selectedItem.value
             }
         }()
@@ -271,13 +267,9 @@ class BGMultiQueryAutocompleteLine(val relationTypeComboBox: JComboBox<BGRelatio
         get() = {
             val selectedItem = toComboBox.selectedItem as BGQueryVariable
             if (selectedItem == BGQueryVariable.Entity) {
-                /*
-                if (this.toSearchBox.text.length == 0) {
-                    null
-                } else {
-                "<"+this.toSearchBox.text+">"
-                }*/
                 this.currentToUri
+            } else if (selectedItem == BGQueryVariable.CurrentNetwork) {
+                "?current_network"
             } else {
                 "?"+selectedItem.value
             }

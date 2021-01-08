@@ -69,16 +69,6 @@ class BGQueryConstraint(val id: String, val label: String, val inputType: InputT
                 val graph = triple.second.defaultGraphURI ?: continue
                 val pair = BGDatasetSource.generateSourceConstraint(triple.second, triple.first, triple.third, sourceConstraintCounter)
                 sourceConstraintCounter++
-    //            val relevantSources = serviceManager.config.activeSources.filter { it.relationTypes.contains(triple.second) }
-    //            if (relevantSources.count() == 0) continue
-    //            val uri = "?sourceConstraint"+sourceConstraintCounter
-    //            sourceConstraintCounter++
-    //
-    //            val filter = "FILTER("+relevantSources.map { uri+"filter = <"+it.uri+">" }.reduce { acc, s -> acc+"||"+s }+")\n"
-    //            val sparql = uri+" rdf:subject "+triple.first+".\n" +
-    //                    uri+" rdf:object "+triple.third+" .\n" +
-    //                    uri+" rdf:predicate <"+triple.second.uri+"> .\n" +
-    //                    uri+" <http://semanticscience.org/resource/SIO_000253> "+uri+"filter ."
 
                 pair?.let {
                     sourceConstraintFilters += it.first
