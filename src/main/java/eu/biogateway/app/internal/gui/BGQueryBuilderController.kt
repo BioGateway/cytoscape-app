@@ -879,7 +879,12 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
             JOptionPane.showMessageDialog(view.mainFrame, errorText)
         } else {
 
-            val relationCount = Utility.countMatchingRowsQuery(view.multiQueryPanel.generateSPARQLCountQuery()) ?: throw Exception("Unable to get relation count.")
+            val relationCount = Utility.countMatchingRowsQuery(view.multiQueryPanel.generateSPARQLCountQuery())
+            if (relationCount == null) {
+                val message = "Unable to execute query. Make sure that you are connected to the internet. If this problem persists, contact us."
+                JOptionPane.showMessageDialog(null, message)
+                return
+            }
 
             if (relationCount > Constants.BG_RELATION_COUNT_WARNING_LIMIT) {
                 val message = "Estimated "+relationCount.toString()+" relations must be evaluated to complete this query. This might take a very long time or time out. Are you sure you want to proceed?"
