@@ -14,14 +14,20 @@ open class BGQueryVariable(val value: String) {
         return name.hashCode()
     }
 
-    class BGQueryEntity(value: String): BGQueryVariable(value) {
+    class BGQueryEntity(value: String) : BGQueryVariable(value) {
         override fun toString(): String {
             return value
         }
     }
 
+    class BGQueryNetworkSet() : BGQueryVariable("current_network") {
+    override fun toString(): String {
+        return "In current network"
+    }
+}
     companion object {
         val Entity: BGQueryVariable = BGQueryEntity("Entity:")
+        val CurrentNetwork: BGQueryVariable = BGQueryNetworkSet()
     }
 }
 
@@ -90,6 +96,9 @@ class BGQueryVariableManager {
             for (i in lastIndex.downTo(1)) {
                 // Iterating backwards because we are deleting elements.
                 val element = model.getElementAt(i)
+                if (element is BGQueryVariable.BGQueryNetworkSet || element is BGQueryVariable.BGQueryEntity) {
+                    continue
+                }
                 variablesInModel.add(element)
                 if (element != selected && !usedVariables.values.contains(element) && element != getNextFreeVariable()) {
                     model.removeElementAt(i)
@@ -112,6 +121,8 @@ class BGQueryVariableManager {
     fun getShownVariables(): Array<BGQueryVariable> {
         var usedVariables = getUsedVariables()
         var nextFreeChar = getNextFreeVariable()
+        // TODO: Enable querying current network again
+        // var shownVariables = arrayOf(BGQueryVariable.Entity, BGQueryVariable.CurrentNetwork) + usedVariables
         var shownVariables = arrayOf(BGQueryVariable.Entity) + usedVariables
         nextFreeChar?.let {
             shownVariables += it

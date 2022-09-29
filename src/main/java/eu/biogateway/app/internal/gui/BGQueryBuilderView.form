@@ -44,12 +44,6 @@
                   </component>
                 </children>
               </grid>
-              <grid id="7871f" binding="multiQueryContainer" layout-manager="BorderLayout" hgap="0" vgap="0">
-                <constraints border-constraint="Center"/>
-                <properties/>
-                <border type="none"/>
-                <children/>
-              </grid>
               <grid id="3034d" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="0">
                 <constraints border-constraint="North"/>
                 <properties/>
@@ -81,6 +75,26 @@
                   </component>
                 </children>
               </grid>
+              <scrollpane id="924d0">
+                <constraints border-constraint="Center"/>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <grid id="5da99" layout-manager="BorderLayout" hgap="0" vgap="0">
+                    <constraints/>
+                    <properties/>
+                    <border type="etched" title="Queries"/>
+                    <children>
+                      <grid id="7871f" binding="multiQueryContainer" layout-manager="BorderLayout" hgap="0" vgap="0">
+                        <constraints border-constraint="North"/>
+                        <properties/>
+                        <border type="none"/>
+                        <children/>
+                      </grid>
+                    </children>
+                  </grid>
+                </children>
+              </scrollpane>
             </children>
           </grid>
           <grid id="f0eaf" binding="bulkQueryPanel" layout-manager="BorderLayout" hgap="0" vgap="0">

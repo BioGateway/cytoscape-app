@@ -2,6 +2,7 @@ package eu.biogateway.app.internal.gui
 
 import eu.biogateway.app.internal.BGServiceManager
 import eu.biogateway.app.internal.model.BGDataModelController
+import eu.biogateway.app.internal.parser.BGConfigParser
 import eu.biogateway.app.internal.util.Constants
 import java.io.File
 import javax.swing.JFileChooser
@@ -18,6 +19,9 @@ class BGSettingsController {
         view = BGSettingsView(this)
         loadParameters()
     }
+
+    val availableVersions: Array<Int> get() = settings.availableVersions
+    val selectedVersion: Int? get() = if (settings.databaseVersion > 0) settings.databaseVersion else null
 
     fun browseForConfigFile() {
         val lastDir = preferences.get(Constants.BG_PREFERENCES_LAST_FOLDER, File(".").absolutePath)
@@ -69,6 +73,13 @@ class BGSettingsController {
     fun setConfigFilePath(path: String) {
         settings.configXMLFilePath = path
         settings.saveParameters()
+    }
+
+    fun setDBVersion(version: Int) {
+        settings.databaseVersion = version
+        settings.saveParameters()
+        reloadConfigFile()
+        // BGConfigParser.parseConfigVersion(version, config = )
     }
 
     private fun loadParameters() {
