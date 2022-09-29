@@ -20,7 +20,7 @@
       </configuration>
     </facet>
     <facet type="Osmorc" name="OSGi">
-      <configuration manifestGenerationMode="OsmorcControlled" manifestLocation="" jarfileLocation="biogatewayapp-3.2.6.jar" outputPathType="CompilerOutputPath" bndFileLocation="" bundlorFileLocation="" bundleActivator="eu.biogateway.app.internal.CyActivator" bundleSymbolicName="eu.biogateway.app" bundleVersion="3.2.6" ignoreFilePattern="" useProjectDefaultManifestFileLocation="true" alwaysRebuildBundleJAR="false" doNotSynchronizeWithMaven="false">
+      <configuration manifestGenerationMode="OsmorcControlled" manifestLocation="" jarfileLocation="biogatewayapp-3.4.0.jar" outputPathType="CompilerOutputPath" bndFileLocation="" bundlorFileLocation="" bundleActivator="eu.biogateway.app.internal.CyActivator" bundleSymbolicName="eu.biogateway.app" bundleVersion="3.4.0" ignoreFilePattern="" useProjectDefaultManifestFileLocation="true" alwaysRebuildBundleJAR="false" doNotSynchronizeWithMaven="false">
         <additionalProperties>
           <property key="Bundle-Description" value="The BioGateway App enables querying the BioGateway triple store from within Cytoscape. Read more at www.biogateway.eu." />
           <property key="Export-Package" value="eu.biogateway.app" />

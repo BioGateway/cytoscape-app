@@ -121,7 +121,9 @@ class BGQueryVariableManager {
     fun getShownVariables(): Array<BGQueryVariable> {
         var usedVariables = getUsedVariables()
         var nextFreeChar = getNextFreeVariable()
-        var shownVariables = arrayOf(BGQueryVariable.Entity, BGQueryVariable.CurrentNetwork) + usedVariables
+        // TODO: Enable querying current network again
+        // var shownVariables = arrayOf(BGQueryVariable.Entity, BGQueryVariable.CurrentNetwork) + usedVariables
+        var shownVariables = arrayOf(BGQueryVariable.Entity) + usedVariables
         nextFreeChar?.let {
             shownVariables += it
         }

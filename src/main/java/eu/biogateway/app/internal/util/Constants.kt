@@ -23,7 +23,7 @@ object Constants {
     val BG_FIELD_EDGE_EXPANDABLE = "Expandable"
     val BG_FIELD_PUBMED_URI = "Pubmed uri"
     val BG_TABLE_NODE_METADATA = "Biogateway Node Metadata Table"
-    val BG_CONFIG_FILE_URL = "https://rdf.biogateway.eu/config/BiogatewayConfig.xml"
+    val BG_CONFIG_FILE_URL = "https://rdf.biogateway.eu/config/cytoscapeapp.xml"
     val SERVER_PATH = "http://www.semantic-systems-biology.org/biogateway/endpoint"
     val DICTIONARY_SERVER_PATH = "http://localhost:3002/"
     val BG_FIELD_SOURCE_GRAPH = "Source Graph"

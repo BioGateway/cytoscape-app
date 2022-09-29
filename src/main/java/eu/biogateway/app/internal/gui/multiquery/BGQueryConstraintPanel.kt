@@ -27,7 +27,7 @@ class BGQueryConstraintPanel(val constraints: HashSet<BGQueryConstraint>): JPane
             // Check the type.
             val panel = JPanel(FlowLayout(FlowLayout.LEFT))
 
-            val checkBox = JCheckBox(constraint.label+":")
+            val checkBox = JCheckBox(constraint.label)
             panel.add(checkBox)
             val columns = constraint.columns ?: 10
 
@@ -42,7 +42,7 @@ class BGQueryConstraintPanel(val constraints: HashSet<BGQueryConstraint>): JPane
                     JTextField(columns)
                 }
                 BGQueryConstraint.InputType.BOOLEAN -> {
-                    JLabel(constraint.label)
+                    JLabel("")
                 }
             }
             panel.add(inputComponent)

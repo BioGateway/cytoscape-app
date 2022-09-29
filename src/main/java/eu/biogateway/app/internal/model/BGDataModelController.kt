@@ -82,8 +82,22 @@ class BGDataModelController() {
     }
 
     fun createGraphTreeRootnode() {
+        /*
+        for (relationType in config.datasetSources.keys) {
+                val graph = relationType.defaultGraph?.label ?: "Unspecified"
+                val graphNode = getChildNode(graph, config.sourcesRootNode)
+                val relationTypeNode = getChildNode(relationType.name, graphNode)
+                config.datasetSources[relationType]?.let {
+                    for (source in it) {
+                        val sourceNode = BGSourceTreeNode(source)
+                        relationTypeNode.add(sourceNode)
+                    }
+                }
+            }
+         */
         for (graph in config.relationTypesForGraphs.keys) {
-            val graphNode = if (graph.name.isNotBlank()) DefaultMutableTreeNode(graph) else DefaultMutableTreeNode("Unspecified")
+            val name = if (graph.name.isNotBlank()) graph.name else "Unspecified"
+            val graphNode =  getChildNode(name, config.relationTypesRootNode)
             config.relationTypesForGraphs[graph]?.let {
                 for (relationType in it.values) {
                     val childNode = BGRelationTypeTreeNode(relationType)
@@ -504,7 +518,7 @@ class BGDataModelController() {
                 try {
                 val file = File(path)
                 val inputStream = file.inputStream()
-                BGConfigParser.parseXMLConfigFile(inputStream, config)
+                BGConfigParser.parseXMLConfigFile(inputStream, config, settings)
                 loadDefaultPreferences()
                 inputStream.close()
                 } catch (e: IOException) {
@@ -524,12 +538,12 @@ class BGDataModelController() {
             val queryFileUrl = URL(path)
             val connection = queryFileUrl.openConnection()
             val inputStream = connection.getInputStream()
-            BGConfigParser.parseXMLConfigFile(inputStream, config)
+            BGConfigParser.parseXMLConfigFile(inputStream, config, settings)
             loadDefaultPreferences()
             inputStream.close()
         } catch (e: IOException) {
             e.printStackTrace()
-            JOptionPane.showMessageDialog(null, "Unable to load BioGateway configuration from server. Make sure that you are connected to the internet. \n\n" + e.localizedMessage, "BioGateway Loading Error", JOptionPane.ERROR_MESSAGE)
+            JOptionPane.showMessageDialog(null, "Unable to load BioGateway configuration from server. Make sure that you are connected to the internet. \nConfig file URL: "+path+"\n" + e.localizedMessage, "BioGateway Loading Error", JOptionPane.ERROR_MESSAGE)
         }
         // Check if the build number is outdated.
         val currentVersion = BGBundleContext.version ?: throw Exception("OSGi Bundle Version unavailable!")
@@ -543,6 +557,5 @@ class BGDataModelController() {
                 }
             }
         }
-
     }
 }
