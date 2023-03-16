@@ -3,7 +3,7 @@ package eu.biogateway.app.internal.server
 import eu.biogateway.app.internal.BGServiceManager
 import eu.biogateway.app.internal.model.BGNode
 
-open class BGSuggestion(val _id: String, val prefLabel: String, val synonyms: Array<String>? = null, val definition: String? = null, val taxon: String? = null, val identifiers: Array<String>? = null, val annotationScore: Int? = null) {
+open class BGSuggestion(val uri: String, val prefLabel: String, val synonyms: Array<String>? = null, val definition: String? = null, val taxon: String? = null, val identifiers: Array<String>? = null, annotationScore: Int? = null) {
     override fun toString(): String {
         var string = prefLabel
         if (synonyms != null) {

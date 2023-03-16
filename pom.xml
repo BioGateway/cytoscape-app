@@ -11,11 +11,11 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>no.ntnu</groupId>
 	<artifactId>biogatewayapp</artifactId>
-	<version>3.4.0</version>
+	<version>3.4.1</version>
 	<description>The BioGateway App enables querying the BioGateway triple store from within Cytoscape. Read more at www.biogateway.eu.</description>
 
 	<name>BioGateway Cytoscape Plugin</name>
-	<url>http://www.biogateway.eu</url>
+	<url>https://www.biogateway.eu</url>
 	<packaging>bundle</packaging>
 
 	<scm>
@@ -213,7 +213,7 @@
 				<enabled>false</enabled>
 			</releases>
 			<name>Cytoscape Snapshots</name>
-			<url>http://code.cytoscape.org/nexus/content/repositories/snapshots/</url>
+			<url>https://code.cytoscape.org/nexus/content/repositories/snapshots/</url>
 		</repository>
 		<repository>
 			<id>cytoscape_releases</id>
@@ -223,7 +223,7 @@
 			<releases>
 			</releases>
 			<name>Cytoscape Releases</name>
-			<url>http://code.cytoscape.org/nexus/content/repositories/releases/</url>
+			<url>https://code.cytoscape.org/nexus/content/repositories/releases/</url>
 		</repository>
 	</repositories>
 

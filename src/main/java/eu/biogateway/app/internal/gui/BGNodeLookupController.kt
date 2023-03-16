@@ -71,7 +71,7 @@ class BGNodeLookupController(parentComponent: JComponent?, defaultURI: String? =
                 }
 
 
-                val data = suggestions.map { it._id to BGNode(it) }.toMap()
+                val data = suggestions.map { it.uri to BGNode(it) }.toMap()
                 if (data.values.count() == 0) {
                     JOptionPane.showMessageDialog(view.mainFrame, "No entities found.")
                 }

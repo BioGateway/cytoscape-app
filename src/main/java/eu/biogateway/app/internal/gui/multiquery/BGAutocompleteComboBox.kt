@@ -125,7 +125,7 @@ class BGAutocompleteComboBox(private val endpoint: BGDictEndpoint, private val t
 
     private fun selectSuggestion(suggestion: BGSuggestion) {
         val prefLabel = suggestion.prefLabel
-        val uri = suggestion._id
+        val uri = suggestion.uri
         searchSuggestion.searchString = prefLabel
         selectedUri = uri
         this.hidePopup()
