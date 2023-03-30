@@ -426,7 +426,7 @@ class BGDataModelController() {
     private fun getNodesFromDictionaryServer(nodeUris: Collection<String>): Map<String, BGNode> {
         if (nodeUris.isEmpty()) return HashMap()
         val suggestions = BGServiceManager.endpoint.getSuggestionsForURIs(nodeUris)
-        val nodeMap = suggestions?.map { it._id to BGNode(it) }?.toMap() ?: HashMap<String, BGNode>()
+        val nodeMap = suggestions?.map { it.uri to BGNode(it) }?.toMap() ?: HashMap<String, BGNode>()
         return nodeMap
 //        val query = BGMultiNodeFetchMongoQuery(nodeUris, "fetch")
 //        query.run()

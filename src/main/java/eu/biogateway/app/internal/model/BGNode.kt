@@ -52,7 +52,7 @@ open class BGNode {
         }
     }
 
-    constructor(suggestion: BGSuggestion) : this(suggestion._id) {
+    constructor(suggestion: BGSuggestion) : this(suggestion.uri) {
         this.name = suggestion.prefLabel
         this.description = suggestion.definition
         this.taxon = BGServiceManager.config.availableTaxa[suggestion.taxon]

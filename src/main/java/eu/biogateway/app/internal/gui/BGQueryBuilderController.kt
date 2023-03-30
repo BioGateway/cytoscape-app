@@ -458,8 +458,8 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
             val fromUri = line.fromUri ?: return "The from field can not be left blank when not using variables."
             val toUri = line.toUri ?: return "The to field can not be left blank when not using variables."
 
-            if (!fromUri.startsWith("?") && !fromUri.startsWith("http://")) return "The From entity is invalid."
-            if (!toUri.startsWith("?") && !toUri.startsWith("http://")) return "The To entity is invalid."
+            if (!fromUri.startsWith("?") && !(fromUri.startsWith("http://") || fromUri.startsWith("https://"))) return "The From entity is invalid."
+            if (!toUri.startsWith("?") && !(toUri.startsWith("http://") || toUri.startsWith("https://"))) return "The To entity is invalid."
         }
         view.multiQueryPanel.validateNodeTypeConsistency()?.let { return it }
         BGServiceManager.controlPanel?.queryConstraintPanel?.validateConstraints()?.let { return it }
@@ -839,7 +839,7 @@ class BGQueryBuilderController() : ActionListener, ChangeListener, BGRelationRes
         val darkRed = Color(178,34,34)
 
         val nodeNames = suggestions.map { it.prefLabel ?: "" }.filter { !it.isEmpty() }.toHashSet()
-        val nodeUris = suggestions.map { it._id }.toHashSet()
+        val nodeUris = suggestions.map { it.uri }.toHashSet()
         val searchLines = view.bulkImportTextPane.text.split("\n").map { Utility.sanitizeParameter(it) }.filter { it.isNotEmpty() }
         // view.bulkImportTextPane.text = ""
 

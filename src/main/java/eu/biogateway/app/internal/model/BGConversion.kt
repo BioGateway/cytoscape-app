@@ -73,7 +73,7 @@ open class BGConversion(val type: BGConversionType, val sourceNetwork: CyNetwork
                 val nodeConversion = type as? BGNodeConversionType ?: return null //  Only valid for node conversions.
                 val suggestions = serviceManager.endpoint.searchForLabel(data, nodeConversion.nodeType.id.toLowerCase(), 1)
                 if (suggestions.isNotEmpty()) {
-                    suggestions.first()._id
+                    suggestions.first().uri
                 } else {
                     null
                 }
