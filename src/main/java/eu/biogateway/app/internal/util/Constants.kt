@@ -34,6 +34,6 @@ object Constants {
     val BG_PREFERENCES_LAST_FOLDER = "biogatewayPluginLastOpenedFolder"
     val BG_RELATION_COUNT_WARNING_LIMIT = 50000
     val BG_QUERY_BUILDER_URI_FIELD_COLUMNS = 20
-    val PROT_PREFIX = "http://rdf.biogateway.eu/prot/"
+    val PROT_PREFIX = "http://uniprot.org/uniprot/"
     val GENE_PREFIX = "http://rdf.biogateway.eu/gene/"
 }
