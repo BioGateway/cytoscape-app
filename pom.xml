@@ -5,6 +5,7 @@
 		<bundle.symbolicName>eu.biogateway.app</bundle.symbolicName>
 		<bundle.namespace>eu.biogateway.app</bundle.namespace>
 		<kotlin.version>1.3.71</kotlin.version>
+		<cytoscape.api.version>3.4.0</cytoscape.api.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -175,11 +176,6 @@
 
 	<pluginRepositories>
 		<pluginRepository>
-			<id>jcenter</id>
-			<name>JCenter</name>
-			<url>https://jcenter.bintray.com/</url>
-		</pluginRepository>
-		<pluginRepository>
 			<id>central</id>
 			<name>Maven Plugin Repository</name>
 			<url>https://repo1.maven.org/maven2</url>
@@ -208,12 +204,13 @@
 		<repository>
 			<id>cytoscape_snapshots</id>
 			<snapshots>
+				<enabled>true</enabled>
 			</snapshots>
 			<releases>
 				<enabled>false</enabled>
 			</releases>
 			<name>Cytoscape Snapshots</name>
-			<url>https://code.cytoscape.org/nexus/content/repositories/snapshots/</url>
+			<url>https://nrnb-nexus.ucsd.edu/repository/cytoscape_snapshots/</url>
 		</repository>
 		<repository>
 			<id>cytoscape_releases</id>
@@ -221,9 +218,10 @@
 				<enabled>false</enabled>
 			</snapshots>
 			<releases>
+				<enabled>true</enabled>
 			</releases>
 			<name>Cytoscape Releases</name>
-			<url>https://code.cytoscape.org/nexus/content/repositories/releases/</url>
+			<url>https://nrnb-nexus.ucsd.edu/repository/cytoscape_releases/</url>
 		</repository>
 	</repositories>
 
@@ -238,55 +236,55 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>service-api</artifactId>
-			<version>3.4.0</version>
+			<version>${cytoscape.api.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>model-api</artifactId>
-			<version>3.4.0</version>
+			<version>${cytoscape.api.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>swing-application-api</artifactId>
-			<version>3.4.0</version>
+			<version>${cytoscape.api.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>session-api</artifactId>
-			<version>3.4.0</version>
+			<version>${cytoscape.api.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>presentation-api</artifactId>
-			<version>3.4.0</version>
+			<version>${cytoscape.api.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>core-task-api</artifactId>
-			<version>3.4.0</version>
+			<version>${cytoscape.api.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>io-api</artifactId>
-			<version>3.4.0</version>
+			<version>${cytoscape.api.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>layout-api</artifactId>
-			<version>3.4.0</version>
+			<version>${cytoscape.api.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>swing-app-api</artifactId>
-			<version>3.4.0</version>
+			<version>${cytoscape.api.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
