@@ -12,7 +12,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>no.ntnu</groupId>
 	<artifactId>biogatewayapp</artifactId>
-	<version>3.4.1</version>
+	<version>3.4.2</version>
 	<description>The BioGateway App enables querying the BioGateway triple store from within Cytoscape. Read more at www.biogateway.eu.</description>
 
 	<name>BioGateway Cytoscape Plugin</name>
@@ -87,7 +87,7 @@
 			<plugin>
 				<groupId>org.apache.felix</groupId>
 				<artifactId>maven-bundle-plugin</artifactId>
-				<version>3.3.0</version>
+				<version>5.1.9</version>
 				<extensions>true</extensions>
 				<configuration>
 					<instructions>

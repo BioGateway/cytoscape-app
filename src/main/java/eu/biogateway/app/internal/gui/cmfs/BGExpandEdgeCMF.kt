@@ -10,6 +10,7 @@ import eu.biogateway.app.internal.parser.getUri
 import eu.biogateway.app.internal.query.*
 import eu.biogateway.app.internal.util.Utility
 import org.cytoscape.model.CyEdge
+import org.cytoscape.model.CyNetwork
 import org.cytoscape.view.model.CyNetworkView
 import org.cytoscape.view.model.View
 import org.cytoscape.work.TaskIterator
@@ -23,23 +24,52 @@ class BGExpandEdgeCMF(val gravity: Float): CyEdgeViewContextMenuFactory {
 
     override fun createMenuItem(netView: CyNetworkView?, edgeView: View<CyEdge>?): CyMenuItem {
 
+        val RELATED_MATCH_URI = "<http://www.w3.org/2004/02/skos/core#relatedMatch>"
+        val HAS_SOURCE_URI = "<http://semanticscience.org/resource/SIO_000253>"
+        val REFERENCE_URI = "<http://www.w3.org/2004/02/skos/core#reference>"
+        val HAS_EVIDENCE_URI = "<http://semanticscience.org/resource/SIO_000772>"
+        val PART_OF_PATHWAY_URI = "<http://purl.obolibrary.org/obo/BFO_0000050>"
+
         if (netView != null && edgeView != null) {
             val parentMenu = JMenu("BioGateway")
+            val network = netView.model
 
-            if (isExpandable(edgeView, netView)) {
-                createOpenResourceURIMenuList(netView, edgeView)?.let { menu ->
-                    parentMenu.add(menu)
-                    parentMenu.addSeparator()
-                }
+            val testItem = JMenuItem("Test")
+            testItem.addActionListener {
+                println("TESTING")
+            }
+            parentMenu.add(testItem)
+            parentMenu.addSeparator()
 
-                val expandItem = JMenuItem("Expand")
-                expandItem.addActionListener {
-                    val task = createExpandMenuTask(netView, edgeView)
-                    BGServiceManager.taskManager?.execute(task)
-                }
-                parentMenu.add(expandItem)
+            createOpenResourceURIMenuList(netView, edgeView)?.let { menu ->
+                parentMenu.add(menu)
                 parentMenu.addSeparator()
             }
+
+            createOpenResourceMenu(HAS_EVIDENCE_URI, "Show evidence", network, edgeView)?.let { menu ->
+                parentMenu.add(menu)
+                parentMenu.addSeparator()
+            }
+
+            createOpenResourceMenu(PART_OF_PATHWAY_URI, "Show pathway", network, edgeView)?.let { menu ->
+                parentMenu.add(menu)
+                parentMenu.addSeparator()
+            }
+
+//            if (isExpandable(edgeView, netView)) {
+//                createOpenResourceURIMenuList(netView, edgeView)?.let { menu ->
+//                    parentMenu.add(menu)
+//                    parentMenu.addSeparator()
+//                }
+//
+//                val expandItem = JMenuItem("Expand")
+//                expandItem.addActionListener {
+//                    val task = createExpandMenuTask(netView, edgeView)
+//                    BGServiceManager.taskManager?.execute(task)
+//                }
+//                parentMenu.add(expandItem)
+//                parentMenu.addSeparator()
+//            }
 
             return CyMenuItem(parentMenu, gravity)
         }
@@ -97,6 +127,46 @@ class BGExpandEdgeCMF(val gravity: Float): CyEdgeViewContextMenuFactory {
         }
         return menu
     }
+
+fun createOpenResourceMenu(metadataUri: String, menuItemLabel: String, network: CyNetwork, edgeView: View<CyEdge>): JMenuItem? {
+    val edge = edgeView.model ?: throw  Exception("CyEdge is null!")
+
+    val fromNodeUri = edge.source.getUri(network)
+    val toNodeUri = edge.target.getUri(network)
+    val edgeUri = edge.getUri(network)
+    val graphUri = edge.getSourceGraph(network)
+
+    val query = BGFetchEdgeAttributeValuesQuery(fromNodeUri, toNodeUri, edgeUri, metadataUri, graphUri)
+    query.run()
+    val data = query.returnData as? BGReturnMetadata ?: return null
+
+    val validURLs = data.values.filter { it.toLowerCase().contains("http://") }.map {Utility.sanitizeParameter(it)}
+
+    if (validURLs.isEmpty()) return null
+
+    if (validURLs.size == 1) {
+        val item = JMenuItem(menuItemLabel)
+        item.addActionListener {
+            if ( Desktop.isDesktopSupported() ) {
+                Desktop.getDesktop().browse(URI(validURLs[0]))
+            }
+        }
+        return item
+    }
+
+    val menu = JMenu(menuItemLabel+"s")
+    for ((index, uri) in validURLs.withIndex()) {
+        val label = "["+(index+1)+"]: " + uri
+        val item = JMenuItem(label)
+        item.addActionListener {
+            if (Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().browse(URI(uri))
+            }
+        }
+        menu.add(item)
+    }
+    return menu
+}
 
     fun createExpandMenuTask(netView: CyNetworkView, edgeView: View<CyEdge>): TaskIterator {
         val network = netView.model
