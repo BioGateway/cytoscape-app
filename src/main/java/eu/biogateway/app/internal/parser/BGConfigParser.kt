@@ -9,6 +9,7 @@ import eu.biogateway.app.internal.util.Utility
 import org.osgi.framework.Version
 import org.w3c.dom.Element
 import org.w3c.dom.Node
+import org.w3c.dom.NodeList
 import java.awt.Color
 import java.io.InputStream
 import javax.swing.JOptionPane
@@ -180,6 +181,38 @@ object BGConfigParser {
             }
         }
 
+        // Parsing Statement context menu actions
+        (configDoc.getChildWithName("statementContextMenu"))?.let { statementMenuActionNode ->
+            fun parseNodes(nodeList: NodeList, type: BGStatementContextMenuAction.ActionType) {
+                for (index in 0..nodeList.length - 1) {
+                    val menuActionElement = nodeList.item(index) as? Element ?: continue
+                    val id = menuActionElement.getAttribute("id") ?: continue
+                    val resourceURI = menuActionElement.getAttribute("resourceURI") ?: continue
+                    val singleLabel = menuActionElement.getAttribute("singleLabel") ?: continue
+                    val multipleLabel = menuActionElement.getAttribute("multipleLabel") ?: continue
+
+                    val relationTypes = ArrayList<BGRelationType>()
+
+                    val relationTypeList = menuActionElement.getElementsByTagName("relationType")
+                    for (j in 0..relationTypeList.length - 1) {
+                        val rtElement = relationTypeList.item(j) as? Element ?: continue
+                        val rtGraph = rtElement.getAttribute("graph") ?: continue
+                        val rtUri = rtElement.textContent
+                        val relationType = config.getRelationTypeForURIandGraph(rtUri, rtGraph) ?: continue
+                        relationTypes.add(relationType)
+                    }
+                    val menuAction = BGStatementContextMenuAction(id, resourceURI, singleLabel, multipleLabel, relationTypes, type)
+                    config.statementContextMenuActions[id] = menuAction
+                }
+            }
+
+            val openURIActionList = statementMenuActionNode.getElementsByTagName("openURIAction")
+            parseNodes(openURIActionList, BGStatementContextMenuAction.ActionType.OPEN_URI)
+            val copyURIActionList = statementMenuActionNode.getElementsByTagName("copyURIAction")
+            parseNodes(copyURIActionList, BGStatementContextMenuAction.ActionType.COPY_URI)
+
+
+        }
 
         // Parsing RelationMetadataTypes
 

@@ -15,7 +15,6 @@ import eu.biogateway.app.internal.util.Utility;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.*;
 import org.cytoscape.service.util.AbstractCyActivator;
-import org.cytoscape.task.NodeViewTaskFactory;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
@@ -25,9 +24,7 @@ import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.osgi.framework.BundleContext;
 
-import static org.cytoscape.work.ServiceProperties.PREFERRED_ACTION;
 import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
-import static org.cytoscape.work.ServiceProperties.TITLE;
 
 @SuppressWarnings("Convert2Lambda")
 public class CyActivator extends AbstractCyActivator {
@@ -113,19 +110,19 @@ public class CyActivator extends AbstractCyActivator {
 //        BGOpenEdgeSourceViewCMF openPumedIdCMF = new BGOpenEdgeSourceViewCMF(1F);
 //        registerAllServices(bundleContext, openPumedIdCMF, ezProps(PREFERRED_MENU, "BioGateway"));
 
-        BGExpandEdgeCMF expandEdgeCMF = new BGExpandEdgeCMF(0F);
+        BGStatementActionCMF expandEdgeCMF = new BGStatementActionCMF(0F);
         registerAllServices(bundleContext, expandEdgeCMF, ezProps(PREFERRED_MENU, "BioGateway"));
 
         BGNodeDoubleClickNVTF doubleClickNVTF = new BGNodeDoubleClickNVTF();
         //registerAllServices(bundleContext, doubleClickNVTF, ezProps("PREFERRED_ACTION", "OPEN", "TITLE", "Expand/Collapse"));
 
-        Properties doubleClickProperties = new Properties();
-        doubleClickProperties.setProperty(PREFERRED_ACTION, "OPEN");
-        doubleClickProperties.setProperty(TITLE, "Expand/Collapse Group");
-        registerService(bundleContext, doubleClickNVTF, NodeViewTaskFactory.class, doubleClickProperties);
+        // Properties doubleClickProperties = new Properties();
+        // doubleClickProperties.setProperty(PREFERRED_ACTION, "OPEN");
+        // doubleClickProperties.setProperty(TITLE, "Expand/Collapse Group");
+        // registerService(bundleContext, doubleClickNVTF, NodeViewTaskFactory.class, doubleClickProperties);
 
-        BGExpandEdgeDoubleClickEVTF edgeDoubleClickEVTF = new BGExpandEdgeDoubleClickEVTF();
-        registerAllServices(bundleContext, edgeDoubleClickEVTF, ezProps(PREFERRED_ACTION, "OPEN"));
+        // BGExpandEdgeDoubleClickEVTF edgeDoubleClickEVTF = new BGExpandEdgeDoubleClickEVTF();
+        // registerAllServices(bundleContext, edgeDoubleClickEVTF, ezProps(PREFERRED_ACTION, "OPEN"));
 
     }
 

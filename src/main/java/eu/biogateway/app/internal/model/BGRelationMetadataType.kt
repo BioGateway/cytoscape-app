@@ -4,3 +4,4 @@ class BGRelationMetadataType(val id: String, val name: String, val dataType: BGT
     var scalingFactor: Double = 1.0
     var enabledByDefault = false
 }
+
