@@ -28,6 +28,7 @@ class BGConfig {
     var availableTaxa = HashMap<String, BGTaxon>()
     var queryConstraints = HashMap<String, BGQueryConstraint>()
     var edgeMetadataTypes = HashMap<String, BGRelationMetadataType>()
+    var statementContextMenuActions = HashMap<String, BGStatementContextMenuAction>()
     var nodeMetadataTypes = HashMap<String, BGNodeMetadataType>()
     var datasetSources = HashMap<BGRelationType, HashSet<BGDatasetSource>>()
     var datasetSourceRelationTypeUri: String? = null

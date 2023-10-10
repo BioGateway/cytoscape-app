@@ -28,3 +28,40 @@ class BGFetchAttributeValuesQuery(val nodeUri: String, val relationUri: String, 
         }
     }
 }
+
+class BGFetchEdgeAttributeValuesQuery(val fromNode: String, val toNode: String, val predicate: String, val relationUri: String, var graphName: String, val biDirectional: Boolean) : BGQuery(BGReturnType.METADATA_FIELD) {
+    override fun generateQueryString(): String {
+        if (!graphName.startsWith("?")) graphName = "<$graphName>"
+
+        if (biDirectional) {
+            // Handle the fact that we don't know the direction of this query.
+            return "BASE <http://rdf.biogateway.eu/graph/> \n" +
+                    "SELECT DISTINCT ?value\n" +
+                    "WHERE {  \n" +
+                    "GRAPH $graphName {\n" +
+                    "{ ?statement rdf:subject <$fromNode> . \n" +
+                    "  ?statement rdf:object <$toNode> . \n" +
+                    "  ?statement rdf:predicate <$predicate> . \n" +
+                    "  ?instance rdf:type ?statement .\n" +
+                    "  ?instance $relationUri ?value .}\n" +
+                    " UNION {\n" +
+                    "  ?statement rdf:subject <$toNode> . \n" +
+                    "  ?statement rdf:object <$fromNode> . \n" +
+                    "  ?statement rdf:predicate <$predicate> . \n" +
+                    "  ?instance rdf:type ?statement .\n" +
+                    "  ?instance $relationUri ?value .}\n" +
+                    "}}"
+        }
+
+        return "BASE <http://rdf.biogateway.eu/graph/> \n" +
+                    "SELECT DISTINCT ?value\n" +
+                    "WHERE {  \n" +
+                    "GRAPH "+graphName+" {\n" +
+                    "?statement rdf:subject <$fromNode> . \n" +
+                    "?statement rdf:object <$toNode> . \n" +
+                    "?statement rdf:predicate <$predicate> . \n" +
+                    "?instance rdf:type ?statement .\n" +
+                    "?instance "+relationUri+" ?value .\n" +
+                    "}}"
+    }
+}
