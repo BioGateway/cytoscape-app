@@ -4,6 +4,7 @@ import org.cytoscape.application.swing.CyEdgeViewContextMenuFactory
 import org.cytoscape.application.swing.CyMenuItem
 import eu.biogateway.app.internal.BGServiceManager
 import eu.biogateway.app.internal.model.BGNode
+import eu.biogateway.app.internal.model.BGRelationType
 import eu.biogateway.app.internal.model.BGStatementContextMenuAction
 import eu.biogateway.app.internal.parser.BGReturnType
 import eu.biogateway.app.internal.parser.getSourceGraph
@@ -34,12 +35,13 @@ class BGStatementActionCMF(val gravity: Float): CyEdgeViewContextMenuFactory {
 
             if (isStatement(edgeView, netView)) {
                 val actions = getValidActions(edgeView, network)
-
-                actions.forEach { action ->
-                    createStatementContextMenuAction(action, network, edgeView)?.let { menu ->
-                                parentMenu.add(menu)
-                                parentMenu.addSeparator()
-                            }
+                actions?.let {
+                    it.first.forEach { action ->
+                        createStatementContextMenuAction(action, network, edgeView, it.second)?.let { menu ->
+                            parentMenu.add(menu)
+                            parentMenu.addSeparator()
+                        }
+                    }
                 }
             }
 
@@ -48,7 +50,7 @@ class BGStatementActionCMF(val gravity: Float): CyEdgeViewContextMenuFactory {
         return CyMenuItem(null, gravity)
     }
 
-    private fun getValidActions(edgeView: View<CyEdge>, network: CyNetwork): List<BGStatementContextMenuAction> {
+    private fun getValidActions(edgeView: View<CyEdge>, network: CyNetwork): Pair<List<BGStatementContextMenuAction>, BGRelationType>? {
         try {
             val edge = edgeView.model ?: throw Exception("CyEdge is null!")
             val relationType = BGServiceManager.config.getRelationTypeForURIandGraph(
@@ -58,9 +60,9 @@ class BGStatementActionCMF(val gravity: Float): CyEdgeViewContextMenuFactory {
             val list = BGServiceManager.config.statementContextMenuActions.map { it.value }.filter { action ->
                 action.supportedRelations.contains(relationType)
             }
-            return list
+            return Pair(list, relationType)
         } catch (exception: java.lang.Exception) {
-            return listOf()
+            return null
         }
     }
 
@@ -78,8 +80,9 @@ class BGStatementActionCMF(val gravity: Float): CyEdgeViewContextMenuFactory {
 
 
 
-    fun createStatementContextMenuAction(action: BGStatementContextMenuAction, network: CyNetwork, edgeView: View<CyEdge>): JMenuItem? {
-        val validURLs = getResourceURIs(action.resourceURI, network, edgeView)
+    fun createStatementContextMenuAction(action: BGStatementContextMenuAction, network: CyNetwork, edgeView: View<CyEdge>, relationType: BGRelationType): JMenuItem? {
+
+        val validURLs = getResourceURIs(action.resourceURI, network, edgeView, relationType)
 
         if (validURLs.isEmpty()) return null
 
@@ -120,7 +123,7 @@ class BGStatementActionCMF(val gravity: Float): CyEdgeViewContextMenuFactory {
     }
 
 
-    fun getResourceURIs(metadataUri: String, network: CyNetwork, edgeView: View<CyEdge>): List<String> {
+    fun getResourceURIs(metadataUri: String, network: CyNetwork, edgeView: View<CyEdge>, relationType: BGRelationType): List<String> {
         val edge = edgeView.model ?: throw  Exception("CyEdge is null!")
         try {
             val fromNodeUri = edge.source.getUri(network)
@@ -128,7 +131,7 @@ class BGStatementActionCMF(val gravity: Float): CyEdgeViewContextMenuFactory {
             val edgeUri = edge.getUri(network)
             val graphUri = edge.getSourceGraph(network)
 
-            val query = BGFetchEdgeAttributeValuesQuery(fromNodeUri, toNodeUri, edgeUri, metadataUri, graphUri)
+            val query = BGFetchEdgeAttributeValuesQuery(fromNodeUri, toNodeUri, edgeUri, metadataUri, graphUri, biDirectional = !relationType.directed)
             query.run()
             val data = query.returnData as? BGReturnMetadata ?: return listOf()
 
