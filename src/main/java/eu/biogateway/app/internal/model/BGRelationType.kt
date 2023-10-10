@@ -43,4 +43,15 @@ open class BGRelationType(val uri: String, val name: String, val number: Int, ov
     val defaultGraphURI: String? get() {
         return defaultGraph?.uri
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (other == null || other !is BGRelationType) {
+            return false
+        }
+        return identifier == other.identifier
+    }
+
+    override fun hashCode(): Int {
+        return 31 * identifier.hashCode()
+    }
 }
